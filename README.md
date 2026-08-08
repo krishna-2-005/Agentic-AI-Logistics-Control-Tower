@@ -89,10 +89,26 @@ as synthetic scaffolding around real network data.
 
 | Requirement | Why | Check |
 |---|---|---|
-| Python 3.11+ | everything | `python --version` |
+| Python 3.11-3.13 | everything | `python --version` |
 | **JDK 17** on `JAVA_HOME` | PySpark will not start without it | `java -version` |
 | Tesseract (Week 4+) | Document Intelligence Agent OCR | `tesseract --version` |
 | Docker (Week 5+, optional) | Kafka; file-source fallback documented | `docker --version` |
+
+#### Installing JDK 17 without admin rights
+
+`winget install EclipseAdoptium.Temurin.17.JDK` needs UAC elevation and hangs in a
+non-interactive shell. The portable zip needs neither:
+
+```powershell
+$dest = "$env:USERPROFILE\jdks"; New-Item -ItemType Directory -Force $dest | Out-Null
+Invoke-WebRequest "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jdk/hotspot/normal/eclipse" -OutFile "$env:TEMP\jdk17.zip" -UseBasicParsing
+Expand-Archive "$env:TEMP\jdk17.zip" -DestinationPath $dest -Force
+$jh = (Get-ChildItem $dest -Directory | Select-Object -First 1).FullName
+[Environment]::SetEnvironmentVariable("JAVA_HOME", $jh, "User")
+[Environment]::SetEnvironmentVariable("Path", "$([Environment]::GetEnvironmentVariable('Path','User'));$jh\bin", "User")
+```
+
+Reopen the terminal afterwards so the new environment is picked up.
 
 ### 1. Setup
 
@@ -109,6 +125,15 @@ nbstripout --install          # clears notebook outputs on commit (GIT_RULES §7
 
 cp .env.example .env          # then fill in your keys
 ```
+
+> **If this repo lives in a OneDrive-synced folder**, put the virtualenv *outside* it —
+> e.g. `python -m venv %USERPROFILE%\venvs\control-tower`. A venv with PySpark in it is
+> several GB of small files, and OneDrive will try to sync every one of them.
+
+> **Do not downgrade the pins in `requirements.txt` without checking wheels exist for
+> your Python version.** The obvious "stable" versions (`numpy==1.26.4`,
+> `pyspark==3.5.1`, …) have no cp313 wheels, and pip silently falls back to building
+> from source. See the comment block at the top of the file.
 
 ### 2. Get the data
 
