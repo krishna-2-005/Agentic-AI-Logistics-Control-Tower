@@ -1,62 +1,82 @@
-# Agentic AI Logistics Control Tower — pinned dependencies
-# Install:  pip install -r requirements.txt
-# Python 3.11+ required. PySpark additionally needs a JDK 17 on JAVA_HOME.
+# Agentic AI Logistics Control Tower — dependencies
+#
+# Install:
+#   python -m venv .venv && .venv\Scripts\activate     # Windows
+#   pip install -r requirements.txt
+#
+# ── Python version ───────────────────────────────────────────────────────────
+# Requires Python 3.11-3.13. The constraints below are the *floors that have
+# cp313 wheels*, because that is the interpreter the team is on.
+#
+# This bit us once, so it is written down: the obvious "stable" pins
+# (numpy==1.26.4, pandas==2.2.2, pyarrow==15, scipy==1.13.1, pyspark==3.5.1)
+# all predate Python 3.13 and have **no cp313 wheel**. pip silently falls back to
+# building them from source, which either takes forever or fails on a machine
+# without a C toolchain. If you downgrade anything here, check the wheel exists
+# first:
+#
+#   pip download <pkg>==<ver> --no-deps --only-binary=:all: -d /tmp/x
+#
+# PySpark 4.0 is the first release supporting Python 3.13 (and it requires
+# Java 17+, which we need anyway).
 
-# ── Layer 1: Big Data core (Mounika, Lahari) ─────────────────────────────
-pyspark==3.5.1
-pyarrow==15.0.2
-pandas==2.2.2
-numpy==1.26.4
-scipy==1.13.1              # Welch t-test for the corridor audit
-statsmodels==0.14.2        # Benjamini-Hochberg multiple-comparison correction
-scikit-learn==1.5.0        # sanity baselines + metric helpers alongside MLlib
+# ── Layer 1: Big Data core (Mounika, Lahari) ─────────────────────────────────
+pyspark>=4.0,<4.1
+pyarrow>=18
+pandas>=2.3,<3.0            # pandas 3.x is a breaking major; pin under it for now
+numpy>=2.1,<3.0             # 2.1.0 is the first release with cp313 wheels
+scipy>=1.14                 # Welch t-test for the corridor audit
+statsmodels>=0.14.4         # Benjamini-Hochberg multiple-comparison correction
+scikit-learn>=1.5           # sanity baselines + metric helpers alongside MLlib
 
-# ── Streaming (Mounika, Week 5) ──────────────────────────────────────────
-kafka-python==2.0.2
+# ── Streaming (Mounika, Week 5) ──────────────────────────────────────────────
+kafka-python>=2.0.2
 
-# ── Mock TMS (Mounika, Week 2) ───────────────────────────────────────────
-fastapi==0.111.0
-uvicorn[standard]==0.30.1
-sqlmodel==0.0.19
-httpx==0.27.0
-pydantic==2.7.4
+# ── Mock TMS (Mounika, Week 2) ───────────────────────────────────────────────
+fastapi>=0.111
+uvicorn[standard]>=0.30
+sqlmodel>=0.0.19
+httpx>=0.27
+pydantic>=2.7
 
-# ── Agents (Krishna, Weeks 1-7) ──────────────────────────────────────────
-langgraph==0.2.28
-langchain-core==0.3.9
-langchain-google-genai==2.0.1
-langchain-anthropic==0.2.3
-langchain-ollama==0.2.0
-mcp==1.1.2                 # Model Context Protocol server (Week 6)
+# ── Agents (Krishna, Weeks 1-7) ──────────────────────────────────────────────
+langgraph>=0.2.28
+langchain-core>=0.3
+langchain-google-genai>=2.0
+langchain-anthropic>=0.2
+langchain-ollama>=0.2
+mcp>=1.1                    # Model Context Protocol server (Week 6)
 
-# ── RAG / vector DB (Mounika + Krishna, Weeks 6-7) ───────────────────────
-chromadb==0.5.5
-sentence-transformers==3.0.1
+# ── RAG / vector DB (Mounika + Krishna, Weeks 6-7) ───────────────────────────
+# Heavy: sentence-transformers pulls torch (~2.5 GB). Not needed until Week 6 —
+# install this block separately if you are bandwidth-constrained.
+chromadb>=0.5.5
+sentence-transformers>=3.0
 
-# ── Document intelligence (Krishna, Weeks 3-4) ───────────────────────────
-pytesseract==0.3.10        # needs the Tesseract binary installed separately
-pdf2image==1.17.0          # needs poppler installed separately
-reportlab==4.2.2           # synthetic BOL / invoice PDF generation
-pypdf==4.2.0
-Pillow==10.3.0
+# ── Document intelligence (Krishna, Weeks 3-4) ───────────────────────────────
+pytesseract>=0.3.10         # needs the Tesseract binary installed separately
+pdf2image>=1.17             # needs poppler installed separately
+reportlab>=4.2              # synthetic BOL / invoice PDF generation
+pypdf>=4.2
+Pillow>=10.3
 
-# ── Dashboard (Krishna) ──────────────────────────────────────────────────
-streamlit==1.36.0
-folium==0.16.0
-streamlit-folium==0.21.1
-plotly==5.22.0
-matplotlib==3.9.0
+# ── Dashboard (Krishna) ──────────────────────────────────────────────────────
+streamlit>=1.36
+folium>=0.16
+streamlit-folium>=0.21
+plotly>=5.22
+matplotlib>=3.9
 
-# ── Notifications (Krishna, Week 5) ──────────────────────────────────────
-python-telegram-bot==21.3
+# ── Notifications (Krishna, Week 5) ──────────────────────────────────────────
+python-telegram-bot>=21.3
 
-# ── Shared utilities ─────────────────────────────────────────────────────
-python-dotenv==1.0.1
-rich==13.7.1
-typer==0.12.3
+# ── Shared utilities ─────────────────────────────────────────────────────────
+python-dotenv>=1.0
+rich>=13.7
+typer>=0.12
 
-# ── Dev / quality ────────────────────────────────────────────────────────
-pytest==8.2.2
-ruff==0.4.9
-jupyter==1.0.0
-nbstripout==0.7.1          # clears notebook outputs before commit (GIT_RULES §7)
+# ── Dev / quality ────────────────────────────────────────────────────────────
+pytest>=8.2
+ruff>=0.4.9
+jupyter>=1.0
+nbstripout>=0.7             # clears notebook outputs before commit (GIT_RULES §7)
