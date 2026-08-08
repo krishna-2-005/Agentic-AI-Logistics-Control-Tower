@@ -1,0 +1,92 @@
+# ── Data (never committed; see data/README.md for download instructions) ──
+data/*
+!data/README.md
+Dataset/
+*.parquet
+*.csv
+# Tracked exceptions: generated result tables and hand-maintained reference lookups.
+!docs/**/*.csv
+!benchmarks/raw/*.csv
+!src/**/reference/*.csv
+
+# ── Secrets ──
+.env
+.env.local
+*.key
+credentials.json
+service_account*.json
+
+# ── Models & checkpoints ──
+models/
+checkpoints/
+spark-warehouse/
+metastore_db/
+derby.log
+*.pkl
+*.joblib
+*.h5
+
+# ── Mock TMS database ──
+*.db
+*.sqlite
+*.sqlite3
+
+# ── Vector store ──
+chroma_db/
+.chroma/
+faiss_index/
+
+# ── Generated document corpus (regenerate with src/agents/doc_corpus) ──
+data/documents/
+*.pdf
+!demo/sample_documents/*.pdf
+
+# ── Python ──
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+eggs/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+env/
+ENV/
+.python-version
+
+# ── Notebooks (outputs must be cleared before commit — GIT_RULES §7) ──
+.ipynb_checkpoints/
+
+# ── Testing / linting ──
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+.tox/
+
+# ── Logs & traces ──
+logs/
+*.log
+traces/
+
+# ── IDE / OS ──
+.vscode/
+.idea/
+*.swp
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Streamlit ──
+.streamlit/secrets.toml
+
+# ── Kafka / Docker local volumes ──
+kafka-data/
+zookeeper-data/
