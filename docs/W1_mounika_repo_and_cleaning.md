@@ -49,19 +49,26 @@ different columns), then:
    are counted into the quality report rather than silently nulled.
 2. **Centre codes standardised** (upper, trimmed) and `corridor_id` built. Case or
    whitespace drift here would silently split one corridor into two in the audit.
-3. **Facility names backfilled** — 293 `source_name` and 261 `destination_name` nulls
-   recovered from a code→name map built from the dataset itself. Every affected code
-   appears with a name on other rows, so no external lookup is needed. Ties resolve to
-   the most frequent spelling, deterministically.
-4. **Locations parsed** — `Anand_VUNagar_DC (Gujarat)` → city `Anand`, state
+3. **Textual null sentinels converted** — missing facility names are the literal
+   string `nan`, not empty fields. pandas coerces that to NaN on read; **Spark does
+   not**, and reads a valid 3-character string. Stage 1 converts it explicitly
+   (293 + 261 rows) and counts the conversion. Left alone it would have produced a
+   facility in a city called "nan" on the Week 2 India map.
+4. **Names recovered where possible, state inferred where not.** The 554 missing names
+   belong to 14 centre codes, and none of those codes carries a name anywhere in the
+   dataset — verified, so the names are unrecoverable. The *state* is recoverable: the
+   centre code embeds an Indian PIN (`IND282002AAD` → 282002 → Agra, Uttar Pradesh),
+   which fills the state on 551 rows, flagged `state_from_pin` so an inferred region is
+   never mistaken for a parsed one.
+5. **Locations parsed** — `Anand_VUNagar_DC (Gujarat)` → city `Anand`, state
    `Gujarat`. Non-matching rows get null rather than a wrong guess.
-5. **Quality flags** — `is_negative_segment`, `is_zero_osrm_segment`, `is_suspect`
+6. **Quality flags** — `is_negative_segment`, `is_zero_osrm_segment`, `is_suspect`
    (D-006). `segment_factor` recomputed with a zero guard because the raw column
    carries a `-1` sentinel on the zero-OSRM rows. `od_duration_min` derived.
-6. **Drops, each with a named reason and a count** — null trip/centre, unparseable or
+7. **Drops, each with a named reason and a count** — null trip/centre, unparseable or
    inverted OD window, non-positive `osrm_time` or `actual_time`. Exact duplicates
    removed (the published file has none; this guards a re-download).
-7. **Writes** partitioned Parquet plus `_quality_report.json` accounting for every row
+8. **Writes** partitioned Parquet plus `_quality_report.json` accounting for every row
    in, every row out, every drop reason, every flag, and the distinct-key counts.
 
 Nothing is dropped silently. A row is either kept, or dropped under a reason that
@@ -69,40 +76,65 @@ appears in the report with a count.
 
 ## Numbers
 
-`_quality_report.json` is produced by the run, so the authoritative numbers land when
-Stage 1 first executes. Expected input, confirmed independently in
-`benchmarks/raw/w1_column_profile.csv`:
+Produced by the run — `data/processed/clean_v1/_quality_report.json`. Every figure
+cross-checks against Lahari's independent pandas profile.
 
 | Property | Value |
 |---|---|
-| Raw rows | 144,867 |
-| Columns | 24 |
+| Raw rows in / out | 144,867 / 144,867 (**0 dropped**) |
+| Columns in / out | 24 / 35 |
 | Trips | 14,817 |
 | OD legs | 26,369 |
 | Corridors | 2,783 |
+| Source / destination centres | 1,508 / 1,481 |
+| Timestamp cast failures | 0 across all four columns |
+| Textual `nan` sentinels converted | 554 (293 source, 261 destination) |
+| Names recovered from codes | 0 — the 14 affected codes are unnamed everywhere |
+| States inferred from PIN prefix | 551 |
 | Exact duplicates | 0 |
-| Nulls to backfill | 554 |
-| Rows flagged suspect | ~4,320 (2.98%) |
+| `is_negative_segment` | 1,973 |
+| `is_zero_osrm_segment` | 2,347 |
+| `is_suspect` (union) | 2,600 |
+| Observation window | 2018-09-12 00:00 → 2018-10-08 03:00 |
+| On disk | 55.6 MB CSV → **8.3 MB Parquet**, partitioned by `route_type` |
 
-## ⚠ Blocked — this is the Gate 1 blocker
+**Nothing was dropped.** Every drop rule returned 0, which is the honest outcome: this
+file is clean on the dimensions that would make a row unusable. The interesting damage
+is in the *flags*, not the drops.
 
-**Stage 1 has not been executed.** There is no JDK on this machine: `JAVA_HOME` points
-at `C:\Program Files\Java\jdk-17.0.8`, which does not exist, and no `java` is on PATH.
-PySpark cannot start a driver without one, so `clean.py` is written and reviewed but
-unrun, and `data/processed/clean_v1` does not yet exist.
+## Environment — resolved
 
-**Fix (each member, once):**
+Gate 1's Spark blocker is cleared. Three things were needed and none was obvious:
 
-```powershell
-winget install EclipseAdoptium.Temurin.17.JDK
-# then set JAVA_HOME to the install path and reopen the shell
-python -m src.common.check_env      # must show Spark rows green
-python -m src.pipeline.clean
-```
+1. **JDK 17.** `winget install EclipseAdoptium.Temurin.17.JDK` hangs forever in a
+   non-interactive shell because the MSI needs UAC elevation. The portable Temurin zip
+   needs no admin at all — see the README.
+2. **PySpark 4.0, not 3.5.** On Python 3.13 the "safe" pins (`pyspark==3.5.1`,
+   `numpy==1.26.4`, `pandas==2.2.2`, `pyarrow==15`, `scipy==1.13.1`) have **no cp313
+   wheels**; pip silently falls back to building from source and effectively hangs.
+   PySpark 4.0 is the first release supporting 3.13. `requirements.txt` now documents
+   the check: `pip download <pkg>==<ver> --no-deps --only-binary=:all:`.
+3. **winutils.exe + hadoop.dll.** Spark *reads* fine on Windows without them, but
+   writing Parquet calls `RawLocalFileSystem.setPermission` → `getWinUtilsPath` and
+   fails. Placed in `C:\hadoop\bin` with `HADOOP_HOME` set. Note for the team: this is
+   an unsigned third-party binary from the cdarlint/winutils mirror, which is standard
+   practice for Spark on Windows but worth knowing.
 
-Everything that does not need Spark was built and run instead — the profile, the EDA,
-the corridor tables, the dashboard skeleton — so Week 1's analytical results exist and
-are reproducible today. Only the Parquet cache waits on the JDK.
+Verify with `python -m src.common.check_env` — Spark rows must be green.
+
+## Two bugs this week, both found by running the code
+
+Worth recording because both were invisible to inspection and both would have
+corrupted results silently:
+
+- **`cutoff_timestamp` has mixed precision.** 141,438 rows are second-level, 3,429
+  (2.37%) carry microseconds. A single fixed format throws on the minority under Spark
+  4's ANSI mode. Now parsed with an optional fraction, `yyyy-MM-dd HH:mm:ss[.SSSSSS]`.
+- **The name backfill was built on a false premise.** It assumed every code with a
+  missing name had a name elsewhere. Checking showed none of the 14 do. The step
+  stays (it is correct and free for a future mirror) but the docs no longer claim it
+  recovers anything, and the PIN-based state recovery does the work that is actually
+  possible.
 
 ## Next (Week 2)
 

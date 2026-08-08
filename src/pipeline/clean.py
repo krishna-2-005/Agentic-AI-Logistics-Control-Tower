@@ -68,20 +68,60 @@ def load_raw(spark: SparkSession, path: Path) -> DataFrame:
     return df
 
 
+# ── Step 1b: null sentinels ──────────────────────────────────────────────────
+#: Strings the publisher used to mean "missing". They are literal text in the CSV,
+#: not empty fields.
+NULL_SENTINELS = ["", "nan", "NaN", "NAN", "null", "NULL", "None", "NA", "N/A", "-"]
+
+
+def normalise_null_sentinels(df: DataFrame) -> tuple[DataFrame, dict[str, int]]:
+    """Turn the publisher's textual missing-value markers into real nulls.
+
+    **This is the subtlest trap in the dataset, and it silently splits the team.**
+
+    `source_name` and `destination_name` do not contain empty fields where a name is
+    missing — they contain the literal three-character string ``nan``. pandas coerces
+    that to ``NaN`` on read by default, so a pandas profile reports 293 and 261
+    missing names. Spark does not: it reads ``"nan"`` as an ordinary string, so the
+    same file appears to have **zero** nulls.
+
+    Left alone, two things go wrong and neither of them raises:
+
+    * the name backfill matches nothing, because there is nothing null to fill;
+    * ``"nan"`` propagates into `source_city` / `source_state` and into the corridor
+      leaderboards, producing a facility in a city called "nan" — and onto the India
+      map, where it silently fails to geocode.
+
+    Returns the frame plus a per-column count of values converted, which goes into
+    the quality report so the number is visible rather than folded into "nulls".
+    """
+    string_cols = [f.name for f in df.schema.fields if f.dataType.simpleString() == "string"]
+    counts: dict[str, int] = {}
+
+    for col in string_cols:
+        trimmed = F.trim(F.col(col))
+        is_sentinel = trimmed.isin(NULL_SENTINELS)
+        n = df.filter(is_sentinel).count()
+        if n:
+            counts[col] = n
+        df = df.withColumn(col, F.when(is_sentinel, None).otherwise(trimmed))
+
+    return df, counts
+
+
 # ── Step 2: types ────────────────────────────────────────────────────────────
 def cast_types(df: DataFrame) -> DataFrame:
-    """Parse timestamps and the boolean, leaving unparseable values as null.
+    """Parse the four timestamp columns and the boolean.
 
-    Cast failures are counted in the quality report rather than being allowed to
-    disappear — a timestamp format change in a future mirror should be loud.
+    All four use one format with an optional sub-second part; see
+    ``schema.TIMESTAMP_FORMAT`` for why `cutoff_timestamp` forces that. Under Spark
+    4's ANSI mode a value that does not match the format raises rather than becoming
+    null, which is the behaviour we want — a mirror that changes timestamp shape
+    should stop the pipeline, not quietly null a column. Genuinely null inputs still
+    pass through as null and are counted in the quality report.
     """
     for col in sch.TIMESTAMP_COLUMNS:
         df = df.withColumn(col, F.to_timestamp(F.col(col), sch.TIMESTAMP_FORMAT))
-
-    df = df.withColumn(
-        sch.CUTOFF_TIMESTAMP_COLUMN,
-        F.to_timestamp(F.col(sch.CUTOFF_TIMESTAMP_COLUMN), sch.CUTOFF_TIMESTAMP_FORMAT),
-    )
 
     df = df.withColumn("is_cutoff", F.lower(F.trim(F.col("is_cutoff"))) == F.lit("true"))
     df = df.withColumn("route_type", F.trim(F.col("route_type")))
@@ -105,13 +145,54 @@ def standardise_centres(df: DataFrame) -> DataFrame:
     )
 
 
-def backfill_names(df: DataFrame) -> tuple[DataFrame, int]:
-    """Recover the 554 null facility names from their centre codes.
+#: First two digits of an Indian PIN code → state/UT postal circle. Used to recover a
+#: region for facilities whose name is missing entirely (see ``recover_state_from_code``).
+PIN_PREFIX_TO_STATE: dict[str, str] = {
+    "11": "Delhi",
+    "12": "Haryana", "13": "Haryana",
+    "14": "Punjab", "15": "Punjab", "16": "Punjab",
+    "17": "Himachal Pradesh",
+    "18": "Jammu and Kashmir", "19": "Jammu and Kashmir",
+    "20": "Uttar Pradesh", "21": "Uttar Pradesh", "22": "Uttar Pradesh",
+    "23": "Uttar Pradesh", "24": "Uttar Pradesh", "25": "Uttar Pradesh",
+    "26": "Uttar Pradesh", "27": "Uttar Pradesh", "28": "Uttar Pradesh",
+    "30": "Rajasthan", "31": "Rajasthan", "32": "Rajasthan",
+    "33": "Rajasthan", "34": "Rajasthan",
+    "36": "Gujarat", "37": "Gujarat", "38": "Gujarat", "39": "Gujarat",
+    "40": "Maharashtra", "41": "Maharashtra", "42": "Maharashtra",
+    "43": "Maharashtra", "44": "Maharashtra",
+    "45": "Madhya Pradesh", "46": "Madhya Pradesh", "47": "Madhya Pradesh",
+    "48": "Madhya Pradesh",
+    "49": "Chhattisgarh",
+    "50": "Telangana", "51": "Telangana",
+    "52": "Andhra Pradesh", "53": "Andhra Pradesh",
+    "56": "Karnataka", "57": "Karnataka", "58": "Karnataka", "59": "Karnataka",
+    "60": "Tamil Nadu", "61": "Tamil Nadu", "62": "Tamil Nadu",
+    "63": "Tamil Nadu", "64": "Tamil Nadu",
+    "67": "Kerala", "68": "Kerala", "69": "Kerala",
+    "70": "West Bengal", "71": "West Bengal", "72": "West Bengal",
+    "73": "West Bengal", "74": "West Bengal",
+    "75": "Odisha", "76": "Odisha", "77": "Odisha",
+    "78": "Assam",
+    "79": "North Eastern States",
+    "80": "Bihar", "81": "Bihar", "82": "Bihar", "83": "Bihar",
+    "84": "Bihar", "85": "Bihar",
+}
 
-    A facility name is missing on some rows but present on others for the same
-    centre code, so the mapping is recoverable from the dataset itself — no external
-    lookup needed. Names that appear under one code with more than one spelling
-    resolve to the most frequent spelling.
+
+def backfill_names(df: DataFrame) -> tuple[DataFrame, int]:
+    """Recover null facility names from other rows carrying the same centre code.
+
+    **On the published file this recovers nothing, and that is the finding, not a
+    bug.** All 554 missing names belong to just 14 centre codes, and *none* of those
+    14 codes carries a name on any row anywhere in the dataset — verified, not
+    assumed. The names are absent from the source, not merely sparse.
+
+    The step is kept for two reasons: it is correct and free if a future mirror ships
+    partially-named codes, and the count it returns is written into the quality
+    report, so "0 recovered" is an asserted fact rather than a silent no-op.
+
+    ``recover_state_from_code`` handles what *is* recoverable for these 14.
     """
     sources = df.select(
         F.col("source_center").alias("centre"), F.col("source_name").alias("name")
@@ -206,6 +287,35 @@ def parse_locations(df: DataFrame) -> DataFrame:
     return df
 
 
+def recover_state_from_code(df: DataFrame) -> tuple[DataFrame, int]:
+    """Fill a missing state from the PIN code embedded in the centre code.
+
+    Centre codes are ``IND`` + a six-digit Indian PIN + three characters, so
+    ``IND282002AAD`` carries PIN 282002 — Agra, Uttar Pradesh. The first two digits
+    identify the postal circle, which is enough to place a facility regionally and to
+    group it on the India map, even when its name is missing entirely.
+
+    Only the *state* is recoverable this way; the city is not, and is left null rather
+    than guessed. Rows filled here are marked ``state_from_pin`` so that no analysis
+    can mistake an inferred region for one parsed from a real facility name.
+    """
+    prefix_map = F.create_map(*[F.lit(x) for kv in PIN_PREFIX_TO_STATE.items() for x in kv])
+
+    for prefix, code_col in (("source", "source_center"), ("dest", "destination_center")):
+        pin_prefix = F.regexp_extract(F.col(code_col), r"^IND(\d{2})", 1)
+        inferred = prefix_map[pin_prefix]
+        df = df.withColumn(
+            f"{prefix}_state_from_pin",
+            F.col(f"{prefix}_state").isNull() & inferred.isNotNull(),
+        ).withColumn(f"{prefix}_state", F.coalesce(F.col(f"{prefix}_state"), inferred))
+
+    df = df.withColumn(
+        "state_from_pin", F.col("source_state_from_pin") | F.col("dest_state_from_pin")
+    ).drop("source_state_from_pin", "dest_state_from_pin")
+
+    return df, df.filter("state_from_pin").count()
+
+
 # ── Step 5: quality flags ────────────────────────────────────────────────────
 def add_quality_flags(df: DataFrame) -> DataFrame:
     """Mark the source system's artefacts. Flag, never delete — see module docstring."""
@@ -278,19 +388,30 @@ def clean(spark: SparkSession, input_path: Path, output_path: Path) -> dict:
     report["rows_in"] = df.count()
     log.info("  %s raw rows, %d columns", f"{report['rows_in']:,}", len(df.columns))
 
+    df, sentinel_counts = normalise_null_sentinels(df)
+    report["null_sentinels_converted"] = sentinel_counts
+    log.info("  textual null sentinels converted: %s", sentinel_counts or "none")
+
     df = cast_types(df)
     report["cast_failures"] = {
-        col: df.filter(F.col(col).isNull()).count()
-        for col in sch.TIMESTAMP_COLUMNS + [sch.CUTOFF_TIMESTAMP_COLUMN]
+        col: df.filter(F.col(col).isNull()).count() for col in sch.TIMESTAMP_COLUMNS
     }
     log.info("  timestamp cast failures: %s", report["cast_failures"])
 
     df = standardise_centres(df)
     df, backfilled = backfill_names(df)
     report["names_backfilled"] = backfilled
-    log.info("  backfilled %d null facility names from centre codes", backfilled)
+    log.info(
+        "  recovered %d facility names from centre codes "
+        "(expected 0 on the published file — the 14 affected codes are unnamed everywhere)",
+        backfilled,
+    )
 
     df = parse_locations(df)
+    df, state_inferred = recover_state_from_code(df)
+    report["states_inferred_from_pin"] = state_inferred
+    log.info("  inferred state from PIN prefix on %d rows", state_inferred)
+
     df = add_quality_flags(df)
 
     df, dup_dropped = drop_exact_duplicates(df)

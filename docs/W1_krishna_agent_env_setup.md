@@ -73,20 +73,38 @@ extraction accuracies, which Lahari produces (builder and judge stay separate).
 |---|---|
 | Providers wired | 3 (Gemini, Anthropic, Ollama) |
 | Prompt versions committed | 2 (`doc_extraction/v1`, `analytics_assistant/v1`) |
+| Hello-agent questions answered | 3/3, including 1 correct refusal |
 | Dashboard pages scaffolded | 9 |
 | City-coordinate rows | 49, covering ~67% of facility mentions |
 
-## Status
+## Status — verified by running, not by inspection
 
-- ✅ Streamlit skeleton boots and renders (verified: HTTP 200, Overview page executes
-  clean against the real leg summary).
-- ✅ Prompt registry, LLM layer, and coordinate lookup written and reviewed.
-- ⬜ **`hello_agent` not yet executed** — `langgraph` is not installed on this machine
-  (`pip install -r requirements.txt` pending, see W1 Mounika doc: the environment
-  install is the shared Gate 1 blocker alongside the JDK).
-- ⬜ **No LLM key in `.env`.** `GEMINI_API_KEY` unset, so Gate 1's "LLM API responds"
-  is not yet met. The fallback path means the graph is testable without it, but the
-  gate needs a real key.
+- ✅ **LangGraph hello agent runs end-to-end.** Graph compiles
+  (`['__start__','parse','lookup','answer','refuse','__end__']`), the conditional
+  edge routes on state, the tool node reads Lahari's real corridor table, and the
+  **refusal branch fires correctly** — "what is the weather in Paris?" returns the
+  refusal, `grounded=False`. Sample output on real data:
+
+  > *How bad are the corridors around Gurgaon?* → "5 corridors found for Gurgaon. The
+  > busiest is Delhi → Gurgaon with 100 legs observed. The furthest over plan is
+  > Gurgaon → Sonipat at 2.07× planned time (119.0 min mean gap)."
+
+- ✅ **The deterministic fallback works**, which matters more than it sounds: with no
+  API key the graph still completes and answers from the tool output, so the wiring is
+  testable before keys exist and a rate-limited free tier cannot block a Week 7
+  evaluation run.
+- ✅ Streamlit skeleton boots and the Overview page renders against the leg summary.
+- ✅ Prompt registry loads and versions resolve (`doc_extraction/v1`, 2,594 chars).
+- ⬜ **No LLM key in `.env`.** `GEMINI_API_KEY` is unset, so Gate 1's "LLM API responds"
+  is **not met** — the agent is running its fallback, not a real model. This is the one
+  Gate 1 item still open and it is mine.
+
+### Note on langgraph versions
+
+`langgraph` resolves to **1.2.10** on Python 3.13, not the 0.2.x the blueprint era
+assumed. The graph API used here (`StateGraph`, `add_conditional_edges`,
+`MemorySaver`, `compile(checkpointer=...)`) is unchanged across that jump and was
+verified by running. Worth knowing before anyone follows a 0.2-era tutorial.
 
 ## Next (Week 2)
 
