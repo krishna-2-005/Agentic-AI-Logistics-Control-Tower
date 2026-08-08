@@ -175,6 +175,79 @@ frozen outputs of the plane below.
 
 ---
 
+## D-010 · Textual null sentinels are converted on read — `DECIDED`
+**Week 1 · Mounika · found by running Stage 1, not by inspection**
+
+Stage 1 converts `""`, `nan`, `NaN`, `null`, `None`, `NA`, `N/A`, `-` to real nulls
+across every string column, and reports the count per column.
+
+**Why this is not housekeeping.** Missing facility names in this file are the literal
+three-character string `nan`, not empty fields. **pandas coerces `nan` to `NaN` on
+read; Spark does not.** The same file therefore shows 554 missing names in a pandas
+profile and **zero** in Spark — so two members analysing "the same data" would have
+disagreed and neither would have been obviously wrong.
+
+Left unconverted it would have put a facility in a city called **"nan"** on the Week 2
+India map, and quietly polluted any group-by on city or state.
+
+**Anyone comparing a pandas number to a Spark number must account for this.**
+
+---
+
+## D-011 · Missing names are unrecoverable; state is inferred from the PIN — `DECIDED`
+**Week 1 · Mounika**
+
+The 554 missing names belong to **14 centre codes**, and none of those codes carries a
+name on any row anywhere in the dataset — checked, not assumed. The names cannot be
+recovered from the data.
+
+The **state** can be: centre codes are `IND` + a six-digit Indian PIN + three
+characters, so `IND282002AAD` carries PIN 282002 → Agra → Uttar Pradesh. Stage 1 fills
+the state from the PIN's first two digits (the postal circle) on 551 rows, marking them
+`state_from_pin`.
+
+**City is left null rather than guessed** — the PIN prefix identifies a circle, not a
+city, and a wrong city would land as a wrong dot on the map.
+
+*Supersedes the original claim in the W1 writeup that names were backfillable. The
+backfill step is retained because it is correct and free if a future mirror ships
+partially-named codes, but it recovers 0 today and the report says so.*
+
+---
+
+## D-012 · Windows/Spark environment baseline — `DECIDED`
+**Week 1 · Mounika**
+
+- **JDK 17 via the portable Temurin zip**, not `winget`. The MSI needs UAC elevation
+  and hangs indefinitely in a non-interactive shell.
+- **PySpark 4.0**, not 3.5. On Python 3.13 the conventional pins (`pyspark==3.5.1`,
+  `numpy==1.26.4`, `pandas==2.2.2`, `pyarrow==15`, `scipy==1.13.1`) have **no cp313
+  wheels**; pip falls back to source builds and effectively hangs. Check before
+  changing a pin: `pip download <pkg>==<ver> --no-deps --only-binary=:all:`.
+- **winutils.exe + hadoop.dll in `C:\hadoop\bin`, `HADOOP_HOME=C:\hadoop`.** Spark
+  reads without them but cannot write Parquet — `RawLocalFileSystem.setPermission`
+  calls `getWinUtilsPath`. Sourced from the cdarlint/winutils mirror; unsigned
+  third-party binaries, standard practice for Spark on Windows, recorded here so the
+  team knows what is on their machines.
+- **Virtualenv lives outside the OneDrive folder.** A venv containing PySpark is
+  several GB of small files and OneDrive will try to sync every one.
+
+---
+
+## D-013 · One timestamp format, with an optional fraction — `DECIDED`
+**Week 1 · Mounika · found by running Stage 1**
+
+All four timestamp columns parse with `yyyy-MM-dd HH:mm:ss[.SSSSSS]`.
+
+**Why the optional part is the data, not defensiveness:** `cutoff_timestamp` is mixed —
+141,438 rows are second-precision and 3,429 (2.37%) carry microseconds. A fixed
+second-precision format throws on that 2.37% under Spark 4's ANSI mode.
+
+The format stays explicit rather than inferred, so a genuinely new shape still stops the
+pipeline instead of silently nulling a column.
+
+---
+
 ## Open items carried into Week 2
 
 | Item | Owner | Blocks |
@@ -182,5 +255,5 @@ frozen outputs of the plane below.
 | **D-003** — delay threshold / regression-first framing | Lahari | Week 3 features, Week 4 models |
 | D-004 revisit — support vs coverage, on real test results | Lahari | Week 2 audit writeup |
 | City-name normalisation table for the India map (`Bangalore`/`Bengaluru`, `MAA`, `FBD`) | Krishna | Week 2 map |
-| JDK 17 installed on all three machines — PySpark cannot start without it | all | **Gate 1** |
+| JDK 17 + winutils on Lahari's and Krishna's machines (D-012) | all | their local Spark runs |
 | Second LLM key in `.env` so `with_fallback` has somewhere to fall | Krishna | Week 7 eval runs |
