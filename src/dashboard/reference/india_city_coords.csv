@@ -1,0 +1,50 @@
+raw_city,canonical_city,state,lat,lon
+Gurgaon,Gurugram,Haryana,28.4595,77.0266
+Gurugram,Gurugram,Haryana,28.4595,77.0266
+Bangalore,Bengaluru,Karnataka,12.9716,77.5946
+Bengaluru,Bengaluru,Karnataka,12.9716,77.5946
+Bhiwandi,Bhiwandi,Maharashtra,19.3002,73.0630
+Hyderabad,Hyderabad,Telangana,17.3850,78.4867
+Delhi,Delhi,Delhi,28.7041,77.1025
+Del,Delhi,Delhi,28.7041,77.1025
+Pune,Pune,Maharashtra,18.5204,73.8567
+Kolkata,Kolkata,West Bengal,22.5726,88.3639
+Chandigarh,Chandigarh,Chandigarh,30.7333,76.7794
+Sonipat,Sonipat,Haryana,28.9931,77.0151
+Bhubaneshwar,Bhubaneswar,Odisha,20.2961,85.8245
+Bhubaneswar,Bhubaneswar,Odisha,20.2961,85.8245
+Kanpur,Kanpur,Uttar Pradesh,26.4499,80.3319
+Mumbai,Mumbai,Maharashtra,19.0760,72.8777
+Mumbai Hub (Maharashtra),Mumbai,Maharashtra,19.0760,72.8777
+Bhopal,Bhopal,Madhya Pradesh,23.2599,77.4126
+Ahmedabad,Ahmedabad,Gujarat,23.0225,72.5714
+MAA,Chennai,Tamil Nadu,13.0827,80.2707
+Chennai,Chennai,Tamil Nadu,13.0827,80.2707
+Jaipur,Jaipur,Rajasthan,26.9124,75.7873
+Surat,Surat,Gujarat,21.1702,72.8311
+Guwahati,Guwahati,Assam,26.1445,91.7362
+Ranchi,Ranchi,Jharkhand,23.3441,85.3096
+Muzaffrpur,Muzaffarpur,Bihar,26.1209,85.3647
+Muzaffarpur,Muzaffarpur,Bihar,26.1209,85.3647
+Vijayawada,Vijayawada,Andhra Pradesh,16.5062,80.6480
+Visakhapatnam,Visakhapatnam,Andhra Pradesh,17.6868,83.2185
+Purnia,Purnia,Bihar,25.7771,87.4753
+Sasaram,Sasaram,Bihar,24.9500,84.0300
+Noida,Noida,Uttar Pradesh,28.5355,77.3910
+FBD,Faridabad,Haryana,28.4089,77.3178
+Faridabad,Faridabad,Haryana,28.4089,77.3178
+Solapur,Solapur,Maharashtra,17.6599,75.9064
+Kolhapur,Kolhapur,Maharashtra,16.7050,74.2433
+Ludhiana,Ludhiana,Punjab,30.9010,75.8573
+Akola,Akola,Maharashtra,20.7002,77.0082
+Aluva,Aluva,Kerala,10.1004,76.3570
+Goa,Panaji,Goa,15.4909,73.8278
+Pali,Pali,Rajasthan,25.7711,73.3234
+Kurnool,Kurnool,Andhra Pradesh,15.8281,78.0373
+Dhanbad,Dhanbad,Jharkhand,23.7957,86.4304
+Udaipur,Udaipur,Rajasthan,24.5854,73.7125
+Anantapur,Anantapur,Andhra Pradesh,14.6819,77.6006
+Jalandhar,Jalandhar,Punjab,31.3260,75.5762
+Hubli,Hubballi,Karnataka,15.3647,75.1240
+Vadodara,Vadodara,Gujarat,22.3072,73.1812
+Gulbarga,Kalaburagi,Karnataka,17.3297,76.8343
