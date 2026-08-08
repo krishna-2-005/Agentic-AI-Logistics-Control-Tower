@@ -45,13 +45,25 @@ RAW_SCHEMA = StructType(
 
 RAW_COLUMNS = [f.name for f in RAW_SCHEMA.fields]
 
-# Timestamp columns and their format in the raw file: "2018-09-20 02:35:36.476840"
-TIMESTAMP_COLUMNS = ["trip_creation_time", "od_start_time", "od_end_time"]
-TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSSSSS"
-
-# cutoff_timestamp carries no sub-second component: "2018-09-20 04:27:55"
-CUTOFF_TIMESTAMP_COLUMN = "cutoff_timestamp"
-CUTOFF_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss"
+# All four timestamp columns, parsed with ONE format.
+#
+# The sub-second part is optional — `[.SSSSSS]` — and that is not defensive
+# programming, it is the data. `trip_creation_time`, `od_start_time` and
+# `od_end_time` always carry microseconds ("2018-09-20 02:35:36.476840"), but
+# `cutoff_timestamp` is mixed: 141,438 rows are second-precision
+# ("2018-09-20 04:27:55") and 3,429 rows (2.37%) carry microseconds. Parsing that
+# column with a second-precision format throws on those 3,429 rows under Spark 4's
+# ANSI mode, which is exactly how this was found.
+#
+# The format stays explicit rather than letting Spark infer, so a genuinely new
+# shape still fails loudly instead of silently becoming null.
+TIMESTAMP_COLUMNS = [
+    "trip_creation_time",
+    "od_start_time",
+    "od_end_time",
+    "cutoff_timestamp",
+]
+TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss[.SSSSSS]"
 
 # Trip-level columns: constant across every segment row of one OD leg. Stage 2
 # collapses on these; listed here so Stage 2 does not re-derive the list.
