@@ -32,20 +32,20 @@ COLUMN_NOTES: dict[str, tuple[str, str]] = {
     "route_type": ("FTL (full truck load, trunk) or Carting (short-haul feeder).", "Behaves very differently; every audit and model is reported split by this."),
     "trip_uuid": ("Unique trip identifier. Multiple rows share one.", "The grouping key for Stage 2 reconstruction."),
     "source_center": ("Origin facility code, e.g. IND388121AAA.", "Left half of the corridor key. Always present."),
-    "source_name": ("Origin facility name: City_Facility_Type (State).", "Parsed into source_city / source_state. 293 nulls, all recoverable from the code."),
+    "source_name": ("Origin facility name: City_Facility_Type (State).", "Parsed into source_city / source_state. 293 missing, written as the literal string `nan`."),
     "destination_center": ("Destination facility code.", "Right half of the corridor key. Always present."),
-    "destination_name": ("Destination facility name, same convention.", "261 nulls, recoverable the same way."),
+    "destination_name": ("Destination facility name, same convention.", "261 missing, same literal-`nan` encoding."),
     "od_start_time": ("Start of the origin-destination leg.", "With od_end_time and trip_uuid, identifies one leg — the Stage 2 grain."),
     "od_end_time": ("End of the origin-destination leg.", "Leg wall-clock duration = od_end_time - od_start_time."),
     "start_scan_to_end_scan": ("Minutes from first to last scan of the leg.", "A second realised-duration measure; cross-checked against actual_time."),
     "is_cutoff": ("Whether this segment row crossed an operational cutoff.", "Segment-level; constant within a row, not within a leg."),
     "cutoff_factor": ("Cutoff-related numeric attribute from the source system.", "Undocumented upstream; treated as an opaque candidate feature."),
-    "cutoff_timestamp": ("Timestamp of the cutoff event.", "Only column without sub-second precision — parsed with its own format."),
-    "actual_distance_to_destination": ("Remaining distance to destination (km).", "Decreases along a trip; encodes trip progress."),
-    "actual_time": ("Cumulative realised time for the trip so far (minutes).", "**Numerator of the project's core claim.** Cumulative, not per-segment."),
+    "cutoff_timestamp": ("Timestamp of the cutoff event.", "**Mixed precision:** 141,438 rows second-level, 3,429 rows microsecond. Needs an optional-fraction format."),
+    "actual_distance_to_destination": ("**Cumulative distance covered so far in the leg (km).**", "The name lies: it *increases* along the leg. Not distance remaining."),
+    "actual_time": ("Cumulative realised time so far within the leg (minutes).", "**Numerator of the core claim.** The leg total is the LAST row, not the first."),
     "osrm_time": ("Cumulative OSRM-predicted time for the same stretch (minutes).", "**The production planner's estimate — the baseline this project beats.**"),
     "osrm_distance": ("Cumulative OSRM-predicted distance (km).", "Paired with osrm_time; their ratio is an implied planned speed."),
-    "factor": ("actual_time / osrm_time at trip level.", "The delay ratio. > 1.25 defines the delay label (decisions.md D-003)."),
+    "factor": ("actual_time / osrm_time, recomputed at every row.", "The delay ratio. Varies within a leg. Threshold OPEN — see decisions.md D-003."),
     "segment_actual_time": ("Realised time for this segment alone (minutes).", "1,973 rows are <= 0 — clock skew. Flagged, not deleted."),
     "segment_osrm_time": ("OSRM-predicted time for this segment alone (minutes).", "2,347 rows are exactly 0 — the routing engine returned nothing for that segment."),
     "segment_osrm_distance": ("OSRM-predicted distance for this segment (km).", "Used for hub-dwell separation in Stage 2."),
@@ -200,9 +200,23 @@ def render_markdown(df: pd.DataFrame, prof: pd.DataFrame, source: Path) -> str:
         "`is_zero_osrm_segment`. Never aggregate the raw column.**\n"
     )
     out.append(
-        f"3. **Facility names have nulls** — `source_name` {src_null}, `destination_name` {dst_null} — "
-        "but the centre *codes* are never null, and every affected code appears with a name on other "
-        "rows. Stage 1 backfills from a code→name map built from the data itself.\n"
+        f"3. **Missing facility names are the literal string `nan`, not empty fields.** "
+        f"`source_name` {src_null} rows, `destination_name` {dst_null}. pandas coerces `nan` to NaN "
+        "on read, so this profile reports them as null — **Spark does not**, and reads them as an "
+        'ordinary three-character string. Left alone that puts a facility in a city called "nan" on '
+        "the India map. Stage 1 converts the sentinel explicitly and counts the conversion.\n"
+    )
+    n_codes = len(
+        set(df.loc[df.source_name.isna(), "source_center"])
+        | set(df.loc[df.destination_name.isna(), "destination_center"])
+    )
+    out.append(
+        f"   Those {src_null + dst_null} missing names belong to just **{n_codes} centre codes**, and "
+        "**none of them carries a name on any row anywhere in the dataset** — verified, not assumed. "
+        "The names are absent from the source and cannot be recovered from it. What *can* be "
+        "recovered is the state: the centre code embeds an Indian PIN (`IND282002AAD` → 282002 → "
+        "Agra, Uttar Pradesh), which Stage 1 uses to fill the state, flagging those rows "
+        "`state_from_pin` so an inferred region is never mistaken for a parsed one.\n"
     )
     out.append(
         "4. **No exact duplicate rows** in the published file. Stage 1 still de-duplicates, to keep "
