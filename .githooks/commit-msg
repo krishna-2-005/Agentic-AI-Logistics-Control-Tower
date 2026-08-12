@@ -1,0 +1,62 @@
+#!/bin/sh
+# commit-msg — enforces the project's commit discipline.
+#
+# Installed by: git config core.hooksPath .githooks
+# Bypass (do not, without a reason you can defend): git commit --no-verify
+#
+# Checks, in order:
+#   1. no AI attribution trailers
+#   2. no banned vague messages
+#   3. no AI-flavoured verbose phrasing
+#   4. subject is lowercase, imperative-ish, and short
+
+msg_file="$1"
+# Strip comment lines before inspecting.
+subject=$(grep -v '^#' "$msg_file" | sed '/^[[:space:]]*$/d' | head -n 1)
+body=$(grep -v '^#' "$msg_file")
+
+fail() {
+  echo "" >&2
+  echo "  commit rejected: $1" >&2
+  echo "  subject was: $subject" >&2
+  shift
+  for line in "$@"; do echo "  $line" >&2; done
+  echo "" >&2
+  exit 1
+}
+
+# ── 1. AI attribution ────────────────────────────────────────────────────────
+if printf '%s' "$body" | grep -qiE 'co-authored-by:.*(claude|copilot|cursor|gpt|anthropic|openai)'; then
+  fail "AI co-author trailer" "Commits are authored by the team member who owns the task."
+fi
+if printf '%s' "$body" | grep -qiE 'generated with|written by (claude|chatgpt|copilot|an ai)|🤖'; then
+  fail "AI attribution line" "Remove it. Authorship is per the task owner."
+fi
+
+# ── 2. banned vague messages ─────────────────────────────────────────────────
+if printf '%s' "$subject" | grep -qiE '^(update|updated code|changes|change|final|final2|asdf|work done|minor fix|commit|pushed files|week[0-9]+ work|[a-z]+ changes)[[:space:]]*$'; then
+  fail "banned vague message (GIT_RULES §7)" \
+       "Say what changed: 'add corridor audit t-test', not 'update'."
+fi
+
+# ── 3. AI-flavoured phrasing ─────────────────────────────────────────────────
+if printf '%s' "$subject" | grep -qiE '\b(comprehensive|robust|extensive|seamless|leverage|utilise|utilize|holistic|cutting-edge|state-of-the-art)\b'; then
+  fail "AI-style wording" \
+       "Write like a developer: 'add evaluation script', not 'add comprehensive evaluation'."
+fi
+
+# ── 4. shape: lowercase, short, single change ────────────────────────────────
+case "$subject" in
+  [A-Z]*) fail "subject must start lowercase" "e.g. 'add dataset loader'";;
+esac
+
+len=$(printf '%s' "$subject" | wc -c)
+if [ "$len" -gt 72 ]; then
+  fail "subject is $len chars (aim ~50, hard limit 72)" "Split it into two commits."
+fi
+
+if printf '%s' "$subject" | grep -qE '\.$'; then
+  fail "subject ends with a period" "Drop it."
+fi
+
+exit 0
