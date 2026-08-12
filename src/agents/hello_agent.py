@@ -134,6 +134,7 @@ def answer_with_llm(state: AgentState) -> AgentState:
     data = json.dumps(state["corridors"], indent=2)
     prompt = ANSWER_PROMPT.format(data=data, question=state["question"])
 
+    reason = "no LLM configured"
     try:
         llm = get_llm(temperature=0.0)
         response = llm.invoke(prompt)
@@ -142,7 +143,15 @@ def answer_with_llm(state: AgentState) -> AgentState:
     except LLMNotConfigured as exc:
         log.warning("No LLM configured (%s) — using the deterministic fallback.", exc)
     except Exception as exc:  # noqa: BLE001 — provider errors vary; the graph must survive
-        log.warning("LLM call failed (%s: %s) — using the deterministic fallback.", type(exc).__name__, exc)
+        # Distinguish "no key" from "key works but the provider refused". Reporting a
+        # rate limit as "not configured" sends whoever reads the trace to the wrong
+        # problem entirely — they go looking for a missing key that is already there.
+        detail = str(exc)
+        if "429" in detail or "RESOURCE_EXHAUSTED" in detail:
+            reason = "provider rate-limited (429)"
+        else:
+            reason = f"provider error: {type(exc).__name__}"
+        log.warning("LLM call failed (%s) — using the deterministic fallback.", reason)
 
     worst = max(state["corridors"], key=lambda c: c["median_gap_ratio"])
     summary = (
@@ -156,7 +165,7 @@ def answer_with_llm(state: AgentState) -> AgentState:
     return {
         "answer": summary,
         "grounded": True,
-        "trace": ["answer_with_llm -> fallback (no LLM configured)"],
+        "trace": [f"answer_with_llm -> fallback ({reason})"],
     }
 
 
