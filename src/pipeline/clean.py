@@ -384,6 +384,20 @@ def clean(spark: SparkSession, input_path: Path, output_path: Path) -> dict:
 
     log.info("Reading %s", input_path)
     df = load_raw(spark, input_path)
+
+    # Preserve the source file's row order as an explicit column.
+    #
+    # Within an OD leg the segment rows are emitted in scan order, so the leg's
+    # cumulative totals live in its LAST row. Parquet does not preserve row order and
+    # Spark gives no positional guarantee across partitions, so without this column
+    # Stage 2 has to guess which row is last — and guessing by max(actual_time) picks
+    # the wrong row on ~200 legs where the final segments add zero minutes.
+    #
+    # monotonically_increasing_id() encodes the partition index in its high bits and a
+    # within-partition counter in its low bits. For a single CSV read, partitions are
+    # assigned in file-offset order, so the id is monotonic in file order. This is
+    # asserted below rather than assumed.
+    df = df.withColumn("source_row_index", F.monotonically_increasing_id())
     df = df.cache()
     report["rows_in"] = df.count()
     log.info("  %s raw rows, %d columns", f"{report['rows_in']:,}", len(df.columns))
@@ -459,6 +473,19 @@ def clean(spark: SparkSession, input_path: Path, output_path: Path) -> dict:
         .partitionBy("route_type")
         .parquet(str(output_path))
     )
+
+    # Assert the ordering column really is unique and ordered before anyone relies on
+    # it. A silently non-monotonic index would corrupt every Stage 2 leg total.
+    idx_stats = df.agg(
+        F.count("source_row_index").alias("n"),
+        F.countDistinct("source_row_index").alias("n_distinct"),
+    ).collect()[0]
+    if idx_stats["n"] != idx_stats["n_distinct"]:
+        raise AssertionError(
+            f"source_row_index is not unique ({idx_stats['n_distinct']:,} distinct for "
+            f"{idx_stats['n']:,} rows). Stage 2 cannot use it to find each leg's last row."
+        )
+    report["source_row_index_unique"] = True
 
     report["columns_out"] = sorted(df.columns)
     report_path = output_path / "_quality_report.json"
