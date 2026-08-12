@@ -163,6 +163,48 @@ claim is only checkable if the prompt that scored 0.71 still exists.
 
 ---
 
+## D-014 · A leg's totals come from its last row by source order — `DECIDED (Lahari to confirm)`
+**Week 2 · Mounika · raised by the Stage 2 validator**
+
+Stage 2 selects each OD leg's cumulative totals from the row with the highest
+**`source_row_index`** — the source file's row order, preserved by Stage 1 — not from
+`max(actual_time)`.
+
+**Why it came up.** Stage 2's first implementation ordered by `max(actual_time)` and
+failed validation against Lahari's Week 1 pandas oracle on 80 legs. Investigating the
+raw file settled it:
+
+- **1,861 legs (7.1%) have a tie on maximum `actual_time`** — their trailing segments
+  add zero minutes — so "the row with the largest `actual_time`" does not identify one
+  row.
+- On every one of those 1,861 legs the tied rows carry **identical `actual_time`** but
+  **different `osrm_time` / `osrm_distance`**, so the choice changes the leg's OSRM
+  numbers while leaving its realised time untouched.
+- Checked against the true final row in file order: on the 80 originally-disputed legs
+  it agreed with the last-row rule **80/80** and with the oracle's rule **0/80**.
+
+**The oracle's rule is the wrong one.** pandas `idxmax()` returns the *first* row
+holding the maximum, which lands earlier than the final scan. Neither `max(actual_time)`
+nor `max(osrm_time)` reproduces file order exactly (127 legs still differed), so Stage 1
+now emits an explicit `source_row_index` and Stage 2 orders by it. The index is asserted
+unique in Stage 1 — with no ties left, the selection is deterministic.
+
+**Impact on results: none at reported precision.** Median gap ratio 2.0000, mean gap
+110.00 min, 98.30% of legs over plan — identical under all three rules. Mean
+`osrm_distance` moves 114.8316 → 114.8247 (0.006%).
+
+**Status.** Stage 2 validates green: every column matches the oracle to floating-point
+precision, with 1,581 legs differing by this tie-break alone, reported separately and
+classified by an exact signature (`actual_time` and `n_segments` identical, a cumulative
+column different). Verified that **0** legs differ with a differing `actual_time` — that
+would be a genuine reconstruction bug.
+
+**Lahari to confirm**, then regenerate `benchmarks/raw/w1_leg_summary.csv` from
+`trips_v1` so the oracle and the pipeline agree exactly and the residual 1,581 goes to
+zero. Her Week 1 headline numbers do not change.
+
+---
+
 ## D-009 · The dashboard reads only cached artefacts — `DECIDED`
 **Week 1 · Krishna + Mounika**
 
