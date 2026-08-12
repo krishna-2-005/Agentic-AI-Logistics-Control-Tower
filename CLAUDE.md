@@ -112,6 +112,23 @@ git config core.hooksPath .githooks      # once per clone, per member
 
 If a hook fires, fix the cause. `--no-verify` needs a reason you can defend out loud.
 
+**Known gap — read this once.** `core.hooksPath` points at a path *inside the working
+tree*, so the hooks only exist on branches that contain `.githooks/`. Check out a
+branch created before this landed and **you are committing unprotected**. Two
+consequences:
+
+- Merge this to `dev` early, so every branch cut from `dev` inherits the hooks.
+- The hooks are a safety net, not the fence. `.env` and `.env.git` are also listed in
+  `.git/info/exclude`, which is local and branch-independent, so they stay ignored even
+  on a branch whose `.gitignore` predates them. Run this once per clone:
+
+  ```bash
+  printf '.env\n.env.git\n' >> .git/info/exclude
+  ```
+
+Verified working: staging `.env.git`, a key-shaped string, or anything under `data/`
+is rejected.
+
 ## 9. Environment
 
 ```bash
