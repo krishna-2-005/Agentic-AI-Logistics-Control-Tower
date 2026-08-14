@@ -42,6 +42,7 @@ from pyspark.sql import functions as F
 from src.common import config
 from src.common.logging_setup import get_logger
 from src.common.spark import get_spark, stop_spark
+from src.pipeline import contracts
 from src.pipeline import schema as sch
 
 log = get_logger("pipeline.clean")
@@ -488,6 +489,7 @@ def clean(spark: SparkSession, input_path: Path, output_path: Path) -> dict:
     report["source_row_index_unique"] = True
 
     report["columns_out"] = sorted(df.columns)
+    report["schema"] = contracts.stamp("clean_v1")
     report_path = output_path / "_quality_report.json"
     report_path.write_text(json.dumps(report, indent=2), encoding="utf-8")
     log.info("Quality report → %s", report_path)

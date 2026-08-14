@@ -47,6 +47,7 @@ from pyspark.sql import functions as F
 from src.common import config
 from src.common.logging_setup import get_logger
 from src.common.spark import get_spark, stop_spark
+from src.pipeline import contracts
 
 log = get_logger("pipeline.reconstruct")
 
@@ -158,6 +159,7 @@ def reconstruct(spark: SparkSession, input_path: Path, output_path: Path) -> dic
         "legs_out": n_legs,
         "trips": legs.select("trip_uuid").distinct().count(),
         "corridors": legs.select("corridor_id").distinct().count(),
+        "schema": contracts.stamp("trips_v1"),
     }
 
     stats = legs.agg(
