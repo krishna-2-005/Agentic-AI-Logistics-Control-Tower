@@ -290,6 +290,121 @@ pipeline instead of silently nulling a column.
 
 ---
 
+## D-015 · Hub friction is measured *within* legs, and ranked on dwell share — `DECIDED (Lahari to confirm the ranking metric)`
+**Week 2 · Mounika · found by running Stage 3**
+
+### The between-leg gap is not dwell
+
+The intuitive hub-dwell measure is the gap between a shipment arriving at hub H on one
+leg and departing on the next: `next.od_start_time − this.od_end_time`. **Stage 3 was
+built on that and the measurement says it does not work.** Over all 11,552 in-trip
+handoffs:
+
+| Handoff kind | n | Non-zero gap | Median gap |
+|---|---|---|---|
+| Trip continues from the **same** centre | 9,987 | **1.4%** | **0 min** |
+| Next leg starts at a **different** centre | 1,565 | **100%** | 90 min |
+
+The publisher closes one leg's OD window at the instant it opens the next, so on a
+continuous handoff there is structurally no gap left to measure. Every non-zero gap is
+a **chain break** — 13.5% of handoffs, where the shipment reappears at a facility it
+never travelled to on any leg in the file. That gap is unobserved movement, not rest.
+
+**Consequence:** the between-leg gap is emitted as `median_unobserved_gap_min` and
+`chain_break_rate`, named for what it actually is. It is a data-quality signal the
+streaming replay (W5) will need — a replayed trip jumps facilities on 13.5% of
+handoffs — and it is **not** the hub dwell number.
+
+The measurable friction is within the leg: `dwell_min = start_scan_to_end_scan −
+actual_time`, the part of a leg's wall clock the shipment was not moving. Median 49
+min. Verified across all 26,369 legs that `start_scan_to_end_scan` equals the OD window
+to the minute and `dwell_min` is never negative.
+
+### Two metrics that disagree, so the choice is explicit
+
+`dwell_min` correlates **0.54** with the leg's wall clock — ranking hubs by raw minutes
+partly ranks them by how long their legs happen to be. The scale-free alternative is
+`dwell_share = dwell_min / start_scan_to_end_scan` (median 0.35: a third of a typical
+leg's clock is stationary). The two rankings agree on only **8 of the top 20**
+supported hubs; rank correlation 0.49.
+
+**Decision: `friction_rank` is assigned on `dwell_share`**, because it compares hubs
+serving short and long corridors on the same basis. Raw minutes stay in the table
+beside it — they are what a customer actually waits, and the report needs both.
+`dwell_share` is mildly *negatively* correlated with leg length (−0.28), which is what
+a roughly fixed per-leg hub cost looks like.
+
+### Attribution and support
+
+A leg's idle minutes cannot be split between its origin and destination from leg-grain
+data. Both ends are credited, reported separately as `*_out` and `*_in`. That split is
+not decoration: across supported hubs the two series correlate only **0.41**, so a hub
+can be slow to dispatch and quick to receive.
+
+**Support threshold: 30 outbound legs**, mirroring D-004 for corridors. That leaves
+**121 of 1,657** facilities ranked. Unsupported hubs keep their statistics and get a
+null `friction_rank`, so nothing is hidden and nothing unreliable is ranked.
+
+**For Lahari:** the ranking metric is yours to confirm for the audit writeup — the
+table carries both, so switching costs a sort, not a re-run.
+
+---
+
+## D-016 · Cached Parquet has a frozen contract, and versions are added, never repointed — `DECIDED`
+**Week 2 · Mounika**
+
+`src/pipeline/contracts.py` freezes the exact column set, per-column Spark type,
+partition columns, key, and row count of `clean_v1`, `trips_v1` and `hubs_v1`.
+`python -m src.pipeline.contracts` verifies the caches against it and exits non-zero
+on any difference.
+
+**Why a column that was *added* is also a breach:** three people read these caches
+concurrently. A contract that tolerates new columns silently is not a contract, and an
+added column means the shape changed — which is exactly what a reader needs told.
+
+**Versioning rule.** When a stage's output changes shape: add `CLEAN_V2` (etc.) to
+`config.py`, add a new `Contract` with `version=2`, and move the stage's default
+`--output`. **Never repoint an existing version.** Teammates' in-flight work keeps
+reading what it was written against, and the check keeps passing for both.
+
+The frozen row counts make this a regression test on the pipeline, not only on its
+column names: the raw CSV is pinned by SHA-256, so identical code over identical input
+must produce identical counts. Verified to catch renamed columns, type drift, dropped
+columns, changed row counts and broken keys — with no false alarm on the real caches,
+and a *skip* rather than a failure for a dataset a teammate has not built yet.
+
+---
+
+## D-017 · The mock TMS validates like a real one, and its facilities are real — `DECIDED`
+**Week 2 · Mounika**
+
+The TMS (`src/tms/`, FastAPI + SQLite) is synthetic scaffolding, declared as such. Two
+choices in it are load-bearing for later weeks:
+
+**Facilities are seeded from the network data**, all 1,657 centre codes from `hubs_v1`,
+carrying each hub's friction rank. So an order the Order Entry Agent files in Week 5
+names a centre that exists in the corridor audit, and the Week 6 Invoice Auditor can
+ask what that corridor should have cost. It falls back to the committed 121-hub CSV so
+a fresh clone gets a working TMS before the caches are built.
+
+**It rejects.** Unknown centre code, origin equal to destination, non-positive weight,
+arrival before departure, a second shipment on one order, a cancelled order being
+reopened — all refused, with the offending value named in the message so the agent's
+clarification path has something to quote. *A stub that always returns 200 would make
+the Week 5 and 6 agent evaluation meaningless: the numbers are only worth reporting if
+the agent could have failed.*
+
+**Idempotency is in the API, not left to the agent.** `POST /orders` with a repeated
+`external_ref` returns the existing order with HTTP 200 and `idempotent_replay: true`.
+An agent reading an inbox *will* retry and mail *will* be redelivered; making each
+agent solve that separately is how a demo ends up with duplicate orders.
+
+Auth is off until `TMS_API_KEY` is set, then required on everything except `/health` —
+the Week 6 boot script waits on `/health` and should not need a key to learn the
+service is up.
+
+---
+
 ## Open items carried into Week 2
 
 | Item | Owner | Blocks |
