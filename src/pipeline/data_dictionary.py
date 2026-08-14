@@ -2,8 +2,13 @@
 
     python -m src.pipeline.data_dictionary
 
-Writes ``docs/W1_lahari_data_dictionary.md`` (the profile) and
+Writes the ``data-dictionary`` section of
+``docs/W1_lahari_data_dictionary_and_eda.md`` (the profile) and
 ``benchmarks/raw/w1_column_profile.csv`` (the same numbers, machine-readable).
+
+The writeup is one document per member per week (GIT_RULES §2), so this script owns a
+delimited section of it rather than the whole file — ``src.ml.eda`` owns the other.
+See ``src.common.docs``.
 
 Deliberately pandas, not Spark: this is a one-shot profile of a 53 MiB file that has
 to be runnable on Day 1 of Week 1, before every member has a JDK installed. Every
@@ -18,10 +23,26 @@ from pathlib import Path
 
 import pandas as pd
 
-from src.common import config
+from src.common import config, docs
 from src.common.logging_setup import get_logger
 
 log = get_logger("pipeline.data_dictionary")
+
+#: Written only when the shared weekly document does not exist yet; both this script
+#: and ``src.ml.eda`` pass it, so whichever runs first creates the same header.
+W1_DOC_HEADER = """# W1 · Lahari — data dictionary and EDA
+
+Week 1 deliverable: a column-by-column profile of the raw Delhivery file, and the
+exploratory analysis that fixes the analysis grain, sizes the planner's error, and
+defines the delay label.
+
+Both sections are generated — regenerate rather than editing numbers by hand:
+
+```bash
+python -m src.pipeline.data_dictionary   # the data-dictionary section
+python -m src.ml.eda                     # the eda section
+```
+"""
 
 # What each column means, and why the project cares. Written by hand — this is the
 # part of the dictionary a profiler cannot generate.
@@ -249,7 +270,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=config.RAW_CSV)
     parser.add_argument(
-        "--out-md", type=Path, default=config.DOCS_DIR / "W1_lahari_data_dictionary.md"
+        "--out-md", type=Path, default=config.DOCS_DIR / "W1_lahari_data_dictionary_and_eda.md"
     )
     parser.add_argument(
         "--out-csv", type=Path, default=config.BENCHMARKS_RAW_DIR / "w1_column_profile.csv"
@@ -270,9 +291,13 @@ def main() -> int:
     prof.to_csv(args.out_csv, index=False)
     log.info("Column profile → %s", args.out_csv)
 
-    args.out_md.parent.mkdir(parents=True, exist_ok=True)
-    args.out_md.write_text(render_markdown(df, prof, args.input), encoding="utf-8")
-    log.info("Data dictionary → %s", args.out_md)
+    docs.write_section(
+        args.out_md,
+        "data-dictionary",
+        render_markdown(df, prof, args.input),
+        header=W1_DOC_HEADER,
+    )
+    log.info("Data dictionary → %s (section: data-dictionary)", args.out_md)
     return 0
 
 
