@@ -200,7 +200,7 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | `src/dashboard/` | Krishna | Streamlit control tower |
 | `src/automation/` | Mounika | auto-retraining loop, alert bot |
 | `src/common/` | shared | config, Spark session, logging, env check |
-| `docs/` | all | one weekly writeup per member + `decisions.md` + `results.md` |
+| `docs/` | all | one weekly writeup per member + `decisions.md` + `problems.md` + `results.md` |
 | `benchmarks/` | all | every number in the report traces to a file here |
 | `demo/` | Krishna | demo script, screenshots, sample events/documents |
 | `notebooks/` | all | exploration only, `w3_lahari_baselines.ipynb` naming |
