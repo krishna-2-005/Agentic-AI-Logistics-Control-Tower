@@ -6,7 +6,7 @@ Writes:
   * ``benchmarks/raw/w1_leg_summary.csv``       — one row per OD leg, the analysis grain
   * ``benchmarks/raw/w1_delay_threshold_sensitivity.csv``
   * ``benchmarks/raw/w1_corridor_support.csv``  — corridor trip counts, for the audit threshold
-  * ``docs/W1_lahari_eda.md``                   — the written findings
+  * the ``eda`` section of ``docs/W1_lahari_data_dictionary_and_eda.md`` — the findings
 
 Two things this script settles for Week 1, both of which every later week depends on:
 
@@ -31,8 +31,9 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from src.common import config
+from src.common import config, docs
 from src.common.logging_setup import get_logger
+from src.pipeline.data_dictionary import W1_DOC_HEADER
 
 log = get_logger("ml.eda")
 
@@ -358,7 +359,9 @@ def render_markdown(legs: pd.DataFrame, sens: pd.DataFrame, support: pd.DataFram
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--input", type=Path, default=config.RAW_CSV)
-    parser.add_argument("--out-md", type=Path, default=config.DOCS_DIR / "W1_lahari_eda.md")
+    parser.add_argument(
+        "--out-md", type=Path, default=config.DOCS_DIR / "W1_lahari_data_dictionary_and_eda.md"
+    )
     args = parser.parse_args()
 
     if not args.input.exists():
@@ -381,8 +384,10 @@ def main() -> int:
     support.to_csv(out_dir / "w1_corridor_support.csv", index=False)
     log.info("  wrote 3 CSVs to %s", out_dir)
 
-    args.out_md.write_text(render_markdown(legs, sens, support), encoding="utf-8")
-    log.info("EDA writeup → %s", args.out_md)
+    docs.write_section(
+        args.out_md, "eda", render_markdown(legs, sens, support), header=W1_DOC_HEADER
+    )
+    log.info("EDA writeup → %s (section: eda)", args.out_md)
 
     gr = legs["gap_ratio"]
     log.info(
