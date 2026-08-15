@@ -32,6 +32,7 @@ RAW_CSV = RAW_DIR / "delhivery_data.csv"
 # changes — teammates' in-flight work keeps reading the version it was built against.
 CLEAN_V1 = PROCESSED_DIR / "clean_v1"
 TRIPS_V1 = PROCESSED_DIR / "trips_v1"
+HUBS_V1 = PROCESSED_DIR / "hubs_v1"
 FEATURES_V1 = PROCESSED_DIR / "features_v1"
 
 # ── Raw dataset facts (asserted by src.common.check_env) ─────────────────────
@@ -50,6 +51,11 @@ DELAY_THRESHOLD = 1.25
 # their gap statistics are too noisy to test. See docs/decisions.md D-004.
 MIN_CORRIDOR_SUPPORT = 30
 
+# Hubs with fewer than this many outbound legs are not ranked on the friction
+# leaderboard, for the same reason. 30 legs leaves 121 of 1,657 facilities — see
+# docs/decisions.md D-015.
+MIN_HUB_SUPPORT = 30
+
 # Route types present in the data.
 ROUTE_TYPES = ("FTL", "Carting")
 
@@ -59,6 +65,9 @@ LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.0-flash")
 
 TMS_BASE_URL = os.getenv("TMS_BASE_URL", "http://localhost:8000")
 TMS_DB_PATH = REPO_ROOT / os.getenv("TMS_DB_PATH", "data/tms.sqlite")
+# Empty means the mock TMS serves unauthenticated. Set it and every endpoint except
+# /health requires an X-API-Key header — see src/tms/app.py.
+TMS_API_KEY = os.getenv("TMS_API_KEY", "")
 
 KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 KAFKA_TOPIC_TRIPS = os.getenv("KAFKA_TOPIC_TRIPS", "delhivery.trips")

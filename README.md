@@ -158,7 +158,26 @@ python -m src.pipeline.clean --input data/raw/delhivery_data.csv --output data/p
 
 Writes partitioned Parquet plus a `_quality_report.json` describing every row dropped and why.
 
-### 5. Explore
+### 5. Build the rest of the batch caches (Stages 2–3)
+
+```bash
+python -m src.pipeline.reconstruct --validate   # 144,867 segments -> 26,369 OD legs
+python -m src.pipeline.hubs                     # 26,369 legs -> 1,657 hubs
+python -m src.pipeline.contracts --keys         # verify all caches against the frozen schema
+```
+
+`--validate` diffs Stage 2 against an independent pandas implementation and exits
+non-zero on failure. `contracts` is the schema gate — see `docs/decisions.md` D-016 for
+the rule on bumping a version rather than repointing one.
+
+### 6. Run the mock TMS
+
+```bash
+python -m src.tms.seed        # 1,657 real centre codes from hubs_v1
+python -m src.tms             # http://localhost:8000/docs
+```
+
+### 7. Explore
 
 ```bash
 python -m src.pipeline.data_dictionary          # column-by-column profile → docs/
@@ -181,10 +200,11 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | `src/dashboard/` | Krishna | Streamlit control tower |
 | `src/automation/` | Mounika | auto-retraining loop, alert bot |
 | `src/common/` | shared | config, Spark session, logging, env check |
-| `docs/` | all | one weekly writeup per member + `decisions.md` + `results.md` |
+| `docs/` | all | one weekly writeup per member + `decisions.md` + `problems.md` + `results.md` |
 | `benchmarks/` | all | every number in the report traces to a file here |
 | `demo/` | Krishna | demo script, screenshots, sample events/documents |
 | `notebooks/` | all | exploration only, `w3_lahari_baselines.ipynb` naming |
+| `tests/` | all | pytest suites for the parts that can be tested without Spark |
 | `data/` | — | **gitignored** |
 
 ---
@@ -211,6 +231,7 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | Result | Value | Source |
 |---|---|---|
 | Corridor audit — significant bottleneck corridors | _pending W2_ | `benchmarks/raw/` |
+| Hub friction — ranked hubs (≥30 outbound legs) | 121 of 1,657; median leg dwell 49 min (34.6% of wall clock) | [`benchmarks/raw/w2_hub_dwell.csv`](benchmarks/raw/w2_hub_dwell.csv) |
 | Best model MAE vs OSRM MAE | _pending W4_ | `benchmarks/ml_results.md` |
 | Sustained streaming throughput | _pending W5_ | `benchmarks/streaming_throughput.md` |
 | Agent evaluation summary | _pending W7_ | `benchmarks/agent_evaluation.md` |
