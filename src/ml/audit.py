@@ -41,6 +41,7 @@ import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from scipy import stats
+from statsmodels.stats.multitest import multipletests
 
 from src.common import config
 from src.common.logging_setup import get_logger
@@ -51,6 +52,10 @@ log = get_logger("ml.audit")
 #: The test statistic. Set once here so the aggregate, the tests and the writeup
 #: cannot drift onto different columns.
 STAT = "log_gap_ratio"
+
+#: Family-wise false-discovery rate for the corridor tests.
+ALPHA = 0.05
+
 
 def load_legs(spark: SparkSession, path: Path) -> DataFrame:
     """Read `trips_v1`, keeping only legs the statistic is defined on.
@@ -206,8 +211,40 @@ def welch_against_network(pdf: pd.DataFrame, baseline: dict) -> pd.DataFrame:
     return out
 
 
+def correct_and_rank(pdf: pd.DataFrame, alpha: float = ALPHA) -> pd.DataFrame:
+    """Benjamini-Hochberg correction, then rank the confirmed bottlenecks.
+
+    99 tests at α = 0.05 expect ~5 false positives by construction, and the whole
+    point of the exercise is a *ranked list of named corridors* that other people will
+    act on — so an uncorrected p-value here would put roughly five invented
+    bottlenecks in a top-20 table. Benjamini-Hochberg rather than Bonferroni: the
+    corridors are not independent (they share hubs and vehicles), FDR is the right
+    error rate for a ranking, and Bonferroni over 99 tests would cost real power for
+    the smaller corridors the audit is least sure about anyway.
+
+    **`bottleneck_rank` is assigned on `excess_ratio`, not on the p-value.** A p-value
+    is a statement about how much evidence there is, and evidence grows with support:
+    ranking on it would put the busiest corridors on top no matter how mild their
+    overrun. Significance decides *who is on the list*; effect size decides the order.
+    """
+    out = pdf.copy()
+    reject, q, _, _ = multipletests(out["p_value"].to_numpy(), alpha=alpha, method="fdr_bh")
+    out["q_value"] = q
+    out["is_significant"] = reject
+    out["direction"] = np.where(out["excess_ratio"] >= 1, "worse", "better")
+
+    bottleneck = out["is_significant"] & (out["direction"] == "worse")
+    out["bottleneck_rank"] = pd.NA
+    out.loc[bottleneck, "bottleneck_rank"] = (
+        out.loc[bottleneck, "excess_ratio"].rank(ascending=False, method="first").astype(int)
+    )
+    return out.sort_values(
+        ["is_significant", "excess_ratio"], ascending=[False, False]
+    ).reset_index(drop=True)
+
+
 def build(
-    spark: SparkSession, input_path: Path, min_support: int
+    spark: SparkSession, input_path: Path, min_support: int, alpha: float = ALPHA
 ) -> tuple[pd.DataFrame, dict]:
     """Run the aggregation, test it, and return (audited corridors, network baseline)."""
     legs = load_legs(spark, input_path).cache()
@@ -234,15 +271,18 @@ def build(
     pdf = to_pandas(agg, min_support)
     legs.unpersist()
 
-    audited = welch_against_network(pdf, baseline).sort_values(
-        "excess_ratio", ascending=False
-    ).reset_index(drop=True)
+    audited = correct_and_rank(welch_against_network(pdf, baseline), alpha)
 
     baseline["corridors_total"] = int(n_corridors)
     baseline["corridors_supported"] = len(audited)
     baseline["legs_covered"] = int(audited["n_legs"].sum())
     baseline["min_support"] = min_support
-    baseline["raw_significant"] = int((audited["p_value"] < 0.05).sum())
+    baseline["alpha"] = alpha
+    baseline["significant"] = int(audited["is_significant"].sum())
+    baseline["bottlenecks"] = int(audited["bottleneck_rank"].notna().sum())
+    baseline["faster_than_network"] = int(
+        (audited["is_significant"] & (audited["direction"] == "better")).sum()
+    )
     return audited, baseline
 
 
@@ -255,6 +295,9 @@ def main() -> int:
         default=config.MIN_CORRIDOR_SUPPORT,
         help="minimum observed legs before a corridor is audited (D-004)",
     )
+    parser.add_argument(
+        "--alpha", type=float, default=ALPHA, help="false-discovery rate for the BH correction"
+    )
     args = parser.parse_args()
 
     if not args.input.exists():
@@ -264,7 +307,7 @@ def main() -> int:
     config.ensure_dirs()
     spark = get_spark("stage3-audit")
     try:
-        corridors, baseline = build(spark, args.input, args.min_support)
+        corridors, baseline = build(spark, args.input, args.min_support, args.alpha)
     finally:
         stop_spark(spark)
 
@@ -279,11 +322,11 @@ def main() -> int:
         baseline["legs_covered"] / baseline["n"] * 100,
     )
     log.info(
-        "%s of %s corridors reach p < 0.05 uncorrected — %s tests, so this needs a "
-        "multiple-comparison correction before anything is ranked.",
-        baseline["raw_significant"],
-        baseline["corridors_supported"],
-        baseline["corridors_supported"],
+        "%s corridors differ from the network at FDR %.2f: %s worse, %s faster.",
+        baseline["significant"],
+        baseline["alpha"],
+        baseline["bottlenecks"],
+        baseline["faster_than_network"],
     )
     return 0
 
