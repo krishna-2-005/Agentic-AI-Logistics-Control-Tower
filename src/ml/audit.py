@@ -36,9 +36,11 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
+import numpy as np
 import pandas as pd
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
+from scipy import stats
 
 from src.common import config
 from src.common.logging_setup import get_logger
@@ -49,7 +51,6 @@ log = get_logger("ml.audit")
 #: The test statistic. Set once here so the aggregate, the tests and the writeup
 #: cannot drift onto different columns.
 STAT = "log_gap_ratio"
-
 
 def load_legs(spark: SparkSession, path: Path) -> DataFrame:
     """Read `trips_v1`, keeping only legs the statistic is defined on.
@@ -145,8 +146,70 @@ def to_pandas(agg: DataFrame, min_support: int) -> pd.DataFrame:
     return pdf
 
 
-def build(spark: SparkSession, input_path: Path, min_support: int) -> tuple[pd.DataFrame, dict]:
-    """Run the aggregation and return (supported corridors, network baseline)."""
+def welch_against_network(pdf: pd.DataFrame, baseline: dict) -> pd.DataFrame:
+    """Welch's t-test of each corridor's `log_gap_ratio` against the rest of the network.
+
+    **The comparison group is the network, not the plan.** Testing a corridor against
+    zero — "is `actual` bigger than `osrm` here?" — would return yes for essentially
+    all 99 corridors, because Week 1 found the planner under-predicts on 98.3% of
+    legs. That result is already known and is not localisable. What the audit needs to
+    know is whether a corridor is worse *than the rest of this same biased network*,
+    which is the comparison made here.
+
+    Welch rather than Student because the two groups are wildly unbalanced (30–151
+    legs against ~26,300) and there is no reason to assume equal variance. The
+    comparison group's mean and variance are recovered by subtracting the corridor's
+    own sums from the network totals, so no corridor is compared against itself.
+
+    Adds, per corridor:
+
+    * `mean_log`, `var_log` — the corridor's own moments;
+    * `rest_mean_log`, `rest_var_log` — the same for every other leg in the network;
+    * `excess_ratio` — `exp(mean_log - rest_mean_log)`, the ratio of this corridor's
+      geometric-mean overrun to the network's. 1.0 means "as bad as everywhere else";
+    * `t_stat`, `dof`, `p_value` (two-sided), `cohens_d`.
+    """
+    n_c = pdf["n_legs"].to_numpy(dtype=float)
+    sum_c = pdf["sum_log"].to_numpy(dtype=float)
+    sumsq_c = pdf["sumsq_log"].to_numpy(dtype=float)
+    mean_c = sum_c / n_c
+    var_c = (sumsq_c - n_c * mean_c**2) / (n_c - 1)
+
+    n_r = baseline["n"] - n_c
+    sum_r = baseline["sum"] - sum_c
+    sumsq_r = baseline["sumsq"] - sumsq_c
+    mean_r = sum_r / n_r
+    var_r = (sumsq_r - n_r * mean_r**2) / (n_r - 1)
+
+    if (var_c < 0).any() or (var_r < 0).any():
+        raise AssertionError(
+            "Negative variance from the sum-of-squares identity — the aggregate and "
+            "the network totals disagree. Do not report these p-values."
+        )
+
+    se_c, se_r = var_c / n_c, var_r / n_r
+    se = np.sqrt(se_c + se_r)
+    t = (mean_c - mean_r) / se
+    dof = (se_c + se_r) ** 2 / (se_c**2 / (n_c - 1) + se_r**2 / (n_r - 1))
+    pooled_sd = np.sqrt(((n_c - 1) * var_c + (n_r - 1) * var_r) / (n_c + n_r - 2))
+
+    out = pdf.copy()
+    out["mean_log"] = mean_c
+    out["var_log"] = var_c
+    out["rest_mean_log"] = mean_r
+    out["rest_var_log"] = var_r
+    out["excess_ratio"] = np.exp(mean_c - mean_r)
+    out["t_stat"] = t
+    out["dof"] = dof
+    out["p_value"] = 2 * stats.t.sf(np.abs(t), dof)
+    out["cohens_d"] = (mean_c - mean_r) / pooled_sd
+    return out
+
+
+def build(
+    spark: SparkSession, input_path: Path, min_support: int
+) -> tuple[pd.DataFrame, dict]:
+    """Run the aggregation, test it, and return (audited corridors, network baseline)."""
     legs = load_legs(spark, input_path).cache()
     n_usable = legs.count()
     n_total = spark.read.parquet(str(input_path)).count()
@@ -169,13 +232,18 @@ def build(spark: SparkSession, input_path: Path, min_support: int) -> tuple[pd.D
     agg = corridor_aggregate(legs)
     n_corridors = agg.count()
     pdf = to_pandas(agg, min_support)
-    baseline["corridors_total"] = int(n_corridors)
-    baseline["corridors_supported"] = len(pdf)
-    baseline["legs_covered"] = int(pdf["n_legs"].sum())
-    baseline["min_support"] = min_support
-
     legs.unpersist()
-    return pdf, baseline
+
+    audited = welch_against_network(pdf, baseline).sort_values(
+        "excess_ratio", ascending=False
+    ).reset_index(drop=True)
+
+    baseline["corridors_total"] = int(n_corridors)
+    baseline["corridors_supported"] = len(audited)
+    baseline["legs_covered"] = int(audited["n_legs"].sum())
+    baseline["min_support"] = min_support
+    baseline["raw_significant"] = int((audited["p_value"] < 0.05).sum())
+    return audited, baseline
 
 
 def main() -> int:
@@ -202,13 +270,20 @@ def main() -> int:
 
     out = config.BENCHMARKS_RAW_DIR / "w2_corridor_audit.csv"
     corridors.to_csv(out, index=False)
-    log.info("Corridor table → %s", out)
+    log.info("Corridor table -> %s", out)
     log.info(
         "%s of %s corridors carry >= %s legs, covering %.1f%% of the network's legs.",
         f"{baseline['corridors_supported']:,}",
         f"{baseline['corridors_total']:,}",
         baseline["min_support"],
         baseline["legs_covered"] / baseline["n"] * 100,
+    )
+    log.info(
+        "%s of %s corridors reach p < 0.05 uncorrected — %s tests, so this needs a "
+        "multiple-comparison correction before anything is ranked.",
+        baseline["raw_significant"],
+        baseline["corridors_supported"],
+        baseline["corridors_supported"],
     )
     return 0
 
