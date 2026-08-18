@@ -1,0 +1,6 @@
+min_support,corridors_tested,pct_of_corridors,legs_covered,pct_of_legs,median_legs_per_corridor,significant,bottlenecks,pct_tests_significant,max_excess_ratio
+10,1130,40.6,20739,78.6,15.0,785,273,69.5,13.88
+20,268,9.6,8796,33.4,25.0,199,78,74.3,4.077
+30,99,3.6,4996,18.9,40.0,70,34,70.7,1.922
+50,33,1.2,2597,9.8,71.0,23,11,69.7,1.54
+100,8,0.3,921,3.5,107.5,7,1,87.5,1.169
