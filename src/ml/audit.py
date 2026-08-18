@@ -327,10 +327,96 @@ def top_bottlenecks(audited: pd.DataFrame, n: int = 20) -> pd.DataFrame:
     return ranked.head(n)[cols].reset_index(drop=True)
 
 
+def hub_ranking(
+    spark: SparkSession, hubs_path: Path, corridors: pd.DataFrame, top_n: int = 20
+) -> tuple[pd.DataFrame, dict]:
+    """Confirm the hub-friction ranking metric against the corridor audit — D-015.
+
+    Stage 3 emits two friction metrics per hub and ranks on `dwell_share`, leaving the
+    choice for this analysis to confirm. Both metrics are internal to the dwell
+    columns, so comparing them to each other settles nothing; the question is which
+    one agrees with a measurement taken from a **different** column.
+
+    The corridor audit is that measurement. `excess_ratio` is built from `actual_time`
+    and `osrm_time`; `dwell_min` is built from `start_scan_to_end_scan − actual_time`.
+    Neither contains the other, so a hub whose friction metric tracks the overrun of
+    the corridors leaving it is measuring something real about the hub.
+
+    Two diagnostics decide it:
+
+    * **friction vs corridor overrun** — Spearman correlation of each metric with the
+      mean `excess_ratio` of the corridors departing that hub. Higher is better.
+    * **friction vs leg length** — the same correlation against the mean *planned*
+      minutes of those corridors, which is the confound D-015 raised. Near zero is
+      better: a metric that mostly ranks hubs by how long their legs happen to be is
+      not measuring friction.
+    """
+    hubs = (
+        spark.read.parquet(str(hubs_path))
+        .filter("has_support")
+        .toPandas()
+        .sort_values("friction_rank")
+        .reset_index(drop=True)
+    )
+
+    by_source = corridors.groupby("source_center").agg(
+        audited_corridors_out=("corridor_id", "size"),
+        mean_excess_ratio_out=("excess_ratio", "mean"),
+        mean_planned_min_out=("mean_osrm_time", "mean"),
+    )
+    joined = hubs.join(by_source, on="centre_code", how="inner")
+
+    def rho(a: str, b: str) -> float:
+        return round(float(stats.spearmanr(joined[a], joined[b]).statistic), 4)
+
+    share_top = set(hubs.nsmallest(top_n, "friction_rank")["centre_code"])
+    minutes_top = set(hubs.nlargest(top_n, "median_dwell_min_out")["centre_code"])
+
+    diagnostics = {
+        "supported_hubs": len(hubs),
+        "hubs_matched_to_audited_corridors": len(joined),
+        "rank_corr_share_vs_minutes": round(
+            float(
+                stats.spearmanr(hubs["median_dwell_share_out"], hubs["median_dwell_min_out"]).statistic
+            ),
+            4,
+        ),
+        "top_n": top_n,
+        "top_n_overlap": len(share_top & minutes_top),
+        "share_vs_corridor_overrun": rho("median_dwell_share_out", "mean_excess_ratio_out"),
+        "minutes_vs_corridor_overrun": rho("median_dwell_min_out", "mean_excess_ratio_out"),
+        "share_vs_planned_leg_length": rho("median_dwell_share_out", "mean_planned_min_out"),
+        "minutes_vs_planned_leg_length": rho("median_dwell_min_out", "mean_planned_min_out"),
+    }
+
+    cols = [
+        "friction_rank",
+        "centre_code",
+        "city",
+        "state",
+        "n_legs_out",
+        "n_corridors_out",
+        "median_dwell_share_out",
+        "median_dwell_min_out",
+        "p90_dwell_min_out",
+        "median_dwell_share_in",
+        "median_dwell_min_in",
+        "median_gap_ratio_out",
+        "chain_break_rate",
+    ]
+    return hubs.head(top_n)[cols].reset_index(drop=True), diagnostics
+
+
 def build(
     spark: SparkSession, input_path: Path, min_support: int, alpha: float = ALPHA
-) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
-    """Run the aggregation, test it, and return (audited corridors, sensitivity, baseline)."""
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
+    """Run the aggregation and the tests.
+
+    Returns `(audited, coverage, sensitivity, baseline)` — `audited` at the decided
+    support threshold, `coverage` the same audit at the loosest threshold on the grid
+    (the evidence for D-004's revisit, and a wide enough set for the hub linkage to
+    correlate on).
+    """
     legs = load_legs(spark, input_path).cache()
     n_usable = legs.count()
     n_total = spark.read.parquet(str(input_path)).count()
@@ -359,6 +445,7 @@ def build(
 
     baseline["corridors_total"] = int(n_corridors)
     audited = audit_at(agg_pdf, baseline, min_support, alpha)
+    coverage = audit_at(agg_pdf, baseline, SUPPORT_GRID[0], alpha)
     sensitivity = support_sensitivity(agg_pdf, baseline, SUPPORT_GRID, alpha)
 
     baseline["corridors_supported"] = len(audited)
@@ -370,12 +457,13 @@ def build(
     baseline["faster_than_network"] = int(
         (audited["is_significant"] & (audited["direction"] == "better")).sum()
     )
-    return audited, sensitivity, baseline
+    return audited, coverage, sensitivity, baseline
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Stage 3 — corridor audit")
     parser.add_argument("--input", type=Path, default=config.TRIPS_V1)
+    parser.add_argument("--hubs", type=Path, default=config.HUBS_V1)
     parser.add_argument(
         "--min-support",
         type=int,
@@ -394,9 +482,10 @@ def main() -> int:
     config.ensure_dirs()
     spark = get_spark("stage3-audit")
     try:
-        corridors, sensitivity, baseline = build(
+        corridors, coverage, sensitivity, baseline = build(
             spark, args.input, args.min_support, args.alpha
         )
+        hubs, hub_diag = hub_ranking(spark, args.hubs, coverage)
     finally:
         stop_spark(spark)
 
@@ -404,8 +493,11 @@ def main() -> int:
     corridors.to_csv(raw / "w2_corridor_audit.csv", index=False)
     top = top_bottlenecks(corridors)
     top.to_csv(raw / "w2_top20_bottlenecks.csv", index=False)
+    coverage.to_csv(raw / f"w2_corridor_audit_support{SUPPORT_GRID[0]}.csv", index=False)
     sensitivity.to_csv(raw / "w2_support_sensitivity.csv", index=False)
-    log.info("Corridor table, top-%s bottlenecks and support sweep -> %s", len(top), raw)
+    hubs.to_csv(raw / "w2_hub_friction_top20.csv", index=False)
+    baseline["hub_metric_check"] = hub_diag
+    log.info("Corridor tables, support sweep and hub leaderboard -> %s", raw)
     log.info(
         "%s of %s corridors carry >= %s legs, covering %.1f%% of the network's legs.",
         f"{baseline['corridors_supported']:,}",
@@ -429,6 +521,13 @@ def main() -> int:
         worst["excess_ratio"],
         f"{int(worst['n_legs']):,}",
         worst["q_value"],
+    )
+    log.info(
+        "Hub metric (D-015): dwell share tracks corridor overrun at rho %.2f vs %.2f "
+        "for raw minutes, over %s hubs.",
+        hub_diag["share_vs_corridor_overrun"],
+        hub_diag["minutes_vs_corridor_overrun"],
+        hub_diag["hubs_matched_to_audited_corridors"],
     )
     return 0
 
