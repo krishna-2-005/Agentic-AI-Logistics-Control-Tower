@@ -56,6 +56,10 @@ STAT = "log_gap_ratio"
 #: Family-wise false-discovery rate for the corridor tests.
 ALPHA = 0.05
 
+#: Support thresholds the audit is re-run at, so D-004's cost is a table rather than
+#: an assertion. 30 is the incumbent.
+SUPPORT_GRID = (10, 20, 30, 50, 100)
+
 
 def load_legs(spark: SparkSession, path: Path) -> DataFrame:
     """Read `trips_v1`, keeping only legs the statistic is defined on.
@@ -243,10 +247,90 @@ def correct_and_rank(pdf: pd.DataFrame, alpha: float = ALPHA) -> pd.DataFrame:
     ).reset_index(drop=True)
 
 
+def audit_at(agg_pdf: pd.DataFrame, baseline: dict, min_support: int, alpha: float) -> pd.DataFrame:
+    """The whole audit at one support threshold.
+
+    The BH correction is re-run inside this function rather than sliced out of a
+    single big correction, because the family of tests *is* the set of corridors that
+    passed the threshold. Correcting over 578 corridors and then filtering to the 99
+    would give the 99 different q-values than testing them alone — a threshold is a
+    decision about what to test, not a filter applied after testing.
+    """
+    kept = agg_pdf[agg_pdf["n_legs"] >= min_support].reset_index(drop=True)
+    return correct_and_rank(welch_against_network(kept, baseline), alpha)
+
+
+def support_sensitivity(
+    agg_pdf: pd.DataFrame, baseline: dict, thresholds: tuple[int, ...], alpha: float
+) -> pd.DataFrame:
+    """What the audit would have said at other support thresholds — D-004's revisit.
+
+    D-004 fixed the minimum at 30 legs in Week 1 *in the abstract*, before any
+    significance test existed, and asked to be revisited once one did. The trade-off
+    is real in both directions: a lower threshold covers far more of the network but
+    tests corridors with too few legs to detect anything, so it can easily find fewer
+    bottlenecks while claiming broader coverage. This table is what that argument
+    should be settled on.
+    """
+    rows = []
+    for t in thresholds:
+        audited = audit_at(agg_pdf, baseline, t, alpha)
+        bottlenecks = audited["bottleneck_rank"].notna()
+        rows.append(
+            {
+                "min_support": t,
+                "corridors_tested": len(audited),
+                "pct_of_corridors": round(len(audited) / baseline["corridors_total"] * 100, 1),
+                "legs_covered": int(audited["n_legs"].sum()),
+                "pct_of_legs": round(audited["n_legs"].sum() / baseline["n"] * 100, 1),
+                "median_legs_per_corridor": float(audited["n_legs"].median()),
+                "significant": int(audited["is_significant"].sum()),
+                "bottlenecks": int(bottlenecks.sum()),
+                "pct_tests_significant": round(audited["is_significant"].mean() * 100, 1),
+                "max_excess_ratio": round(float(audited.loc[bottlenecks, "excess_ratio"].max()), 3)
+                if bottlenecks.any()
+                else None,
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def top_bottlenecks(audited: pd.DataFrame, n: int = 20) -> pd.DataFrame:
+    """The ranked table the report and the India map both read.
+
+    Facility names carry a `Bangalore_Nelmngla_H (Karnataka)` shape; the city columns
+    are used instead so the table is readable and the map can join on them.
+    """
+    cols = [
+        "bottleneck_rank",
+        "corridor_id",
+        "source_city",
+        "dest_city",
+        "source_state",
+        "dest_state",
+        "n_legs",
+        "median_gap_ratio",
+        "excess_ratio",
+        "mean_gap_min",
+        "median_gap_min",
+        "mean_osrm_time",
+        "mean_actual_time",
+        "mean_osrm_km",
+        "mean_dwell_min",
+        "ftl_share",
+        "t_stat",
+        "p_value",
+        "q_value",
+        "cohens_d",
+    ]
+    ranked = audited[audited["bottleneck_rank"].notna()].sort_values("bottleneck_rank")
+    return ranked.head(n)[cols].reset_index(drop=True)
+
+
 def build(
     spark: SparkSession, input_path: Path, min_support: int, alpha: float = ALPHA
-) -> tuple[pd.DataFrame, dict]:
-    """Run the aggregation, test it, and return (audited corridors, network baseline)."""
+) -> tuple[pd.DataFrame, pd.DataFrame, dict]:
+    """Run the aggregation, test it, and return (audited corridors, sensitivity, baseline)."""
     legs = load_legs(spark, input_path).cache()
     n_usable = legs.count()
     n_total = spark.read.parquet(str(input_path)).count()
@@ -268,12 +352,15 @@ def build(
 
     agg = corridor_aggregate(legs)
     n_corridors = agg.count()
-    pdf = to_pandas(agg, min_support)
+    # Collected once at the loosest threshold the sensitivity table asks about, so the
+    # threshold sweep is a filter on the driver rather than five more Spark jobs.
+    agg_pdf = to_pandas(agg, min(SUPPORT_GRID + (min_support,)))
     legs.unpersist()
 
-    audited = correct_and_rank(welch_against_network(pdf, baseline), alpha)
-
     baseline["corridors_total"] = int(n_corridors)
+    audited = audit_at(agg_pdf, baseline, min_support, alpha)
+    sensitivity = support_sensitivity(agg_pdf, baseline, SUPPORT_GRID, alpha)
+
     baseline["corridors_supported"] = len(audited)
     baseline["legs_covered"] = int(audited["n_legs"].sum())
     baseline["min_support"] = min_support
@@ -283,7 +370,7 @@ def build(
     baseline["faster_than_network"] = int(
         (audited["is_significant"] & (audited["direction"] == "better")).sum()
     )
-    return audited, baseline
+    return audited, sensitivity, baseline
 
 
 def main() -> int:
@@ -307,13 +394,18 @@ def main() -> int:
     config.ensure_dirs()
     spark = get_spark("stage3-audit")
     try:
-        corridors, baseline = build(spark, args.input, args.min_support, args.alpha)
+        corridors, sensitivity, baseline = build(
+            spark, args.input, args.min_support, args.alpha
+        )
     finally:
         stop_spark(spark)
 
-    out = config.BENCHMARKS_RAW_DIR / "w2_corridor_audit.csv"
-    corridors.to_csv(out, index=False)
-    log.info("Corridor table -> %s", out)
+    raw = config.BENCHMARKS_RAW_DIR
+    corridors.to_csv(raw / "w2_corridor_audit.csv", index=False)
+    top = top_bottlenecks(corridors)
+    top.to_csv(raw / "w2_top20_bottlenecks.csv", index=False)
+    sensitivity.to_csv(raw / "w2_support_sensitivity.csv", index=False)
+    log.info("Corridor table, top-%s bottlenecks and support sweep -> %s", len(top), raw)
     log.info(
         "%s of %s corridors carry >= %s legs, covering %.1f%% of the network's legs.",
         f"{baseline['corridors_supported']:,}",
@@ -327,6 +419,16 @@ def main() -> int:
         baseline["alpha"],
         baseline["bottlenecks"],
         baseline["faster_than_network"],
+    )
+    worst = top.iloc[0]
+    log.info(
+        "Worst corridor: %s -> %s, %.2fx the network's typical overrun over %s legs "
+        "(q = %.2g).",
+        worst["source_city"],
+        worst["dest_city"],
+        worst["excess_ratio"],
+        f"{int(worst['n_legs']):,}",
+        worst["q_value"],
     )
     return 0
 
