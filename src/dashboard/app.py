@@ -14,6 +14,7 @@ rule is what keeps it responsive during the live demo.
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 
 import numpy as np
@@ -56,10 +57,17 @@ def load_city_coords() -> pd.DataFrame:
 
 
 def city_of(facility_name: object) -> str | None:
-    """`Anand_VUNagar_DC (Gujarat)` → `Anand`."""
+    """`Anand_VUNagar_DC (Gujarat)` → `Anand`, `Mumbai Hub (Maharashtra)` → `Mumbai`.
+
+    Two naming shapes occur and only the first was handled originally. Most rows are
+    `City_Facility_Type (State)`, but 9 facilities separate the city with a space
+    instead — those came through as null cities in the Week 2 audit and would have
+    been silently missing dots here. Splitting on either separator covers both.
+    """
     if not isinstance(facility_name, str) or not facility_name:
         return None
-    return facility_name.split("_")[0].strip()
+    head = facility_name.split("(")[0]          # drop the trailing "(State)"
+    return re.split(r"[_\s]", head.strip(), maxsplit=1)[0].strip() or None
 
 
 def coverage_report(names: pd.Series) -> tuple[int, int, list[str]]:
