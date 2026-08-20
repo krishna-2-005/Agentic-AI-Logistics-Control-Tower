@@ -499,7 +499,8 @@ elif page == "Hub friction":
         )
 
         c1, c2, c3 = st.columns(3)
-        c1.metric("Hubs ranked", f"{len(ranked)} of {len(hubs):,}", help="≥30 outbound legs")
+        # the CSV carries only the ranked hubs, so "N of len(hubs)" would read "121 of 121"
+        c1.metric("Hubs ranked", f"{len(ranked)}", help="Facilities with ≥30 outbound legs (D-015)")
         c2.metric("Median dwell share", f"{ranked['median_dwell_share_out'].median():.0%}")
         c3.metric("Worst hub", f"{ranked['median_dwell_share_out'].max():.0%}")
 
