@@ -230,7 +230,7 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 
 | Result | Value | Source |
 |---|---|---|
-| Corridor audit — significant bottleneck corridors | _pending W2_ | `benchmarks/raw/` |
+| Corridor audit — significant bottleneck corridors | 34 slower and 36 faster of 99 tested corridors (FDR 0.05); worst runs 1.92× the network's typical overrun | [`benchmarks/raw/w2_top20_bottlenecks.csv`](benchmarks/raw/w2_top20_bottlenecks.csv) |
 | Hub friction — ranked hubs (≥30 outbound legs) | 121 of 1,657; median leg dwell 49 min (34.6% of wall clock) | [`benchmarks/raw/w2_hub_dwell.csv`](benchmarks/raw/w2_hub_dwell.csv) |
 | Best model MAE vs OSRM MAE | _pending W4_ | `benchmarks/ml_results.md` |
 | Sustained streaming throughput | _pending W5_ | `benchmarks/streaming_throughput.md` |
