@@ -118,13 +118,80 @@ Two things the page is careful to keep visible:
 
 ---
 
-## 4. What's next
+## 4. Synthetic-document templates — the layouts to model on (W2 D5)
+
+Week 6's Invoice Auditor and Document Intake agents read synthetic paperwork. The
+research task was to find real layouts to model those templates on rather than invent
+plausible-looking forms, because a template invented from scratch teaches the agent to
+parse a document that does not exist.
+
+**The first finding is that the obvious reference is the wrong country.** Most
+"bill of lading template" material online is the US **VICS BOL** — a standardised form
+carrying a 17-digit BOL number built from the shipper's UCC code, NMFC freight class and
+subcode, PO number and carrier PRO number. The Delhivery network this project is built
+on is Indian, and Indian road freight does not use it. Modelling our templates on VICS
+would give the agents US freight-class fields that never appear beside an Indian
+corridor.
+
+The three documents that actually move with an Indian road consignment:
+
+| Document | Governed by | The fields that must be on it |
+|---|---|---|
+| **Consignment note / Lorry Receipt (LR)** | Rule 4B, Service Tax Rules 1994 — still the working definition under GST | serial number, consignor and consignee names, **registration number of the goods carriage**, details of the goods, place of origin and destination, who pays the tax |
+| **E-way bill (GST EWB-01)** | CGST Rules — Part A + Part B | *Part A:* supplier and recipient GSTIN, invoice/challan number and date, consignment value, HSN code, pick-up and delivery addresses. *Part B:* mode of transport, **vehicle registration number**, and the transport document number — which is the LR number above |
+| **GST tax invoice** | Rule 46, CGST Rules 2017 — 16 mandatory particulars | supplier name/address/GSTIN, serial number (≤16 chars), date, recipient details and GSTIN, HSN/SAC, description, quantity, taxable value, CGST/SGST/IGST split, place of supply, reverse-charge flag, signature, and an IRN + QR code where Rule 48(4) e-invoicing applies |
+
+**These three interlock, and that is the point for the agents.** The e-way bill's Part B
+carries the LR number; its Part A carries the invoice number. So a consignment has a
+three-document chain keyed on two identifiers, and an auditor agent's real job is
+cross-document consistency — does the invoice number on the e-way bill match the invoice,
+does the LR number match the consignment note — not single-document field extraction.
+A template set that generates the three independently would make that job impossible to
+evaluate, so they have to be generated together from one consignment record.
+
+### What the project can already fill in
+
+Most of a template's fields are already in the mock TMS or the audit tables, which means
+the synthetic documents can be *derived* rather than fabricated:
+
+| Document field | Where it comes from |
+|---|---|
+| consignor / consignee, origin & destination | `Order.origin_centre` / `dest_centre` → `Facility.name`, `city`, `state` |
+| serial / document number | `Order.order_ref`, `Shipment.shipment_ref` |
+| goods details | `Order.pieces`, `weight_kg` |
+| mode of transport, carriage | `Order.route_type` (FTL / Carting) |
+| place of origin and destination | `Shipment.corridor_id` — the centre pair (D-002) |
+| planned vs actual timings | `Shipment.planned_departure` / `planned_arrival`, and the audit's `mean_osrm_time` per corridor |
+
+**What has to be synthesised, and declared as scaffolding:** GSTIN numbers, HSN/SAC
+codes, vehicle registration numbers, tax splits and consignment values. None of these
+exist in the Delhivery data. They are the fields an Invoice Auditor would most want to
+check, so they cannot be omitted — but the README's "honest scope" line has to cover
+them explicitly, the same way it already declares the agents operate on synthetic
+documents over a real network.
+
+**The one field that makes the Invoice Auditor worth building** is billed transit time
+against `mean_actual_time` for the corridor, which Lahari's `w2_corridor_audit.csv`
+already carries. That is a check made against measured history rather than against a
+number invented for the demo, and it is the reason to key the templates on real
+corridors instead of random centre pairs.
+
+### Open for Week 6
+
+Layouts are chosen; the templates themselves are not written — that is Week 6 work, not
+Week 2. Two decisions want raising at the sync before then: whether the synthetic GSTINs
+should be structurally valid (state code + PAN + check digit) or obviously fake, and
+whether the document set generates one consignment chain per shipment or deliberately
+seeds mismatches for the auditor to find.
+
+---
+
+## 5. What's next
 
 - **D-018 changes this map.** If the support floor moves from 30 legs to 10, the audited
   set goes from 99 corridors to 1,130 and the worst effect size from 1.92× to 13.9×. The
   bubble sizes and the colour bins are both computed from whatever is in the CSV, so the
   page follows the decision without an edit — but the top of the ramp will need a look,
   since a 13.9× corridor and a 1.5× corridor would currently share the darkest bin.
-- **Synthetic-document templates (W2 D5)** — still open, tracked in `problems.md`.
 - **Week 4** fills the "Delay predictor" page; **Week 5** fills "Live alerts". Both are
   still the standing pending panel.
