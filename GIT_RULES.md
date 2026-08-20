@@ -37,25 +37,35 @@ agentic-logistics-control-tower/
 
 ## 2. `docs/` — week-wise documentation
 
-One markdown file per member per week, numbered for ordering:
+**Exactly one markdown file per member per week** — named `W<N>_<name>_<main task>.md`, numbered for
+ordering:
 
 ```
 docs/
 ├── W1_krishna_agent_env_setup.md
-├── W1_lahari_data_dictionary.md
+├── W1_lahari_data_dictionary_and_eda.md
 ├── W1_mounika_repo_and_cleaning.md
 ├── W2_krishna_india_map.md
 ├── W2_lahari_corridor_audit.md
-├── W2_mounika_trip_reconstruction.md
+├── W2_mounika_reconstruction_hubs_and_tms.md
 ├── …
 ├── W8_*
 ├── decisions.md               # running log from weekly syncs
+├── problems.md                # what went wrong, why, and how it was fixed
 └── results.md                 # frozen numbers (Lahari owns)
 ```
 
 Each weekly doc is short (half a page is fine) and answers: **what I built, how to run it, what the
 numbers/outputs are, what's next.** Written *before* opening your weekly PR — the PR is not
 reviewable without it.
+
+**A week's work goes in one file even when several tasks or several scripts produced it.** If two
+generators write into the same weekly doc, each owns a delimited section via `src/common/docs.py`
+rather than its own file — that is what re-split Lahari's Week 1 doc in two before it was fixed.
+Same rule for branches (§5): one per member per week, side fixes included.
+
+`problems.md` is everyone's. Add an entry the day you lose time to something, while you still
+remember what you tried — symptom, cause, fix, what it cost.
 
 ---
 
