@@ -21,6 +21,7 @@ from pathlib import Path
 import folium
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
 from streamlit_folium import st_folium
 
@@ -232,6 +233,68 @@ def severity_map(corridors: pd.DataFrame) -> folium.Map:
     return m
 
 
+# ── Hub friction ─────────────────────────────────────────────────────────────
+# One measure, one hue — a leaderboard compares magnitude within a single series, so
+# there is nothing for a second colour to mean and no legend to carry. Bars are direct-
+# labelled instead of carrying a value axis, and the axis lines stay recessive.
+INK_PRIMARY, INK_MUTED, SURFACE = "#0b0b0b", "#52514e", "#fcfcfb"
+BAR_HUE = "#2a78d6"
+
+
+def hub_bars(top: pd.DataFrame, col: str) -> go.Figure:
+    """Horizontal bars for the ranked hubs, labelled at the end of each bar."""
+    is_share = col.endswith("share_out")
+    # `IND400072AAD` -> `Mumbai · 400072AAD`: several facilities share a city, so the
+    # city alone would put two identical rows on the chart. The PIN carries the
+    # distinction in a form a reader can place; the `IND` prefix is constant noise.
+    labels = [
+        f"{c} · {code[3:]}" if c else code
+        for code, c in zip(top["centre_code"], top["city"].fillna(""), strict=True)
+    ]
+    text = [f"{v:.0%}" if is_share else f"{v:,.0f} min" for v in top[col]]
+
+    fig = go.Figure(
+        go.Bar(
+            x=top[col],
+            y=labels,
+            orientation="h",
+            marker={"color": BAR_HUE, "line": {"width": 0}},
+            text=text,
+            textposition="outside",
+            textfont={"color": INK_PRIMARY, "size": 12},
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                + ("dwell share %{x:.0%}" if is_share else "dwell %{x:,.0f} min")
+                + "<extra></extra>"
+            ),
+            cliponaxis=False,
+        )
+    )
+    fig.update_layout(
+        height=28 * len(top) + 90,
+        margin={"l": 210, "r": 72, "t": 8, "b": 34},
+        paper_bgcolor=SURFACE,
+        plot_bgcolor=SURFACE,
+        bargap=0.45,
+        showlegend=False,
+        xaxis={
+            "showgrid": True,
+            "gridcolor": "#eceae4",
+            "zeroline": False,
+            "tickformat": ".0%" if is_share else ",",
+            "tickfont": {"color": INK_MUTED, "size": 11},
+            "title": {
+                "text": "median share of a leg's wall clock spent stationary"
+                if is_share
+                else "median dwell minutes per outbound leg",
+                "font": {"color": INK_MUTED, "size": 11},
+            },
+        },
+        yaxis={"showgrid": False, "tickfont": {"color": INK_PRIMARY, "size": 11}},
+    )
+    return fig
+
+
 def pending(week: str, owner: str, what: str) -> None:
     """Uniform 'not built yet' panel. Honest beats a fake chart."""
     st.info(f"**Not built yet — {week}, {owner}.**\n\n{what}")
@@ -416,14 +479,94 @@ elif page == "India map":
             st.dataframe(load_city_coords(), use_container_width=True, hide_index=True)
 
 elif page == "Hub friction":
-    st.title("Hub friction")
-    pending(
-        "Week 2",
-        "Mounika",
-        "Dwell time between segments, ranked per hub. Week 1 already established that "
-        "`start_scan_to_end_scan − actual_time` is dwell (median ~49 min per leg), so "
-        "this needs no new columns — only the Spark reconstruction.",
-    )
+    st.title("Hub friction — where shipments sit still")
+    hubs = load_csv(config.BENCHMARKS_RAW_DIR / "w2_hub_dwell.csv")
+
+    if hubs is None:
+        pending(
+            "Week 2",
+            "Mounika",
+            "Run `python -m src.pipeline.hubs` to build "
+            "`benchmarks/raw/w2_hub_dwell.csv`, then reload.",
+        )
+    else:
+        ranked = hubs[hubs["friction_rank"].notna()]
+        st.caption(
+            "Dwell is measured **inside** a leg — `start_scan_to_end_scan − actual_time`, "
+            "the part of a leg's wall clock the shipment was not moving (D-015). The gap "
+            "*between* legs is not dwell: the publisher closes one leg's window as it opens "
+            "the next, so on a continuous handoff there is structurally nothing to measure."
+        )
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Hubs ranked", f"{len(ranked)} of {len(hubs):,}", help="≥30 outbound legs")
+        c2.metric("Median dwell share", f"{ranked['median_dwell_share_out'].median():.0%}")
+        c3.metric("Worst hub", f"{ranked['median_dwell_share_out'].max():.0%}")
+
+        metric = st.radio(
+            "Rank by",
+            ["Dwell share (D-015)", "Raw dwell minutes"],
+            horizontal=True,
+            help="The two rankings disagree. Switching shows how much.",
+        )
+        col = ("median_dwell_share_out" if metric.startswith("Dwell share")
+               else "median_dwell_min_out")
+        top = ranked.nlargest(20, col).iloc[::-1]
+        st.plotly_chart(hub_bars(top, col), use_container_width=True)
+
+        share_top = set(ranked.nlargest(20, "median_dwell_share_out")["centre_code"])
+        min_top = set(ranked.nlargest(20, "median_dwell_min_out")["centre_code"])
+        rho = ranked["median_dwell_share_out"].corr(
+            ranked["median_dwell_min_out"], method="spearman"
+        )
+        st.info(
+            f"**Why share, not minutes (D-015).** The two rankings share only "
+            f"**{len(share_top & min_top)} of their top 20** hubs (Spearman {rho:.2f}) — flip "
+            "the toggle and most of the leaderboard changes. Lahari's audit settled it against "
+            "a column neither metric is built from: raw minutes correlate **+0.55** with how "
+            "long a hub's legs are *planned* to take, so a leaderboard on minutes would "
+            "substantially rank hubs by the length of the legs they happen to serve. Dwell "
+            "share runs **−0.30** against the same column."
+        )
+
+        st.subheader("Dispatch is not receipt")
+        both = ranked[["median_dwell_share_out", "median_dwell_share_in"]].dropna()
+        st.caption(
+            f"A leg's idle minutes cannot be split between its two ends from leg-grain data, "
+            f"so both ends are credited and reported separately. Across ranked hubs the two "
+            f"series correlate only **{both.corr(method='spearman').iloc[0, 1]:.2f}** — a hub "
+            "can be slow to dispatch and quick to receive, and one number would hide that."
+        )
+
+        cols = [
+            "friction_rank", "centre_code", "city", "state", "n_legs_out",
+            "median_dwell_share_out", "median_dwell_min_out", "p90_dwell_min_out",
+            "median_dwell_share_in", "chain_break_rate",
+        ]
+        st.dataframe(
+            ranked.sort_values("friction_rank")[cols],
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "friction_rank": st.column_config.NumberColumn("#", format="%d"),
+                "median_dwell_share_out": st.column_config.ProgressColumn(
+                    "Dwell share (out)", format="%.0f%%", min_value=0, max_value=1
+                ),
+                "median_dwell_share_in": st.column_config.NumberColumn(
+                    "Dwell share (in)", format="%.2f"
+                ),
+                "chain_break_rate": st.column_config.NumberColumn(
+                    "Chain breaks", format="%.2f",
+                    help="Share of handoffs where the shipment reappears at a facility it "
+                         "never travelled to — a data-quality signal, not dwell (D-015).",
+                ),
+            },
+        )
+        st.caption(
+            "**Hub friction is not corridor friction.** Neither dwell metric tracks the "
+            "overrun of the corridors leaving the hub (−0.05 and −0.00 against "
+            "`excess_ratio`). The India map and this leaderboard are two separate claims."
+        )
 
 elif page == "Delay predictor":
     st.title("What-if delay predictor")
