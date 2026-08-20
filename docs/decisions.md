@@ -82,7 +82,7 @@ Evidence: `docs/W1_lahari_eda.md` §3, `benchmarks/raw/w1_delay_threshold_sensit
 
 ---
 
-## D-004 · Minimum corridor support for the audit — `DECIDED (revisit at W2)`
+## D-004 · Minimum corridor support for the audit — `DECIDED (revisited at W2 — see D-018)`
 **Week 1 · Lahari**
 
 Corridors with fewer than **30 observed legs** are excluded from the Stage 3 audit.
@@ -96,8 +96,19 @@ worth reporting.
 not about the whole of it, and the report must say exactly that.** A threshold of 10
 legs would retain 40.6% of corridors and 78.6% of legs with weaker per-corridor tests.
 
-**Revisit at the Week 2 gate** once the significance tests exist and the
-power/coverage trade-off can be judged on results rather than in the abstract.
+**Revisited at the Week 2 gate, on results.** The audit was re-run end to end at each
+threshold — aggregate, Welch, and a fresh BH correction over whatever family the
+threshold defines — and the trade-off is not the one this entry assumed. The share of
+tests that come back significant barely moves between 10 and 30 legs (70% against 71%),
+so the looser threshold is not buying significance with noise; what the 30-leg floor
+costs is the finding itself. The worst corridor at 30 legs runs 1.92× the network's
+typical overrun, at 10 legs it runs 13.9×. The genuinely broken corridors are mostly
+rare corridors, and the floor removes them before the test runs.
+
+`MIN_CORRIDOR_SUPPORT` stays at 30 until the team agrees the change — see **D-018**.
+
+Evidence: `docs/W2_lahari_corridor_audit.md` §4,
+`benchmarks/raw/w2_support_sensitivity.csv`.
 
 ---
 
@@ -290,7 +301,7 @@ pipeline instead of silently nulling a column.
 
 ---
 
-## D-015 · Hub friction is measured *within* legs, and ranked on dwell share — `DECIDED (Lahari to confirm the ranking metric)`
+## D-015 · Hub friction is measured *within* legs, and ranked on dwell share — `DECIDED (ranking metric confirmed at W2)`
 **Week 2 · Mounika · found by running Stage 3**
 
 ### The between-leg gap is not dwell
@@ -345,8 +356,26 @@ can be slow to dispatch and quick to receive.
 **121 of 1,657** facilities ranked. Unsupported hubs keep their statistics and get a
 null `friction_rank`, so nothing is hidden and nothing unreliable is ranked.
 
-**For Lahari:** the ranking metric is yours to confirm for the audit writeup — the
-table carries both, so switching costs a sort, not a re-run.
+### Confirmed in the Week 2 audit — Lahari
+
+`dwell_share` stands. The confirmation is not a re-argument of the reasoning above: the
+two metrics were scored against a column **neither of them is built from**, the corridor
+audit's `excess_ratio`, over the 119 supported hubs that appear as an origin in the
+audited set. Raw `dwell_min` correlates **+0.55** with how long a hub's legs are
+*planned* to take, so a leaderboard on minutes would substantially be a leaderboard of
+hubs serving long legs — this entry's suspected confound, now measured from outside
+rather than argued. `dwell_share` runs **−0.30** against the same column.
+
+**A second result that was not expected here: hub friction is not corridor friction.**
+Neither metric tracks the overrun of the corridors leaving the hub (−0.05 for share,
+−0.00 for minutes). Idle time at a facility and the planner being wrong about the road
+between facilities are close to independent on this network, so the India map and the
+hub leaderboard are two separate claims and must not be presented as one, and Week 3
+should carry hub friction as its own feature rather than assume corridor history
+already contains it.
+
+Evidence: `docs/W2_lahari_corridor_audit.md` (hub-ranking section),
+`benchmarks/raw/w2_audit_report.json` → `hub_metric_check`.
 
 ---
 
@@ -405,12 +434,50 @@ service is up.
 
 ---
 
+## D-018 · Lower the audited-corridor support floor to 10 legs — `OPEN` ⚠
+**Week 2 · raised by Lahari · blocks the Week 2 headline and Krishna's India map**
+
+D-004's 30-leg floor was set in the abstract, before any significance test existed. Now
+that one does, the whole audit re-run at each threshold says the floor is not trading
+power for coverage — it is removing the bottlenecks.
+
+| Min legs | Corridors tested | % of legs covered | % of tests significant | Bottlenecks | Worst excess ratio |
+|---|---|---|---|---|---|
+| **10** (recommended) | 1,130 | **78.6%** | 70% | 273 | **13.9×** |
+| 20 | 268 | 33.4% | 74% | 78 | 4.08× |
+| **30** (D-004, current) | 99 | **18.9%** | 71% | 34 | **1.92×** |
+| 50 | 33 | 9.8% | 70% | 11 | 1.54× |
+| 100 | 8 | 3.5% | 88% | 1 | 1.17× |
+
+**Recommendation: move the audited set to 10 legs, and print the leg count in every
+ranked row.** Welch is valid at n = 10, the comparison group is the whole 26,369-leg
+network either way, and the significant share barely moves — so the extra corridors are
+not noise passing a weaker test. What they are is the finding: at 30 legs the audit
+speaks for 18.9% of the network and its worst corridor runs 1.92× the network's typical
+overrun; at 10 it speaks for 78.6% and the worst runs 13.9×.
+
+**The one real cost, stated so the sync can weigh it.** Winner's curse at the top: with
+1,130 corridors tested, the single largest `excess_ratio` is the likeliest of all of
+them to be a lucky sample, so the first few rows of the loose table are provisional in
+a way the 30-leg table's are not. The leg count in every row is what lets a reader see
+that; a top-20 map built off the loose table should carry it too.
+
+**Until this is decided,** `config.MIN_CORRIDOR_SUPPORT` holds 30, the same way D-003
+leaves `DELAY_THRESHOLD` alone. Both tables are already written —
+`benchmarks/raw/w2_corridor_audit.csv` at 30 and `w2_corridor_audit_support10.csv` at
+10 — so the decision costs a re-read, not a re-run.
+
+Evidence: `docs/W2_lahari_corridor_audit.md` §4,
+`benchmarks/raw/w2_support_sensitivity.csv`.
+
+---
+
 ## Open items carried into Week 2
 
 | Item | Owner | Blocks |
 |---|---|---|
 | **D-003** — delay threshold / regression-first framing | Lahari | Week 3 features, Week 4 models |
-| D-004 revisit — support vs coverage, on real test results | Lahari | Week 2 audit writeup |
-| City-name normalisation table for the India map (`Bangalore`/`Bengaluru`, `MAA`, `FBD`) | Krishna | Week 2 map |
+| **D-018** — support floor at 10 vs 30 legs (closes the D-004 revisit) | Lahari | Week 2 headline, Krishna's India map |
+| City-name normalisation table for the India map (`Bangalore`/`Bengaluru`, `MAA`, `FBD`), plus the 19 null city fields the audit hit on `Mumbai Hub (Maharashtra)`-shaped names | Krishna | Week 2 map |
 | JDK 17 + winutils on Lahari's and Krishna's machines (D-012) | all | their local Spark runs |
 | Second LLM key in `.env` so `with_fallback` has somewhere to fall | Krishna | Week 7 eval runs |
