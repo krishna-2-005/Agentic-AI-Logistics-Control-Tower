@@ -140,7 +140,23 @@ claims and must not be presented as one.
   1.92×. Every number above moves if the team takes the recommendation.
 - **D-003 open** — the delay threshold still labels 93.6% of legs delayed.
 
-Tag `audit-v1` once the India map lands and Gate 2 is met.
+### Gate 2 — met
+
+The India map and the hub-friction leaderboard are on the dashboard, both reading the
+cached CSVs above rather than running Spark (D-009). Two things the map changed about
+how this section should be read:
+
+- **All 99 audited corridors place on the map.** The 19 null city fields reported above
+  were one parser bug rather than missing data — a facility named
+  `Mumbai Hub (Maharashtra)` separates its city with a space, not `_` — and 11 alias
+  rows cover `AMD` / `Amdavad` / `GGN` (P-21).
+- **The bottlenecks are not routes, they are places.** 19 of the 34 begin and end in the
+  same city and the median one spans 0 km, so the planned corridors-as-lines map drew
+  the network's worst corridors as marks of zero length. The page maps cities instead
+  (P-20). It is the same short-haul-and-urban caveat as above, arriving from the other
+  direction.
+
+Tagged `audit-v1` and `week2-complete`.
 
 ## Week 3 — baselines
 
