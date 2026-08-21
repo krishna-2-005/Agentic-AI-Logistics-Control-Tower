@@ -12,6 +12,7 @@ Dataset/
 # ── Secrets ──
 .env
 .env.local
+.env.git
 *.key
 credentials.json
 service_account*.json

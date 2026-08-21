@@ -214,6 +214,46 @@ checking a number, never by reading the file.
 
 ---
 
+### P-20 · A map of the worst corridors that could not show the worst corridors
+**Week 2 · Krishna · resolved**
+
+- **Symptom.** The India map was built to plan — corridors as great-circle lines
+  coloured by delay severity — and rendered a mostly empty map of India whose only
+  visible lines were the long *fast* corridors.
+- **Cause.** 19 of the 34 bottlenecks start and end in the same city and 33 of 34 span
+  under 50 km; the median span is **0 km**. As lines at national zoom the worst
+  corridors in the network are marks of zero length. Lahari's audit had already said
+  the table was short-haul and urban — the form contradicted a finding that was
+  already written down.
+- **Fix.** Map cities, not routes: audited corridors roll up to the city they leave
+  from, bubble size is corridor count, colour is the worst effect size, and a line is
+  drawn only for corridors that genuinely cross a distance.
+- **Cost.** ~45 minutes and one rebuild. Cheap because it was caught by rendering the
+  thing and looking at it, which is worth doing before any chart is called done.
+
+---
+
+### P-21 · 27 of 99 audited corridors were silently missing from the map
+**Week 2 · Krishna · resolved**
+
+- **Symptom.** Only 72 of the 99 audited corridors could be placed on the map. Nothing
+  errored — an unplaceable corridor is simply a dot that never appears.
+- **Cause.** Two failures behind one symptom. Ahmedabad is written `AMD`, `Amd` and
+  `Amdavad`, and Gurugram `GGN`, none of which were in the coordinate table. Separately,
+  `city_of()` split facility names on `_` only, so the nine facilities named
+  `Mumbai Hub (Maharashtra)` — city separated by a space — returned the whole string.
+  Those nine are the same rows Lahari's audit reported as **19 null city fields**: one
+  bug surfacing in two places.
+- **Fix.** 11 alias rows added to `india_city_coords.csv`; `city_of()` now splits on
+  either separator. The map re-derives cities from the raw facility names rather than
+  reading the audit's city columns, so it does not inherit the nulls. **99 of 99 now
+  resolve**, and the page reports coverage and names anything unmapped so this fails
+  loudly next time.
+- **Cost.** ~30 minutes. The silent half is the expensive part: a missing dot looks
+  exactly like a corridor that was never bad.
+
+---
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
@@ -288,7 +328,6 @@ checking a number, never by reading the file.
 | # | Problem | Owner | Blocks |
 |---|---|---|---|
 | P-12 | Delay threshold labels 93.6% of legs delayed (D-003) | Lahari | Week 3 features, Week 4 models |
-| — | Support floor of 30 legs hides the worst corridors — 1.92× at 30, 13.9× at 10 (D-018) | Lahari | Week 2 headline, Krishna's map |
-| — | City-name normalisation for the India map, plus 19 null city fields on `Mumbai Hub (Maharashtra)`-shaped names | Krishna | Week 2 map |
+| — | Support floor of 30 legs hides the worst corridors — 1.92× at 30, 13.9× at 10 (D-018) | Lahari | Week 3 features, the map's colour ramp |
 | — | 13.5% of in-trip handoffs are chain breaks (D-015) | Mounika | Week 5 stream replay |
-| — | JDK 17 + winutils on Lahari's and Krishna's machines | all | their local Spark runs |
+| — | JDK 17 + winutils on Lahari's machine | Lahari | her local Spark runs |
