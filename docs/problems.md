@@ -328,6 +328,6 @@ checking a number, never by reading the file.
 | # | Problem | Owner | Blocks |
 |---|---|---|---|
 | P-12 | Delay threshold labels 93.6% of legs delayed (D-003) | Lahari | Week 3 features, Week 4 models |
-| — | Corridor support 30 legs keeps only 3.6% of corridors (D-004 revisit) | Lahari | Week 2 audit writeup |
+| — | Support floor of 30 legs hides the worst corridors — 1.92× at 30, 13.9× at 10 (D-018) | Lahari | Week 3 features, the map's colour ramp |
 | — | 13.5% of in-trip handoffs are chain breaks (D-015) | Mounika | Week 5 stream replay |
 | — | JDK 17 + winutils on Lahari's and Krishna's machines | all | their local Spark runs |

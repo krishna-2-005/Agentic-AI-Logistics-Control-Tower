@@ -1,0 +1,27 @@
+{
+  "n": 26369,
+  "mean_log": 0.7783042327539988,
+  "var_log": 0.22763349795896942,
+  "mean_gap_min": 110.00398194850013,
+  "median_gap_ratio": 2.0,
+  "corridors_total": 2783,
+  "corridors_supported": 99,
+  "legs_covered": 4996,
+  "min_support": 30,
+  "alpha": 0.05,
+  "significant": 70,
+  "bottlenecks": 34,
+  "faster_than_network": 36,
+  "hub_metric_check": {
+    "supported_hubs": 121,
+    "hubs_matched_to_audited_corridors": 119,
+    "rank_corr_share_vs_minutes": 0.4847,
+    "top_n": 20,
+    "top_n_overlap": 8,
+    "share_vs_corridor_overrun": -0.0461,
+    "minutes_vs_corridor_overrun": -0.0018,
+    "share_vs_planned_leg_length": -0.3042,
+    "minutes_vs_planned_leg_length": 0.5516
+  },
+  "generated_at": "2026-08-20T08:48:14.805680+00:00"
+}
