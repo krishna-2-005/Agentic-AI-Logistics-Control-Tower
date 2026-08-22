@@ -349,8 +349,13 @@ Both sections are generated — regenerate rather than editing numbers by hand:
 
 ```bash
 python -m src.ml.audit                   # both sections, plus the benchmarks CSVs
-python -m src.ml.audit --min-support 10  # the coverage view (see the threshold section)
+python -m src.ml.audit --min-support 30  # the pre-D-018 view, for comparison
 ```
+
+The audited set is every corridor with **10 or more observed legs** (D-018, superseding
+D-004's 30). The 30-leg audit is still written to
+`benchmarks/raw/w2_corridor_audit_support30.csv` on every run as the robustness view —
+§4 explains why both are kept, and why they do not describe the same network.
 """
 
 
