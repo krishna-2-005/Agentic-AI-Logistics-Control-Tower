@@ -91,3 +91,9 @@ desktop.ini
 # ── Kafka / Docker local volumes ──
 kafka-data/
 zookeeper-data/
+
+# ── Reference documents ──
+# The blueprint, execution plan and rules docx live in docs/reference/ on each
+# machine but are not tracked: they are binary, they change on every save, and the
+# markdown in the repo is the version anyone should be reading.
+docs/reference/*.docx
