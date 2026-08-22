@@ -58,9 +58,17 @@ STAT = "log_gap_ratio"
 #: Family-wise false-discovery rate for the corridor tests.
 ALPHA = 0.05
 
-#: Support thresholds the audit is re-run at, so D-004's cost is a table rather than
-#: an assertion. 30 is the incumbent.
+#: Support thresholds the audit is re-run at, so the floor's cost is a table rather
+#: than an assertion. This sweep is what settled D-018; 10 is now the decided floor.
 SUPPORT_GRID = (10, 20, 30, 50, 100)
+
+#: The old D-004 floor, kept as a robustness view rather than dropped. D-018 lowered
+#: the audited set to 10 legs on the evidence that 30 was removing the finding, but
+#: the high-support table is the one whose top rows carry no winner's curse — with 99
+#: tests rather than 1,130, the largest effect size is far less likely to be a lucky
+#: sample. Both are written; the report leads with the decided set and cites this one
+#: beside it. `w2_corridor_audit_support30.csv`.
+ROBUSTNESS_SUPPORT = 30
 
 
 def load_legs(spark: SparkSession, path: Path) -> DataFrame:
@@ -341,8 +349,13 @@ Both sections are generated — regenerate rather than editing numbers by hand:
 
 ```bash
 python -m src.ml.audit                   # both sections, plus the benchmarks CSVs
-python -m src.ml.audit --min-support 10  # the coverage view (see the threshold section)
+python -m src.ml.audit --min-support 30  # the pre-D-018 view, for comparison
 ```
+
+The audited set is every corridor with **10 or more observed legs** (D-018, superseding
+D-004's 30). The 30-leg audit is still written to
+`benchmarks/raw/w2_corridor_audit_support30.csv` on every run as the robustness view —
+§4 explains why both are kept, and why they do not describe the same network.
 """
 
 
@@ -433,10 +446,156 @@ def hub_ranking(
     return hubs.head(top_n)[cols].reset_index(drop=True), diagnostics
 
 
-def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dict) -> str:
-    """The corridor-audit section of the weekly document."""
+#: City labels the dataset spells more than one way. Only used to *count* cities in
+#: the prose below — never to key anything, which is the corridor centre pair (D-002).
+#: The audit hit this the honest way: a count written as `source_city == "Bengaluru"`
+#: silently missed every row the file spells `Bangalore`, and reported a cluster at
+#: half its real size.
+CITY_ALIASES = {
+    "Bangalore": "Bengaluru",
+    "BLR": "Bengaluru",
+    "HBR": "Bengaluru",
+    "BOM": "Mumbai",
+    "Bombay": "Mumbai",
+    "LowerParel": "Mumbai",
+    "CCU": "Kolkata",
+    "Calcutta": "Kolkata",
+    "MAA": "Chennai",
+    "Madras": "Chennai",
+    "AMD": "Ahmedabad",
+    "Amd": "Ahmedabad",
+    "Amdavad": "Ahmedabad",
+    "GGN": "Gurgaon",
+    "Gurugram": "Gurgaon",
+    "Del": "Delhi",
+    "Janakpuri": "Delhi",
+    "FBD": "Faridabad",
+    "GZB": "Ghaziabad",
+    "PNQ": "Pune",
+    "Muzaffrpur": "Muzaffarpur",
+}
+
+#: Duplicated, knowingly: `src/dashboard/reference/india_city_coords.csv` carries the
+#: same aliases plus coordinates, and the two lists can drift. Merging them means a
+#: shared reference table neither the audit nor the dashboard owns, which is a Week 3
+#: refactor across two members' areas rather than a Week 2 patch — raised as an open
+#: item so it is a decision rather than an oversight.
+
+
+def _canon_city(s: pd.Series) -> pd.Series:
+    return s.replace(CITY_ALIASES)
+
+
+def _both_directions_note(slow: pd.DataFrame, faster: pd.DataFrame) -> str:
+    """Name a city pair that is in both tables, if one still is.
+
+    The point being made is that the corridor key is the centre pair and not the city
+    pair, so it needs a live example rather than a remembered one — the example that
+    carried this paragraph before D-018 was `Delhi -> Gurgaon`, which was true of the
+    30-leg tables and is not something to assume of any other family.
+    """
+    def pairs(df):
+        return set(zip(_canon_city(df["source_city"]), _canon_city(df["dest_city"])))
+
+    shared = sorted(p for p in pairs(slow) & pairs(faster) if all(isinstance(x, str) for x in p))
+    if not shared:
+        return (
+            "**The centre codes are load-bearing in both tables.** City labels are for reading; "
+            "the corridor key is the centre pair (D-002), and any rollup to city level has to "
+            "average the pairs it covers rather than pick one.\n"
+        )
+    named = ", ".join(f"`{a} -> {b}`" for a, b in shared[:3])
+    n = len(shared)
+    plural = "" if n == 1 else "s"
+    return (
+        f"**The centre codes are load-bearing in both tables.** {n} city pair{plural} "
+        f"appear{'s' if n == 1 else ''} in the bottleneck table *and* here — {named} — "
+        "different facility pairs serving "
+        "the same two cities, one of them among the worst corridors in the network and one among "
+        "the best. City labels are for reading; the corridor key is the centre pair (D-002), and "
+        "any rollup to city level has to average the pairs it covers rather than pick one.\n"
+    )
+
+
+def _faster_cluster_note(faster: pd.DataFrame) -> str:
+    """Where the planner is reliably right, counted over canonical city names."""
+    counts = _canon_city(faster["source_city"]).value_counts()
+    if counts.empty:
+        return ""
+    city, n = counts.index[0], int(counts.iloc[0])
+    share = n / len(faster) * 100
+    return (
+        f"{n} of the {len(faster):,} start in {city}, the largest single origin, and the top "
+        f"three origins ({', '.join(counts.index[:3])}) carry "
+        f"{int(counts.iloc[:3].sum())} between them. That is a real cluster but a modest one — "
+        f"{share:.0f}% of the faster set from one city — so the reading is that the planner is "
+        "calibrated in a handful of places rather than in one. Week 4's error analysis should "
+        "check whether the model inherits that or corrects it.\n"
+    )
+
+
+def _bottlenecks(audited: pd.DataFrame) -> pd.DataFrame:
+    """Every significantly-slower corridor, in rank order."""
+    return audited[audited["bottleneck_rank"].notna()].sort_values("bottleneck_rank")
+
+
+def _places(top: pd.DataFrame, n: int = 4) -> str:
+    """The states a ranked table actually sits in, most-represented first.
+
+    The characterisation of a top-N table is the sentence most likely to be carried
+    over from a previous run and quietly stop being true — which is exactly what
+    happened to this one when D-018 moved the floor. Counting is cheap; remembering
+    is not reliable.
+    """
+    counts = top["source_state"].value_counts().head(n)
+    parts = [f"{state} ({int(c)})" for state, c in counts.items()]
+    return ", ".join(parts)
+
+
+def _geography_shift(top: pd.DataFrame, robust_top: pd.DataFrame, b: dict) -> str:
+    """How the ranked table changes between the decided floor and the old one.
+
+    Worth a paragraph rather than a footnote: the two tables do not merely differ in
+    length, they describe different parts of the country, and a reader who knows the
+    Week 1 version of this section would otherwise carry the old reading forward.
+    """
+    kept = len(set(top["corridor_id"]) & set(robust_top["corridor_id"]))
+    intra_new = int((top["source_city"] == top["dest_city"]).sum())
+    intra_old = int((robust_top["source_city"] == robust_top["dest_city"]).sum())
+    if kept == 0:
+        overlap = "The two top tables share no corridor at all."
+    else:
+        overlap = f"The two top tables share {kept} corridor{'' if kept == 1 else 's'}."
+    return (
+        "**Lowering the floor changed which India the table is describing, and that is a "
+        f"finding rather than a side effect.** The {b['robustness_support']}-leg table was a "
+        f"metro table — {_places(robust_top)} — with {intra_old} of its {len(robust_top)} rows "
+        "beginning and ending in the same city, and it read as a story about urban congestion. "
+        f"The {b['min_support']}-leg table is mostly not that: {_places(top)}, with "
+        f"{intra_new} of {len(top)} intra-city, and its entries are district feeders between "
+        f"towns rather than legs inside a metro. {overlap}\n"
+        "\nBoth readings are true of the thing each was measured on, and neither replaces the "
+        "other. What the busy core suffers from is city traffic; what the network's worst "
+        "corridors suffer from is something else, on thin-support routes the high-support view "
+        "could not see at all. Week 4's error analysis should not assume one model explains "
+        f"both, and the {b['robustness_support']}-leg table stays in `benchmarks/raw/` so the "
+        "metro claim keeps its own evidence.\n"
+    )
+
+
+def render_audit(
+    audited: pd.DataFrame, robust: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dict
+) -> str:
+    """The corridor-audit section of the weekly document.
+
+    `robust` is the same audit at the old D-004 floor. It is passed in rather than
+    recomputed because the interesting sentence about the bottleneck table is not what
+    is in it but how it differs from the high-support view — and a claim about that
+    difference has to be measured, not remembered from the previous run.
+    """
     o: list[str] = []
     top = top_bottlenecks(audited)
+    robust_top = top_bottlenecks(robust)
     faster = audited[audited["is_significant"] & (audited["direction"] == "better")]
     b = baseline
 
@@ -453,7 +612,7 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
         f"98.3% of legs and the median leg runs at {b['median_gap_ratio']:.2f}x plan, "
         f"{b['mean_gap_min']:.0f} minutes over on average. **That already answers “is the "
         "planner wrong?” — everywhere, yes.** Testing each corridor against the plan would "
-        "return the same verdict 99 times and rank nothing.\n"
+        f"return the same verdict {b['corridors_supported']:,} times and rank nothing.\n"
     )
     o.append(
         "So the audit asks the localisation question instead: *given* a network that runs at "
@@ -480,7 +639,10 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
         f"{b['corridors_supported']} simultaneous tests would otherwise carry about "
         f"{b['corridors_supported'] * b['alpha']:.0f} invented bottlenecks into a top-20 table |"
     )
-    o.append(f"| Minimum support | {b['min_support']} legs | D-004 — revisited in §4 |")
+    o.append(
+        f"| Minimum support | {b['min_support']} legs | D-018 — D-004's floor of "
+        f"{b['robustness_support']} legs, revisited on the evidence in §4 |"
+    )
     o.append("")
 
     o.append("## 2. What the audit found\n")
@@ -488,7 +650,8 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
     o.append("|---|---|")
     o.append(f"| Corridors in the network | {b['corridors_total']:,} |")
     o.append(
-        f"| Corridors with >= {b['min_support']} legs (tested) | **{b['corridors_supported']}** "
+        f"| Corridors with >= {b['min_support']} legs (tested) | "
+        f"**{b['corridors_supported']:,}** "
         f"({b['corridors_supported'] / b['corridors_total'] * 100:.1f}%) |"
     )
     o.append(
@@ -496,8 +659,8 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
         f"({b['legs_covered'] / b['n'] * 100:.1f}%) |"
     )
     o.append(
-        f"| Differ from the network at FDR {b['alpha']:.2f} | **{b['significant']}** of "
-        f"{b['corridors_supported']} "
+        f"| Differ from the network at FDR {b['alpha']:.2f} | **{b['significant']:,}** of "
+        f"{b['corridors_supported']:,} "
         f"({b['significant'] / b['corridors_supported'] * 100:.0f}%) |"
     )
     o.append(f"| — significantly **slower** (bottlenecks) | **{b['bottlenecks']}** |")
@@ -508,7 +671,7 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
     )
     o.append("")
     o.append(
-        f"**The error localises.** {b['significant']} of {b['corridors_supported']} tested "
+        f"**The error localises.** {b['significant']:,} of {b['corridors_supported']:,} tested "
         "corridors are distinguishable from the network baseline after correction, which is the "
         "result the rest of the project stands on: a systematic planner error that varies by "
         "corridor is one a model can learn and an agent can act on. Had the gap been uniform "
@@ -516,7 +679,7 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
     )
     o.append(
         f"**It localises in both directions, and the report has to say so.** "
-        f"{b['faster_than_network']} corridors are significantly *faster* than the network — the "
+        f"{b['faster_than_network']:,} corridors are significantly *faster* than the network — the "
         "planner is not uniformly optimistic by a varying amount, it is differently wrong in "
         "different places. Calling this a “bottleneck audit” and showing only the slow "
         "half would misdescribe what was measured.\n"
@@ -527,6 +690,20 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
         "Ranked on **effect size, not p-value**. A p-value grows with support, so ranking on it "
         "would put the busiest corridors on top however mild their overrun. Significance decides "
         "who is on the list; `excess_ratio` decides the order.\n"
+    )
+    o.append(
+        f"**Read the leg column before the effect size.** With {b['corridors_supported']:,} "
+        "corridors tested (D-018), the single largest `excess_ratio` in the family is by "
+        "construction the likeliest of all of them to be a lucky sample — winner's curse, and it "
+        "bites hardest at exactly the rows a reader looks at first. Every row therefore prints "
+        f"the legs it rests on, and a corridor sitting near the {int(b['min_support'])}-leg floor "
+        "is a weaker claim than one resting on a hundred legs however large its ratio. The "
+        f"{b['robustness_support']}-leg set in "
+        f"`benchmarks/raw/w2_corridor_audit_support{b['robustness_support']}.csv` is the "
+        f"comparison view — {b['robustness_corridors']} corridors, "
+        f"{b['robustness_bottlenecks']} bottlenecks, worst "
+        f"{b['robustness_max_excess']:.2f}x — small enough a family that its top rows carry no "
+        "curse worth naming.\n"
     )
     o.append(
         "| # | Corridor | Centres | Legs | Median actual/plan | Excess vs network | "
@@ -542,14 +719,14 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
         )
     o.append("")
     o.append(
-        f"The table is short-haul and urban: the median entry is a "
+        f"The table is short-haul: the median entry is a "
         f"{top['mean_osrm_time'].median():.0f}-minute planned leg over "
-        f"{top['mean_osrm_km'].median():.0f} km. Mumbai/Bhiwandi, Delhi/Gurgaon, intra-Hyderabad, "
-        "intra-Kolkata — metro and metro-fringe corridors, not trunk routes. That is a coherent "
-        "story, since urban congestion is what a free-flow routing engine models worst, and it "
-        "is also a limit: the headline is a claim about the network's short legs and must not be "
-        "read as one about long-haul planning.\n"
+        f"{top['mean_osrm_km'].median():.0f} km, and across all {b['bottlenecks']:,} bottlenecks "
+        f"the median is {_bottlenecks(audited)['mean_osrm_km'].median():.0f} km. Short legs "
+        "overrun proportionally more (§3), so a ranking on a ratio finds them, and the headline "
+        "is a claim about the network's short legs rather than about long-haul planning.\n"
     )
+    o.append(_geography_shift(top, robust_top, b))
 
     o.append(f"### The {len(faster)} corridors the planner over-estimates\n")
     o.append("| Corridor | Centres | Legs | Median actual/plan | Excess vs network | q |")
@@ -560,20 +737,8 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
             f"| {r['median_gap_ratio']:.2f}x | {r['excess_ratio']:.2f}x | {r['q_value']:.1e} |"
         )
     o.append("")
-    o.append(
-        "**The centre codes are load-bearing in both tables.** `Delhi -> Gurgaon` appears in the "
-        "bottleneck table *and* here — two different facility pairs serving the same city pair, "
-        "one of the worst corridors in the network and one of the best. City labels are for "
-        "reading; the corridor key is the centre pair (D-002), and any rollup to city level has "
-        "to average them rather than pick one.\n"
-    )
-    bengaluru = int((faster["source_city"] == "Bengaluru").sum())
-    o.append(
-        f"{bengaluru} of the {len(faster)} start in Bengaluru. A cluster that tight is worth "
-        "stating rather than burying: whatever this planner gets right, it gets right in one "
-        "place, and Week 4's error analysis should check whether the model inherits that or "
-        "corrects it.\n"
-    )
+    o.append(_both_directions_note(_bottlenecks(audited), faster))
+    o.append(_faster_cluster_note(faster))
 
     o.append("## 3. What the ranking is not\n")
     corr_km = audited["excess_ratio"].corr(audited["mean_osrm_km"], method="spearman")
@@ -592,10 +757,10 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
 
     o.append("## 4. The support threshold — D-004 revisited\n")
     o.append(
-        "D-004 fixed the minimum at 30 legs in Week 1, in the abstract, before any significance "
-        "test existed — and asked to be revisited once one did. Re-running the whole audit at "
-        "each threshold (aggregate, Welch, and a fresh BH correction over whatever family the "
-        "threshold defines) gives this:\n"
+        f"D-004 fixed the minimum at {b['robustness_support']} legs in Week 1, in the abstract, "
+        "before any significance test existed — and asked to be revisited once one did. "
+        "Re-running the whole audit at each threshold (aggregate, Welch, and a fresh BH "
+        "correction over whatever family the threshold defines) gives this:\n"
     )
     o.append(
         "| Min legs | Corridors tested | % of corridors | % of legs covered | Significant | "
@@ -603,7 +768,12 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
     )
     o.append("|---|---|---|---|---|---|---|")
     for _, r in sensitivity.iterrows():
-        mark = " **(D-004)**" if int(r["min_support"]) == b["min_support"] else ""
+        if int(r["min_support"]) == b["min_support"]:
+            mark = " **(D-018 — decided)**"
+        elif int(r["min_support"]) == b["robustness_support"]:
+            mark = " *(D-004, superseded)*"
+        else:
+            mark = ""
         worst = f"{r['max_excess_ratio']:.2f}x" if pd.notna(r["max_excess_ratio"]) else "—"
         o.append(
             f"| {int(r['min_support'])}{mark} | {int(r['corridors_tested']):,} "
@@ -612,44 +782,59 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
         )
     o.append("")
     row10 = sensitivity[sensitivity["min_support"] == SUPPORT_GRID[0]].iloc[0]
-    row30 = sensitivity[sensitivity["min_support"] == b["min_support"]].iloc[0]
+    row30 = sensitivity[sensitivity["min_support"] == b["robustness_support"]].iloc[0]
     o.append(
-        f"**The threshold is not costing coverage so much as costing the finding.** At "
-        f"{b['min_support']} legs the audit speaks for {row30['pct_of_legs']:.1f}% of the "
-        f"network's legs and its worst corridor runs {row30['max_excess_ratio']:.2f}x the "
+        f"**The threshold was not costing coverage so much as costing the finding.** At "
+        f"{int(row30['min_support'])} legs the audit speaks for {row30['pct_of_legs']:.1f}% of "
+        f"the network's legs and its worst corridor runs {row30['max_excess_ratio']:.2f}x the "
         f"network's overrun. At {int(row10['min_support'])} legs it speaks for "
         f"{row10['pct_of_legs']:.1f}% of legs, finds {int(row10['bottlenecks']):,} bottlenecks "
         f"instead of {int(row30['bottlenecks'])}, and the worst runs "
         f"**{row10['max_excess_ratio']:.1f}x**. The corridors that are genuinely broken are "
-        "mostly rare corridors, and a 30-leg floor removes them before the test runs.\n"
+        f"mostly rare corridors, and a {int(row30['min_support'])}-leg floor removed them "
+        "before the test ran.\n"
     )
     o.append(
         f"The share of tests that come back significant barely moves "
         f"({row10['pct_tests_significant']:.0f}% at {int(row10['min_support'])} legs against "
-        f"{row30['pct_tests_significant']:.0f}% at {b['min_support']}), so the looser threshold "
-        "is not buying significance with noise: Welch is valid at n = 10 and the comparison "
-        "group is the whole network either way.\n"
+        f"{row30['pct_tests_significant']:.0f}% at {int(row30['min_support'])}), so the looser "
+        "threshold is not buying significance with noise: Welch is valid at n = 10 and the "
+        "comparison group is the whole 26,369-leg network either way.\n"
     )
     o.append(
-        f"**Recommendation — D-018, open for the sync: move the audited set to "
-        f"{int(row10['min_support'])} legs and print the leg count in every ranked row.** The one "
-        "real cost is winner's curse at the top: with 1,130 corridors tested, the single largest "
-        "`excess_ratio` is the likeliest of all of them to be a lucky sample, so the first few "
-        "rows of the loose table are provisional in a way the 30-leg table's are not. Both are "
-        "written — `w2_corridor_audit.csv` at 30, `w2_corridor_audit_support10.csv` at 10 — so "
-        "the decision costs a re-read, not a re-run. `config.MIN_CORRIDOR_SUPPORT` stays at 30 "
-        "until the team agrees, the same way D-003 left the delay threshold alone.\n"
+        f"**Decided at the Week 2 sync — D-018: the audited set moves to "
+        f"{int(row10['min_support'])} legs, and every ranked row prints the legs it rests on.** "
+        f"`config.MIN_CORRIDOR_SUPPORT` is {b['min_support']}, so the table above and every "
+        "number in this document are the audit at that floor. D-004 is superseded rather than "
+        "overturned: its reasoning — that ranking 2,783 mostly-singleton corridors ranks noise — "
+        "still holds, and a floor is still needed. What the sweep showed is that it was set one "
+        "notch too high to see the thing it was built to find.\n"
+    )
+    o.append(
+        f"**What the decision costs, kept in view.** Winner's curse at the top of a "
+        f"{b['corridors_supported']:,}-test family is real, and it is why the leg count is now "
+        "printed in every ranked row and why the "
+        f"{b['robustness_support']}-leg set is still written to "
+        f"`benchmarks/raw/w2_corridor_audit_support{b['robustness_support']}.csv` rather than "
+        "dropped. A claim that survives both tables is worth putting in the paper; one that "
+        "appears only at the top of the loose table is a lead, not a result. The two framings "
+        "also answer different questions — *how bad does this network get* is the "
+        f"{b['min_support']}-leg table, *what is reliably true of its busy core* is the "
+        f"{b['robustness_support']}-leg one — and the report carries both.\n"
     )
 
     o.append("## 5. What this hands on\n")
     n_null_city = int(audited["source_city"].isna().sum() + audited["dest_city"].isna().sum())
     o.append(
-        f"- **Krishna's India map** reads `benchmarks/raw/w2_top20_bottlenecks.csv` — "
-        "`bottleneck_rank` and `excess_ratio` for the colour scale, city columns to join on. "
-        f"**{n_null_city} of the {len(audited) * 2} city fields in the audited set are null**, "
-        "because a facility named `Mumbai Hub (Maharashtra)` does not match the "
-        "`City_Facility_Type (State)` shape the city parser expects. Those rows need the centre "
-        "code as their map label, or the parser needs the extra pattern.\n"
+        f"- **Krishna's India map** reads `benchmarks/raw/w2_corridor_audit.csv` — "
+        "`bottleneck_rank` and `excess_ratio` for the colour scale, city columns to read by. "
+        f"**{n_null_city} of the {len(audited) * 2} city fields in the audited set are still "
+        "null**, because a facility named `Mumbai Hub (Maharashtra)` does not match the "
+        "`City_Facility_Type (State)` shape Stage 1's city parser expects. The map no longer "
+        "inherits them — it re-derives the city from the raw facility name with a parser that "
+        "splits on either separator (P-21) — but the null is still in this cache, and anything "
+        "else joining on these columns will hit it. Fixing it at source means a new `clean_v2` "
+        "under D-016's versioning rule, which is Week 3 work, not a Week 2 patch.\n"
         "- **Week 3 features** get per-corridor `excess_ratio` as corridor history — but computed "
         "past-only inside the training window. The value in this table is fitted on the whole "
         "period and is a *reporting* number; using it as a feature as it stands would leak.\n"
@@ -657,7 +842,9 @@ def render_audit(audited: pd.DataFrame, sensitivity: pd.DataFrame, baseline: dic
         f"{b['faster_than_network']} fast ones to be evaluated on separately. “Beats OSRM "
         "overall” is a much weaker sentence than “beats OSRM where OSRM is worst”.\n"
         "- **Week 6's Invoice Auditor** can ask what a leg on a named corridor should have taken: "
-        "`mean_actual_time` per corridor is in `w2_corridor_audit.csv`.\n"
+        "`mean_actual_time` per corridor is in `w2_corridor_audit.csv`, now covering "
+        f"{b['legs_covered'] / b['n'] * 100:.1f}% of the network's legs rather than 18.9%, so far "
+        "fewer invoices will fall on a corridor the auditor has no history for.\n"
     )
     return "\n".join(o)
 
@@ -743,10 +930,10 @@ def build(
 ) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
     """Run the aggregation and the tests.
 
-    Returns `(audited, coverage, sensitivity, baseline)` — `audited` at the decided
-    support threshold, `coverage` the same audit at the loosest threshold on the grid
-    (the evidence for D-004's revisit, and a wide enough set for the hub linkage to
-    correlate on).
+    Returns `(audited, coverage, robust, sensitivity, baseline)` — `audited` at the
+    decided support threshold (D-018: 10 legs), `coverage` the same audit at the
+    loosest threshold on the grid, which is what the hub linkage correlates over, and
+    `robust` the old 30-leg set kept as the no-winner's-curse comparison.
     """
     legs = load_legs(spark, input_path).cache()
     n_usable = legs.count()
@@ -777,6 +964,7 @@ def build(
     baseline["corridors_total"] = int(n_corridors)
     audited = audit_at(agg_pdf, baseline, min_support, alpha)
     coverage = audit_at(agg_pdf, baseline, SUPPORT_GRID[0], alpha)
+    robust = audit_at(agg_pdf, baseline, ROBUSTNESS_SUPPORT, alpha)
     sensitivity = support_sensitivity(agg_pdf, baseline, SUPPORT_GRID, alpha)
 
     baseline["corridors_supported"] = len(audited)
@@ -788,7 +976,12 @@ def build(
     baseline["faster_than_network"] = int(
         (audited["is_significant"] & (audited["direction"] == "better")).sum()
     )
-    return audited, coverage, sensitivity, baseline
+    # Quoted beside the headline so the winner's-curse caveat is a number, not a worry.
+    baseline["robustness_support"] = ROBUSTNESS_SUPPORT
+    baseline["robustness_corridors"] = len(robust)
+    baseline["robustness_bottlenecks"] = int(robust["bottleneck_rank"].notna().sum())
+    baseline["robustness_max_excess"] = float(robust["excess_ratio"].max())
+    return audited, coverage, robust, sensitivity, baseline
 
 
 def main() -> int:
@@ -802,7 +995,7 @@ def main() -> int:
         "--min-support",
         type=int,
         default=config.MIN_CORRIDOR_SUPPORT,
-        help="minimum observed legs before a corridor is audited (D-004)",
+        help="minimum observed legs before a corridor is audited (D-018)",
     )
     parser.add_argument(
         "--alpha", type=float, default=ALPHA, help="false-discovery rate for the BH correction"
@@ -816,7 +1009,7 @@ def main() -> int:
     config.ensure_dirs()
     spark = get_spark("stage3-audit")
     try:
-        corridors, coverage, sensitivity, baseline = build(
+        corridors, coverage, robust, sensitivity, baseline = build(
             spark, args.input, args.min_support, args.alpha
         )
         hubs, hub_diag = hub_ranking(spark, args.hubs, coverage)
@@ -827,14 +1020,14 @@ def main() -> int:
     corridors.to_csv(raw / "w2_corridor_audit.csv", index=False)
     top = top_bottlenecks(corridors)
     top.to_csv(raw / "w2_top20_bottlenecks.csv", index=False)
-    coverage.to_csv(raw / f"w2_corridor_audit_support{SUPPORT_GRID[0]}.csv", index=False)
+    robust.to_csv(raw / f"w2_corridor_audit_support{ROBUSTNESS_SUPPORT}.csv", index=False)
     sensitivity.to_csv(raw / "w2_support_sensitivity.csv", index=False)
     hubs.to_csv(raw / "w2_hub_friction_top20.csv", index=False)
     baseline["hub_metric_check"] = hub_diag
     log.info("Corridor tables, support sweep and hub leaderboard -> %s", raw)
 
     docs.write_section(
-        args.out_md, "corridor-audit", render_audit(corridors, sensitivity, baseline),
+        args.out_md, "corridor-audit", render_audit(corridors, robust, sensitivity, baseline),
         header=W2_DOC_HEADER,
     )
     docs.write_section(
