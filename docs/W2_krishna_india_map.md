@@ -21,11 +21,13 @@ The plan said *"corridors coloured by delay severity"*, and I built exactly that
 great-circle lines between the two ends of each audited corridor, on a national map of
 India. It was wrong, and rendering it is what showed why.
 
-**19 of the 34 bottleneck corridors start and end in the same city, and 33 of 34 span
-under 50 km.** The median span is **0 km**. Drawn as lines on a map of India, the worst
-corridors in the network are marks of zero length — the first render showed a mostly
-empty map whose only visible lines were the long *fast* corridors, which is close to the
-opposite of the finding.
+**19 of the 34 bottleneck corridors started and ended in the same city, and 33 of 34
+spanned under 50 km.** The median span was **0 km**. Drawn as lines on a map of India,
+the worst corridors in the network are marks of zero length — the first render showed a
+mostly empty map whose only visible lines were the long *fast* corridors, which is close
+to the opposite of the finding. (At the 10-leg floor D-018 settled on, it is 70 of 273
+intra-city and 186 of 273 under 50 km — less extreme, same conclusion, and the page
+computes both numbers rather than quoting either.)
 
 That is not a styling problem, so restyling would not have fixed it. Lahari's audit
 already said the bottleneck table is *"short-haul and urban … metro and metro-fringe
@@ -39,12 +41,19 @@ and mean `excess_ratio`, and how many of the corridors are intra-city.
 
 | Default view — bottlenecks only | Value |
 |---|---|
-| Corridors drawn | 34 of 34 significant bottlenecks |
-| Cities carrying them | 13 |
-| Intra-city corridors | 19 |
-| Corridors with a drawn line | 15 |
-| Largest bubble | Mumbai — 10 corridors, 554 legs, 7 intra-city |
-| Darkest bubble | Kolkata — worst corridor 1.92× the network's typical overrun |
+| Corridors drawn | **273 of 273** significant bottlenecks |
+| Cities carrying them | 169 |
+| Intra-city corridors | 70 |
+| Corridors with a drawn line | 203 |
+| Corridors spanning under 50 km | 186 of 273 |
+| Largest bubble | Mumbai — 28 corridors, 881 legs, 18 intra-city |
+| Darkest bubble | Kanpur — worst corridor 13.88× the network's typical overrun |
+
+*These are the figures after D-018 moved the support floor to 10 legs. At the 30-leg
+floor the same table read 34 corridors in 13 cities, largest bubble Mumbai with 10 and
+darkest Kolkata at 1.92×.* The page computes all of it from whatever is in the CSV, so
+it followed the decision — but two things about it did **not** follow automatically, and
+both are below.
 
 A direction toggle is on the page and defaults to bottlenecks. The audit found the
 planner wrong in **both** directions (34 slower, 36 faster), and a map that only ever
@@ -61,15 +70,25 @@ as hue, so severity survives a colourblind read. Every step was checked against 
 contrast floor rather than eyeballed; the lightest red had to be darkened from `#f0a3a2`
 to `#ec9694` to clear 2:1 against the map surface.
 
+**D-018 needed a fourth step on each arm.** At the 30-leg floor the worst corridor ran
+1.92×, so a top bin of "1.50×+" held a handful of near-identical corridors and that was
+honest. At 10 legs the range runs to **13.88×**, and the same bin would have given a
+13.9× corridor and a 1.51× corridor the identical shade — 110 of 273 bottlenecks in one
+colour, at precisely the end of the scale a reader cares about. The cut points now sit
+at 1.20 / 1.50 / 2.50, near the bottleneck distribution's median, p75 and p95, which
+fills the four bins 50 / 113 / 86 / 24. The new darkest steps (`#5e1413`, `#06203f`)
+were contrast-checked the same way: every step clears 2:1 against the map surface and
+adjacent steps separate by 1.65–2.25:1.
+
 ---
 
-## 2. Every audited corridor now lands on the map
+## 2. Every audited corridor lands on the map — but not the way I first fixed it
 
 The open item from Week 1 was a city-name normalisation table. It mattered more than it
 looked: **only 72 of the 99 audited corridors could be placed**, and a corridor that
 cannot be placed is silently absent — no error, just a missing dot.
 
-Two separate failures, both now fixed:
+Two failures, both fixed early in the week:
 
 | Failure | Example | Fix |
 |---|---|---|
@@ -79,14 +98,47 @@ Two separate failures, both now fixed:
 The second one is the interesting half. `city_of()` split on `_` only, which is right for
 `Anand_VUNagar_DC (Gujarat)` but returns the whole string for the nine facilities that
 use a space. Those are the same rows Lahari's audit reported as **19 null city fields** —
-one bug, surfacing in two places. The map re-derives cities from the raw facility names
-rather than reading the audit's city columns, so it does not inherit the nulls.
+one bug, surfacing in two places. That got the map to 99 of 99 (P-21).
 
-**Result: 99 of 99 audited corridors resolve, and all 70 significant ones are drawable.**
-The page shows the coverage number and names anything unmapped, so this degrades loudly
-rather than silently if new facilities appear.
+### Then D-018 landed and the whole approach fell over
 
----
+Lahari's support floor moved from 30 legs to 10, the audited set went from 99 corridors
+to 1,130, and the map — running without a single error, reporting a healthy-looking
+picture — was drawing **101 of the 273 bottlenecks**.
+
+The hand-maintained table had 59 cities in it, and it had been built against a metro-heavy
+audited set. The 10-leg set reaches **139 towns it had never heard of**, and there was no
+top-20 of missing cities to add: the tail was almost entirely one corridor each — Nowda,
+Ragunthgnj, Kaptanganj, Manjhaul. **A hand-maintained city list cannot follow the audit
+wherever the audit goes.** Adding rows faster was not a fix, it was a treadmill.
+
+### Placement moved onto the centre code
+
+Every centre code carries a six-digit PIN — `IND282002AAD` is 282002, Agra — which is the
+same fact D-011 already uses to recover a facility's state. So the map now places a
+corridor from its **code** and labels the bubble from its **name**:
+
+| Route | Centres placed |
+|---|---|
+| PIN inside the centre code, against GeoNames postal data | 1,605 of 1,657 — 96.9% |
+| Facility-name fallback, hand table | the remaining 52 (PIN `000000`, or absent from postal data) |
+| **Audited corridors placed** | **1,130 of 1,130 · 273 of 273 bottlenecks** |
+
+`src/dashboard/reference/centre_coords.csv` is generated once by
+`python -m src.dashboard.build_centre_coords` and committed; the dashboard reads the CSV
+and never the generator, so D-009 holds and the page still starts on a fresh clone with
+no pipeline run. GeoNames is CC BY 4.0 and is attributed in `data/README.md` and on the
+page. Recorded as D-019 and P-24.
+
+**This is D-002's argument, arriving a week late.** Corridors are keyed on centre codes
+because names are null on 554 rows and spelled inconsistently. I left *placement* on
+names anyway, which is why the same class of bug bit three times — P-21, P-23, and then
+P-24, where it took out two thirds of the map. Names are for reading; codes are for
+geometry.
+
+The page keeps the fallback rather than retiring it, because `IND000000ACB` is a real,
+working Gurgaon centre with a placeholder PIN — the code cannot be the only route. And
+it reports whatever neither route places, by facility name, so the next gap is loud.
 
 ## 3. Hub friction leaderboard
 
@@ -188,10 +240,20 @@ seeds mismatches for the auditor to find.
 
 ## 5. What's next
 
-- **D-018 changes this map.** If the support floor moves from 30 legs to 10, the audited
-  set goes from 99 corridors to 1,130 and the worst effect size from 1.92× to 13.9×. The
-  bubble sizes and the colour bins are both computed from whatever is in the CSV, so the
-  page follows the decision without an edit — but the top of the ramp will need a look,
-  since a 13.9× corridor and a 1.5× corridor would currently share the darkest bin.
+- **D-018 is closed, and it cost this page more than expected.** The Week 2 sync moved
+  the support floor to 10 legs. The bubble sizes and colour bins do follow the CSV
+  without an edit, as predicted — but the *colour ramp* needed a fourth step per arm
+  (§1) and *placement* had to be rebuilt entirely (§2). The lesson is in P-24: a
+  decision argued on statistics in one member's area changed the correctness of a
+  lookup table in another's, and the writeup that predicted the ramp problem said
+  nothing about placement because the ramp was the visible half.
+- **Screenshots.** `demo/screenshots/` is still empty — GIT_RULES §3 wants a weekly
+  dashboard capture, and W1 and W2 both owe one. Carried into Week 3 rather than
+  quietly dropped.
+- **The two alias tables should become one** (P-23). Less urgent since D-019 — the map
+  no longer places by name, so the lists now only drive labels and the 52-centre
+  fallback — but two files holding one truth is still two files.
+- **Week 3** is the synthetic document corpus: generator, noise augmentation, and 100+
+  labelled documents, built on the layouts researched in §4.
 - **Week 4** fills the "Delay predictor" page; **Week 5** fills "Live alerts". Both are
   still the standing pending panel.

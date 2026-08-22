@@ -246,6 +246,49 @@ zero. Her Week 1 headline numbers do not change.
 
 ---
 
+## D-019 · The map places a corridor by centre code, not by facility name — `DECIDED`
+**Week 2 · Krishna · forced by D-018**
+
+Corridor **position** on the India map comes from the six-digit PIN inside the centre
+code (`IND282002AAD` → 282002 → Agra). The facility name is used only for the **label**
+on the bubble. `src/dashboard/reference/centre_coords.csv` holds one row per centre,
+generated once by `python -m src.dashboard.build_centre_coords` and committed; the
+dashboard reads the CSV and never the generator (D-009).
+
+**Why it had to change.** The name-based lookup was fine for the 99 metro corridors
+D-004's floor allowed. D-018 widened the audited set to 1,130 corridors reaching 139
+towns the hand-maintained table had never heard of, and the map dropped to placing
+**101 of 273 bottlenecks** — with no error, because an unplaceable corridor is simply a
+dot that never appears (P-24). A hand-maintained city list cannot follow the audit
+wherever the audit goes; a centre code can.
+
+**This is D-002's reasoning applied to geometry.** Corridors are keyed on centre codes
+because names are null on 554 rows and spelled several ways. Placement had been left on
+names anyway, which is why the same class of bug surfaced twice (P-21, P-23) before it
+surfaced fatally. **Names are for reading, codes are for geometry.**
+
+| Route | Centres placed |
+|---|---|
+| PIN inside the centre code (GeoNames) | 1,605 of 1,657 — 96.9% |
+| Facility-name fallback, hand table | the remaining 52, whose PIN is `000000` or absent from postal data |
+| **Audited corridors placed** | **1,130 of 1,130; 273 of 273 bottlenecks** |
+
+**The fallback is kept, not retired.** `IND000000ACB` is a working Gurgaon centre with
+a placeholder PIN — the publisher uses `000000` on real facilities, so the code cannot
+be the only route. The page reports whatever neither route places, by facility name, so
+the next gap is loud rather than silent.
+
+**Third-party data, declared.** Coordinates are GeoNames postal data for India,
+**CC BY 4.0**, attributed in `data/README.md` and on the map page itself. `pgeocode` is
+in `requirements.txt` under reference-data tooling, needs the network only when the
+table is rebuilt, and is never imported by the dashboard.
+
+**One data-quality finding fell out of it:** `IND68004AAA` carries a **five**-digit PIN,
+so D-011's `IND` + six digits + three characters shape is not universal. The generator
+reports codes that do not match rather than skipping them silently.
+
+---
+
 ## D-009 · The dashboard reads only cached artefacts — `DECIDED`
 **Week 1 · Krishna + Mounika**
 
