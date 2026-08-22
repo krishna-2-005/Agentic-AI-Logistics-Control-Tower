@@ -44,13 +44,22 @@ if printf '%s' "$subject" | grep -qiE '^(update|updated code|changes|change|fina
        "Say what changed: 'add corridor audit t-test', not 'update'."
 fi
 
-# ── 3. marketing phrasing ────────────────────────────────────────────────────
+# ── 3. no bracketed prefix ───────────────────────────────────────────────────
+# `[W2][DOCS] ...` was used briefly in Week 1 and is banned (GIT_RULES §7). It repeats
+# what the branch name already says, the week is in the log date, and it reads as
+# generated rather than written. The lowercase check below cannot catch it because the
+# subject starts with '[' rather than a capital.
+if printf '%s' "$subject" | grep -qE '^[[:space:]]*\['; then
+  fail "bracketed prefix (GIT_RULES §7)"        "Drop it: 'add corridor audit', not '[W2][ML] add corridor audit'."
+fi
+
+# ── 4. marketing phrasing ────────────────────────────────────────────────────
 if printf '%s' "$subject" | grep -qiE '\b(comprehensive|robust|extensive|seamless|leverage|utilise|utilize|holistic|cutting-edge|state-of-the-art)\b'; then
   fail "marketing wording" \
        "Write like a developer: 'add evaluation script', not 'add comprehensive evaluation'."
 fi
 
-# ── 4. shape: lowercase, short, single change ────────────────────────────────
+# ── 5. shape: lowercase, short, single change ────────────────────────────────
 case "$subject" in
   [A-Z]*) fail "subject must start lowercase" "e.g. 'add dataset loader'";;
 esac

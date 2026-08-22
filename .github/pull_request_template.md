@@ -23,4 +23,4 @@
 - [ ] Runs end-to-end on a fresh pull of `dev`
 - [ ] No data / secrets / large binaries committed
 - [ ] Notebook outputs cleared
-- [ ] Commit messages follow GIT_RULES §7 (`[W<N>][AREA] imperative description`)
+- [ ] Commit messages follow GIT_RULES §7 (short lowercase imperative, no bracketed prefix)
