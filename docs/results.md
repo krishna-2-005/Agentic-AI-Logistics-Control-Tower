@@ -196,6 +196,11 @@ how this section should be read:
   corridors-as-lines map drew the network's worst corridors as marks of zero length. The
   page maps cities instead (P-20).
 
+Merged to `main` and tagged `audit-v1` and `week2-complete`. Verified at the gate:
+`ruff` clean over `src/` and `tests/`, 26 tests passing, and
+`python -m src.pipeline.contracts --keys` green on all three caches — `clean_v1`
+144,867 rows, `trips_v1` 26,369, `hubs_v1` 1,657.
+
 ## Week 3 — baselines
 
 *Pending. See `benchmarks/ml_results.md`.*
