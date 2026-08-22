@@ -3,8 +3,8 @@ Gurgaon,Gurugram,Haryana,28.4595,77.0266
 Gurugram,Gurugram,Haryana,28.4595,77.0266
 Bangalore,Bengaluru,Karnataka,12.9716,77.5946
 Bengaluru,Bengaluru,Karnataka,12.9716,77.5946
-Bhiwandi,Bhiwandi,Maharashtra,19.3002,73.0630
-Hyderabad,Hyderabad,Telangana,17.3850,78.4867
+Bhiwandi,Bhiwandi,Maharashtra,19.3002,73.063
+Hyderabad,Hyderabad,Telangana,17.385,78.4867
 Delhi,Delhi,Delhi,28.7041,77.1025
 Del,Delhi,Delhi,28.7041,77.1025
 Pune,Pune,Maharashtra,18.5204,73.8567
@@ -14,7 +14,7 @@ Sonipat,Sonipat,Haryana,28.9931,77.0151
 Bhubaneshwar,Bhubaneswar,Odisha,20.2961,85.8245
 Bhubaneswar,Bhubaneswar,Odisha,20.2961,85.8245
 Kanpur,Kanpur,Uttar Pradesh,26.4499,80.3319
-Mumbai,Mumbai,Maharashtra,19.0760,72.8777
+Mumbai,Mumbai,Maharashtra,19.076,72.8777
 Bhopal,Bhopal,Madhya Pradesh,23.2599,77.4126
 Ahmedabad,Ahmedabad,Gujarat,23.0225,72.5714
 MAA,Chennai,Tamil Nadu,13.0827,80.2707
@@ -25,26 +25,26 @@ Guwahati,Guwahati,Assam,26.1445,91.7362
 Ranchi,Ranchi,Jharkhand,23.3441,85.3096
 Muzaffrpur,Muzaffarpur,Bihar,26.1209,85.3647
 Muzaffarpur,Muzaffarpur,Bihar,26.1209,85.3647
-Vijayawada,Vijayawada,Andhra Pradesh,16.5062,80.6480
+Vijayawada,Vijayawada,Andhra Pradesh,16.5062,80.648
 Visakhapatnam,Visakhapatnam,Andhra Pradesh,17.6868,83.2185
 Purnia,Purnia,Bihar,25.7771,87.4753
-Sasaram,Sasaram,Bihar,24.9500,84.0300
-Noida,Noida,Uttar Pradesh,28.5355,77.3910
+Sasaram,Sasaram,Bihar,24.95,84.03
+Noida,Noida,Uttar Pradesh,28.5355,77.391
 FBD,Faridabad,Haryana,28.4089,77.3178
 Faridabad,Faridabad,Haryana,28.4089,77.3178
 Solapur,Solapur,Maharashtra,17.6599,75.9064
-Kolhapur,Kolhapur,Maharashtra,16.7050,74.2433
-Ludhiana,Ludhiana,Punjab,30.9010,75.8573
+Kolhapur,Kolhapur,Maharashtra,16.705,74.2433
+Ludhiana,Ludhiana,Punjab,30.901,75.8573
 Akola,Akola,Maharashtra,20.7002,77.0082
-Aluva,Aluva,Kerala,10.1004,76.3570
+Aluva,Aluva,Kerala,10.1004,76.357
 Goa,Panaji,Goa,15.4909,73.8278
 Pali,Pali,Rajasthan,25.7711,73.3234
 Kurnool,Kurnool,Andhra Pradesh,15.8281,78.0373
 Dhanbad,Dhanbad,Jharkhand,23.7957,86.4304
 Udaipur,Udaipur,Rajasthan,24.5854,73.7125
 Anantapur,Anantapur,Andhra Pradesh,14.6819,77.6006
-Jalandhar,Jalandhar,Punjab,31.3260,75.5762
-Hubli,Hubballi,Karnataka,15.3647,75.1240
+Jalandhar,Jalandhar,Punjab,31.326,75.5762
+Hubli,Hubballi,Karnataka,15.3647,75.124
 Vadodara,Vadodara,Gujarat,22.3072,73.1812
 Gulbarga,Kalaburagi,Karnataka,17.3297,76.8343
 AMD,Ahmedabad,Gujarat,23.0225,72.5714
@@ -52,9 +52,24 @@ Amd,Ahmedabad,Gujarat,23.0225,72.5714
 Amdavad,Ahmedabad,Gujarat,23.0225,72.5714
 GGN,Gurugram,Haryana,28.4595,77.0266
 PNQ,Pune,Maharashtra,18.5204,73.8567
-LowerParel,Mumbai,Maharashtra,19.0760,72.8777
+LowerParel,Mumbai,Maharashtra,19.076,72.8777
 Janakpuri,Delhi,Delhi,28.7041,77.1025
 HBR,Bengaluru,Karnataka,12.9716,77.5946
-Hooghly,Hooghly,West Bengal,22.9089,88.3960
+Hooghly,Hooghly,West Bengal,22.9089,88.396
 Nalasopara,Nalasopara,Maharashtra,19.4176,72.8562
-Palwal,Palwal,Haryana,28.1487,77.3320
+Palwal,Palwal,Haryana,28.1487,77.332
+Cochin,Kochi,Kerala,9.9312,76.2673
+Kottayam,Kottayam,Kerala,9.5916,76.5222
+Thrissur,Thrissur,Kerala,10.5276,76.2144
+Pallakad,Palakkad,Kerala,10.7867,76.6548
+Trivandrum,Thiruvananthapuram,Kerala,8.5241,76.9366
+Ranipet,Ranipet,Tamil Nadu,12.9249,79.3308
+Silvassa,Silvassa,Dadra and Nagar Haveli,20.2738,73.014
+Nainital,Nainital,Uttarakhand,29.3919,79.4542
+Kashipur,Kashipur,Uttarakhand,29.2104,78.9619
+Khanna,Khanna,Punjab,30.705,76.222
+Shikohabad,Shikohabad,Uttar Pradesh,27.1077,78.5857
+Soraon,Soraon,Uttar Pradesh,25.5833,81.75
+Rupnarayanpur,Rupnarayanpur,West Bengal,23.6667,86.9
+Ambabadi,Jaipur,Rajasthan,26.9124,75.7873
+JoguGadwal,Gadwal,Telangana,16.235,77.795

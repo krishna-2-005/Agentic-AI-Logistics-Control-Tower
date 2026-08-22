@@ -75,6 +75,13 @@ python-dotenv>=1.0
 rich>=13.7
 typer>=0.12
 
+# ── Reference-data tooling (run once, output committed) ──────────────────────
+# Only `python -m src.dashboard.build_centre_coords` imports this, to turn the PIN
+# inside each centre code into coordinates. It needs the network on first use and the
+# dashboard never imports it — the generated `centre_coords.csv` is committed and the
+# map reads only that (D-009, D-019).
+pgeocode>=0.5
+
 # ── Dev / quality ────────────────────────────────────────────────────────────
 pytest>=8.2
 ruff>=0.4.9

@@ -163,6 +163,7 @@ Writes partitioned Parquet plus a `_quality_report.json` describing every row dr
 ```bash
 python -m src.pipeline.reconstruct --validate   # 144,867 segments -> 26,369 OD legs
 python -m src.pipeline.hubs                     # 26,369 legs -> 1,657 hubs
+python -m src.ml.audit                          # 1,130 corridors tested -> 273 bottlenecks
 python -m src.pipeline.contracts --keys         # verify all caches against the frozen schema
 ```
 
@@ -214,7 +215,7 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | Week | Gate | Tag |
 |---|---|---|
 | 1 | Cleaned Parquet v1 exists; every member loads it in Spark; LLM API responds | — |
-| 2 | Bottleneck corridor audit + India map exist | `week2-complete` (`audit-v1`) |
+| 2 | Bottleneck corridor audit + India map exist | `week2-complete` (`audit-v1`) — **met** |
 | 3 | Feature table frozen; baselines on the board; 100+ labelled synthetic documents | `week3-complete` |
 | 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) |
 | 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` |
@@ -230,9 +231,10 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 
 | Result | Value | Source |
 |---|---|---|
-| Corridor audit — significant bottleneck corridors | 34 slower and 36 faster of 99 tested corridors (FDR 0.05); worst runs 1.92× the network's typical overrun | [`benchmarks/raw/w2_top20_bottlenecks.csv`](benchmarks/raw/w2_top20_bottlenecks.csv) |
+| Corridor audit — significant bottleneck corridors | 273 slower and 512 faster of 1,130 tested corridors covering 78.6% of legs (FDR 0.05); worst runs 13.88× the network's typical overrun | [`benchmarks/raw/w2_top20_bottlenecks.csv`](benchmarks/raw/w2_top20_bottlenecks.csv) |
+| Corridor audit — robustness view at the old 30-leg floor | 34 slower and 36 faster of 99 tested; worst 1.92×. Shares **no corridor** with the 10-leg top 20 — see D-018 | [`benchmarks/raw/w2_corridor_audit_support30.csv`](benchmarks/raw/w2_corridor_audit_support30.csv) |
 | Hub friction — ranked hubs (≥30 outbound legs) | 121 of 1,657; median leg dwell 49 min (34.6% of wall clock) | [`benchmarks/raw/w2_hub_dwell.csv`](benchmarks/raw/w2_hub_dwell.csv) |
-| India map — audited corridors placed | 99 of 99; the 34 bottlenecks sit in 13 cities and 19 of them are intra-city | [`benchmarks/raw/w2_corridor_audit.csv`](benchmarks/raw/w2_corridor_audit.csv) |
+| India map — audited corridors placed | 1,130 of 1,130; the 273 bottlenecks sit in 169 cities and 70 of them are intra-city | [`benchmarks/raw/w2_corridor_audit.csv`](benchmarks/raw/w2_corridor_audit.csv) |
 | Best model MAE vs OSRM MAE | _pending W4_ | `benchmarks/ml_results.md` |
 | Sustained streaming throughput | _pending W5_ | `benchmarks/streaming_throughput.md` |
 | Agent evaluation summary | _pending W7_ | `benchmarks/agent_evaluation.md` |
