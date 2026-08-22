@@ -313,6 +313,36 @@ checking a number, never by reading the file.
 
 ---
 
+### P-24 · Widening the audit silently emptied two thirds of the map
+**Week 2 · Krishna · resolved**
+
+- **Symptom.** D-018 lowered the support floor from 30 legs to 10 and the audited set
+  went from 99 corridors to 1,130. The map page ran without a single error and reported
+  a healthy-looking picture. It was drawing **101 of the 273 bottlenecks.** Nothing was
+  red, nothing was logged, and the missing 172 looked exactly like corridors that had
+  never been bad.
+- **Cause.** Placement went through a hand-maintained table of 59 city names. That table
+  had been built against the 30-leg audited set, which was metro-heavy — Mumbai,
+  Bhiwandi, Delhi, Hyderabad. The 10-leg set reaches **139 towns it had never heard
+  of**, with a flat one-corridor-each tail: Nowda, Ragunthgnj, Kaptanganj, Manjhaul.
+  There was no top-20 of missing cities to add; the tail *was* the gap.
+- **Fix.** Placement moved onto the centre code, which carries a PIN — the same reason
+  D-002 keys corridors on codes rather than names. `centre_coords.csv` is generated
+  once from GeoNames postal data and places 1,605 of 1,657 centres; the hand table
+  stays as the fallback for the 52 whose PIN is `000000`. **Coverage went 101 → 273 of
+  273 bottlenecks, and 1,130 of 1,130 corridors.** Recorded as D-019.
+- **Cost.** ~2 hours, and it was only found by measuring coverage after the decision
+  rather than assuming the page followed the CSV. It *did* follow the CSV — every
+  corridor in it was read, and two thirds were then dropped on the floor.
+- **Carry, and this is the general one:** **a decision made in one member's area
+  silently changed the correctness of another's.** D-018 was argued entirely on
+  statistics — support, power, effect size — and every argument was sound. Its largest
+  practical effect was on a coordinate lookup nobody was thinking about. The Week 2
+  writeup had even predicted the *colour ramp* would need attention at the wider range
+  and said nothing about placement, because the ramp was the visible half. When a
+  decision changes the shape of a shared artefact, the checklist is every consumer of
+  that artefact, not the ones that come to mind.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
@@ -388,7 +418,7 @@ Week 2's two blocking problems (P-12 and the support floor) are both closed abov
 
 | # | Problem | Owner | Blocks |
 |---|---|---|---|
-| P-23 | One city-alias truth in two files — the patch holds, the duplication does not | Lahari + Krishna | a silent map gap the next time either list moves |
+| P-23 | One city-alias truth in two files — the patch holds, the duplication does not. Lower urgency since D-019: the map no longer places by name, so the lists now only affect labels and the 52-centre fallback | Lahari + Krishna | label drift; a fallback gap |
 | — | Null `source_city` / `dest_city` in `clean_v1` on `Mumbai Hub (Maharashtra)`-shaped names. The map works around it; the cache still carries it, and fixing at source is a `clean_v2` under D-016 | Mounika | any Week 3 feature keyed on city |
 | — | 13.5% of in-trip handoffs are chain breaks (D-015) | Mounika | Week 5 stream replay |
 | — | JDK 17 + winutils on Lahari's machine | Lahari | her local Spark runs |
