@@ -14,11 +14,16 @@ rule is what keeps it responsive during the live demo.
 from __future__ import annotations
 
 import json
+import math
+import re
 from pathlib import Path
 
+import folium
 import numpy as np
 import pandas as pd
+import plotly.graph_objects as go
 import streamlit as st
+from streamlit_folium import st_folium
 
 from src.common import config
 
@@ -56,20 +61,298 @@ def load_city_coords() -> pd.DataFrame:
 
 
 def city_of(facility_name: object) -> str | None:
-    """`Anand_VUNagar_DC (Gujarat)` → `Anand`."""
+    """`Anand_VUNagar_DC (Gujarat)` → `Anand`, `Mumbai Hub (Maharashtra)` → `Mumbai`.
+
+    Two naming shapes occur and only the first was handled originally. Most rows are
+    `City_Facility_Type (State)`, but 9 facilities separate the city with a space
+    instead — those came through as null cities in the Week 2 audit and would have
+    been silently missing dots here. Splitting on either separator covers both.
+    """
     if not isinstance(facility_name, str) or not facility_name:
         return None
-    return facility_name.split("_")[0].strip()
+    head = facility_name.split("(")[0]          # drop the trailing "(State)"
+    return re.split(r"[_\s]", head.strip(), maxsplit=1)[0].strip() or None
 
 
-def coverage_report(names: pd.Series) -> tuple[int, int, list[str]]:
-    """(mapped, total, unmapped city names) for a series of facility names."""
-    coords = load_city_coords()
-    known = set(coords["raw_city"])
-    cities = names.dropna().map(city_of).dropna()
-    unmapped = sorted(set(cities) - known)
-    mapped = int(cities.isin(known).sum())
-    return mapped, len(cities), unmapped
+CENTRE_COORDS = Path(__file__).parent / "reference" / "centre_coords.csv"
+
+
+@st.cache_data(show_spinner=False)
+def load_centre_coords() -> pd.DataFrame:
+    """Centre code → lat/lon, generated from the PIN inside each code.
+
+    Built by `python -m src.dashboard.build_centre_coords` from GeoNames postal data
+    and committed; the dashboard only reads it (D-009). Placement lives on the code
+    rather than on a parsed city name for the reason D-002 gives for keying corridors
+    on codes: a code is never null, never ambiguous, and never spelled two ways. The
+    hand-maintained city table is now only a fallback for the 52 centres whose PIN is
+    `000000` or is absent from the postal data.
+    """
+    if not CENTRE_COORDS.exists():
+        return pd.DataFrame(columns=["centre_code", "lat", "lon"])
+    return pd.read_csv(CENTRE_COORDS, usecols=["centre_code", "lat", "lon"])
+
+
+def coverage_report(audit: pd.DataFrame) -> tuple[int, int, list[str]]:
+    """(placed, total, names of what could not be placed) for an audited set.
+
+    Reports on **corridors**, not on city labels: a corridor needs both of its ends
+    located to be drawn, so counting cities overstated coverage. An unplaceable
+    corridor is a dot that never appears, which is why this is on the page rather than
+    in a log (P-21, P-24).
+    """
+    located, _ = locate_corridors(audit)
+    unplaced = audit[~audit["corridor_id"].isin(located["corridor_id"])]
+    names = sorted(
+        {n for n in pd.concat([unplaced["source_name"], unplaced["destination_name"]])
+         if isinstance(n, str)}
+    )
+    return len(located), len(audit), names
+
+
+# ── India map ────────────────────────────────────────────────────────────────
+# A diverging ramp, because `excess_ratio` has a real midpoint: 1.0 is a corridor
+# that overruns exactly as much as the network typically does. Red arm = worse than
+# that, blue arm = better, and the two arms carry the same number of steps so neither
+# direction looks more finely resolved than the other. Line weight repeats the
+# magnitude so severity survives a colourblind read; the two directions are also
+# separated by dash pattern, never by hue alone.
+# Four steps per arm rather than three since D-018. At the 30-leg floor the worst
+# corridor ran 1.92x and a top bin of "1.50x+" held a handful of near-identical
+# corridors. At 10 legs the range runs to 13.88x, and that same bin would have put a
+# 13.9x corridor and a 1.51x corridor in one colour — 110 of 273 bottlenecks in the
+# darkest shade, which is a ramp that has stopped ranking anything at the end where it
+# matters most. Cut points sit near the bottleneck distribution's median (1.39), p75
+# (1.78) and p95 (3.42), so the bins hold 50 / 113 / 86 / 24 rather than piling up.
+SEVERITY_BINS = [
+    #  upper bound, colour,     weight, label
+    (1.20, "#ec9694", 2.0, "1.00–1.20× — mildly worse"),
+    (1.50, "#e34948", 3.25, "1.20–1.50× — clearly worse"),
+    (2.50, "#a02726", 4.5, "1.50–2.50× — severe"),
+    (99.0, "#5e1413", 5.75, "2.50×+ — extreme"),
+]
+FASTER_BINS = [
+    (0.60, "#06203f", 5.75, "under 0.60× — extreme"),
+    (0.75, "#104281", 4.5, "0.60–0.75× — much better"),
+    (0.90, "#2a78d6", 3.25, "0.75–0.90× — clearly better"),
+    (1.00, "#86b6ef", 2.0, "0.90–1.00× — mildly better"),
+]
+
+SEVERITY_LEGEND = """
+<div style="display:flex;flex-wrap:wrap;gap:1.5rem;font-size:0.85rem;line-height:1.6">
+  <div>
+    <b>Slower than the network</b> — solid<br>
+    <span style="color:#ec9694">&#9644;&#9644;</span> 1.00–1.20&times;&nbsp;
+    <span style="color:#e34948">&#9644;&#9644;</span> 1.20–1.50&times;&nbsp;
+    <span style="color:#a02726">&#9644;&#9644;</span> 1.50–2.50&times;&nbsp;
+    <span style="color:#5e1413">&#9644;&#9644;</span> 2.50&times;+
+  </div>
+  <div>
+    <b>Faster than the network</b> — dashed<br>
+    <span style="color:#86b6ef">&#9644;&#9644;</span> 0.90–1.00&times;&nbsp;
+    <span style="color:#2a78d6">&#9644;&#9644;</span> 0.75–0.90&times;&nbsp;
+    <span style="color:#104281">&#9644;&#9644;</span> 0.60–0.75&times;&nbsp;
+    <span style="color:#06203f">&#9644;&#9644;</span> under 0.60&times;
+  </div>
+</div>
+"""
+
+
+def severity_style(excess: float, direction: str) -> tuple[str, float]:
+    """(colour, line weight) for one corridor's effect size."""
+    bins = SEVERITY_BINS if direction == "worse" else FASTER_BINS
+    for upper, colour, weight, _ in bins:
+        if excess <= upper:
+            return colour, weight
+    return bins[-1][1], bins[-1][2]
+
+
+@st.cache_data(show_spinner=False)
+def locate_corridors(audit: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
+    """Attach lat/lon and a display city to both ends of every audited corridor.
+
+    **Position comes from the centre code, the label comes from the name.** The code
+    carries a PIN and is never null or ambiguous; the facility name is spelled several
+    ways and parses to null on some shapes. Placing dots by parsed name is what capped
+    the map at 101 of 273 bottlenecks once D-018 widened the audited set (P-24), and
+    what silently lost 27 of 99 before that (P-21).
+
+    The hand-maintained city table is the fallback for centres whose PIN is `000000`
+    or is missing from the postal data. Whatever neither can place is returned rather
+    than dropped, so the page can say so.
+    """
+    centres = load_centre_coords().drop_duplicates("centre_code").set_index("centre_code")
+    coords = load_city_coords().drop_duplicates("raw_city").set_index("raw_city")
+    df = audit.copy()
+    df["source_city"] = df["source_name"].map(city_of)
+    df["dest_city"] = df["destination_name"].map(city_of)
+
+    for end, code_col, city_col in (
+        ("src", "source_center", "source_city"),
+        ("dst", "destination_center", "dest_city"),
+    ):
+        lat = df[code_col].map(centres["lat"]) if len(centres) else pd.Series(index=df.index, dtype=float)
+        lon = df[code_col].map(centres["lon"]) if len(centres) else pd.Series(index=df.index, dtype=float)
+        # Fallback by city name only where the code could not place the centre.
+        df[f"{end}_lat"] = lat.fillna(df[city_col].map(coords["lat"]))
+        df[f"{end}_lon"] = lon.fillna(df[city_col].map(coords["lon"]))
+        # The label is always the canonical city name where one is known, so two
+        # spellings of one city do not draw as two bubbles.
+        canon = df[city_col].map(coords["canonical_city"])
+        df[f"{end}_name"] = canon.fillna(df[city_col])
+
+    df["intra_city"] = df["src_name"] == df["dst_name"]
+    placed = df["src_lat"].notna() & df["dst_lat"].notna()
+    # Only the end that actually failed — reporting both ends of a half-placed
+    # corridor names cities that are on the map and reads as a bigger gap than it is.
+    missing = sorted(
+        {c for c in pd.concat([
+            df.loc[df["src_lat"].isna(), "source_city"],
+            df.loc[df["dst_lat"].isna(), "dest_city"],
+        ]) if isinstance(c, str)}
+    )
+    return df[placed], missing
+
+
+def city_severity(corridors: pd.DataFrame) -> pd.DataFrame:
+    """Audited corridors rolled up to the city they leave from.
+
+    The rollup is not cosmetic. A large share of bottlenecks start and end in the same
+    city and most span a short distance, so drawn as great-circle lines they are
+    near-zero-length marks at national zoom — the worst corridors in the network would
+    be the ones you cannot see (P-20). Severity belongs to the city here, and the lines
+    below are the minority of corridors that genuinely cross a distance.
+
+    The exact shares are printed on the page from whatever is in the CSV rather than
+    quoted here: they moved substantially when D-018 changed the audited set, and a
+    docstring is not a place a number stays true.
+    """
+    g = corridors.groupby("src_name", as_index=False).agg(
+        lat=("src_lat", "first"),
+        lon=("src_lon", "first"),
+        corridors=("corridor_id", "size"),
+        legs=("n_legs", "sum"),
+        worst=("excess_ratio", lambda x: x.max() if x.mean() >= 1 else x.min()),
+        mean_excess=("excess_ratio", "mean"),
+        intra=("intra_city", "sum"),
+    )
+    return g.sort_values("corridors")
+
+
+def severity_map(corridors: pd.DataFrame) -> folium.Map:
+    """Cities sized by how many audited corridors leave them, coloured by severity.
+
+    Long corridors keep a line as well, drawn under the bubbles. Worst drawn last so
+    the darkest marks sit on top where cities overlap.
+    """
+    m = folium.Map(location=[22.0, 79.0], zoom_start=5, tiles="CartoDB positron")
+
+    spans = corridors[~corridors["intra_city"]]
+    for _, r in spans.sort_values("excess_ratio").iterrows():
+        colour, weight = severity_style(r["excess_ratio"], r["direction"])
+        folium.PolyLine(
+            [(r["src_lat"], r["src_lon"]), (r["dst_lat"], r["dst_lon"])],
+            color=colour,
+            weight=weight * 0.6,
+            opacity=0.55,
+            dash_array=None if r["direction"] == "worse" else "6,6",
+            tooltip=(
+                f"<b>{r['src_name']} &rarr; {r['dst_name']}</b><br>"
+                f"<code>{r['corridor_id']}</code><br>"
+                f"{r['excess_ratio']:.2f}&times; the network's typical overrun"
+            ),
+        ).add_to(m)
+
+    cities = city_severity(corridors)
+    for _, c in cities.iterrows():
+        direction = "worse" if c["mean_excess"] >= 1 else "better"
+        colour, _ = severity_style(c["worst"], direction)
+        folium.CircleMarker(
+            [c["lat"], c["lon"]],
+            radius=5 + 2.6 * math.sqrt(c["corridors"]),
+            color="#52514e",
+            weight=1,
+            fill=True,
+            fill_color=colour,
+            fill_opacity=0.85,
+            tooltip=folium.Tooltip(
+                f"<b>{c['src_name']}</b><br>"
+                f"{int(c['corridors'])} audited corridor(s) &middot; "
+                f"{int(c['legs']):,} legs<br>"
+                f"worst {c['worst']:.2f}&times; &middot; mean {c['mean_excess']:.2f}&times;<br>"
+                f"{int(c['intra'])} of them intra-city"
+            ),
+        ).add_to(m)
+
+    pts = pd.concat([
+        corridors[["src_lat", "src_lon"]].rename(columns={"src_lat": "lat", "src_lon": "lon"}),
+        corridors[["dst_lat", "dst_lon"]].rename(columns={"dst_lat": "lat", "dst_lon": "lon"}),
+    ]).dropna()
+    if len(pts) > 1:
+        m.fit_bounds([[pts.lat.min(), pts.lon.min()], [pts.lat.max(), pts.lon.max()]], padding=(30, 30))
+    return m
+
+
+# ── Hub friction ─────────────────────────────────────────────────────────────
+# One measure, one hue — a leaderboard compares magnitude within a single series, so
+# there is nothing for a second colour to mean and no legend to carry. Bars are direct-
+# labelled instead of carrying a value axis, and the axis lines stay recessive.
+INK_PRIMARY, INK_MUTED, SURFACE = "#0b0b0b", "#52514e", "#fcfcfb"
+BAR_HUE = "#2a78d6"
+
+
+def hub_bars(top: pd.DataFrame, col: str) -> go.Figure:
+    """Horizontal bars for the ranked hubs, labelled at the end of each bar."""
+    is_share = col.endswith("share_out")
+    # `IND400072AAD` -> `Mumbai · 400072AAD`: several facilities share a city, so the
+    # city alone would put two identical rows on the chart. The PIN carries the
+    # distinction in a form a reader can place; the `IND` prefix is constant noise.
+    labels = [
+        f"{c} · {code[3:]}" if c else code
+        for code, c in zip(top["centre_code"], top["city"].fillna(""), strict=True)
+    ]
+    text = [f"{v:.0%}" if is_share else f"{v:,.0f} min" for v in top[col]]
+
+    fig = go.Figure(
+        go.Bar(
+            x=top[col],
+            y=labels,
+            orientation="h",
+            marker={"color": BAR_HUE, "line": {"width": 0}},
+            text=text,
+            textposition="outside",
+            textfont={"color": INK_PRIMARY, "size": 12},
+            hovertemplate=(
+                "<b>%{y}</b><br>"
+                + ("dwell share %{x:.0%}" if is_share else "dwell %{x:,.0f} min")
+                + "<extra></extra>"
+            ),
+            cliponaxis=False,
+        )
+    )
+    fig.update_layout(
+        height=28 * len(top) + 90,
+        margin={"l": 210, "r": 72, "t": 8, "b": 34},
+        paper_bgcolor=SURFACE,
+        plot_bgcolor=SURFACE,
+        bargap=0.45,
+        showlegend=False,
+        xaxis={
+            "showgrid": True,
+            "gridcolor": "#eceae4",
+            "zeroline": False,
+            "tickformat": ".0%" if is_share else ",",
+            "tickfont": {"color": INK_MUTED, "size": 11},
+            "title": {
+                "text": "median share of a leg's wall clock spent stationary"
+                if is_share
+                else "median dwell minutes per outbound leg",
+                "font": {"color": INK_MUTED, "size": 11},
+            },
+        },
+        yaxis={"showgrid": False, "tickfont": {"color": INK_PRIMARY, "size": 11}},
+    )
+    return fig
 
 
 def pending(week: str, owner: str, what: str) -> None:
@@ -175,39 +458,201 @@ elif page == "Corridor audit":
 
 elif page == "India map":
     st.title("India map — corridors by delay severity")
-    pending(
-        "Week 2",
-        "Krishna",
-        "Folium map of corridors coloured by audited delay severity, drawn from the "
-        "Week 2 audit table and the city-coordinate lookup.",
-    )
-    coords = load_city_coords()
-    st.subheader("City-coordinate lookup")
-    st.caption(
-        f"{len(coords)} facility-name prefixes mapped to {coords['canonical_city'].nunique()} "
-        "canonical cities. Aliases are the point: `Bangalore`/`Bengaluru`, `MAA`→Chennai, "
-        "`FBD`→Faridabad all resolve to one dot."
-    )
-    st.dataframe(coords, use_container_width=True, hide_index=True, height=300)
+    audit = load_csv(config.BENCHMARKS_RAW_DIR / "w2_corridor_audit.csv")
 
-    support = load_csv(config.BENCHMARKS_RAW_DIR / "w1_corridor_support.csv")
-    if support is not None:
-        mapped, total, unmapped = coverage_report(support["source_name"])
-        st.metric("Corridor sources resolvable to coordinates", f"{mapped / total * 100:.1f}%")
-        if unmapped:
-            with st.expander(f"{len(unmapped)} unmapped city prefixes"):
-                st.write(", ".join(unmapped[:200]))
-                st.caption("Add rows to `src/dashboard/reference/india_city_coords.csv` to map these.")
+    if audit is None:
+        pending(
+            "Week 2",
+            "Lahari",
+            "The map draws Lahari's audited corridors. Run `python -m src.ml.audit` to "
+            "build `benchmarks/raw/w2_corridor_audit.csv`, then reload.",
+        )
+    else:
+        drawn, missing = locate_corridors(audit)
+        sig = drawn[drawn["is_significant"]]
+
+        st.caption(
+            "Each line is a corridor whose overrun differs from the rest of the network "
+            "at FDR 0.05 (Lahari's audit, D-002 grain). **Colour is the effect size, not "
+            "the delay** — `excess_ratio` reads as this corridor's typical overrun as a "
+            "multiple of the network's own, so 1.0 is an ordinary corridor on a network "
+            "that already runs at twice its plan."
+        )
+
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Corridors drawn", f"{len(sig)} of {int(audit['is_significant'].sum())}")
+        c2.metric("Slower than the network", f"{int((sig['direction'] == 'worse').sum())}")
+        c3.metric("Faster than the network", f"{int((sig['direction'] == 'better').sum())}")
+
+        show = st.radio(
+            "Show",
+            ["Bottlenecks only", "Both directions", "Faster only"],
+            horizontal=True,
+            help="The audit found the planner wrong in both directions. Showing only the "
+            "slow half would misdescribe it.",
+        )
+        keep = {"Bottlenecks only": ["worse"], "Faster only": ["better"]}.get(
+            show, ["worse", "better"]
+        )
+        plot = sig[sig["direction"].isin(keep)]
+
+        st_folium(severity_map(plot), use_container_width=True, height=560, returned_objects=[])
+        st.markdown(SEVERITY_LEGEND, unsafe_allow_html=True)
+        intra = int(plot["intra_city"].sum())
+        short = int((plot["mean_osrm_km"] < 50).sum())
+        pairs = plot.groupby(["src_name", "dst_name"])["corridor_id"].size()
+        doubled = pairs[pairs > 1]
+        st.caption(
+            f"**A bubble is a city, not a route.** {intra} of the {len(plot)} corridors "
+            f"shown start and end in the same city and {short} span under 50 km — drawn as "
+            "lines on a map of India those are marks of near-zero length, so the page maps "
+            "cities and draws a line only where a corridor genuinely crosses a distance "
+            "(P-20). Bubble size is how many audited corridors leave the city; colour is the "
+            "worst effect size among them. Lines are great-circle and **not routed**: a "
+            "corridor is a pair of facilities (D-002), so a line says which pair, not which "
+            "road."
+            + (
+                f" {len(doubled)} city pairs carry more than one facility pair here — up to "
+                f"{int(doubled.max())} on one pair — which is why a city pair can hold both a "
+                "bottleneck and a fast corridor, and why a rollup has to average them rather "
+                "than pick one."
+                if len(doubled)
+                else ""
+            )
+        )
+
+        with st.expander(f"The {len(plot)} corridors on the map"):
+            cols = [
+                "source_city", "dest_city", "corridor_id", "n_legs",
+                "median_gap_ratio", "excess_ratio", "mean_gap_min", "q_value",
+            ]
+            st.dataframe(
+                plot[cols].sort_values("excess_ratio", ascending=False),
+                use_container_width=True, hide_index=True,
+            )
+
+        st.subheader("Coordinate coverage")
+        placed_n, total_n, unplaced_names = coverage_report(audit)
+        if unplaced_names:
+            st.warning(
+                f"{total_n - placed_n} of {total_n} audited corridors could not be placed. "
+                "Unresolved facilities: " + ", ".join(unplaced_names[:20])
+            )
+            st.caption(
+                "Fix by adding the facility's city prefix to "
+                "`src/dashboard/reference/india_city_coords.csv`, or by re-running "
+                "`python -m src.dashboard.build_centre_coords` if the centre is new."
+            )
+        else:
+            st.success(
+                f"All {total_n:,} audited corridors resolve to coordinates."
+            )
+        st.caption(
+            "**Position comes from the centre code, the label from the facility name.** "
+            "Every code carries a PIN — `IND282002AAD` is 282002 — so "
+            "`centre_coords.csv` places 1,605 of the network's 1,657 centres straight from "
+            "the code, generated once from GeoNames postal data (CC BY 4.0) and committed. "
+            "The hand-maintained city table below is now only the fallback for centres whose "
+            "PIN is `000000` or is missing from the postal data. Placing dots by parsed city "
+            "name is what silently capped this map at 101 of 273 bottlenecks when D-018 "
+            "widened the audited set beyond the metros the table knew (P-24)."
+        )
+        with st.expander(
+            f"Coordinate tables — {len(load_centre_coords()):,} centre codes, "
+            f"{len(load_city_coords())} name fallbacks"
+        ):
+            st.dataframe(load_city_coords(), use_container_width=True, hide_index=True)
 
 elif page == "Hub friction":
-    st.title("Hub friction")
-    pending(
-        "Week 2",
-        "Mounika",
-        "Dwell time between segments, ranked per hub. Week 1 already established that "
-        "`start_scan_to_end_scan − actual_time` is dwell (median ~49 min per leg), so "
-        "this needs no new columns — only the Spark reconstruction.",
-    )
+    st.title("Hub friction — where shipments sit still")
+    hubs = load_csv(config.BENCHMARKS_RAW_DIR / "w2_hub_dwell.csv")
+
+    if hubs is None:
+        pending(
+            "Week 2",
+            "Mounika",
+            "Run `python -m src.pipeline.hubs` to build "
+            "`benchmarks/raw/w2_hub_dwell.csv`, then reload.",
+        )
+    else:
+        ranked = hubs[hubs["friction_rank"].notna()]
+        st.caption(
+            "Dwell is measured **inside** a leg — `start_scan_to_end_scan − actual_time`, "
+            "the part of a leg's wall clock the shipment was not moving (D-015). The gap "
+            "*between* legs is not dwell: the publisher closes one leg's window as it opens "
+            "the next, so on a continuous handoff there is structurally nothing to measure."
+        )
+
+        c1, c2, c3 = st.columns(3)
+        # the CSV carries only the ranked hubs, so "N of len(hubs)" would read "121 of 121"
+        c1.metric("Hubs ranked", f"{len(ranked)}", help="Facilities with ≥30 outbound legs (D-015)")
+        c2.metric("Median dwell share", f"{ranked['median_dwell_share_out'].median():.0%}")
+        c3.metric("Worst hub", f"{ranked['median_dwell_share_out'].max():.0%}")
+
+        metric = st.radio(
+            "Rank by",
+            ["Dwell share (D-015)", "Raw dwell minutes"],
+            horizontal=True,
+            help="The two rankings disagree. Switching shows how much.",
+        )
+        col = ("median_dwell_share_out" if metric.startswith("Dwell share")
+               else "median_dwell_min_out")
+        top = ranked.nlargest(20, col).iloc[::-1]
+        st.plotly_chart(hub_bars(top, col), use_container_width=True)
+
+        share_top = set(ranked.nlargest(20, "median_dwell_share_out")["centre_code"])
+        min_top = set(ranked.nlargest(20, "median_dwell_min_out")["centre_code"])
+        rho = ranked["median_dwell_share_out"].corr(
+            ranked["median_dwell_min_out"], method="spearman"
+        )
+        st.info(
+            f"**Why share, not minutes (D-015).** The two rankings share only "
+            f"**{len(share_top & min_top)} of their top 20** hubs (Spearman {rho:.2f}) — flip "
+            "the toggle and most of the leaderboard changes. Lahari's audit settled it against "
+            "a column neither metric is built from: raw minutes correlate **+0.55** with how "
+            "long a hub's legs are *planned* to take, so a leaderboard on minutes would "
+            "substantially rank hubs by the length of the legs they happen to serve. Dwell "
+            "share runs **−0.30** against the same column."
+        )
+
+        st.subheader("Dispatch is not receipt")
+        both = ranked[["median_dwell_share_out", "median_dwell_share_in"]].dropna()
+        st.caption(
+            f"A leg's idle minutes cannot be split between its two ends from leg-grain data, "
+            f"so both ends are credited and reported separately. Across ranked hubs the two "
+            f"series correlate only **{both.corr(method='spearman').iloc[0, 1]:.2f}** — a hub "
+            "can be slow to dispatch and quick to receive, and one number would hide that."
+        )
+
+        cols = [
+            "friction_rank", "centre_code", "city", "state", "n_legs_out",
+            "median_dwell_share_out", "median_dwell_min_out", "p90_dwell_min_out",
+            "median_dwell_share_in", "chain_break_rate",
+        ]
+        st.dataframe(
+            ranked.sort_values("friction_rank")[cols],
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                "friction_rank": st.column_config.NumberColumn("#", format="%d"),
+                "median_dwell_share_out": st.column_config.ProgressColumn(
+                    "Dwell share (out)", format="%.0f%%", min_value=0, max_value=1
+                ),
+                "median_dwell_share_in": st.column_config.NumberColumn(
+                    "Dwell share (in)", format="%.2f"
+                ),
+                "chain_break_rate": st.column_config.NumberColumn(
+                    "Chain breaks", format="%.2f",
+                    help="Share of handoffs where the shipment reappears at a facility it "
+                         "never travelled to — a data-quality signal, not dwell (D-015).",
+                ),
+            },
+        )
+        st.caption(
+            "**Hub friction is not corridor friction.** Neither dwell metric tracks the "
+            "overrun of the corridors leaving the hub (−0.05 and −0.00 against "
+            "`excess_ratio`). The India map and this leaderboard are two separate claims."
+        )
 
 elif page == "Delay predictor":
     st.title("What-if delay predictor")
