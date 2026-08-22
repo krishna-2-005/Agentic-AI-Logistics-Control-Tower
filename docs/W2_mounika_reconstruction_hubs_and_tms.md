@@ -59,7 +59,8 @@ From `data/processed/trips_v1/_reconstruction_report.json`:
 | Mean gap | 110.0 min |
 | Median dwell per leg | 49 min |
 | Legs over plan | **98.3%** |
-| Legs delayed at T=1.25 (D-003, still open) | 93.6% |
+| Legs delayed at T=2.00 (D-003, decided at the W2 sync) | 49.6% |
+| — at the blueprint's T=1.25, the finding that moved it | 93.6% |
 | On disk | **3.9 MB** Parquet, partitioned by `route_type` |
 
 Every figure reproduces Lahari's independent Week 1 numbers exactly.
