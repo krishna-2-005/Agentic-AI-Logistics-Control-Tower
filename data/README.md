@@ -102,7 +102,23 @@ Yellow Taxi data clears 50M rows comfortably.
 
 ---
 
-## 5. Rules
+## 5. Reference data committed to the repo
+
+Two small lookup tables live **in** the repo rather than under `data/`, because the
+dashboard must work on a fresh clone before any pipeline has been run (D-009):
+
+| File | What it holds | Where it came from |
+|---|---|---|
+| `src/dashboard/reference/centre_coords.csv` | one row per centre code, with the lat/lon of the PIN embedded in that code | **GeoNames** postal-code data for India, licensed **CC BY 4.0**, read once via `pgeocode` by `python -m src.dashboard.build_centre_coords` |
+| `src/dashboard/reference/india_city_coords.csv` | facility-name prefix → canonical city, state, lat/lon | hand-maintained; the fallback for the 52 centres whose PIN is `000000` or is absent from the postal data |
+
+Neither contains shipment data. GeoNames is attributed here and on the map page itself
+(CC BY requires attribution, not just permission). Regenerating the first needs the
+network once; the committed CSV is what every other run reads.
+
+---
+
+## 6. Rules
 
 - `raw/` is **immutable**. No script opens it in write mode. If cleaning needs to change, change the
   cleaning code and rebuild `processed/`.

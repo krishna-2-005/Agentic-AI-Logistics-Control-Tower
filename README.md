@@ -158,7 +158,27 @@ python -m src.pipeline.clean --input data/raw/delhivery_data.csv --output data/p
 
 Writes partitioned Parquet plus a `_quality_report.json` describing every row dropped and why.
 
-### 5. Explore
+### 5. Build the rest of the batch caches (Stages 2–3)
+
+```bash
+python -m src.pipeline.reconstruct --validate   # 144,867 segments -> 26,369 OD legs
+python -m src.pipeline.hubs                     # 26,369 legs -> 1,657 hubs
+python -m src.ml.audit                          # 1,130 corridors tested -> 273 bottlenecks
+python -m src.pipeline.contracts --keys         # verify all caches against the frozen schema
+```
+
+`--validate` diffs Stage 2 against an independent pandas implementation and exits
+non-zero on failure. `contracts` is the schema gate — see `docs/decisions.md` D-016 for
+the rule on bumping a version rather than repointing one.
+
+### 6. Run the mock TMS
+
+```bash
+python -m src.tms.seed        # 1,657 real centre codes from hubs_v1
+python -m src.tms             # http://localhost:8000/docs
+```
+
+### 7. Explore
 
 ```bash
 python -m src.pipeline.data_dictionary          # column-by-column profile → docs/
@@ -181,10 +201,11 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | `src/dashboard/` | Krishna | Streamlit control tower |
 | `src/automation/` | Mounika | auto-retraining loop, alert bot |
 | `src/common/` | shared | config, Spark session, logging, env check |
-| `docs/` | all | one weekly writeup per member + `decisions.md` + `results.md` |
+| `docs/` | all | one weekly writeup per member + `decisions.md` + `problems.md` + `results.md` |
 | `benchmarks/` | all | every number in the report traces to a file here |
 | `demo/` | Krishna | demo script, screenshots, sample events/documents |
 | `notebooks/` | all | exploration only, `w3_lahari_baselines.ipynb` naming |
+| `tests/` | all | pytest suites for the parts that can be tested without Spark |
 | `data/` | — | **gitignored** |
 
 ---
@@ -194,7 +215,7 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | Week | Gate | Tag |
 |---|---|---|
 | 1 | Cleaned Parquet v1 exists; every member loads it in Spark; LLM API responds | — |
-| 2 | Bottleneck corridor audit + India map exist | `week2-complete` (`audit-v1`) |
+| 2 | Bottleneck corridor audit + India map exist | `week2-complete` (`audit-v1`) — **met** |
 | 3 | Feature table frozen; baselines on the board; 100+ labelled synthetic documents | `week3-complete` |
 | 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) |
 | 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` |
@@ -210,7 +231,10 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 
 | Result | Value | Source |
 |---|---|---|
-| Corridor audit — significant bottleneck corridors | _pending W2_ | `benchmarks/raw/` |
+| Corridor audit — significant bottleneck corridors | 273 slower and 512 faster of 1,130 tested corridors covering 78.6% of legs (FDR 0.05); worst runs 13.88× the network's typical overrun | [`benchmarks/raw/w2_top20_bottlenecks.csv`](benchmarks/raw/w2_top20_bottlenecks.csv) |
+| Corridor audit — robustness view at the old 30-leg floor | 34 slower and 36 faster of 99 tested; worst 1.92×. Shares **no corridor** with the 10-leg top 20 — see D-018 | [`benchmarks/raw/w2_corridor_audit_support30.csv`](benchmarks/raw/w2_corridor_audit_support30.csv) |
+| Hub friction — ranked hubs (≥30 outbound legs) | 121 of 1,657; median leg dwell 49 min (34.6% of wall clock) | [`benchmarks/raw/w2_hub_dwell.csv`](benchmarks/raw/w2_hub_dwell.csv) |
+| India map — audited corridors placed | 1,130 of 1,130; the 273 bottlenecks sit in 169 cities and 70 of them are intra-city | [`benchmarks/raw/w2_corridor_audit.csv`](benchmarks/raw/w2_corridor_audit.csv) |
 | Best model MAE vs OSRM MAE | _pending W4_ | `benchmarks/ml_results.md` |
 | Sustained streaming throughput | _pending W5_ | `benchmarks/streaming_throughput.md` |
 | Agent evaluation summary | _pending W7_ | `benchmarks/agent_evaluation.md` |

@@ -43,7 +43,7 @@ class Results:
 def _run(cmd: list[str]) -> tuple[bool, str]:
     """Run a command, return (ok, first line of output). Never raises."""
     try:
-        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        proc = subprocess.run(cmd, capture_output=True, text=True, timeout=30, check=False)
     except (FileNotFoundError, subprocess.TimeoutExpired, OSError) as exc:
         return False, type(exc).__name__
     out = (proc.stdout or "") + (proc.stderr or "")
@@ -106,7 +106,7 @@ def check_java(r: Results) -> None:
 
 def check_pyspark(r: Results, quick: bool) -> None:
     try:
-        import pyspark  # noqa: PLC0415
+        import pyspark
     except ImportError:
         r.add("Spark", "pyspark importable", FAIL, "pip install -r requirements.txt")
         return
@@ -117,7 +117,7 @@ def check_pyspark(r: Results, quick: bool) -> None:
         return
 
     try:
-        from src.common.spark import get_spark, stop_spark  # noqa: PLC0415
+        from src.common.spark import get_spark, stop_spark
 
         spark = get_spark("check-env")
         n = spark.range(1000).count()
@@ -177,7 +177,7 @@ def check_llm(r: Results) -> None:
     present = [name for name, var in keys.items() if os.environ.get(var)]
 
     if provider == "ollama":
-        ok, line = _run(["ollama", "list"])
+        ok, _ = _run(["ollama", "list"])
         r.add("Agents", "LLM provider", PASS if ok else FAIL, "ollama" if ok else "ollama not reachable")
     else:
         var = keys.get(provider, "GEMINI_API_KEY")
@@ -198,7 +198,7 @@ def check_llm(r: Results) -> None:
     )
 
     try:
-        import langgraph  # noqa: PLC0415, F401
+        import langgraph  # noqa: F401
 
         r.add("Agents", "langgraph importable", PASS, "ok")
     except ImportError:

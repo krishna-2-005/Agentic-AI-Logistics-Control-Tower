@@ -1,0 +1,59 @@
+#!/bin/sh
+# pre-commit — stops the three things that are painful to undo once pushed.
+#
+# Installed by: git config core.hooksPath .githooks
+
+staged=$(git diff --cached --name-only --diff-filter=ACM)
+[ -z "$staged" ] && exit 0
+
+fail() {
+  echo "" >&2
+  echo "  commit rejected: $1" >&2
+  shift
+  for line in "$@"; do echo "  $line" >&2; done
+  echo "" >&2
+  exit 1
+}
+
+# ── 1. secrets ───────────────────────────────────────────────────────────────
+secrets=$(printf '%s\n' "$staged" | grep -E '(^|/)\.env$|(^|/)\.env\.git$|(^|/)\.env\.local$|\.pem$|\.key$|credentials\.json$')
+if [ -n "$secrets" ]; then
+  fail "secret file staged" "$secrets" "These are gitignored for a reason. Unstage them."
+fi
+
+# Key-shaped strings in the diff. Skips .example files, which carry blank keys.
+for f in $staged; do
+  case "$f" in *.example|*example*|.githooks/*) continue;; esac
+  [ -f "$f" ] || continue
+  if git diff --cached -- "$f" | grep -qE '^\+.*(AIza[0-9A-Za-z_-]{30,}|sk-ant-[0-9A-Za-z_-]{20,}|ghp_[0-9A-Za-z]{30,}|github_pat_[0-9A-Za-z_]{20,})'; then
+    fail "an API key or token appears in $f" \
+         "Move it to .env (or .env.git for tokens) and read it from there."
+  fi
+done
+
+# ── 2. raw data and large binaries ───────────────────────────────────────────
+data=$(printf '%s\n' "$staged" | grep -E '^data/(?!README\.md)' 2>/dev/null || printf '%s\n' "$staged" | grep -E '^data/' | grep -v '^data/README.md$')
+if [ -n "$data" ]; then
+  fail "file under data/ staged" "$data" "data/ is gitignored except data/README.md (GIT_RULES §7)."
+fi
+
+for f in $staged; do
+  [ -f "$f" ] || continue
+  size=$(wc -c < "$f" 2>/dev/null || echo 0)
+  if [ "$size" -gt 52428800 ]; then
+    fail "$f is $((size / 1048576)) MB (limit 50 MB)" "Do not commit model binaries or datasets."
+  fi
+done
+
+# ── 3. notebook outputs ──────────────────────────────────────────────────────
+for f in $staged; do
+  case "$f" in
+    *.ipynb)
+      if git show ":$f" 2>/dev/null | grep -q '"output_type"'; then
+        fail "$f has output cells" "Run: nbstripout $f   (GIT_RULES §7)"
+      fi
+      ;;
+  esac
+done
+
+exit 0
