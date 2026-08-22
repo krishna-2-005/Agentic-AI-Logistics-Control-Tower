@@ -65,6 +65,12 @@ LEG_CUMULATIVE = [
 ]
 
 
+#: The blueprint's proposed delay threshold. Pinned as a literal, deliberately: the
+#: Week 1 finding *is* "at 1.25 this labels 93.6% of legs delayed", and if that sentence
+#: read `config.DELAY_THRESHOLD` it would have quietly become a sentence about 2.00 the
+#: moment D-003 was decided — erasing the evidence for the decision it caused.
+BLUEPRINT_THRESHOLD = 1.25
+
 def to_leg_grain(df: pd.DataFrame) -> pd.DataFrame:
     """Collapse segment rows to one row per origin-destination leg.
 
@@ -240,52 +246,71 @@ def render_markdown(legs: pd.DataFrame, sens: pd.DataFrame, support: pd.DataFram
     o.append("|---|---|---|" + "---|" * sum(c.startswith("delayed_pct_") for c in sens.columns))
     for _, r in sens.iterrows():
         extra = " | ".join(f"{r[c]:.1f}%" for c in sens.columns if c.startswith("delayed_pct_"))
-        marker = (
-            " **(blueprint)**" if abs(r["threshold"] - config.DELAY_THRESHOLD) < 1e-9 else ""
-        )
+        if abs(r["threshold"] - config.DELAY_THRESHOLD) < 1e-9:
+            marker = " **(decided — D-003)**"
+        elif abs(r["threshold"] - BLUEPRINT_THRESHOLD) < 1e-9:
+            marker = " *(blueprint)*"
+        else:
+            marker = ""
         o.append(
             f"| {r['threshold']:.2f}{marker} | {int(r['delayed_legs']):,} | {r['delayed_pct']:.1f}% | {extra} |"
         )
     o.append("")
 
+    blueprint = sens[np.isclose(sens["threshold"], BLUEPRINT_THRESHOLD)].iloc[0]
     chosen = sens[np.isclose(sens["threshold"], config.DELAY_THRESHOLD)].iloc[0]
-    majority = max(chosen["delayed_pct"], 100 - chosen["delayed_pct"])
-    balanced = sens.iloc[(sens["delayed_pct"] - 50).abs().argmin()]
+    half = sens[np.isclose(sens["threshold"], 1.5)].iloc[0]
+    majority_blueprint = max(blueprint["delayed_pct"], 100 - blueprint["delayed_pct"])
+    majority_chosen = max(chosen["delayed_pct"], 100 - chosen["delayed_pct"])
 
-    o.append("### ⚠ The blueprint's 1.25 threshold does not survive contact with the data\n")
+    o.append("### The blueprint's 1.25 threshold did not survive contact with the data\n")
     o.append(
-        f"The blueprint proposes `T = 1.25`. At leg grain that labels "
-        f"**{chosen['delayed_pct']:.1f}% of legs delayed** — because the *median* leg already runs "
-        f"at {gr.median():.2f}x plan, so a 25% overrun is not an exception here, it is the norm.\n"
+        f"The blueprint proposed `T = {BLUEPRINT_THRESHOLD}`. At leg grain that labels "
+        f"**{blueprint['delayed_pct']:.1f}% of legs delayed** — because the *median* leg already "
+        f"runs at {gr.median():.2f}x plan, so a 25% overrun is not an exception on this network, "
+        "it is the norm.\n"
     )
     o.append(
-        f"That makes the classifier close to meaningless: a model that outputs \"delayed\" for every "
-        f"shipment scores **{majority:.1f}% accuracy** while carrying zero information. Precision "
-        "would look excellent and mean nothing, and the Exception Agent built on it in Week 6 would "
-        "flag essentially every shipment — which is the same as flagging none.\n"
+        "That makes the classifier close to meaningless: a model that outputs “delayed” for "
+        f"every shipment scores **{majority_blueprint:.1f}% accuracy** while carrying zero "
+        "information. Precision would look excellent and mean nothing, and the Exception Agent "
+        "built on it in Week 6 would flag essentially every shipment — which is the same as "
+        "flagging none.\n"
     )
     o.append(
-        f"**Recommendation: move the classification threshold to `T = {balanced['threshold']:.2f}`**, "
-        f"which splits the data {balanced['delayed_pct']:.1f}% / {100 - balanced['delayed_pct']:.1f}% "
-        "and gives a label that a model can actually be wrong about. Interpretation stays honest: "
-        "\"takes at least twice the planned time\" is a defensible definition of *operationally late* "
-        "on a network whose planner is biased this hard.\n"
+        "**Decided at the Week 2 sync — D-003: `config.DELAY_THRESHOLD` is "
+        f"{config.DELAY_THRESHOLD:.2f}.** That splits the legs {chosen['delayed_pct']:.1f}% / "
+        f"{100 - chosen['delayed_pct']:.1f}%, so the majority-class baseline falls from "
+        f"{majority_blueprint:.1f}% to {majority_chosen:.1f}% and the label becomes something a "
+        "model can be wrong about. Interpretation stays honest: “takes at least twice the "
+        "planned time” is a defensible definition of *operationally late* on a network whose "
+        "planner is biased this hard.\n"
     )
     o.append(
-        "**Two supporting moves, both worth taking regardless of the threshold chosen:**\n\n"
+        "**Two supporting moves, adopted with it:**\n\n"
         "1. **Lead with regression, not classification.** `gap_min` (median "
         f"{legs['gap_min'].median():,.0f} min, mean {legs['gap_min'].mean():,.0f} min) has no "
-        "threshold problem at all, and the headline result the blueprint actually wants — *our MAE "
-        "versus OSRM's MAE* — is a regression result. The classifier becomes a secondary framing "
-        "rather than the load-bearing one.\n"
-        "2. **Report the trivial baseline next to every classifier number.** Any accuracy figure "
-        "quoted without the majority-class rate beside it is unreadable, and a viva panel will ask.\n"
+        "threshold problem at all, and the headline the blueprint actually wants — *our MAE "
+        "against OSRM's MAE* — is a regression result. The classifier is the secondary framing; "
+        "it exists because Week 6's Exception Agent needs a flag to act on.\n"
+        "2. **Report the trivial baseline next to every classifier number, permanently.** An "
+        f"accuracy quoted without the majority-class rate — now {majority_chosen:.1f}% — beside "
+        "it is unreadable, and a viva panel will ask.\n"
     )
     o.append(
-        f"**Status: D-003 is OPEN pending team sign-off.** `config.DELAY_THRESHOLD` still holds the "
-        f"blueprint's {config.DELAY_THRESHOLD} so nothing silently changes underneath anyone; change "
-        "it in one place once the team agrees. Week 5's sensitivity run (1.15 / 1.25 / 1.50) should "
-        f"be extended to include {balanced['threshold']:.2f}.\n"
+        f"**Why {config.DELAY_THRESHOLD:.2f} and not 1.50.** 1.50 leaves "
+        f"{half['delayed_pct']:.1f}% positive — better, and still a classifier that scores in "
+        "the eighties by answering “delayed” every time. The threshold is chosen to make the "
+        "*label* informative, not to make the network look better or worse than it is. On this "
+        "data the balanced point and the defensible English sentence are the same number, which "
+        "is the only reason to prefer a round 2.00 to a tuned one.\n"
+    )
+    o.append(
+        "**The 1.25 row stays in the report.** The finding is that the blueprint's threshold "
+        f"labels {blueprint['delayed_pct']:.1f}% of legs delayed — not that the project settled "
+        f"on {config.DELAY_THRESHOLD:.2f}. A reader who cannot see the first cannot judge the "
+        "second. Week 5's sensitivity run covers 1.15 / 1.25 / 1.50 / "
+        f"{config.DELAY_THRESHOLD:.2f} so the choice is shown to be a choice.\n"
     )
 
     o.append("## 4. Corridor support\n")
@@ -299,14 +324,16 @@ def render_markdown(legs: pd.DataFrame, sens: pd.DataFrame, support: pd.DataFram
             f"| {kept['legs_observed'].sum() / support['legs_observed'].sum() * 100:.1f}% |"
         )
     o.append("")
-    kept30 = support[support["legs_observed"] >= config.MIN_CORRIDOR_SUPPORT]
+    kept = support[support["legs_observed"] >= config.MIN_CORRIDOR_SUPPORT]
     o.append(
-        f"**Decision (D-004): minimum support = {config.MIN_CORRIDOR_SUPPORT} legs.** That keeps "
-        f"{len(kept30):,} of {total_corridors:,} corridors "
-        f"({len(kept30) / total_corridors * 100:.1f}%) while still covering "
-        f"{kept30['legs_observed'].sum() / support['legs_observed'].sum() * 100:.1f}% of all legs. "
-        "The long tail of once-seen corridors cannot support a significance test and would dominate "
-        "any 'worst corridor' ranking with noise.\n"
+        f"**Decision (D-018, superseding D-004): minimum support = "
+        f"{config.MIN_CORRIDOR_SUPPORT} legs.** That keeps {len(kept):,} of "
+        f"{total_corridors:,} corridors ({len(kept) / total_corridors * 100:.1f}%), covering "
+        f"{kept['legs_observed'].sum() / support['legs_observed'].sum() * 100:.1f}% of all legs. "
+        "A floor is still needed — the long tail of once-seen corridors cannot support a "
+        "significance test and would dominate any worst-corridor ranking with noise — but the "
+        "Week 2 audit re-ran the whole test at every threshold and found 30 legs was removing "
+        "the finding rather than the noise. See D-018 and `W2_lahari_corridor_audit.md` §4.\n"
     )
 
     o.append("### Ten busiest corridors\n")
@@ -328,8 +355,9 @@ def render_markdown(legs: pd.DataFrame, sens: pd.DataFrame, support: pd.DataFram
     o.append("## 5. What this hands to Week 2\n")
     o.append(
         "- Corridor key `source_center>destination_center`, at leg grain (D-002).\n"
-        f"- Delay label `gap_ratio > {config.DELAY_THRESHOLD}` (D-003 — **open**, see §3).\n"
-        f"- Minimum corridor support {config.MIN_CORRIDOR_SUPPORT} legs (D-004).\n"
+        f"- Delay label `gap_ratio > {config.DELAY_THRESHOLD}` (D-003 — decided, see §3), with "
+        "the majority-class rate reported beside every classifier metric.\n"
+        f"- Minimum corridor support {config.MIN_CORRIDOR_SUPPORT} legs (D-018).\n"
         "- `log_gap_ratio` as the audit's test statistic — the raw ratio is right-skewed "
         f"(max {legs['gap_ratio'].max():.1f}), so Welch's t-test runs on logs.\n"
         "- `dwell_min` per leg, already computed — Week 2 hub friction does not need new columns.\n"
@@ -339,15 +367,14 @@ def render_markdown(legs: pd.DataFrame, sens: pd.DataFrame, support: pd.DataFram
 
     o.append("## 6. Open questions for the Week 1 sync\n")
     o.append(
-        "1. **D-003 threshold** (§3) — agree `T`, or agree to lead with regression. Blocks Week 3.\n"
-        f"2. **Corridor support vs coverage** — {config.MIN_CORRIDOR_SUPPORT} legs keeps only "
-        f"{len(kept30) / total_corridors * 100:.1f}% of corridors and "
-        f"{kept30['legs_observed'].sum() / support['legs_observed'].sum() * 100:.1f}% of legs. "
-        "The audit is therefore a claim about the busy core of the network, not the whole of it, "
-        "and the report must say so. If we want broader coverage, 10 legs retains "
-        f"{len(support[support['legs_observed'] >= 10]) / total_corridors * 100:.1f}% of corridors "
-        f"and {support[support['legs_observed'] >= 10]['legs_observed'].sum() / support['legs_observed'].sum() * 100:.1f}% "
-        "of legs, at the cost of weaker per-corridor tests.\n"
+        "1. **D-003 threshold** (§3) — *closed at the Week 2 sync:* `T` moves to "
+        f"{config.DELAY_THRESHOLD:.2f} and the project leads with regression on `gap_min`.\n"
+        f"2. **Corridor support vs coverage** — *closed at the Week 2 sync as D-018:* the floor "
+        f"is {config.MIN_CORRIDOR_SUPPORT} legs, keeping "
+        f"{len(kept) / total_corridors * 100:.1f}% of corridors and "
+        f"{kept['legs_observed'].sum() / support['legs_observed'].sum() * 100:.1f}% of legs. The "
+        "question this section raised in Week 1 — how much of the network does the audit "
+        "actually speak for — turned out to be the right one to press.\n"
         "3. **City naming** — `Bangalore` and `Bengaluru` both appear as city prefixes on distinct "
         "centre codes. Corridor keys use *codes*, so the statistics are unaffected, but the India "
         "map and any city-level rollup need a normalisation table. Krishna's Week 2 map work "
