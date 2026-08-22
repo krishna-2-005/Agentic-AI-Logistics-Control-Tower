@@ -42,14 +42,24 @@ RAW_ROWS = 144_867  # data rows, excluding the header
 RAW_COLUMNS = 24
 
 # ── Domain constants ─────────────────────────────────────────────────────────
-# A segment is "delayed" when realised time exceeds the OSRM estimate by this
-# factor. Agreed by Lahari + Mounika, Week 1 D3 — see docs/decisions.md D-003.
-# Sensitivity to 1.15 / 1.25 / 1.5 is tested in Week 5 (Lahari).
-DELAY_THRESHOLD = 1.25
+# A leg is "delayed" when realised time exceeds the OSRM estimate by this factor.
+# Raised from the blueprint's 1.25 at the Week 2 sync — see docs/decisions.md D-003.
+# At 1.25 the label was true of 93.6% of legs, because the median leg on this network
+# already runs at 2.00x plan; a classifier could score 93.6% knowing nothing. 2.00
+# splits the legs 49.6 / 50.4. Classification is the secondary framing either way:
+# the headline is regression on `gap_min`, which has no threshold at all.
+# Sensitivity across 1.10 - 2.00 is in benchmarks/raw/w1_delay_threshold_sensitivity.csv.
+DELAY_THRESHOLD = 2.00
 
-# Corridors with fewer than this many observed trips are excluded from the audit;
-# their gap statistics are too noisy to test. See docs/decisions.md D-004.
-MIN_CORRIDOR_SUPPORT = 30
+# Corridors with fewer than this many observed legs are excluded from the audit.
+# Lowered from 30 at the Week 2 sync — see docs/decisions.md D-018, which supersedes
+# D-004's provisional floor. The floor was set before any significance test existed;
+# with one, re-running the whole audit at each threshold showed 30 legs was not
+# trading power for coverage but removing the finding: 18.9% of legs covered and a
+# worst corridor at 1.92x, against 78.6% and 13.9x at 10 legs, with the significant
+# share unchanged (71% vs 70%). Welch is valid at n = 10 and the comparison group is
+# the whole 26,369-leg network either way.
+MIN_CORRIDOR_SUPPORT = 10
 
 # Hubs with fewer than this many outbound legs are not ranked on the friction
 # leaderboard, for the same reason. 30 legs leaves 121 of 1,657 facilities — see
