@@ -74,14 +74,40 @@ def city_of(facility_name: object) -> str | None:
     return re.split(r"[_\s]", head.strip(), maxsplit=1)[0].strip() or None
 
 
-def coverage_report(names: pd.Series) -> tuple[int, int, list[str]]:
-    """(mapped, total, unmapped city names) for a series of facility names."""
-    coords = load_city_coords()
-    known = set(coords["raw_city"])
-    cities = names.dropna().map(city_of).dropna()
-    unmapped = sorted(set(cities) - known)
-    mapped = int(cities.isin(known).sum())
-    return mapped, len(cities), unmapped
+CENTRE_COORDS = Path(__file__).parent / "reference" / "centre_coords.csv"
+
+
+@st.cache_data(show_spinner=False)
+def load_centre_coords() -> pd.DataFrame:
+    """Centre code → lat/lon, generated from the PIN inside each code.
+
+    Built by `python -m src.dashboard.build_centre_coords` from GeoNames postal data
+    and committed; the dashboard only reads it (D-009). Placement lives on the code
+    rather than on a parsed city name for the reason D-002 gives for keying corridors
+    on codes: a code is never null, never ambiguous, and never spelled two ways. The
+    hand-maintained city table is now only a fallback for the 52 centres whose PIN is
+    `000000` or is absent from the postal data.
+    """
+    if not CENTRE_COORDS.exists():
+        return pd.DataFrame(columns=["centre_code", "lat", "lon"])
+    return pd.read_csv(CENTRE_COORDS, usecols=["centre_code", "lat", "lon"])
+
+
+def coverage_report(audit: pd.DataFrame) -> tuple[int, int, list[str]]:
+    """(placed, total, names of what could not be placed) for an audited set.
+
+    Reports on **corridors**, not on city labels: a corridor needs both of its ends
+    located to be drawn, so counting cities overstated coverage. An unplaceable
+    corridor is a dot that never appears, which is why this is on the page rather than
+    in a log (P-21, P-24).
+    """
+    located, _ = locate_corridors(audit)
+    unplaced = audit[~audit["corridor_id"].isin(located["corridor_id"])]
+    names = sorted(
+        {n for n in pd.concat([unplaced["source_name"], unplaced["destination_name"]])
+         if isinstance(n, str)}
+    )
+    return len(located), len(audit), names
 
 
 # ── India map ────────────────────────────────────────────────────────────────
@@ -91,16 +117,25 @@ def coverage_report(names: pd.Series) -> tuple[int, int, list[str]]:
 # direction looks more finely resolved than the other. Line weight repeats the
 # magnitude so severity survives a colourblind read; the two directions are also
 # separated by dash pattern, never by hue alone.
+# Four steps per arm rather than three since D-018. At the 30-leg floor the worst
+# corridor ran 1.92x and a top bin of "1.50x+" held a handful of near-identical
+# corridors. At 10 legs the range runs to 13.88x, and that same bin would have put a
+# 13.9x corridor and a 1.51x corridor in one colour — 110 of 273 bottlenecks in the
+# darkest shade, which is a ramp that has stopped ranking anything at the end where it
+# matters most. Cut points sit near the bottleneck distribution's median (1.39), p75
+# (1.78) and p95 (3.42), so the bins hold 50 / 113 / 86 / 24 rather than piling up.
 SEVERITY_BINS = [
     #  upper bound, colour,     weight, label
-    (1.20, "#ec9694", 2.5, "1.00–1.20× — mildly worse"),
-    (1.50, "#e34948", 4.0, "1.20–1.50× — clearly worse"),
-    (99.0, "#a02726", 5.5, "1.50×+ — worst corridors"),
+    (1.20, "#ec9694", 2.0, "1.00–1.20× — mildly worse"),
+    (1.50, "#e34948", 3.25, "1.20–1.50× — clearly worse"),
+    (2.50, "#a02726", 4.5, "1.50–2.50× — severe"),
+    (99.0, "#5e1413", 5.75, "2.50×+ — extreme"),
 ]
 FASTER_BINS = [
-    (0.75, "#104281", 5.5, "under 0.75× — much better"),
-    (0.90, "#2a78d6", 4.0, "0.75–0.90× — clearly better"),
-    (1.00, "#86b6ef", 2.5, "0.90–1.00× — mildly better"),
+    (0.60, "#06203f", 5.75, "under 0.60× — extreme"),
+    (0.75, "#104281", 4.5, "0.60–0.75× — much better"),
+    (0.90, "#2a78d6", 3.25, "0.75–0.90× — clearly better"),
+    (1.00, "#86b6ef", 2.0, "0.90–1.00× — mildly better"),
 ]
 
 SEVERITY_LEGEND = """
@@ -109,13 +144,15 @@ SEVERITY_LEGEND = """
     <b>Slower than the network</b> — solid<br>
     <span style="color:#ec9694">&#9644;&#9644;</span> 1.00–1.20&times;&nbsp;
     <span style="color:#e34948">&#9644;&#9644;</span> 1.20–1.50&times;&nbsp;
-    <span style="color:#a02726">&#9644;&#9644;</span> 1.50&times;+
+    <span style="color:#a02726">&#9644;&#9644;</span> 1.50–2.50&times;&nbsp;
+    <span style="color:#5e1413">&#9644;&#9644;</span> 2.50&times;+
   </div>
   <div>
     <b>Faster than the network</b> — dashed<br>
     <span style="color:#86b6ef">&#9644;&#9644;</span> 0.90–1.00&times;&nbsp;
     <span style="color:#2a78d6">&#9644;&#9644;</span> 0.75–0.90&times;&nbsp;
-    <span style="color:#104281">&#9644;&#9644;</span> under 0.75&times;
+    <span style="color:#104281">&#9644;&#9644;</span> 0.60–0.75&times;&nbsp;
+    <span style="color:#06203f">&#9644;&#9644;</span> under 0.60&times;
   </div>
 </div>
 """
@@ -132,28 +169,47 @@ def severity_style(excess: float, direction: str) -> tuple[str, float]:
 
 @st.cache_data(show_spinner=False)
 def locate_corridors(audit: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
-    """Attach lat/lon to both ends of every audited corridor.
+    """Attach lat/lon and a display city to both ends of every audited corridor.
 
-    Cities are re-derived from the raw facility names rather than read from the
-    audit's own city columns: the audit's parser nulls the space-separated names,
-    and a null city here is a corridor silently absent from the map.
+    **Position comes from the centre code, the label comes from the name.** The code
+    carries a PIN and is never null or ambiguous; the facility name is spelled several
+    ways and parses to null on some shapes. Placing dots by parsed name is what capped
+    the map at 101 of 273 bottlenecks once D-018 widened the audited set (P-24), and
+    what silently lost 27 of 99 before that (P-21).
+
+    The hand-maintained city table is the fallback for centres whose PIN is `000000`
+    or is missing from the postal data. Whatever neither can place is returned rather
+    than dropped, so the page can say so.
     """
+    centres = load_centre_coords().drop_duplicates("centre_code").set_index("centre_code")
     coords = load_city_coords().drop_duplicates("raw_city").set_index("raw_city")
     df = audit.copy()
     df["source_city"] = df["source_name"].map(city_of)
     df["dest_city"] = df["destination_name"].map(city_of)
 
-    for end, col in (("src", "source_city"), ("dst", "dest_city")):
-        joined = df[col].map(coords["canonical_city"])
-        df[f"{end}_name"] = joined
-        df[f"{end}_lat"] = df[col].map(coords["lat"])
-        df[f"{end}_lon"] = df[col].map(coords["lon"])
+    for end, code_col, city_col in (
+        ("src", "source_center", "source_city"),
+        ("dst", "destination_center", "dest_city"),
+    ):
+        lat = df[code_col].map(centres["lat"]) if len(centres) else pd.Series(index=df.index, dtype=float)
+        lon = df[code_col].map(centres["lon"]) if len(centres) else pd.Series(index=df.index, dtype=float)
+        # Fallback by city name only where the code could not place the centre.
+        df[f"{end}_lat"] = lat.fillna(df[city_col].map(coords["lat"]))
+        df[f"{end}_lon"] = lon.fillna(df[city_col].map(coords["lon"]))
+        # The label is always the canonical city name where one is known, so two
+        # spellings of one city do not draw as two bubbles.
+        canon = df[city_col].map(coords["canonical_city"])
+        df[f"{end}_name"] = canon.fillna(df[city_col])
 
     df["intra_city"] = df["src_name"] == df["dst_name"]
     placed = df["src_lat"].notna() & df["dst_lat"].notna()
+    # Only the end that actually failed — reporting both ends of a half-placed
+    # corridor names cities that are on the map and reads as a bigger gap than it is.
     missing = sorted(
-        {c for c in pd.concat([df.loc[~placed, "source_city"], df.loc[~placed, "dest_city"]])
-         if isinstance(c, str) and c not in coords.index}
+        {c for c in pd.concat([
+            df.loc[df["src_lat"].isna(), "source_city"],
+            df.loc[df["dst_lat"].isna(), "dest_city"],
+        ]) if isinstance(c, str)}
     )
     return df[placed], missing
 
@@ -161,11 +217,15 @@ def locate_corridors(audit: pd.DataFrame) -> tuple[pd.DataFrame, list[str]]:
 def city_severity(corridors: pd.DataFrame) -> pd.DataFrame:
     """Audited corridors rolled up to the city they leave from.
 
-    The rollup is not cosmetic. 19 of the 34 bottlenecks start and end in the same
-    city and 33 of 34 span under 50 km, so drawn as great-circle lines they are
-    zero-length marks at national zoom — the worst corridors in the network would be
-    the ones you cannot see. Severity belongs to the city here, and the lines below
-    are the minority of corridors that genuinely cross a distance.
+    The rollup is not cosmetic. A large share of bottlenecks start and end in the same
+    city and most span a short distance, so drawn as great-circle lines they are
+    near-zero-length marks at national zoom — the worst corridors in the network would
+    be the ones you cannot see (P-20). Severity belongs to the city here, and the lines
+    below are the minority of corridors that genuinely cross a distance.
+
+    The exact shares are printed on the page from whatever is in the CSV rather than
+    quoted here: they moved substantially when D-018 changed the audited set, and a
+    docstring is not a place a number stays true.
     """
     g = corridors.groupby("src_name", as_index=False).agg(
         lat=("src_lat", "first"),
@@ -438,16 +498,27 @@ elif page == "India map":
 
         st_folium(severity_map(plot), use_container_width=True, height=560, returned_objects=[])
         st.markdown(SEVERITY_LEGEND, unsafe_allow_html=True)
+        intra = int(plot["intra_city"].sum())
+        short = int((plot["mean_osrm_km"] < 50).sum())
+        pairs = plot.groupby(["src_name", "dst_name"])["corridor_id"].size()
+        doubled = pairs[pairs > 1]
         st.caption(
-            f"**A bubble is a city, not a route.** {int(plot['intra_city'].sum())} of the "
-            f"{len(plot)} corridors shown start and end in the same city, and almost all the "
-            "rest are metro-fringe hops under 50 km — drawn as lines on a map of India they "
-            "would be marks of zero length. Bubble size is how many audited corridors leave "
-            "the city; colour is the worst effect size among them. Lines are drawn only for "
-            "corridors that actually cross a distance, are great-circle and **not routed**: "
-            "a corridor is a pair of facilities (D-002), so the line says which pair, not "
-            "which road. Several facility pairs collapse onto one city pair, which is why "
-            "`Delhi → Gurgaon` appears as both a bottleneck and a fast corridor."
+            f"**A bubble is a city, not a route.** {intra} of the {len(plot)} corridors "
+            f"shown start and end in the same city and {short} span under 50 km — drawn as "
+            "lines on a map of India those are marks of near-zero length, so the page maps "
+            "cities and draws a line only where a corridor genuinely crosses a distance "
+            "(P-20). Bubble size is how many audited corridors leave the city; colour is the "
+            "worst effect size among them. Lines are great-circle and **not routed**: a "
+            "corridor is a pair of facilities (D-002), so a line says which pair, not which "
+            "road."
+            + (
+                f" {len(doubled)} city pairs carry more than one facility pair here — up to "
+                f"{int(doubled.max())} on one pair — which is why a city pair can hold both a "
+                "bottleneck and a fast corridor, and why a rollup has to average them rather "
+                "than pick one."
+                if len(doubled)
+                else ""
+            )
         )
 
         with st.expander(f"The {len(plot)} corridors on the map"):
@@ -461,21 +532,35 @@ elif page == "India map":
             )
 
         st.subheader("Coordinate coverage")
-        if missing:
+        placed_n, total_n, unplaced_names = coverage_report(audit)
+        if unplaced_names:
             st.warning(
-                f"{len(missing)} corridor(s) could not be placed: "
-                + ", ".join(sorted(missing)[:20])
+                f"{total_n - placed_n} of {total_n} audited corridors could not be placed. "
+                "Unresolved facilities: " + ", ".join(unplaced_names[:20])
             )
-            st.caption("Add rows to `src/dashboard/reference/india_city_coords.csv`.")
+            st.caption(
+                "Fix by adding the facility's city prefix to "
+                "`src/dashboard/reference/india_city_coords.csv`, or by re-running "
+                "`python -m src.dashboard.build_centre_coords` if the centre is new."
+            )
         else:
             st.success(
-                f"All {len(drawn)} audited corridors resolve to coordinates. The lookup "
-                "carries the aliases that make that true — `Bangalore`/`Bengaluru`, "
-                "`AMD`/`Amd`/`Amdavad`→Ahmedabad, `MAA`→Chennai, `GGN`→Gurugram — and "
-                "`city_of()` handles the nine facilities that separate the city with a "
-                "space (`Mumbai Hub (Maharashtra)`) rather than an underscore."
+                f"All {total_n:,} audited corridors resolve to coordinates."
             )
-        with st.expander(f"City-coordinate lookup ({len(load_city_coords())} prefixes)"):
+        st.caption(
+            "**Position comes from the centre code, the label from the facility name.** "
+            "Every code carries a PIN — `IND282002AAD` is 282002 — so "
+            "`centre_coords.csv` places 1,605 of the network's 1,657 centres straight from "
+            "the code, generated once from GeoNames postal data (CC BY 4.0) and committed. "
+            "The hand-maintained city table below is now only the fallback for centres whose "
+            "PIN is `000000` or is missing from the postal data. Placing dots by parsed city "
+            "name is what silently capped this map at 101 of 273 bottlenecks when D-018 "
+            "widened the audited set beyond the metros the table knew (P-24)."
+        )
+        with st.expander(
+            f"Coordinate tables — {len(load_centre_coords()):,} centre codes, "
+            f"{len(load_city_coords())} name fallbacks"
+        ):
             st.dataframe(load_city_coords(), use_container_width=True, hide_index=True)
 
 elif page == "Hub friction":
