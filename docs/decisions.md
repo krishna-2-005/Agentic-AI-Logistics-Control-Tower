@@ -46,8 +46,8 @@ along a leg — it is distance covered, not distance remaining.
 
 ---
 
-## D-003 · Delay label threshold — `OPEN` ⚠
-**Week 1 · raised by Lahari · blocks Week 3**
+## D-003 · Delay label threshold — `DECIDED`
+**Week 1 · raised by Lahari · closed at the Week 2 sync, all three agreed**
 
 Label: `actual_time > T × osrm_time` at leg grain. The blueprint proposes `T = 1.25`.
 
@@ -74,15 +74,42 @@ same as flagging none.
    *our MAE vs OSRM's MAE* — is a regression result anyway.
 3. Report the majority-class rate beside every classifier metric, permanently.
 
-**Until this is decided,** `config.DELAY_THRESHOLD` holds the blueprint's `1.25` so
-nothing changes silently under anyone. Changing it is a one-line edit in
-`src/common/config.py`. Week 5's sensitivity run must be extended to include 2.00.
+**Decided: all three recommendations are adopted.**
 
-Evidence: `docs/W1_lahari_eda.md` §3, `benchmarks/raw/w1_delay_threshold_sensitivity.csv`.
+1. `config.DELAY_THRESHOLD = 2.00`. The label is now "took at least twice the planned
+   time", which splits the legs 49.6 / 50.4 and is defensible as *operationally late*
+   on a network whose median leg already runs at 2.00× plan.
+2. **The project leads with regression.** The headline result of Week 4 is MAE on
+   `gap_min` against OSRM's MAE — a comparison with no threshold in it at all.
+   Classification is the secondary framing, kept because Week 6's Exception Agent needs
+   a flag to act on, not because it is the stronger result.
+3. **The majority-class rate is reported beside every classifier metric, permanently.**
+   At T = 2.00 that is 50.4%, so an accuracy of 0.72 now reads as what it is. This is a
+   rule for the report and the paper, not a one-off caveat.
+
+**Why 2.00 and not 1.50.** 1.50 leaves 83.6% positive — better than 93.6% and still a
+classifier that can score in the eighties by answering "delayed" every time. The
+threshold is chosen to make the *label* informative, not to make the network look
+better or worse than it is; on this data the balanced point and the defensible English
+sentence happen to be the same number, which is the only reason to prefer a round 2.00
+to a tuned one.
+
+**What it does not change.** The Week 1 finding stands exactly as written and is the
+reason for this decision: at the blueprint's 1.25, **93.6% of legs are labelled
+delayed**. That number stays in `results.md` and in the paper, because a reader has to
+see why the threshold moved. The full sweep is in
+`benchmarks/raw/w1_delay_threshold_sensitivity.csv` and nothing about it was recomputed
+— only which row the project builds on.
+
+**Carried to Week 5:** the sensitivity run is extended to 1.15 / 1.25 / 1.50 / 2.00, so
+the choice is shown to be a choice rather than a hyperparameter nobody revisited.
+
+Evidence: `docs/W1_lahari_data_dictionary_and_eda.md` §3,
+`benchmarks/raw/w1_delay_threshold_sensitivity.csv`.
 
 ---
 
-## D-004 · Minimum corridor support for the audit — `DECIDED (revisited at W2 — see D-018)`
+## D-004 · Minimum corridor support for the audit — `SUPERSEDED by D-018`
 **Week 1 · Lahari**
 
 Corridors with fewer than **30 observed legs** are excluded from the Stage 3 audit.
@@ -105,7 +132,10 @@ costs is the finding itself. The worst corridor at 30 legs runs 1.92× the netwo
 typical overrun, at 10 legs it runs 13.9×. The genuinely broken corridors are mostly
 rare corridors, and the floor removes them before the test runs.
 
-`MIN_CORRIDOR_SUPPORT` stays at 30 until the team agrees the change — see **D-018**.
+`MIN_CORRIDOR_SUPPORT` moved to 10 at the Week 2 sync — see **D-018**, which carries the
+decision and the caveats it commits us to. This entry is left as written, per the rule at
+the top of this file: the reasoning for a 30-leg floor is still sound reasoning, and the
+report needs to be able to reconstruct why the project believed it.
 
 Evidence: `docs/W2_lahari_corridor_audit.md` §4,
 `benchmarks/raw/w2_support_sensitivity.csv`.
@@ -434,8 +464,8 @@ service is up.
 
 ---
 
-## D-018 · Lower the audited-corridor support floor to 10 legs — `OPEN` ⚠
-**Week 2 · raised by Lahari · blocks the Week 2 headline and Krishna's India map**
+## D-018 · Lower the audited-corridor support floor to 10 legs — `DECIDED`
+**Week 2 · raised by Lahari · agreed by all three at the Week 2 sync · supersedes D-004**
 
 D-004's 30-leg floor was set in the abstract, before any significance test existed. Now
 that one does, the whole audit re-run at each threshold says the floor is not trading
@@ -462,22 +492,60 @@ them to be a lucky sample, so the first few rows of the loose table are provisio
 a way the 30-leg table's are not. The leg count in every row is what lets a reader see
 that; a top-20 map built off the loose table should carry it too.
 
-**Until this is decided,** `config.MIN_CORRIDOR_SUPPORT` holds 30, the same way D-003
-leaves `DELAY_THRESHOLD` alone. Both tables are already written —
-`benchmarks/raw/w2_corridor_audit.csv` at 30 and `w2_corridor_audit_support10.csv` at
-10 — so the decision costs a re-read, not a re-run.
+**Decided: the floor moves to 10.** `config.MIN_CORRIDOR_SUPPORT = 10`, and the audit
+was re-run end to end at it. The Week 2 headline is now **273 bottlenecks and 512
+significantly faster corridors of 1,130 tested, covering 78.6% of the network's legs,
+worst corridor 13.88×** — Kanpur → Kanpur, on 13 legs.
+
+D-004 is **superseded, not overturned.** Its reasoning — that ranking 2,783 mostly
+singleton corridors ranks noise — still holds, and a floor is still needed. What the
+sweep showed is that the floor was one notch higher than the thing it was built to
+find.
+
+**Three things the decision commits us to, because the cost is real:**
+
+1. **Every ranked row prints its leg count.** With 1,130 tests in the family, the
+   single largest `excess_ratio` is by construction the likeliest of all of them to be
+   a lucky sample. The leg count is what lets a reader discount a 13.9× on 13 legs
+   against a 1.5× on 100.
+2. **The 30-leg audit stays, as `benchmarks/raw/w2_corridor_audit_support30.csv`.**
+   Not as an archive — as the comparison view whose top rows carry no winner's curse
+   worth naming. A claim that survives both tables goes in the paper; a claim that
+   appears only at the top of the loose table is a lead.
+3. **Both tables are cited in the report, because they describe different networks.**
+   This was not anticipated when the recommendation was written and is the most
+   interesting thing to come out of it: *the two top-20 tables share no corridor at
+   all.* The 30-leg table is metro — Maharashtra 11 of 20, Mumbai/Bhiwandi,
+   Delhi/Gurgaon, intra-Hyderabad — and reads as a story about urban congestion. The
+   10-leg table is district feeders between towns — Bihar 4, Maharashtra 3, Uttar
+   Pradesh 2 — Phulpur → Allahabad, Malvan → Sawantwadi, three separate corridors into
+   Muzaffarpur. **What the busy core suffers from and what the network's worst
+   corridors suffer from are not the same thing**, and Week 4's error analysis must not
+   assume one model explains both.
+
+**Consequences for the rest of the project.** Week 3's corridor-history feature now has
+78.6% of legs with a corridor it has seen before rather than 18.9% — the single largest
+gain from this decision, and it is a coverage gain, not a significance one. Week 6's
+Invoice Auditor can price far more corridors from measured history. Krishna's India map
+follows the CSV without a code change, but its colour ramp and its coordinate table both
+needed work at the wider range — see P-22 and P-23.
 
 Evidence: `docs/W2_lahari_corridor_audit.md` §4,
-`benchmarks/raw/w2_support_sensitivity.csv`.
+`benchmarks/raw/w2_support_sensitivity.csv`, `w2_corridor_audit_support30.csv`.
 
 ---
 
-## Open items carried into Week 2
+## Open items carried into Week 3
+
+Week 2's two blocking decisions (D-003, D-018) are both closed above. What remains is
+carried forward with an owner and a named blocker — nothing is closed by silence.
 
 | Item | Owner | Blocks |
 |---|---|---|
-| **D-003** — delay threshold / regression-first framing | Lahari | Week 3 features, Week 4 models |
-| **D-018** — support floor at 10 vs 30 legs (closes the D-004 revisit) | Lahari | Week 2 headline, Krishna's India map |
-| City-name normalisation table for the India map (`Bangalore`/`Bengaluru`, `MAA`, `FBD`), plus the 19 null city fields the audit hit on `Mumbai Hub (Maharashtra)`-shaped names | Krishna | Week 2 map |
-| JDK 17 + winutils on Lahari's and Krishna's machines (D-012) | all | their local Spark runs |
+| **One canonical city-alias table.** `src/ml/audit.py:CITY_ALIASES` and `src/dashboard/reference/india_city_coords.csv` now carry the same aliases in two places and can drift — they already did, at the 10-leg floor (P-23). Merging them means a shared reference neither the audit nor the dashboard owns. | Lahari + Krishna | nothing yet; a silent map gap when either list moves |
+| **Null `source_city` / `dest_city` in `clean_v1`** for `Mumbai Hub (Maharashtra)`-shaped facility names. The map works around it (P-21); the cache still carries it, and anything else joining on those columns will hit it. Fixing at source is a `clean_v2` under D-016's versioning rule. | Mounika | any Week 3 feature keyed on city |
+| **Corridor history must be computed past-only.** `excess_ratio` in `w2_corridor_audit.csv` is fitted on the whole period and is a *reporting* number; used as a feature as it stands it leaks (D-005). | Mounika | Week 3 feature pipeline |
+| **Week 4 error analysis splits the two audit views.** D-018 found the 10-leg and 30-leg top tables share no corridor; the per-corridor claim has to say which set it is evaluated on. | Lahari | Week 4 headline |
+| JDK 17 + winutils on Lahari's machine (D-012) | Lahari | her local Spark runs |
 | Second LLM key in `.env` so `with_fallback` has somewhere to fall | Krishna | Week 7 eval runs |
+| Weekly dashboard screenshots in `demo/screenshots/` (GIT_RULES §3) — none captured for W1 or W2 | Krishna | Week 8 demo assets |
