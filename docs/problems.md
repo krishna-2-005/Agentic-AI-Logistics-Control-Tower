@@ -172,18 +172,25 @@ checking a number, never by reading the file.
 ## Method problems — the analysis was wrong, not the code
 
 ### P-12 · The blueprint's delay threshold labels 93.6% of legs "delayed"
-**Week 1 · Lahari · OPEN (D-003)**
+**Week 1 · Lahari · resolved at the Week 2 sync (D-003)**
 
 - **Symptom.** At `T = 1.25`, 24,687 of 26,369 legs are positive.
 - **Cause.** The median leg already runs at **2.00×** plan. On this network a 25%
   overrun is the norm, not an exception.
-- **Fix (proposed).** Move the classification threshold to `T = 2.00` (49.6% / 50.4%),
-  lead with regression on `gap_min` where there is no threshold at all, and always
-  report the majority-class baseline next to any accuracy figure.
-- **Cost.** None yet — caught before any model was trained. Left `OPEN` pending team
-  sign-off precisely so it cannot be resolved by accident.
+- **Fix.** All three moves adopted (D-003): `T = 2.00` (49.6% / 50.4%), lead with
+  regression on `gap_min` where there is no threshold at all, and report the
+  majority-class baseline next to every accuracy figure, permanently.
+- **Cost.** None — caught before any model was trained. It was left `OPEN` for a week
+  precisely so it could not be resolved by accident, and closing it moved exactly one
+  column: `is_delayed` on 11,594 of 26,369 legs. No other number in the Week 1 tables
+  changed.
 - **Risk if missed:** a classifier scoring 93.6% accuracy while carrying zero
   information, and a Week 6 Exception Agent that flags every shipment.
+- **Carry:** `BLUEPRINT_THRESHOLD = 1.25` is now pinned as a literal in `src/ml/eda.py`
+  rather than read from config. The Week 1 finding *is* the 1.25 number; had that
+  sentence read `config.DELAY_THRESHOLD` it would have silently rewritten itself into a
+  sentence about 2.00 the moment the decision landed, deleting the evidence for the
+  decision it caused.
 
 ### P-13 · The obvious hub-dwell metric measures nothing
 **Week 2 · Mounika · resolved**
@@ -213,6 +220,58 @@ checking a number, never by reading the file.
 - **Cost.** ~40 minutes, and it removes a question the viva panel would certainly ask.
 
 ---
+
+### P-22 · A generated document kept its old conclusions after the data under it changed
+**Week 2 · Lahari · resolved**
+
+- **Symptom.** Closing D-018 moved the audit's support floor from 30 legs to 10 and
+  `python -m src.ml.audit` regenerated the writeup cleanly, no error. The new top-20
+  table was Kanpur, Phulpur → Allahabad, Malvan → Sawantwadi and three corridors into
+  Muzaffarpur — and the paragraph directly beneath it still read *"Mumbai/Bhiwandi,
+  Delhi/Gurgaon, intra-Hyderabad, intra-Kolkata — metro and metro-fringe corridors"*.
+  The document contradicted its own table, in confident prose, on the page.
+- **Cause.** The generator interpolates every *number* from the run and hard-codes every
+  *characterisation*. That split is invisible while the data is stable and it is exactly
+  backwards: the numbers were never going to be wrong, and the sentences describing them
+  were the ones with no mechanism keeping them true. Three claims had gone stale at once
+  — the geography of the top table, the "`Delhi -> Gurgaon` appears in both tables"
+  example, and the corridor count in §1 that still said 99.
+- **Fix.** Every claim about the data is now computed. `_places()` counts the states a
+  ranked table actually sits in, `_geography_shift()` compares the decided floor's table
+  against the old one, `_both_directions_note()` finds a city pair that is genuinely in
+  both tables instead of naming a remembered one, and `_faster_cluster_note()` counts
+  the largest origin rather than asserting it. Where a sentence cannot be computed it
+  must be about the *method*, which does not change when the data does.
+- **Cost.** ~40 minutes, and it produced the best finding of the week as a side effect:
+  once the geography was measured rather than remembered, the two floors turned out to
+  share **no corridor at all** in their top-20s, and the 30-leg metro reading and the
+  10-leg district-feeder reading are two different claims (D-018). Nobody would have
+  noticed that from prose written once and carried forward.
+- **Carry:** a generated document is only as trustworthy as its least-computed sentence.
+  When a run's inputs change, read the prose, not just the tables.
+
+### P-23 · A city-alias list that exists in two places, and drifted
+**Week 2 · Lahari + Krishna · resolved, with the root cause carried to Week 3**
+
+- **Symptom.** The audit's prose reported the corridors that are in both the bottleneck
+  and the faster tables as `BLR -> Bengaluru`, `Bengaluru -> BLR`, `Bengaluru ->
+  Bengaluru` — three spellings of one city pair. Separately, the count of faster
+  corridors leaving Bengaluru read 17 when the real figure was 35: the code compared
+  `source_city == "Bengaluru"` and the file also spells it `Bangalore` (48 rows) and
+  `BLR` (5).
+- **Cause.** Two alias tables. `src/dashboard/reference/india_city_coords.csv` carries
+  the map's aliases, and the audit had none at all until it needed to count cities. The
+  10-leg floor pulled in `BLR`, `BOM`, `CCU` and `GZB`, which were in neither.
+- **Fix.** `CITY_ALIASES` in `src/ml/audit.py` for the prose counts, the four missing
+  codes added to the coordinates table for the map, and both marked in comments as
+  duplicates of each other.
+- **Cost.** ~30 minutes. **The fix is a patch, not a solution, and it is written down as
+  one:** two lists holding the same truth will drift again, and the next drift will show
+  up as a silently missing dot rather than an obviously wrong sentence. Merging them
+  needs a shared reference table that neither the audit nor the dashboard owns — carried
+  into Week 3 with both owners named rather than left as a comment nobody reads. It is
+  the same trap as D-002's warning about city names, arriving in the tooling instead of
+  the data.
 
 ### P-20 · A map of the worst corridors that could not show the worst corridors
 **Week 2 · Krishna · resolved**
@@ -325,9 +384,12 @@ checking a number, never by reading the file.
 
 ## Still open
 
+Week 2's two blocking problems (P-12 and the support floor) are both closed above.
+
 | # | Problem | Owner | Blocks |
 |---|---|---|---|
-| P-12 | Delay threshold labels 93.6% of legs delayed (D-003) | Lahari | Week 3 features, Week 4 models |
-| — | Support floor of 30 legs hides the worst corridors — 1.92× at 30, 13.9× at 10 (D-018) | Lahari | Week 3 features, the map's colour ramp |
+| P-23 | One city-alias truth in two files — the patch holds, the duplication does not | Lahari + Krishna | a silent map gap the next time either list moves |
+| — | Null `source_city` / `dest_city` in `clean_v1` on `Mumbai Hub (Maharashtra)`-shaped names. The map works around it; the cache still carries it, and fixing at source is a `clean_v2` under D-016 | Mounika | any Week 3 feature keyed on city |
 | — | 13.5% of in-trip handoffs are chain breaks (D-015) | Mounika | Week 5 stream replay |
 | — | JDK 17 + winutils on Lahari's machine | Lahari | her local Spark runs |
+| — | No dashboard screenshots captured for W1 or W2 (GIT_RULES §3) | Krishna | Week 8 demo assets |
