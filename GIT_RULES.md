@@ -164,39 +164,48 @@ reads as the project timeline.
 
 ## 7. Commit Quality Rules
 
-**Format:** `[W<N>][AREA] imperative description of a meaningful unit of work`
-
-**Areas:** `DATA` `ML` `STREAM` `TMS` `AGENT` `DASH` `AUTO` `DOCS` `BENCH` `FIX` `TEST`
+**Format:** a short lowercase imperative that names the change. **No bracketed prefix, no
+area tag, no body** unless the change genuinely needs one. Read it out loud — if it sounds
+like something you would say to a teammate, it is right.
 
 ### Good commits (each one is a working, explainable step)
 ```
-[W2][DATA]  reconstruct trips from segments using window functions over trip_uuid
-[W2][ML]    add welch t-test with BH correction to corridor gap analysis
-[W4][ML]    beat OSRM baseline: GBT MAE 41.2 vs OSRM 52.7 on holdout
-[W4][AGENT] add BOL field-extraction prompt v2; invoice_no accuracy 0.71 -> 0.93
-[W5][STREAM] join broadcast corridor features in structured streaming job
-[W5][TMS]   add POST /exceptions endpoint with severity enum
-[W7][BENCH] record sustained 1.4k events/sec, p95 event->alert 820ms
-[W3][FIX]   handle cutoff timestamps missing timezone in cleaning step
+reconstruct trips from segments using window functions
+add welch t-test with bh correction to the corridor audit
+30-leg support covers 19% of legs, 10-leg covers 79%
+beat the osrm baseline: gbt mae 41.2 vs osrm 52.7 on holdout
+add bol field-extraction prompt v2, invoice_no 0.71 -> 0.93
+join broadcast corridor features in the streaming job
+record sustained 1.4k events/sec, p95 event->alert 820ms
+handle cutoff timestamps missing a timezone
 ```
 
 ### Banned commits (instant PR rejection)
 ```
-update          final         final2          asdf
-changes         work done     minor fix       commit
-updated code    week5 work    lahari changes  pushed files
+update            final           final2            asdf
+changes           work done       minor fix         commit
+updated code      week5 work      lahari changes    pushed files
+[W2][DOCS] ...    [W4][ML] ...    any bracketed prefix at all
 ```
 
+The bracketed `[W2][ML]` style was used for a while in Week 1 and is **gone**. It reads as
+generated, it repeats what the branch name already says, and the week is in the log date
+anyway. The `commit-msg` hook rejects it.
+
 **Rules**
-- **One logical change per commit.** "Built the whole streaming job" is a *branch*, not a commit —
-  break it into: producer skeleton → schema parsing → feature join → model apply → sink.
-- The description must let a teammate know what changed **without opening the diff**. If a commit
-  changed a number, **put the number in the message** — these become your contribution highlights.
+- **A commit is a unit of work you would describe out loud**, not a save point.
+  `lower the audited support floor to 10 legs` is a commit. Fixing a typo in the document
+  you wrote two minutes ago is not — fold it in. **Prefer four commits with weight over
+  fifteen that each touch one file.**
+- **One logical change per commit.** "Built the whole streaming job" is a *branch*, not a
+  commit — break it into: producer skeleton → schema parsing → feature join → model apply
+  → sink. That is four commits, not forty.
+- The description must let a teammate know what changed **without opening the diff**. If a
+  commit changed a number, **put the number in the message** — these become your
+  contribution highlights.
 - **Commit working code.** If you must save broken WIP at the end of a session:
-  `[W5][STREAM] wip: sink schema mismatch, see TODO` — and it may **not** be the branch's final
-  commit before the PR.
-- **Minimum ~3–4 meaningful commits per day you work** on the project. Twenty micro-commits of one
-  line each is as bad as one giant commit — both hide the work.
+  `wip: sink schema mismatch, see TODO` — and it may **not** be the branch's final commit
+  before the PR.
 - **Never commit:** raw data, `.env`, API keys, model binaries over 50 MB, notebook output cells
   (clear outputs before committing — `nbstripout --install`).
 
