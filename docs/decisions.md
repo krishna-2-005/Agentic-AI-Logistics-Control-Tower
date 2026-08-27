@@ -578,6 +578,44 @@ Evidence: `docs/W2_lahari_corridor_audit.md` §4,
 
 ---
 
+## D-020 · Document chain and GSTIN shape for the synthetic corpus — `OPEN (Krishna proposed, Lahari to confirm)`
+**Week 3 · Krishna**
+
+Two calls W2 §4 left open for the sync: whether the document set generates chains
+independently or with deliberate mismatches, and whether synthetic GSTINs should be
+checksum-valid or obviously fake. The execution plan puts the seeded-error taxonomy
+jointly with Lahari (W3 D3-D4, D5); this entry is Krishna's half of that, built and
+run solo, and is **not** a confirmed team decision — it carries the same provisional
+status D-014 held until Lahari confirmed it.
+
+**Proposed, and what the generator currently does:**
+
+1. **One `ConsignmentRecord` backs both the BOL and the invoice**, never generated
+   independently — W2 §4's own finding was that independent generation makes
+   cross-document consistency unevaluable. `seed_errors.py`'s `corridor_mismatch` kind
+   then deliberately breaks that agreement on a minority of records, rather than the
+   two documents never agreeing to begin with.
+2. **GSTINs are shape-valid, not checksum-valid.** Right length, right character
+   classes, a real state-code prefix drawn from the consignment's own state — but the
+   final checksum character is random, not computed, so nothing generated here could
+   be mistaken for a real, checkable GSTIN. Declared as scaffolding, the same word
+   D-017 uses for the mock TMS.
+3. **A five-kind seeded-error taxonomy at a 15% rate** — `total_mismatch`,
+   `duplicate_document_number`, `corridor_mismatch`, `ocr_confusable_corruption`,
+   `missing_field` — each chosen to exercise a rule already written into
+   `doc_extraction/v1.md` rather than an arbitrary corruption. Detail and counts on
+   the 120-document run: `docs/W3_krishna_doc_corpus.md` §3.
+
+**Why this needs Lahari's sign-off before Week 4 relies on it.** She evaluates every
+agent Krishna builds by design (execution plan §2, "keeps builder and judge
+separate"); a seeded-error taxonomy the builder chose alone is exactly the kind of
+thing that evaluation separation exists to catch problems with.
+
+Evidence: `docs/W3_krishna_doc_corpus.md`, `src/agents/doc_corpus/seed_errors.py`,
+`benchmarks/raw/w3_doc_corpus_manifest.csv`.
+
+---
+
 ## Open items carried into Week 3
 
 Week 2's two blocking decisions (D-003, D-018) are both closed above. What remains is

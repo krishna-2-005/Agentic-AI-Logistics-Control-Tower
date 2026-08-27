@@ -343,6 +343,27 @@ checking a number, never by reading the file.
   decision changes the shape of a shared artefact, the checklist is every consumer of
   that artefact, not the ones that come to mind.
 
+### P-25 · The obvious noise pipeline needs a system binary nobody has installed
+**Week 3 · Krishna · resolved**
+
+- **Symptom.** The natural way to add scan artefacts — render the PDF, rasterise it
+  with `pdf2image`, degrade the raster — throws `PDFInfoNotInstalledError` before it
+  ever reaches the degradation step.
+- **Cause.** `pdf2image` shells out to `poppler`'s `pdftoppm`, a system binary that
+  `pip install` does not provide and that none of the three machines this project runs
+  on has — the same class of "the pip package is not the whole dependency" problem
+  D-012 spent an afternoon on for Spark's `winutils.exe`.
+- **Fix.** `noise.py` draws the same field list `templates.py` prints
+  (`templates.field_rows`, one shared source per D-020's write-up) straight onto a
+  Pillow canvas with `ImageFont.load_default(size=...)` rather than any installed
+  font, then degrades that raster directly. Two independent renderers over one shared
+  field list, not a render-then-rasterise pipeline — reproducible on any of the three
+  machines with only what `requirements.txt` already installs.
+- **Cost.** ~20 minutes, caught before writing a single document rather than after
+  building 120 of them on a machine that happened to have poppler. `pdf2image` and
+  `pytesseract` stay in `requirements.txt` for Week 4, when OCR runs against these
+  images for real.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27

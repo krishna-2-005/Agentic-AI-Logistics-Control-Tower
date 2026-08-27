@@ -73,4 +73,36 @@ from one week.
 
 ---
 
-## Week 3 — *pending: document generation, seeded errors*
+## Week 3 — document generation, seeded errors
+
+**Built:** the BOL + GST-invoice generator (`src/agents/doc_corpus/`), its noise
+augmentation, and a 120-consignment labelled corpus — full writeup in
+`docs/W3_krishna_doc_corpus.md`.
+
+**The skill underneath the task.** "Generate synthetic documents" sounds like a
+templating exercise. The part worth remembering is what W2's research already
+flagged and this week made concrete: a BOL and its invoice are not two independent
+documents, they are one consignment's two views of itself, and an evaluation set that
+generates them independently can never test whether an auditor agent catches the two
+disagreeing — because they never had the chance to. `ConsignmentRecord` backing both
+renderers is the same design decision as D-007's one LLM call site: put the shared
+fact in exactly one place, so the two things built on top of it cannot drift apart by
+accident, and can only disagree where `seed_errors.py` makes them on purpose.
+
+**The second lesson was about ground truth, not generation.** The extraction prompt
+(D-008, `doc_extraction/v1.md`) already says "do not reconcile arithmetic ... report
+all three exactly as printed" — Lahari's Week 4 evaluation harness only scores that
+rule correctly if the label it compares against is the *printed* number, not the
+number the consignment actually cost. Getting that backwards would have made every
+seeded `total_mismatch` document score the agent as wrong for being right.
+
+**What I would say in an interview:** building an evaluation corpus is a different
+discipline from building the thing it evaluates — I would talk about the moment I
+realised the label had to be "what a person reading this page would write down,"
+not "what I know the true answer to be," and how that single reframing decided the
+whole module's structure (labels read back out of printed fields, never kept
+separately from them).
+
+Carried open: the seeded-error taxonomy is my proposal, not yet Lahari's confirmed
+sign-off (D-020) — the execution plan puts that decision jointly, and I only had my
+own half of the conversation this session.
