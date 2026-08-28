@@ -1,11 +1,12 @@
-"""Mock TMS — FastAPI + SQLite (Week 2 skeleton).
+"""Mock TMS — FastAPI + SQLite.
 
     python -m src.tms                     # serve on http://localhost:8000
     open http://localhost:8000/docs       # generated OpenAPI console
 
-Week 2 scope is **orders and shipments**. Status updates, exception tickets and
-invoices arrive in Week 3; the lifecycle transitions those need are deliberately not
-guessed at here.
+Week 2 scope was **orders and shipments**. Week 3 adds the three endpoints those
+needed to be useful on their own: **shipment status updates, exception tickets, and
+invoices** — the lifecycle transitions Week 5's Order Entry Agent, Week 6's Tracking &
+Exception Agent, and Week 6's Invoice Auditor write to.
 
 Why a mock TMS exists at all
 ----------------------------
@@ -45,9 +46,19 @@ from src.common import config
 from src.common.logging_setup import get_logger
 from src.tms import db
 from src.tms.models import (
+    ExceptionCreate,
+    ExceptionRead,
+    ExceptionStatus,
+    ExceptionStatusUpdate,
+    ExceptionTicket,
     Facility,
     FacilityRead,
     HealthRead,
+    Invoice,
+    InvoiceCreate,
+    InvoiceRead,
+    InvoiceStatus,
+    InvoiceStatusUpdate,
     Meta,
     Order,
     OrderCreate,
@@ -58,6 +69,7 @@ from src.tms.models import (
     ShipmentCreate,
     ShipmentRead,
     ShipmentStatus,
+    ShipmentStatusUpdate,
     utcnow,
 )
 
@@ -401,6 +413,252 @@ def get_shipment(
     return as_shipment_read(shipment, _order_ref(session, shipment.order_id))
 
 
+@app.patch("/shipments/{shipment_ref}", response_model=ShipmentRead, tags=["shipments"])
+def update_shipment_status(
+    shipment_ref: str,
+    payload: ShipmentStatusUpdate,
+    session: Session = Depends(db.get_session),
+    _: None = Depends(require_api_key),
+) -> ShipmentRead:
+    """Move a shipment through `created -> in_transit -> delivered`, or flag it
+    `exception`. This is what the Week 5 streaming consumer and the Week 6 Exception
+    Agent write to as a shipment's real-world state changes.
+
+    `delivered` is terminal, the same way a cancelled order is (§ orders above) — a
+    shipment that has arrived does not go back to `in_transit`, and nothing in the
+    plan needs it to.
+    """
+    shipment = _get_shipment_or_404(session, shipment_ref)
+    if shipment.status == ShipmentStatus.DELIVERED and payload.status != ShipmentStatus.DELIVERED:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"{shipment_ref} is delivered; delivered shipments are terminal.",
+        )
+    shipment.status = payload.status
+    if payload.notes:
+        shipment.notes = payload.notes
+    shipment.updated_at = utcnow()
+    session.add(shipment)
+    session.commit()
+    session.refresh(shipment)
+    log.info("shipment %s -> %s", shipment.shipment_ref, shipment.status.value)
+    return as_shipment_read(shipment, _order_ref(session, shipment.order_id))
+
+
+# ── Exception tickets ────────────────────────────────────────────────────────
+@app.post("/exceptions", response_model=ExceptionRead, status_code=201, tags=["exceptions"])
+def create_exception(
+    payload: ExceptionCreate,
+    session: Session = Depends(db.get_session),
+    _: None = Depends(require_api_key),
+) -> ExceptionRead:
+    """File an exception ticket against a shipment.
+
+    Filing one also flags the shipment `exception` — the same reasoning as booking a
+    shipment confirming its order: the Week 6 lifecycle should not end with an open
+    ticket against a shipment that still reads `in_transit`.
+    """
+    shipment = _get_shipment_or_404(session, payload.shipment_ref)
+
+    ticket = ExceptionTicket(
+        ticket_ref="pending",
+        shipment_id=shipment.id,
+        severity=payload.severity,
+        reason=payload.reason,
+        notes=payload.notes,
+    )
+    session.add(ticket)
+    session.flush()
+    ticket.ticket_ref = f"EXC-{ticket.id:06d}"
+
+    if shipment.status != ShipmentStatus.EXCEPTION:
+        shipment.status = ShipmentStatus.EXCEPTION
+        shipment.updated_at = utcnow()
+        session.add(shipment)
+
+    session.commit()
+    session.refresh(ticket)
+    log.info(
+        "exception %s filed against %s (%s, %s)",
+        ticket.ticket_ref, shipment.shipment_ref, payload.severity.value, payload.reason,
+    )
+    return as_exception_read(ticket, shipment)
+
+
+@app.get("/exceptions", response_model=list[ExceptionRead], tags=["exceptions"])
+def list_exceptions(
+    status_filter: ExceptionStatus | None = Query(default=None, alias="status"),
+    severity: str | None = Query(default=None),
+    limit: int = Query(default=50, ge=1, le=500),
+    session: Session = Depends(db.get_session),
+    _: None = Depends(require_api_key),
+) -> list[ExceptionRead]:
+    statement = select(ExceptionTicket)
+    if status_filter:
+        statement = statement.where(ExceptionTicket.status == status_filter)
+    if severity:
+        statement = statement.where(ExceptionTicket.severity == severity)
+    tickets = session.exec(statement.order_by(ExceptionTicket.id.desc()).limit(limit)).all()
+    return [as_exception_read(t, session.get(Shipment, t.shipment_id)) for t in tickets]
+
+
+@app.get("/exceptions/{ticket_ref}", response_model=ExceptionRead, tags=["exceptions"])
+def get_exception(
+    ticket_ref: str,
+    session: Session = Depends(db.get_session),
+    _: None = Depends(require_api_key),
+) -> ExceptionRead:
+    ticket = session.exec(
+        select(ExceptionTicket).where(ExceptionTicket.ticket_ref == ticket_ref)
+    ).first()
+    if ticket is None:
+        raise HTTPException(status_code=404, detail=f"No exception ticket {ticket_ref}.")
+    return as_exception_read(ticket, session.get(Shipment, ticket.shipment_id))
+
+
+@app.patch("/exceptions/{ticket_ref}", response_model=ExceptionRead, tags=["exceptions"])
+def update_exception_status(
+    ticket_ref: str,
+    payload: ExceptionStatusUpdate,
+    session: Session = Depends(db.get_session),
+    _: None = Depends(require_api_key),
+) -> ExceptionRead:
+    """`open -> acknowledged -> resolved`. `resolved_at` is stamped here rather than
+    left to the caller, so it always reflects when the API recorded the close, not
+    whatever timestamp a client happened to send."""
+    ticket = session.exec(
+        select(ExceptionTicket).where(ExceptionTicket.ticket_ref == ticket_ref)
+    ).first()
+    if ticket is None:
+        raise HTTPException(status_code=404, detail=f"No exception ticket {ticket_ref}.")
+    ticket.status = payload.status
+    if payload.notes:
+        ticket.notes = payload.notes
+    if payload.status == ExceptionStatus.RESOLVED:
+        ticket.resolved_at = utcnow()
+    ticket.updated_at = utcnow()
+    session.add(ticket)
+    session.commit()
+    session.refresh(ticket)
+    return as_exception_read(ticket, session.get(Shipment, ticket.shipment_id))
+
+
+# ── Invoices ─────────────────────────────────────────────────────────────────
+@app.post("/invoices", response_model=InvoiceRead, status_code=201, tags=["invoices"])
+def create_invoice(
+    payload: InvoiceCreate,
+    session: Session = Depends(db.get_session),
+    _: None = Depends(require_api_key),
+) -> InvoiceRead:
+    """Submit a freight invoice against a shipment.
+
+    Charges are stored exactly as submitted, `total_amount` included — this endpoint
+    does not check `freight_charge + other_charges == total_amount` on the way in.
+    Whether they agree is what the Week 6 Invoice Auditor checks; an API that silently
+    corrected the arithmetic would make D-020's `total_mismatch` seeded error
+    unevaluable.
+    """
+    shipment = _get_shipment_or_404(session, payload.shipment_ref)
+
+    invoice = Invoice(
+        invoice_ref="pending",
+        shipment_id=shipment.id,
+        external_invoice_number=payload.external_invoice_number,
+        freight_charge=payload.freight_charge,
+        other_charges=payload.other_charges,
+        total_amount=payload.total_amount,
+        currency=payload.currency,
+    )
+    session.add(invoice)
+    session.flush()
+    invoice.invoice_ref = f"INV-{invoice.id:06d}"
+    session.commit()
+    session.refresh(invoice)
+    log.info(
+        "invoice %s submitted for %s (%s %.2f)",
+        invoice.invoice_ref, shipment.shipment_ref, invoice.currency, invoice.total_amount,
+    )
+    return as_invoice_read(invoice, shipment)
+
+
+@app.get("/invoices", response_model=list[InvoiceRead], tags=["invoices"])
+def list_invoices(
+    status_filter: InvoiceStatus | None = Query(default=None, alias="status"),
+    corridor: str | None = Query(default=None, description="SOURCE>DEST"),
+    limit: int = Query(default=50, ge=1, le=500),
+    session: Session = Depends(db.get_session),
+    _: None = Depends(require_api_key),
+) -> list[InvoiceRead]:
+    statement = select(Invoice)
+    if status_filter:
+        statement = statement.where(Invoice.status == status_filter)
+    invoices = session.exec(statement.order_by(Invoice.id.desc()).limit(limit)).all()
+    out = []
+    for inv in invoices:
+        shipment = session.get(Shipment, inv.shipment_id)
+        if corridor and (shipment is None or shipment.corridor_id != corridor.strip().upper()):
+            continue
+        out.append(as_invoice_read(inv, shipment))
+    return out
+
+
+@app.get("/invoices/{invoice_ref}", response_model=InvoiceRead, tags=["invoices"])
+def get_invoice(
+    invoice_ref: str,
+    session: Session = Depends(db.get_session),
+    _: None = Depends(require_api_key),
+) -> InvoiceRead:
+    invoice = session.exec(select(Invoice).where(Invoice.invoice_ref == invoice_ref)).first()
+    if invoice is None:
+        raise HTTPException(status_code=404, detail=f"No invoice {invoice_ref}.")
+    return as_invoice_read(invoice, session.get(Shipment, invoice.shipment_id))
+
+
+@app.patch("/invoices/{invoice_ref}", response_model=InvoiceRead, tags=["invoices"])
+def update_invoice_status(
+    invoice_ref: str,
+    payload: InvoiceStatusUpdate,
+    session: Session = Depends(db.get_session),
+    _: None = Depends(require_api_key),
+) -> InvoiceRead:
+    """`submitted -> approved` or `submitted -> disputed`. The Week 6 Invoice Auditor
+    is the intended caller; `dispute_reason` is required on a dispute (enforced on the
+    payload itself) so a disputed invoice always says why."""
+    invoice = session.exec(select(Invoice).where(Invoice.invoice_ref == invoice_ref)).first()
+    if invoice is None:
+        raise HTTPException(status_code=404, detail=f"No invoice {invoice_ref}.")
+    invoice.status = payload.status
+    invoice.dispute_reason = payload.dispute_reason
+    invoice.updated_at = utcnow()
+    session.add(invoice)
+    session.commit()
+    session.refresh(invoice)
+    return as_invoice_read(invoice, session.get(Shipment, invoice.shipment_id))
+
+
 def _order_ref(session: Session, order_id: int) -> str:
     order = session.get(Order, order_id)
     return order.order_ref if order else ""
+
+
+def _get_shipment_or_404(session: Session, shipment_ref: str) -> Shipment:
+    shipment = session.exec(select(Shipment).where(Shipment.shipment_ref == shipment_ref)).first()
+    if shipment is None:
+        raise HTTPException(status_code=404, detail=f"No shipment {shipment_ref}.")
+    return shipment
+
+
+def as_exception_read(ticket: ExceptionTicket, shipment: Shipment | None) -> ExceptionRead:
+    return ExceptionRead(
+        **ticket.model_dump(),
+        shipment_ref=shipment.shipment_ref if shipment else "",
+        corridor_id=shipment.corridor_id if shipment else "",
+    )
+
+
+def as_invoice_read(invoice: Invoice, shipment: Shipment | None) -> InvoiceRead:
+    return InvoiceRead(
+        **invoice.model_dump(),
+        shipment_ref=shipment.shipment_ref if shipment else "",
+        corridor_id=shipment.corridor_id if shipment else "",
+    )

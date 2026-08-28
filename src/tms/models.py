@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from enum import Enum
 
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, field_validator, model_validator
 from pydantic import Field as PydanticField
 from sqlmodel import Field, SQLModel
 
@@ -61,6 +61,34 @@ class OrderSource(str, Enum):
     API = "api"
     AGENT = "agent"
     SEED = "seed"
+
+
+class ExceptionSeverity(str, Enum):
+    """How urgently a flagged shipment needs a human, or the Week 6 agent, to look at
+    it. Not derived from anything yet — Week 6's Tracking & Exception Agent is what
+    classifies severity from the streaming prediction; here it is just a field a
+    ticket carries."""
+
+    LOW = "low"
+    MEDIUM = "medium"
+    HIGH = "high"
+    CRITICAL = "critical"
+
+
+class ExceptionStatus(str, Enum):
+    OPEN = "open"
+    ACKNOWLEDGED = "acknowledged"
+    RESOLVED = "resolved"
+
+
+class InvoiceStatus(str, Enum):
+    """Freight-invoice lifecycle. `disputed`/`approved` are what Week 6's Invoice
+    Auditor sets after cross-checking against the corridor audit — the field exists
+    now so the agent has something to write to."""
+
+    SUBMITTED = "submitted"
+    APPROVED = "approved"
+    DISPUTED = "disputed"
 
 
 # ── Tables ───────────────────────────────────────────────────────────────────
@@ -130,6 +158,54 @@ class Shipment(SQLModel, table=True):
     status: ShipmentStatus = Field(default=ShipmentStatus.CREATED, index=True)
     planned_departure: datetime | None = None
     planned_arrival: datetime | None = None
+    #: Set on a status transition — why it moved to `exception`, why it was marked
+    #: `delivered` late, and so on. Free text, same role `Order.notes` plays.
+    notes: str | None = None
+
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
+
+
+class ExceptionTicket(SQLModel, table=True):
+    """Filed against a shipment that needs attention. Week 6's Tracking & Exception
+    Agent files these automatically off the streaming prediction; Week 3 gives it the
+    table and the manual-filing endpoint to write to in the meantime."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    ticket_ref: str = Field(index=True, unique=True)
+    shipment_id: int = Field(foreign_key="shipment.id", index=True)
+
+    severity: ExceptionSeverity = Field(index=True)
+    reason: str
+    status: ExceptionStatus = Field(default=ExceptionStatus.OPEN, index=True)
+    notes: str | None = None
+
+    created_at: datetime = Field(default_factory=utcnow)
+    updated_at: datetime = Field(default_factory=utcnow)
+    resolved_at: datetime | None = None
+
+
+class Invoice(SQLModel, table=True):
+    """A freight invoice submitted against a shipment. Week 6's Invoice Auditor
+    cross-checks `freight_charge`/`total_amount` against the corridor audit and sets
+    `status`; Week 3 gives it somewhere to land and a place to record the dispute."""
+
+    id: int | None = Field(default=None, primary_key=True)
+    invoice_ref: str = Field(index=True, unique=True)
+    shipment_id: int = Field(foreign_key="shipment.id", index=True)
+    #: The number printed on the (synthetic) invoice document itself — distinct from
+    #: `invoice_ref`, which is this system's own reference. Not unique: the doc
+    #: corpus's `duplicate_document_number` seeded error (D-020) exists precisely so
+    #: the same external number can legitimately arrive twice.
+    external_invoice_number: str | None = Field(default=None, index=True)
+
+    freight_charge: float
+    other_charges: float = 0.0
+    total_amount: float
+    currency: str = "INR"
+
+    status: InvoiceStatus = Field(default=InvoiceStatus.SUBMITTED, index=True)
+    dispute_reason: str | None = None
 
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
@@ -182,6 +258,53 @@ class OrderStatusUpdate(BaseModel):
     notes: str | None = None
 
 
+class ShipmentStatusUpdate(BaseModel):
+    status: ShipmentStatus
+    notes: str | None = None
+
+
+class ExceptionCreate(BaseModel):
+    shipment_ref: str
+    severity: ExceptionSeverity
+    reason: str = PydanticField(min_length=1)
+    notes: str | None = None
+
+
+class ExceptionStatusUpdate(BaseModel):
+    status: ExceptionStatus
+    notes: str | None = None
+
+
+class InvoiceCreate(BaseModel):
+    """What the Week 6 Invoice Auditor (or, for now, a curl against the corpus)
+    submits. Charges are handed over exactly as printed — `total_amount` is *not*
+    recomputed from `freight_charge + other_charges` here, because whether the two
+    agree is precisely what the auditor is for (D-020's `total_mismatch` seeded
+    error exists to be caught downstream, not silently fixed on the way in)."""
+
+    shipment_ref: str
+    external_invoice_number: str | None = None
+    freight_charge: float = PydanticField(ge=0)
+    other_charges: float = PydanticField(default=0.0, ge=0)
+    total_amount: float = PydanticField(gt=0)
+    currency: str = "INR"
+
+
+class InvoiceStatusUpdate(BaseModel):
+    status: InvoiceStatus
+    dispute_reason: str | None = None
+
+    @model_validator(mode="after")
+    def require_reason_when_disputed(self) -> InvoiceStatusUpdate:
+        # A `field_validator` on `dispute_reason` alone would not fire here: pydantic
+        # skips per-field validation on a field left at its default, and an omitted
+        # `dispute_reason` *is* the default. The check depends on `status` too, so it
+        # belongs on the whole model regardless.
+        if self.status == InvoiceStatus.DISPUTED and not self.dispute_reason:
+            raise ValueError("dispute_reason is required when status is 'disputed'.")
+        return self
+
+
 # ── Response payloads ────────────────────────────────────────────────────────
 class OrderRead(BaseModel):
     """An order plus the advisory warnings raised when it was filed.
@@ -227,6 +350,43 @@ class ShipmentRead(BaseModel):
     status: ShipmentStatus
     planned_departure: datetime | None
     planned_arrival: datetime | None
+    notes: str | None
+    created_at: datetime
+    updated_at: datetime
+
+
+class ExceptionRead(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: int
+    ticket_ref: str
+    shipment_id: int
+    shipment_ref: str
+    corridor_id: str
+    severity: ExceptionSeverity
+    reason: str
+    status: ExceptionStatus
+    notes: str | None
+    created_at: datetime
+    updated_at: datetime
+    resolved_at: datetime | None
+
+
+class InvoiceRead(BaseModel):
+    model_config = {"from_attributes": True}
+
+    id: int
+    invoice_ref: str
+    shipment_id: int
+    shipment_ref: str
+    corridor_id: str
+    external_invoice_number: str | None
+    freight_charge: float
+    other_charges: float
+    total_amount: float
+    currency: str
+    status: InvoiceStatus
+    dispute_reason: str | None
     created_at: datetime
     updated_at: datetime
 
