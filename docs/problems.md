@@ -169,6 +169,36 @@ checking a number, never by reading the file.
 
 ---
 
+### P-26 · A seeded "invoice error" printed a negative total
+**Week 3 · Lahari, reviewing Krishna's D-020 · resolved**
+
+- **Symptom.** `total_mismatch` (D-020's seeded-error taxonomy) picked a delta from a
+  fixed `+/-50..500` range and added it to the invoice's `total_amount`. Nothing raised.
+  Checking the actual 120-record run against its own manifest, one of the five
+  `total_mismatch` invoices (`w3_00059`, a small Carting shipment: freight 230.00 +
+  other 29.07 = 259.07) printed `total_amount = -116.40`.
+- **Cause.** The delta's range was picked to look reasonable against a typical
+  mid-sized invoice and never checked against the smallest ones. This network's
+  Carting shipments run as low as ~₹30 in `freight_charge` (Week 1's route-type split
+  already showed Carting is proportionally the worse-behaved route type); a delta of
+  up to 500 absolute rupees dwarfs a total that size.
+- **Fix.** The delta is now a percentage of the invoice's own `total_amount`
+  (5-30%, either sign) rather than a fixed rupee amount, so it scales with the invoice
+  it lands on and cannot cross zero at this magnitude. Same two `rng` calls as the
+  version it replaces (a `choice` then a `uniform`), so which records get which seeded
+  error kind — the part everything else in the corpus depends on being reproducible —
+  is unchanged; only the `total_mismatch` records' printed totals moved.
+- **Cost.** ~20 minutes once the manifest was actually checked against the label JSON
+  rather than trusted because the generator ran cleanly. **A negative total is the
+  wrong kind of "wrong"** for what this error is supposed to test: rule 5 asks an
+  extraction agent to report an arithmetic mismatch exactly as printed rather than
+  reconcile it, and a mismatch has to look like a plausible clerical error for that to
+  be a meaningful test — a negative grand total reads as an obviously broken document
+  before any extraction is attempted, on this document alone giving away the exact
+  thing the corpus is supposed to be testing whether an agent can catch quietly.
+
+---
+
 ## Method problems — the analysis was wrong, not the code
 
 ### P-12 · The blueprint's delay threshold labels 93.6% of legs "delayed"
