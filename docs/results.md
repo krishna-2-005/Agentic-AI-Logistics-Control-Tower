@@ -201,9 +201,67 @@ Merged to `main` and tagged `audit-v1` and `week2-complete`. Verified at the gat
 `python -m src.pipeline.contracts --keys` green on all three caches — `clean_v1`
 144,867 rows, `trips_v1` 26,369, `hubs_v1` 1,657.
 
-## Week 3 — baselines
+## Week 3 — baselines — provisional
 
-*Pending. See `benchmarks/ml_results.md`.*
+Source: `python -m src.ml.baselines` → `docs/W3_lahari_baselines.md`,
+`benchmarks/raw/w3_baseline_metrics.csv`, `w3_linreg_coefficients.csv`,
+`w3_baseline_report.json`. Same 26,369-leg grain as Weeks 1–2, on the frozen
+`features_v1` table (Stage 4, Mounika).
+
+### The split D-005 deferred, fixed
+
+D-005 (Week 1) decided the split would be time-based rather than the dataset's own
+`data` column and left the exact cut to whichever week trains something first —
+**D-020 fixes it here**: the 80th percentile of `trip_creation_time`, giving 21,095
+training legs (up to 2018-09-28 23:12:35 UTC) and 5,274 held out. Every number below
+is on the held-out set unless marked otherwise, and Week 4 must reuse
+`src.ml.baselines.time_split(frac=0.80)` rather than define its own cut — comparing
+against these baselines only means something on the same held-out legs.
+
+### The baseline to beat is the corridor mean, not OSRM
+
+| Model | MAE (min) | RMSE (min) | R2 |
+|---|---|---|---|
+| OSRM production estimate | 107.1 | 246.7 | −0.230 |
+| **Corridor mean** (past-only, D-021) | **36.1** | 101.7 | 0.791 |
+| Linear regression (full as-of feature set) | 41.2 | **96.8** | **0.811** |
+
+**The corridor mean alone recovers 66% of OSRM's error**, using nothing but Stage 4's
+past-only per-corridor average — the number Week 4's Random Forest and GBT actually
+have to clear is 36.1 min, not OSRM's 107.1, or the eventual "beats OSRM" headline
+overstates what a model contributes on top of a mean anyone could compute.
+
+**The linear model does not clear the corridor mean, and that is the finding worth
+carrying forward — D-022.** It has the better RMSE and R2 and the worse MAE, on the
+same test split. OLS minimises squared error, not MAE, and the network's own
+heavy-tailed corridors (up to 13.9× per D-018) are exactly the shape of data where that
+gap shows up: a few extreme corridors are worth a linear model trading some bias on
+ordinary legs for less squared error on them, a trade the corridor mean's per-corridor
+local averages never make. **Decided: Week 4 is ranked on MAE**, since it is the metric
+this table already reports and the one "average error in minutes" plainly means; RMSE
+and R2 stay beside it because their disagreement here is itself informative (P-25).
+
+### Cold start handled explicitly, not dropped
+
+11.09% of legs are a corridor's first sighting and carry no corridor-mean feature
+(6.56% / 6.33% for source / destination hub). None are dropped from either evaluated
+set: the corridor-mean baseline falls back to OSRM's own prediction on them, and the
+linear model gets an explicit `{corr,src,dst}_is_cold` indicator beside a zero-filled
+mean (D-021), so "no history yet" is a feature rather than a wrong zero.
+
+### Both Week 3 decisions this section depends on
+
+- **D-020 decided** — the split is the 80th percentile of `trip_creation_time`, and
+  Week 4 must reuse it.
+- **D-022 decided** — MAE is the metric Week 4 is judged and ranked on, forced by a
+  genuine RMSE/MAE disagreement between the linear model and the corridor mean (P-25).
+
+### Gate 3 — feature table and baselines
+
+`ruff` clean over `src/` and `tests/`, 29 tests passing (26 at the Week 2 gate + 3 new
+in `tests/test_baselines.py`). Merge to `dev`/`main` and the `week3-complete` tag
+follow once Krishna's document corpus and Mounika's feature pipeline land on the same
+branch as this section, per GIT_RULES §6.
 
 ## Week 4 — beat-OSRM headline
 

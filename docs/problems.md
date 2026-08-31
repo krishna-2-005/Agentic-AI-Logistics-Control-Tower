@@ -343,6 +343,33 @@ checking a number, never by reading the file.
   decision changes the shape of a shared artefact, the checklist is every consumer of
   that artefact, not the ones that come to mind.
 
+### P-25 · A model with the better RMSE and R2 had the worse MAE
+**Week 3 · Lahari · resolved**
+
+- **Symptom.** The Week 3 linear regression beat OSRM comfortably and looked like a
+  clean win on RMSE (96.8 vs the corridor-mean baseline's 101.7) and R2 (0.811 vs
+  0.791). Its MAE was *worse* — 41.2 min against the corridor mean's 36.1 — on the same
+  test split. Two metrics, two different answers to "which model is better."
+- **Cause.** Not a bug in either number. OLS minimises squared error, which is exactly
+  what RMSE and R2 measure and not what MAE measures. The audited network has corridors
+  running up to 13.9× its own typical overrun (D-018) — genuine heavy-tailed outliers —
+  and a single global coefficient set can trade a little bias on the ordinary legs in
+  between for less squared error on the extreme few. The corridor mean cannot make that
+  trade: each corridor's prediction comes from its own local average, so one extreme
+  corridor's history never leaks bias into a calmer corridor sharing a coefficient.
+- **Fix.** Not a model change — a stated choice. D-022 fixes MAE as the metric Week 4
+  is ranked on, since it is the one `benchmarks/ml_results.md` was already reporting and
+  the one "average error in minutes" plainly means. RMSE and R2 stay in every model's
+  row as diagnostics, specifically because their disagreement with MAE is itself
+  informative, not because either could quietly become the tiebreaker.
+- **Cost.** ~20 minutes once the numbers were actually compared rather than skimmed —
+  the RMSE and R2 columns alone read as an unambiguous win, and would have if MAE had
+  not been checked against the same table.
+- **Carry:** whichever metric a report leads with has to be the one models are picked
+  on, checked explicitly against the alternatives rather than assumed to agree with
+  them — a model can be a genuine improvement by one honest metric and a regression by
+  another, on the same held-out legs.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27

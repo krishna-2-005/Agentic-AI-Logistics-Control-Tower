@@ -592,3 +592,94 @@ carried forward with an owner and a named blocker — nothing is closed by silen
 | JDK 17 + winutils on Lahari's machine (D-012) | Lahari | her local Spark runs |
 | Second LLM key in `.env` so `with_fallback` has somewhere to fall | Krishna | Week 7 eval runs |
 | Weekly dashboard screenshots in `demo/screenshots/` (GIT_RULES §3) — none captured for W1 or W2 | Krishna | Week 8 demo assets |
+
+---
+
+## D-020 · Baseline train/test split fixed at the 80th percentile of `trip_creation_time` — `DECIDED`
+**Week 3 · Lahari · fixes the split D-005 deferred**
+
+D-005 decided the split would be time-based rather than the dataset's own `data`
+column, and left the exact cut to whichever week first trains something. That week is
+this one: the split is the 80th percentile of `trip_creation_time` over the
+26,369-leg `features_v1` table — 21,095 training legs (`trip_creation_time` <=
+2018-09-28 23:12:35 UTC), 5,274 held out.
+
+**Why a quantile and not a fixed date.** A fixed date only matches this exact extract;
+a quantile is the thing Week 4 actually needs to reproduce — the *fraction* held out —
+regardless of small changes upstream. And why chronological rather than random: the
+model this project cares about is deployed once and predicts forward, so a random
+split scores it on legs mixed in time with the ones it trained on, which is not how it
+will ever run.
+
+**Why this cannot leak despite reusing D-005's reasoning almost verbatim.** Every
+as-of feature in `features_v1` (Stage 4) is already computed relative to each leg's
+own `trip_creation_time`, so no choice of split boundary can hand a training leg a
+feature built from a leg that is, in the deployed sense, in its future. The split only
+decides which legs the *baselines and Week 4's models* are fitted and scored on — it
+is not load-bearing for the feature table's own leakage guarantee.
+
+**Binding on Week 4.** `src.ml.baselines.time_split(frac=0.80)` is the one function
+Week 4 imports rather than reimplements. A "beats these baselines" claim is only true
+if the comparison model saw the same 21,095 training legs and was scored on the same
+5,274 held out.
+
+Evidence: `docs/W3_lahari_baselines.md` §1, `benchmarks/raw/w3_baseline_report.json`.
+
+---
+
+## D-021 · Cold-start corridor/hub history gets an explicit indicator, not a silent zero — `DECIDED`
+**Week 3 · Lahari**
+
+11.09% of legs are a corridor's first sighting (`corr_n_prior == 0`; 6.56% / 6.33% for
+source / destination hub) and Stage 4 correctly leaves their `*_mean_log_ratio`,
+`*_mean_gap_min`, `*_last_log_ratio` and `*_hours_since_last` null — there is nothing
+to report. `LinearRegression` cannot take a null, so those columns are filled with 0,
+but paired with a `{corr,src,dst}_is_cold` indicator, and `*_std_log_ratio` is
+additionally filled on the single-observation case (`n_prior == 1`; variance needs two
+points).
+
+**Why the indicator is not optional.** A silent `fillna(0)` on `corr_mean_log_ratio`
+alone would tell the model "this corridor runs exactly on plan" for a corridor it has
+never seen — the opposite of not knowing, and a systematic bias toward under-predicting
+the gap on exactly the legs with no evidence either way. The indicator lets the model
+separate "no history, filled with 0" from "history says 0", and
+`prepare_model_features()` asserts on every run that no column is null anywhere the
+cold flag does not already explain, so a change to Stage 4's null contract fails loudly
+here rather than silently degrading the fit.
+
+**The corridor-mean baseline handles the same 11.09% differently, deliberately.** It
+falls back to OSRM's own prediction (zero gap) rather than a filled mean, because that
+baseline has no coefficients to carry an indicator through — falling back to the
+*other* baseline already in the table is the only choice that does not smuggle in a
+third, unnamed baseline under the corridor-mean's name.
+
+Evidence: `docs/W3_lahari_baselines.md` §2,
+`data/processed/features_v1/_feature_report.json` (`pct_cold_start` 11.09).
+
+---
+
+## D-022 · Week 4 is judged on MAE, not RMSE or R2 — `DECIDED`
+**Week 3 · Lahari · forced by a real disagreement between the two**
+
+The Week 3 linear regression scores worse than the much simpler corridor-mean baseline
+on MAE (41.2 vs 36.1 min) while scoring *better* on RMSE (96.8 vs 101.7) and R2 (0.811
+vs 0.791) — the two families of metric rank the same two models in opposite order, on
+the same test split. This is not a bug in either model: OLS minimises squared error,
+which is RMSE and R2's objective and not MAE's, and the network's own heavy-tailed
+corridors (up to 13.9x per D-018) are exactly the shape of data where that distinction
+shows up — a few extreme legs are worth trading a little bias on ordinary legs to fit
+under a squared loss, and worth nothing under an absolute one.
+
+**Decided: `benchmarks/ml_results.md`'s baseline table, and every Week 4 comparison
+against it, ranks on MAE.** It is the metric the table was already reporting before
+this conflict surfaced, and it is the one a plain reading of "average error in minutes"
+means. RMSE and R2 are still reported beside it as diagnostics — the disagreement
+itself is informative, per this entry — but they do not decide which model is called
+better.
+
+**Consequence for Week 4.** A Random Forest or GBT that improves RMSE without
+improving MAE over the corridor-mean baseline is not a result. Both metrics go in the
+report for every model, exactly as this entry's numbers do, so the choice is visible
+rather than assumed.
+
+Evidence: `docs/W3_lahari_baselines.md` §3, `benchmarks/raw/w3_baseline_metrics.csv`.

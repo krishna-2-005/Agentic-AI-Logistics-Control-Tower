@@ -6,32 +6,54 @@ Every number here must be reproducible by a named script in `src/ml/`, from the 
 Parquet, with the raw output landing in `benchmarks/raw/`. A number that cannot be
 regenerated does not go in the report or the paper (GIT_RULES §4).
 
-## Status: awaiting Week 3
+## Status: Week 3 done, awaiting Week 4
+
+Source: `python -m src.ml.baselines` → `docs/W3_lahari_baselines.md`,
+`benchmarks/raw/w3_baseline_metrics.csv`, `w3_linreg_coefficients.csv`,
+`w3_baseline_report.json`. Computed on the frozen `features_v1` table (Stage 4,
+Mounika), chronological split fixed by D-020: 21,095 train legs (`trip_creation_time`
+<= 2018-09-28 23:12:35 UTC) / 5,274 test legs, reported below.
 
 ## The baseline to beat
 
-Established Week 1 at OD-leg grain (`docs/W1_lahari_eda.md`), on 26,369 legs:
+Established Week 1 at OD-leg grain (`docs/W1_lahari_data_dictionary_and_eda.md`), on
+26,369 legs, all MAE figures on the D-020 test split:
 
 | Baseline | MAE (min) | Notes |
 |---|---|---|
-| OSRM production estimate | _pending W3_ | `osrm_time` as the prediction of `actual_time` |
-| Corridor mean | _pending W3_ | past-only mean per corridor |
-| Linear regression | _pending W3_ | |
+| OSRM production estimate | **107.1** | `osrm_time` as the prediction of `actual_time` |
+| Corridor mean | **36.1** | past-only mean per corridor (Stage 4), falls back to OSRM when cold (D-021) |
+| Linear regression | 41.2 | full as-of feature set; beats OSRM but **not** the corridor mean — see below |
 | Random Forest | _pending W4_ | |
 | GBT | _pending W4_ | |
 
 OSRM under-predicts on **98.3%** of legs; the median leg runs **2.00×** plan, mean
-absolute gap **110 min**. Because the error is this one-sided, a model that merely
-learns the bias should beat OSRM comfortably — so **the report must state the corridor
-mean baseline too**, or the headline is unimpressive under scrutiny.
+absolute gap **110 min**. As expected, a model that merely learns the bias beats OSRM
+comfortably — **the corridor mean alone recovers 66% of OSRM's error**, which is the
+number Week 4's Random Forest and GBT actually have to clear, not OSRM's 107.1.
+
+**The linear model does not clear the corridor mean, and that is the headline result
+of this baseline — D-022.** 41.2 min MAE against the corridor mean's 36.1, despite a
+*better* RMSE (96.8 vs 101.7) and R2 (0.811 vs 0.791). OLS minimises squared error, not
+MAE, and the audited network's heavy-tailed corridors (up to 13.9× per D-018) let a
+single global coefficient set trade a little bias on ordinary legs for less squared
+error on the extreme ones — a trade the corridor mean's per-corridor local averages
+never have to make. **D-022 fixes MAE as the metric Week 4 is judged and ranked on**,
+not RMSE or R2, since the two disagree here on which of these two models is better.
+Full reasoning and the per-split train/test table: `docs/W3_lahari_baselines.md` §3.
 
 ## Required alongside every classifier metric
 
 The majority-class rate. See D-003: at the blueprint's 1.25 threshold the positive
-class is 93.6% of legs, so accuracy alone is meaningless.
+class is 93.6% of legs, so accuracy alone is meaningless. No classifier metric appears
+in this document yet — every Week 3 model is a regressor on `gap_min` — so nothing is
+owed here until Week 4 evaluates `is_delayed`.
 
 ## Ablations (Week 4)
 
 - drop corridor-history features
 - drop temporal features
 - FTL vs Carting separately
+- Week 4 must reuse `src.ml.baselines.time_split(frac=0.80)` rather than define its own
+  cut, and must report MAE against the corridor-mean baseline above, not only OSRM
+  (D-022).
