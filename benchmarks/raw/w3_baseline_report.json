@@ -1,0 +1,61 @@
+{
+  "legs": 26369,
+  "split_frac": 0.8,
+  "split_cutoff": "2018-09-28 23:12:35.939821056",
+  "n_train": 21095,
+  "n_test": 5274,
+  "pct_corr_cold": 11.09,
+  "pct_src_cold": 6.56,
+  "pct_dst_cold": 6.33,
+  "metrics": [
+    {
+      "model": "OSRM",
+      "split": "train",
+      "n": 21095,
+      "mae_min": 111.2,
+      "rmse_min": 241.11,
+      "r2": -0.2678
+    },
+    {
+      "model": "corridor_mean",
+      "split": "train",
+      "n": 21095,
+      "mae_min": 46.13,
+      "rmse_min": 126.24,
+      "r2": 0.6524
+    },
+    {
+      "model": "OSRM",
+      "split": "test",
+      "n": 5274,
+      "mae_min": 107.09,
+      "rmse_min": 246.73,
+      "r2": -0.2304
+    },
+    {
+      "model": "corridor_mean",
+      "split": "test",
+      "n": 5274,
+      "mae_min": 36.13,
+      "rmse_min": 101.73,
+      "r2": 0.7908
+    },
+    {
+      "model": "linear_regression",
+      "split": "train",
+      "n": 21095,
+      "mae_min": 42.92,
+      "rmse_min": 91.63,
+      "r2": 0.8169
+    },
+    {
+      "model": "linear_regression",
+      "split": "test",
+      "n": 5274,
+      "mae_min": 41.17,
+      "rmse_min": 96.8,
+      "r2": 0.8106
+    }
+  ],
+  "generated_at": "2026-08-31T16:03:44.015448+00:00"
+}
