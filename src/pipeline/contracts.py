@@ -225,8 +225,65 @@ HUBS_V1 = Contract(
     },
 )
 
+# ── features_v1 — Stage 4 output ─────────────────────────────────────────────
+FEATURES_V1 = Contract(
+    name="features_v1",
+    version=1,
+    path=config.FEATURES_V1,
+    produced_by="src.pipeline.features",
+    partition_by=("route_type",),
+    key=("leg_id",),
+    rows=26_369,
+    notes=(
+        "OD-leg grain, same 26,369 legs as trips_v1 — no rows dropped. Every column "
+        "is knowable at `trip_creation_time` (D-005): the `corr_*`/`src_*`/`dst_*` "
+        "history columns are running as-of aggregates computed from prior legs' "
+        "`od_end_time`, never their `od_start_time`, and `gap_min`/`log_gap_ratio`/"
+        "`is_delayed` are carried only as prediction targets. `leg_id` replaces "
+        "trips_v1's three-column key because a trip can repeat a corridor on a "
+        "different day. `--validate` refuses to write if any outcome column "
+        "(BANNED_FEATURES) survived, so a leakage bug fails the build rather than "
+        "landing in the cache."
+    ),
+    columns={
+        "leg_id": "string",
+        "trip_uuid": "string",
+        "corridor_id": "string",
+        "source_center": "string",
+        "destination_center": "string",
+        "trip_creation_time": "timestamp",
+        "planned_min": "double",
+        "planned_km": "double",
+        "created_hour": "int",
+        "created_dayofweek": "int",
+        "created_is_weekend": "boolean",
+        "gap_min": "double",
+        "log_gap_ratio": "double",
+        "is_delayed": "boolean",
+        "corr_n_prior": "int",
+        "corr_mean_log_ratio": "double",
+        "corr_std_log_ratio": "double",
+        "corr_mean_gap_min": "double",
+        "corr_last_log_ratio": "double",
+        "corr_hours_since_last": "double",
+        "src_n_prior": "int",
+        "src_mean_log_ratio": "double",
+        "src_std_log_ratio": "double",
+        "src_mean_gap_min": "double",
+        "src_last_log_ratio": "double",
+        "src_hours_since_last": "double",
+        "dst_n_prior": "int",
+        "dst_mean_log_ratio": "double",
+        "dst_std_log_ratio": "double",
+        "dst_mean_gap_min": "double",
+        "dst_last_log_ratio": "double",
+        "dst_hours_since_last": "double",
+        "route_type": "string",
+    },
+)
+
 #: Every frozen dataset, newest stage last. Add here when a stage starts caching.
-CONTRACTS: dict[str, Contract] = {c.name: c for c in (CLEAN_V1, TRIPS_V1, HUBS_V1)}
+CONTRACTS: dict[str, Contract] = {c.name: c for c in (CLEAN_V1, TRIPS_V1, HUBS_V1, FEATURES_V1)}
 
 
 def stamp(name: str) -> dict:

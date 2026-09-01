@@ -578,6 +578,69 @@ Evidence: `docs/W2_lahari_corridor_audit.md` §4,
 
 ---
 
+## D-020 · Leak-free feature pipeline: past-only history via an event-stream as-of join — `DECIDED`
+**Week 3 · Mounika · closes the Week 2 open item on corridor history**
+
+D-018's open item said it plainly: `excess_ratio` in `w2_corridor_audit.csv` is fitted
+over the **whole** 26-day window, so handing it to a model as-is means training on a
+column that already contains the answer for every leg it will later be scored on
+(D-005). Stage 4 (`src/pipeline/features.py`) recomputes corridor, source-hub and
+destination-hub history from scratch, **as of each leg's own `trip_creation_time`**,
+so the number a leg sees is only ever built from legs that had already happened.
+
+**The trap was the clock, not the aggregation.** A leg is created at
+`trip_creation_time` and that is a legitimate decision point — checked across all
+26,369 legs, `trip_creation_time <= od_start_time` without exception. But a *prior*
+leg's outcome is not usable the moment it starts; it is usable when it **finishes**,
+at `od_end_time`. Ordering a corridor's history by `od_start_time` — the natural thing
+to write — quietly reads outcomes from journeys still on the road. Measured directly
+rather than argued: on the naive clock, **46.4% of legs would read their own
+departure as a known fact** (created and dispatched in the same second) and a further
+**8.4% would be handed another journey's duration before that journey had landed**;
+**48.6% of the table is affected either way.** This is logged as P-25.
+
+**How the as-of aggregate avoids a self-join.** A per-corridor self-join with an
+inequality predicate is a cross join per corridor — the busiest corridor in this data
+runs 151 legs, which is 22,801 pairwise comparisons for one corridor alone, and the
+cost grows with the square of traffic rather than with it. Instead every leg emits a
+**fact** at `od_end_time` ("this outcome is now known") and a **query** at
+`trip_creation_time` ("what was known here?"); both are unioned, partitioned by key,
+ordered by `(event_time, kind)` with facts sorting first, and a running window
+accumulates the fact columns up to each query row in one pass. The same shape gives
+hub history by partitioning on the centre code instead of the corridor.
+
+**What the table refuses to contain.** `actual_time`, `dwell_min`, `gap_ratio`,
+`n_segments`, every `segment_*` sum, and the OD window itself are outcomes, not
+features — listed in `BANNED_FEATURES`, and the writer raises rather than emits a
+table containing any of them. `gap_min`, `log_gap_ratio` and `is_delayed` are carried
+through only as `TARGETS` for Lahari's Week 3 baselines and Week 4 models.
+
+**Coverage, at build time:** 88.91% of legs have at least one prior leg on their own
+corridor (mean 10.77 prior legs, median 6), 93.44% have source-hub history, and the
+remaining 11.09% are a corridor's genuine first sighting — nulled, not defaulted to
+zero, so a model can tell "never seen" from "seen and calm" (D-018's wider 10-leg
+floor is what makes 88.91% possible at all; at the old 30-leg floor's 18.9%-of-legs
+coverage this number would be far lower).
+
+**Both hub ends get history, closing D-015's open note.** Week 2 found hub friction
+and corridor friction are close to independent (`docs/decisions.md` D-015) and said
+Week 3 should carry hub friction as its own feature rather than assume corridor
+history already encodes it. `src_*` and `dst_*` columns are the same as-of join
+partitioned on `source_center`/`destination_center`, so the feature table carries all
+three histories side by side rather than one standing in for the others.
+
+**Frozen as `features_v1`, versioned like every other cache (D-016).** `leg_id`
+(`trip_uuid|od_start_time|corridor_id`) replaces `trips_v1`'s three-column key because
+a trip can legitimately repeat a corridor on a different day and the key needs the
+departure time to stay unique. Registered in `src/pipeline/contracts.py` as a new
+`Contract`; `python -m src.pipeline.contracts --keys` passes at 26,369 rows, 33
+columns, same grain as `trips_v1` — no leg is dropped by this stage.
+
+Evidence: `docs/W3_mounika_feature_pipeline_and_tms.md`,
+`data/processed/features_v1/_feature_report.json`, `tests/test_features.py`.
+
+---
+
 ## Open items carried into Week 3
 
 Week 2's two blocking decisions (D-003, D-018) are both closed above. What remains is
@@ -587,7 +650,7 @@ carried forward with an owner and a named blocker — nothing is closed by silen
 |---|---|---|
 | **One canonical city-alias table.** `src/ml/audit.py:CITY_ALIASES` and `src/dashboard/reference/india_city_coords.csv` now carry the same aliases in two places and can drift — they already did, at the 10-leg floor (P-23). Merging them means a shared reference neither the audit nor the dashboard owns. | Lahari + Krishna | nothing yet; a silent map gap when either list moves |
 | **Null `source_city` / `dest_city` in `clean_v1`** for `Mumbai Hub (Maharashtra)`-shaped facility names. The map works around it (P-21); the cache still carries it, and anything else joining on those columns will hit it. Fixing at source is a `clean_v2` under D-016's versioning rule. | Mounika | any Week 3 feature keyed on city |
-| **Corridor history must be computed past-only.** `excess_ratio` in `w2_corridor_audit.csv` is fitted on the whole period and is a *reporting* number; used as a feature as it stands it leaks (D-005). | Mounika | Week 3 feature pipeline |
+| ~~**Corridor history must be computed past-only.**~~ Resolved by **D-020** — `src/pipeline/features.py` recomputes it as of each leg's own creation time. | Mounika | — |
 | **Week 4 error analysis splits the two audit views.** D-018 found the 10-leg and 30-leg top tables share no corridor; the per-corridor claim has to say which set it is evaluated on. | Lahari | Week 4 headline |
 | JDK 17 + winutils on Lahari's machine (D-012) | Lahari | her local Spark runs |
 | Second LLM key in `.env` so `with_fallback` has somewhere to fall | Krishna | Week 7 eval runs |

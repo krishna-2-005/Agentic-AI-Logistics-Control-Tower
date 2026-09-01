@@ -343,6 +343,36 @@ checking a number, never by reading the file.
   decision changes the shape of a shared artefact, the checklist is every consumer of
   that artefact, not the ones that come to mind.
 
+### P-25 · The natural corridor-history clock leaks the future
+**Week 3 · Mounika · resolved**
+
+- **Symptom.** The obvious first draft of the Stage 4 feature pipeline ordered each
+  corridor's history by `od_start_time` — a leg "knows about" every corridor leg that
+  had already *departed* by the time it was created. It runs, produces plausible
+  numbers, and raises nothing.
+- **Cause.** Departure is not when a leg's outcome becomes knowable; *arrival*
+  (`od_end_time`) is, because the duration itself is not known until the leg lands.
+  Measured directly rather than argued: on the naive clock, **46.4% of legs** are
+  created and dispatched in the same second, so a leg reads its own departure as
+  already-known history; a further **8.4%** are handed the duration of a different
+  journey that had departed but not yet landed. **48.6% of the 26,369-leg table is
+  affected either way**, and the direction of the error only helps the model — a leg
+  that has partly seen its own answer scores *better*, not worse, so nothing about the
+  output would have looked wrong.
+- **Fix.** History is ordered on `od_end_time` instead: every leg emits a *fact* when
+  it finishes and a *query* when it is created, and a leg only ever sees facts that
+  landed before its own query. Verified with a hand-built adversarial case
+  (`tests/test_features.py::test_in_flight_leg_is_excluded`) — a leg still on the road
+  at query time must contribute nothing — and by an independent recomputation of
+  `corr_n_prior` on a 200-row sample with the predicate spelled out longhand
+  (`od_end_time <= trip_creation_time`), which matched the window's output exactly.
+  Recorded as D-020.
+- **Cost.** ~1.5 hours, entirely spent because the naive version *looked* finished — it
+  ran clean, the coverage numbers were plausible, and nothing about a leakage bug looks
+  different from a correct feature until it is checked against an independent
+  computation. The 46.4%/8.4% numbers now live in the feature report so the trap stays
+  visible even after the fix, rather than disappearing the moment the code is right.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
