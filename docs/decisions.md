@@ -641,6 +641,67 @@ Evidence: `docs/W3_mounika_feature_pipeline_and_tms.md`,
 
 ---
 
+## D-021 · Document chain and GSTIN shape for the synthetic corpus — `DECIDED (confirmed by Lahari)`
+**Week 3 · Krishna**
+
+Two calls W2 §4 left open for the sync: whether the document set generates chains
+independently or with deliberate mismatches, and whether synthetic GSTINs should be
+checksum-valid or obviously fake. The execution plan puts the seeded-error taxonomy
+jointly with Lahari (W3 D3-D4, D5); this entry was Krishna's half of that, built and
+run solo, and carried the same provisional status D-014 held until Lahari confirmed
+it below.
+
+**Proposed, and what the generator currently does:**
+
+1. **One `ConsignmentRecord` backs both the BOL and the invoice**, never generated
+   independently — W2 §4's own finding was that independent generation makes
+   cross-document consistency unevaluable. `seed_errors.py`'s `corridor_mismatch` kind
+   then deliberately breaks that agreement on a minority of records, rather than the
+   two documents never agreeing to begin with.
+2. **GSTINs are shape-valid, not checksum-valid.** Right length, right character
+   classes, a real state-code prefix drawn from the consignment's own state — but the
+   final checksum character is random, not computed, so nothing generated here could
+   be mistaken for a real, checkable GSTIN. Declared as scaffolding, the same word
+   D-017 uses for the mock TMS.
+3. **A five-kind seeded-error taxonomy at a 15% rate** — `total_mismatch`,
+   `duplicate_document_number`, `corridor_mismatch`, `ocr_confusable_corruption`,
+   `missing_field` — each chosen to exercise a rule already written into
+   `doc_extraction/v1.md` rather than an arbitrary corruption. Detail and counts on
+   the 120-document run: `docs/W3_krishna_doc_corpus.md` §3.
+
+**Why this needed Lahari's sign-off before Week 4 relies on it.** She evaluates every
+agent Krishna builds by design (execution plan §2, "keeps builder and judge
+separate"); a seeded-error taxonomy the builder chose alone is exactly the kind of
+thing that evaluation separation exists to catch problems with.
+
+**Lahari's confirmation (W3 D5).** All three proposed points are sound and stay as
+written: one shared record backing both documents is the only way `corridor_mismatch`
+means anything (§1 above), GSTINs declared as shape-only scaffolding is the right call
+for the same reason D-017 scaffolds the mock TMS, and five kinds each tied to a named
+`doc_extraction/v1.md` rule is a taxonomy that tests the prompt rather than an
+arbitrary corruption grab-bag. Confirmed with one fix and one caveat carried forward:
+
+- **`total_mismatch` printed a negative invoice total on one of the five generated
+  instances** (`w3_00059`, freight+other = 259.07, printed total = -116.40) — its
+  fixed `+/-50..500` rupee delta was never checked against this network's smallest
+  Carting shipments, where `total_amount` itself can be under that range. Fixed to a
+  percentage of the invoice's own total (5-30%, either sign), which cannot cross zero
+  at this magnitude; the corpus was regenerated and every other record's assigned
+  error kind is unchanged (same two `rng` draws, same stream position). Logged as
+  P-27.
+- **Carried as a caveat, not a blocker, for Week 4's evaluation writeup:** at 120
+  documents and five kinds sampled independently at 15%, `corridor_mismatch` landed on
+  only 2 of 120 records. A per-kind accuracy claim at that count is anecdotal in
+  exactly the way D-004's 30-leg floor was before D-018 — Week 4 should report
+  per-kind detection counts alongside accuracy, not accuracy alone, and treat any
+  single-digit-count kind's number as a lead rather than a result, the same reading
+  D-018 gives a bottleneck resting on 10 legs.
+
+Evidence: `docs/W3_krishna_doc_corpus.md`, `src/agents/doc_corpus/seed_errors.py`,
+`benchmarks/raw/w3_doc_corpus_manifest.csv`, `docs/problems.md` P-27.
+
+---
+
 ## Open items carried into Week 3
 
 Week 2's two blocking decisions (D-003, D-018) are both closed above. What remains is
