@@ -848,3 +848,52 @@ the model to clear is logistic regression's 0.764 F1, not the majority class's 0
 
 Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metrics.csv`,
 `w3_baseline_report.json`.
+
+---
+
+## D-026 · The Document Intelligence Agent's free-tier LLM quota is a hard daily cap, and partial coverage is reported as such — `DECIDED`
+**Week 4 · Krishna**
+
+The Week 2 sync's open-items table flagged this in the abstract: "second LLM key in
+`.env` so `with_fallback` has somewhere to fall — blocks Week 7 eval runs." It arrived
+three weeks early. A 40-document smoke run (20 consignments) against
+`gemini-3.6-flash` succeeded on 22 documents and failed the remaining 18 on
+`429 RESOURCE_EXHAUSTED`, quoting the free tier's own limit:
+`GenerateRequestsPerDayPerProjectPerModel-FreeTier`, `quotaValue: 20`. This is a
+**daily** cap per project per model, not a per-minute rate limit `with_fallback`'s
+retry logic could wait out — the run's own escalating `retryDelay`s (14s, 36s, 58s...)
+show the client backing off correctly against a ceiling that does not lift again until
+tomorrow.
+
+**Decided: the agent's own error-handling already does the right thing, and stays as
+built rather than gaining retry-until-tomorrow logic.** `run_corpus`'s per-document
+`try/except` (not one big transaction) means a quota wall does not corrupt or abort
+the run — it produces exactly what it produced: 22 real predictions and 18 documents
+each recording *why* they have none, in the same predictions file. A `RESOURCE_EXHAUSTED`
+entry and a `json.JSONDecodeError` entry both look like `predicted_fields: null`, which
+is correct — both are "the agent could not extract this one," and Lahari's D5 harness
+needs exactly that shape regardless of cause.
+
+**Consequence for D5 and beyond.** The evaluation harness must score whatever the
+predictions file actually contains and report **coverage** (documents attempted vs.
+documents that produced a prediction) beside every accuracy number — the same
+"majority-class rate reported beside every classifier metric, permanently" instinct
+D-003 established, applied to a different kind of denominator problem. A field-level
+accuracy computed only over the 22 that succeeded is not wrong, but it is silent about
+being computed over 55% of the intended sample unless the harness says so. Running the
+full 120-document corpus in one day is not currently possible on the configured free
+tier; it either wants a second provider key (`ANTHROPIC_API_KEY`, the Week 2 open item,
+finally forced rather than merely anticipated) or spreading a full-corpus run across
+several days.
+
+**What this is not.** Not a document-extraction bug, and not evidence the agent
+performs badly — of the 22 attempted with a live quota, extraction succeeded on all of
+them (D3-D4's prompt-iteration numbers are the ones that will say how *well*). This is
+a provider-capacity ceiling, the same class of thing D-007 built `with_fallback` to
+survive and the same class of thing P-31 already found once this week (a pinned model
+name going stale) — free-tier LLM access is not a stable foundation to size an
+evaluation corpus against, and the project's numbers have to say so rather than quietly
+running smaller than planned.
+
+Evidence: `benchmarks/raw/w4_doc_agent_predictions.json` (22 ok, 18 `RESOURCE_EXHAUSTED`
+of 40 attempted), `docs/problems.md` P-32.

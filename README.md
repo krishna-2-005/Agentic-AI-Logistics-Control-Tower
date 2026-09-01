@@ -110,6 +110,29 @@ $jh = (Get-ChildItem $dest -Directory | Select-Object -First 1).FullName
 
 Reopen the terminal afterwards so the new environment is picked up.
 
+#### Installing Tesseract when the official mirror is unreachable
+
+The installer UB-Mannheim's wiki links to
+(`digi.bib.uni-mannheim.de/tesseract/...`) does not resolve from every network. The
+identical installer is also a release asset on Tesseract's own GitHub repo, which is
+a legitimate alternate host for the same official artefact — and it can be extracted
+without running it, the same portable instinct as the JDK zip above:
+
+```powershell
+$dest = "$env:USERPROFILE\tesseract-ocr"; New-Item -ItemType Directory -Force $dest | Out-Null
+Invoke-WebRequest "https://github.com/tesseract-ocr/tesseract/releases/download/5.5.3/tesseract-ocr-w64-setup-5.5.3.20260724.exe" -OutFile "$env:TEMP\tesseract-setup.exe" -UseBasicParsing
+& "C:\Program Files\7-Zip\7z.exe" x -y -o"$env:TEMP\tess_extract" "$env:TEMP\tesseract-setup.exe"
+Copy-Item "$env:TEMP\tess_extract\*.exe","$env:TEMP\tess_extract\*.dll" $dest
+New-Item -ItemType Directory -Force "$dest\tessdata" | Out-Null
+Invoke-WebRequest "https://github.com/tesseract-ocr/tessdata_fast/raw/main/eng.traineddata" -OutFile "$dest\tessdata\eng.traineddata" -UseBasicParsing
+[Environment]::SetEnvironmentVariable("TESSDATA_PREFIX", "$dest\tessdata", "User")
+[Environment]::SetEnvironmentVariable("Path", "$([Environment]::GetEnvironmentVariable('Path','User'));$dest", "User")
+```
+
+The base installer does not bundle language data — it fetches it during setup via an
+NSIS plugin, which extraction skips, hence the separate `eng.traineddata` download.
+Needs 7-Zip; reopen the terminal afterwards. See `docs/problems.md` P-30.
+
 ### 1. Setup
 
 ```bash

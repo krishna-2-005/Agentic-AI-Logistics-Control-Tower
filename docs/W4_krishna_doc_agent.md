@@ -1,0 +1,96 @@
+# W4 (D1-D2) · Krishna — Document Intelligence Agent v1
+
+Week 4 deliverable, first half (execution plan W4 D1-D2): OCR + LLM extraction to
+structured JSON, over Week 3's labelled document corpus. Prompt iteration against
+Lahari's evaluation numbers (D3-D4) and the what-if delay-predictor dashboard page
+(D5) are the rest of the week and land in a later section of this file, per
+GIT_RULES §2.
+
+```bash
+python -m src.agents.doc_corpus.generate      # rebuild the local (gitignored) corpus first
+python -m src.agents.document_agent --count 20
+```
+
+Reads `data/documents/` (Week 3, gitignored) and the manifest at
+`benchmarks/raw/w3_doc_corpus_manifest.csv`; writes predictions — never scores — to
+`benchmarks/raw/w4_doc_agent_predictions.json` for Lahari's evaluation harness (D5).
+
+---
+
+## 1. Two functions, not one pipeline
+
+`src/agents/document_agent.py` is `ocr_image()` (Tesseract on the degraded scan JPEG)
+feeding `extract_fields()` (one LLM call through `src.agents.llm.get_llm()`, D-007,
+rendering `doc_extraction/v1.md`, D-008). Kept as two functions because D3-D4 iterates
+the prompt against Lahari's numbers without touching OCR, and because the module's own
+job stops at a prediction — scoring it field-by-field against the Week 3 ground truth
+is deliberately separate code (Lahari's D5), the same "keeps builder and judge apart"
+reasoning the execution plan states outright and `docs/learning-log.md`'s Week 2 entry
+already argued for from the map-coverage bugs.
+
+A first run against `w3_00001_bol_scan.jpg` shows why the split matters: the raw
+Tesseract text reads `1ND241124AAB` for a centre code and `\NVOO00001` for an invoice
+number — exactly the `0/O`, `1/I/l` confusions `doc_extraction/v1.md` rule 6 names —
+and the LLM call resolves both correctly against the `IND` + digits + letters shape
+the rule points at. It does *not* resolve every character: `Farrukhbad_Pnchight_D`
+comes back for the true `Farrukhbad_Pnchlght_D`, an `i`/`l` confusion the model this
+time reads the wrong way. Both outcomes are the evaluation harness's job to count, not
+this module's — which is the argument for building it before scoring gets designed.
+
+## 2. Three real problems, none of them about the agent's own extraction logic
+
+- **The Tesseract binary needed a real install, and the official mirror would not
+  resolve from this network.** Its own GitHub releases carry the identical installer
+  as an asset, extractable with 7-Zip without running it — see `docs/problems.md`
+  P-30 and the README's updated prerequisites section.
+- **`gemini-2.0-flash`, pinned since Week 1, was retired by Google mid-project.** The
+  404 named its own replacement (`gemini-3.6-flash`); fixed in one place
+  (`src.agents.llm.DEFAULT_MODELS`, D-007's whole point) plus the two `.env` files.
+  A second wrinkle surfaced only once the call actually succeeded: the response
+  `.content` came back as a list of content blocks rather than a string on this model,
+  handled once in `_response_text()` rather than at every call site. Full account:
+  `docs/problems.md` P-31.
+- **The free tier's real limit is 20 requests *per day*, not per minute.** A 40-document
+  run hit `429 RESOURCE_EXHAUSTED` after 19 clean calls and never fully recovered that
+  day. This is the Week 2 sync's own anticipated risk ("second LLM key... blocks Week 7
+  eval runs") arriving three weeks early — decided in D-026: the harness scores what
+  the predictions file actually contains and reports coverage beside accuracy, rather
+  than the run pretending to be complete. Full account: `docs/problems.md` P-32.
+
+None of the three is really about document extraction — all three are "an external
+dependency changed out from under a project that pinned it months ago", the same
+class of trap D-012 already spent an afternoon on for Spark's `winutils.exe`.
+
+## 3. What the first real run produced
+
+`python -m src.agents.document_agent --count 20` ran the first 20 consignments' BOL +
+invoice pair each (40 documents). Every document is attempted independently — one OCR
+failure or malformed LLM response does not abort the run, it is recorded with its own
+`error` field in `w4_doc_agent_predictions.json` — the same "a crashed job must not
+look like a clean one" instinct P-31's own tooling problem argues for. That design
+choice is what turned P-32's quota wall into a clean partial result instead of a
+crashed run: **22 of 40 documents extracted** before the free tier's daily cap started
+rejecting calls (D-026); the other 18 each carry their own `RESOURCE_EXHAUSTED` error
+string rather than a silent gap. Prompt `doc_extraction/v1`, full record in
+`benchmarks/raw/w4_doc_agent_predictions.json`.
+
+Of the 22 that did run, extraction looks right field-by-field on inspection (D5 will
+say so with numbers): centre codes and the invoice number came back correct even where
+Tesseract itself misread a character (`1ND241124AAB` → `IND241124AAB`, `\NVOO00001` →
+`INV0000001` — the exact `0/O`, `1/I/l` confusions `doc_extraction/v1.md` rule 6
+names), and one facility name did not (`Farrukhbad_Pnchight_D` for the true
+`Farrukhbad_Pnchlght_D`, the same character class read the wrong way once). Both
+outcomes are the evaluation harness's job to count, not this module's — which is the
+argument for building the agent before the scoring gets designed.
+
+## 4. What is not in this section yet
+
+- **Field-level accuracy/F1** is Lahari's D5 evaluation harness, scored against the
+  same predictions file this module writes — not duplicated here.
+- **A full 120-document run** needs a second LLM provider key or several days against
+  the current free tier (D-026) — not a code change on this module's side.
+- **Prompt iteration (D3-D4)** happens against her numbers once they exist, versioned
+  as `doc_extraction/v2` per D-008 (v1 stays).
+- **The what-if delay-predictor dashboard page (D5)** reads the champion model
+  Mounika's auto-retraining script (`week4-mounika-auto-retrain`) promotes to
+  `data/models/champion`.

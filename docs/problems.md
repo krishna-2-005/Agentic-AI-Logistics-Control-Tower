@@ -469,6 +469,88 @@ checking a number, never by reading the file.
   reading the same feature table needs the same scaling step; the tree-based
   Random Forest and GBT it is actually built for do not.
 
+### P-30 · The official Tesseract download mirror is unreachable from this machine
+**Week 4 · Krishna · resolved**
+
+- **Symptom.** `README.md`'s prerequisite table has listed Tesseract since Week 1
+  (`check_env`'s Optional check has warned `FileNotFoundError` every week since), and
+  the obvious next step — the UB-Mannheim installer linked from Tesseract's own wiki,
+  `digi.bib.uni-mannheim.de/tesseract/...` — would not connect at all: not a slow
+  download, a connection failure, while every other host tried (github.com, pypi.org,
+  sourceforge.net, huggingface.co) resolved fine.
+- **Cause.** That one host, specifically, appears to be unreachable from this network
+  — not a Tesseract problem, a that-domain problem. No proxy or DNS override was
+  available to fix the host itself, and the mirror is the only place UB-Mannheim
+  ships the installer from directly.
+- **Fix.** Tesseract's own GitHub releases (`tesseract-ocr/tesseract`, tag `5.5.3`)
+  mirror the identical installer as a release asset, authored by the same maintainer
+  who builds the UB-Mannheim installer (`stweil`) — a legitimate alternate host for
+  the same official artefact, not a third-party rebuild. NSIS installers can be
+  extracted directly with 7-Zip without running them (`7z x installer.exe`), which
+  gave `tesseract.exe` and its DLLs without ever executing an installer or needing
+  admin/UAC — the same portable-extraction instinct D-012 already used for the JDK
+  zip. The installer itself does not bundle language data (it downloads `eng.
+  traineddata` at install time via an NSIS plugin); that file was fetched separately
+  from `tesseract-ocr/tessdata_fast` on GitHub. Both live outside the repo at
+  `C:\Users\kuchu\tesseract-ocr\`, on `PATH`, with `TESSDATA_PREFIX` set at User scope
+  — mirroring exactly how `JAVA_HOME`/`HADOOP_HOME` are documented in
+  `spark-run-environment`, not committed anywhere.
+- **Cost.** ~25 minutes, almost all of it a slow download of a 26.6 MB file. Worth
+  remembering: a single unreachable domain looks exactly like "the tool doesn't have
+  a Windows build" until every other host is checked and turns out fine.
+
+### P-31 · The Week 1 default Gemini model was retired mid-project
+**Week 4 · Krishna · resolved**
+
+- **Symptom.** The Document Intelligence Agent's first real LLM call failed with
+  `404 NOT_FOUND: This model models/gemini-2.0-flash is no longer available`, quoting
+  its own replacement name in the error.
+- **Cause.** `gemini-2.0-flash` was pinned as the default in `.env.example` and
+  `src.agents.llm.DEFAULT_MODELS` back in Week 1 and never revisited — every agent
+  since (`hello_agent`, the doc corpus generator's LLM-free path) either did not call
+  the model or was not exercised again in the months since. A free-tier model name is
+  not a fact that stays true for the length of an 8-week project; D-007's single LLM
+  construction site meant this was one string to fix, not five.
+- **Fix.** `DEFAULT_MODELS["gemini"]` and both `.env`/`.env.example` moved to
+  `gemini-3.6-flash`, the name the 404 itself named. Separately, and only visible
+  once the model call actually succeeded: `response.content` came back as a **list**
+  of content-block dicts rather than a plain string — a shape difference between
+  Gemini's newer responses and what `hello_agent`'s original smoke test (a short,
+  simple prompt) happened to see. `document_agent._response_text()` flattens either
+  shape once, the same "one call site" reasoning D-007 already applies to construction
+  rather than to response parsing.
+- **Cost.** ~20 minutes. Worth carrying to Week 7's evaluation runs and Week 6's
+  agent-eval: a model pinned once at the start of an agentic project is exactly the
+  kind of dependency that goes stale silently until the code that calls it actually
+  runs again.
+
+### P-32 · The free-tier LLM quota is 20 requests *per day*, not per minute
+**Week 4 · Krishna · resolved (accepted as a documented constraint, not a bug)**
+
+- **Symptom.** A 40-document smoke run (`--count 20`, 20 consignments × BOL+invoice)
+  processed the first 19 documents cleanly, then every call from the 20th on failed
+  `429 RESOURCE_EXHAUSTED` — with escalating suggested retry delays (14s, 36s, 58s...)
+  that occasionally let a later call sneak through, landing at 22/40 succeeding rather
+  than a clean 19/40.
+- **Cause.** The error body names the exact quota:
+  `GenerateRequestsPerDayPerProjectPerModel-FreeTier`, `quotaValue: 20` — a **daily**
+  cap per project per model on `gemini-3.6-flash`'s free tier, not the per-minute rate
+  limit `with_fallback`'s retry-and-backoff design (D-007) was built to survive. The
+  Week 2 sync's open-items table already named exactly this risk ("second LLM key... —
+  blocks Week 7 eval runs") — it simply arrived at Week 4 instead of Week 7, the moment
+  an agent that actually calls the model at any volume first existed.
+- **Fix.** Not a retry loop — a daily cap does not lift by waiting seconds. The
+  per-document `try/except` already in `run_corpus` (not a single all-or-nothing call)
+  meant the quota wall did not corrupt the run: it produced 22 real predictions and 18
+  documents each recording the `RESOURCE_EXHAUSTED` reason in their own `error` field,
+  in the one predictions file. Decided in D-026: the evaluation harness (Lahari, D5)
+  scores whatever the file actually contains and reports coverage beside accuracy,
+  rather than the agent pretending a clean run happened.
+- **Cost.** ~10 minutes to read the error body all the way to the quota name, plus the
+  ~18 minutes the run itself spent retrying against a wall that was not going to move.
+  The real cost is forward-looking: a full 120-document corpus run needs a second
+  provider key or several days, not a code fix.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
