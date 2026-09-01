@@ -370,6 +370,24 @@ checking a number, never by reading the file.
   them — a model can be a genuine improvement by one honest metric and a regression by
   another, on the same held-out legs.
 
+### P-26 · The delay classifier would not converge until the features were scaled
+**Week 3 · Lahari · resolved**
+
+- **Symptom.** `LogisticRegression().fit(train[FEATURES], train["is_delayed"])` raised
+  `ConvergenceWarning: lbfgs failed to converge after 1000 iteration(s)`, and raising
+  `max_iter` further did not clear it.
+- **Cause.** `FEATURES` was built for OLS, which has a closed-form solution and never
+  cared about feature scale. Logistic regression's `lbfgs` solver is gradient-based and
+  does — `planned_min` and `planned_km` run into the hundreds while the `*_is_cold`
+  indicators are 0/1, so the loss surface is badly conditioned along some coordinates
+  and barely moves along others.
+- **Fix.** `StandardScaler` in a pipeline ahead of `LogisticRegression`, exactly the fix
+  sklearn's own warning links to — not a sign the fit itself was wrong, and not a reason
+  to touch `FEATURES` (the linear regressor still uses it unscaled, correctly).
+- **Cost.** ~10 minutes. Worth remembering for Week 4: any gradient-based MLlib model
+  reading the same feature table needs the same scaling step; the tree-based
+  Random Forest and GBT it is actually built for do not.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27

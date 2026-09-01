@@ -205,8 +205,8 @@ Merged to `main` and tagged `audit-v1` and `week2-complete`. Verified at the gat
 
 Source: `python -m src.ml.baselines` → `docs/W3_lahari_baselines.md`,
 `benchmarks/raw/w3_baseline_metrics.csv`, `w3_linreg_coefficients.csv`,
-`w3_baseline_report.json`. Same 26,369-leg grain as Weeks 1–2, on the frozen
-`features_v1` table (Stage 4, Mounika).
+`w3_classifier_metrics.csv`, `w3_baseline_report.json`. Same 26,369-leg grain as
+Weeks 1–2, on the frozen `features_v1` table (Stage 4, Mounika).
 
 ### The split D-005 deferred, fixed
 
@@ -249,16 +249,46 @@ set: the corridor-mean baseline falls back to OSRM's own prediction on them, and
 linear model gets an explicit `{corr,src,dst}_is_cold` indicator beside a zero-filled
 mean (D-021), so "no history yet" is a feature rather than a wrong zero.
 
+### Delay classifier v1 — D-023
+
+D-003's `is_delayed` label (`actual_time > 2.00x planned_min`) is 49.7% positive over
+all 26,369 legs — near enough to even that a majority-class baseline scores 0.000 F1
+on the positive class while still being "right" 51.1% of the time, which is exactly
+why D-003 asked for the majority rate reported beside every classifier metric rather
+than trusting accuracy alone.
+
+| Model | Accuracy | Precision | Recall | F1 | Majority rate |
+|---|---|---|---|---|---|
+| Majority class | 0.511 | 0.000 | 0.000 | 0.000 | 0.511 |
+| OSRM (thresholded) | 0.511 | 0.000 | 0.000 | 0.000 | 0.511 |
+| Corridor mean (thresholded) | 0.746 | 0.704 | **0.831** | 0.762 | 0.511 |
+| Linear regression (thresholded) | 0.727 | 0.699 | 0.774 | 0.735 | 0.511 |
+| **Logistic regression (delay classifier v1)** | **0.768** | **0.761** | 0.767 | **0.764** | 0.511 |
+
+`OSRM` predicts "not delayed" for every leg — its own estimate never disagrees with
+itself by 2x — so it and the majority class make the identical degenerate call.
+**Logistic regression, fit directly on `is_delayed` over the same `FEATURES` as the
+Week 3 linear regressor, is the strongest model in this table (0.764 F1)**, ahead of
+the corridor mean thresholded the same way (0.762) — the two are close, but on
+different trade-offs: the corridor mean's 0.831 recall against logistic regression's
+0.767, and 0.761 precision against 0.704. Every regressor's classification score
+here is thresholded from its own `gap_min` prediction (`threshold_to_label`) rather
+than a second, separately-calibrated model, so the regression and classification
+framings stay comparable across the whole table.
+
 ### Both Week 3 decisions this section depends on
 
 - **D-020 decided** — the split is the 80th percentile of `trip_creation_time`, and
   Week 4 must reuse it.
 - **D-022 decided** — MAE is the metric Week 4 is judged and ranked on, forced by a
   genuine RMSE/MAE disagreement between the linear model and the corridor mean (P-25).
+- **D-023 decided** — delay classifier v1 is logistic regression over the Week 3
+  `FEATURES`, and Week 4's Random Forest and GBT owe the same classifier table,
+  scored with `add_delay_label` / `threshold_to_label` rather than a redefined label.
 
 ### Gate 3 — feature table and baselines
 
-`ruff` clean over `src/` and `tests/`, 29 tests passing (26 at the Week 2 gate + 3 new
+`ruff` clean over `src/` and `tests/`, 33 tests passing (26 at the Week 2 gate + 7 new
 in `tests/test_baselines.py`). Merge to `dev`/`main` and the `week3-complete` tag
 follow once Krishna's document corpus and Mounika's feature pipeline land on the same
 branch as this section, per GIT_RULES §6.

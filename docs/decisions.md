@@ -683,3 +683,44 @@ report for every model, exactly as this entry's numbers do, so the choice is vis
 rather than assumed.
 
 Evidence: `docs/W3_lahari_baselines.md` §3, `benchmarks/raw/w3_baseline_metrics.csv`.
+
+---
+
+## D-023 · Delay classifier v1 is logistic regression, scored beside every model's implied threshold call — `DECIDED`
+**Week 3 · Lahari**
+
+The execution plan's W3 D3-D4 asks for a delay classifier and an evaluation harness
+computing precision/recall/F1 for every model, alongside the MAE/RMSE regression
+table D-020 through D-022 already closed. `is_delayed` is D-003's label, unchanged:
+`actual_time > 2.00x planned_min`, 49.7% positive over all 26,369 legs — close enough
+to even that D-003's own concern (report the majority rate beside every classifier
+metric, permanently) actually bites here, unlike at the blueprint's 93.6%-positive
+1.25 threshold.
+
+**Decided: logistic regression over the same `FEATURES` as the Week 3 linear
+regressor is delay classifier v1**, and every regression baseline in the table — OSRM,
+corridor mean, linear regression — gets its classification score by thresholding its
+own `gap_min` prediction against the identical rule the label is built from
+(`threshold_to_label`), rather than fitting a second, separately-calibrated model
+under each baseline's name. `LogisticRegression`'s solver needed the features
+standardised first (`StandardScaler` in a pipeline) to converge — `FEATURES` mixes
+minutes, kilometres and 0/1 indicators on scales OLS's closed-form fit above never had
+to care about.
+
+**Result: the fitted classifier is the strongest model in the table, and the
+corridor-mean threshold is close behind on a different trade-off.** Logistic
+regression reaches 0.764 F1 on test (0.761 precision, 0.767 recall) against the
+majority class's 0.000; thresholding the corridor mean reaches 0.762 F1 with more
+recall (0.831) and less precision (0.704). `OSRM`'s threshold and the majority class
+make the identical degenerate call — "not delayed" for every leg — since OSRM's own
+estimate never disagrees with itself by 2x. Unlike D-022, MAE and F1 do not disagree
+about which model is better here: logistic regression is not the same object as the
+linear regressor (it is fit on `is_delayed` directly, not thresholded from `gap_min`),
+so this is a separate result rather than the same finding restated.
+
+**Consequence for Week 4.** Random Forest and GBT owe this same classifier table,
+scored with `add_delay_label` and `threshold_to_label` rather than a redefined label —
+the model to clear is logistic regression's 0.764 F1, not the majority class's 0.000.
+
+Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metrics.csv`,
+`w3_baseline_report.json`.
