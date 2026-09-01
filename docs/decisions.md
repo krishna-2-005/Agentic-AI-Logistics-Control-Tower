@@ -848,3 +848,55 @@ the model to clear is logistic regression's 0.764 F1, not the majority class's 0
 
 Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metrics.csv`,
 `w3_baseline_report.json`.
+
+---
+
+## D-026 · Auto-retraining skips a cached stage rather than always rebuilding, and champion swap is a strict MAE improvement — `DECIDED`
+**Week 4 · Mounika**
+
+`src.automation.retrain` (execution plan W4 D1-D2) is the one command that runs
+clean → reconstruct → hubs → features → train → evaluate → champion/challenger swap.
+Two design calls in it are load-bearing enough to record.
+
+**A stage runs only if its frozen output does not already exist.** D-016 versions
+`clean_v1` / `trips_v1` / `hubs_v1` / `features_v1` precisely so a schema change adds a
+new version rather than silently repointing one — an "auto-retraining" script that
+rebuilds all four Spark caches from raw on every invocation would defeat that: it would
+turn a scheduled or triggered retrain into a scheduled full reprocessing job, at whatever
+cost Stage 1-4 take on 145K raw rows, for no reason on a day nothing upstream changed.
+`--force-rebuild` is the explicit escape hatch for "the raw data actually changed, start
+over" — the default is not.
+
+**Each pipeline stage runs as its own subprocess, not an in-process import.** Every
+stage module (`src.pipeline.clean`, `.reconstruct`, `.hubs`, `.features`) opens and
+stops its own `SparkSession`. Importing four of them into one Python process and
+calling their `main()`s in sequence would mean reasoning about whether a second
+`get_spark()` call inside the same process returns the first stage's still-open
+session or conflicts with it — `src.common.spark.get_spark()` is a module-level
+singleton via `getOrCreate()`, so it would. `subprocess.run([sys.executable, "-m",
+module])` gives every stage a clean JVM and a clean exit, the same isolation the stages
+already have when run by hand from the command line.
+
+**Champion swap is `challenger_mae < champion_mae`, nothing softer.** The challenger
+is whichever of Random Forest/GBT `src.ml.models.run()` (Lahari's entry point, not
+reimplemented here) already picked as its own winner on test MAE (D-024). No champion
+on record promotes automatically — there is nothing to lose to. Otherwise the swap
+requires a strictly better number, not a tie, not a percentage improvement, not human
+approval: an unattended loop that requires a person to approve every promotion is not
+autonomous, and a threshold looser than "better" risks a slow ratchet toward a worse
+model across many small, technically-passing swaps. The promotion still leaves a
+paper trail either way — `w4_retrain_history.jsonl` gets a line whether or not the
+challenger won, so "the loop ran and declined to promote" is as visible as "the loop
+ran and promoted."
+
+**What the champion actually is, on disk.** `MODELS_DIR / "champion"` is a direct copy
+of whichever `{name}_v1` MLlib `PipelineModel` directory won — not a JSON pointer to
+it. This matches an existing convention already written into
+`src/dashboard/app.py`'s artefact-status check
+(`(config.MODELS_DIR / "champion").exists()`), built before this decision, for the
+not-yet-built what-if predictor page (Krishna, D5) to load directly with
+`PipelineModel.load()`. `champion_metrics.json` sits alongside it for this script's own
+comparison logic and for a human to read without deserialising a Spark model.
+
+Evidence: `src/automation/retrain.py`, `benchmarks/raw/w4_retrain_history.jsonl`,
+`data/models/champion_metrics.json`.
