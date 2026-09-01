@@ -397,23 +397,27 @@ def render_doc(
     return "\n".join(o)
 
 
-def main() -> int:
-    parser = argparse.ArgumentParser(description="Stage 6 -- Random Forest + GBT (MLlib)")
-    parser.add_argument("--input", type=Path, default=config.FEATURES_V1)
-    parser.add_argument("--out-md", type=Path, default=config.DOCS_DIR / "W4_lahari_beat_osrm.md")
-    parser.add_argument("--models-dir", type=Path, default=config.MODELS_DIR)
-    parser.add_argument("--folds", type=int, default=CV_FOLDS)
-    args = parser.parse_args()
+def run(
+    input_path: Path = config.FEATURES_V1,
+    out_md: Path = config.DOCS_DIR / "W4_lahari_beat_osrm.md",
+    models_dir: Path = config.MODELS_DIR,
+    folds: int = CV_FOLDS,
+) -> dict:
+    """Train, evaluate, and write up Random Forest + GBT — the entry point Mounika's
+    auto-retraining script (`src.automation.retrain`, execution plan W4 D1-D2) calls
+    rather than reimplementing the fit/evaluate/report chain. Returns the same
+    dict written to `w4_model_report.json`, with `winner` and per-model test MAE the
+    two fields her champion/challenger comparison actually needs.
 
-    if not args.input.exists():
-        log.error("Missing %s -- run `python -m src.pipeline.features` first.", args.input)
-        return 1
-
+    `main()` below is a thin CLI wrapper around this — the split matters because a
+    script that only exists as `argparse` + `if __name__ == "__main__"` cannot be
+    imported and called by anything else without also parsing a fake argv.
+    """
     config.ensure_dirs()
-    args.models_dir.mkdir(parents=True, exist_ok=True)
+    models_dir.mkdir(parents=True, exist_ok=True)
     spark = get_spark("stage6-models")
     try:
-        pdf = load_features(spark, args.input)
+        pdf = load_features(spark, input_path)
         pdf = add_delay_label(pdf)
         train_raw, test_raw, _cutoff = time_split(pdf)
         train = prepare_model_features(train_raw)
@@ -430,11 +434,11 @@ def main() -> int:
         cv_reports = {}
 
         for name in MLLIB_SPECS:
-            log.info("Fitting %s via %d-fold CV over %s...", name, args.folds, list(MLLIB_SPECS[name]["grid"]))
-            cv_model, report = fit_mllib_model(train_sdf, name, args.folds)
-            cv_reports[name] = report
+            log.info("Fitting %s via %d-fold CV over %s...", name, folds, list(MLLIB_SPECS[name]["grid"]))
+            cv_model, cv_report = fit_mllib_model(train_sdf, name, folds)
+            cv_reports[name] = cv_report
             best_pipeline = cv_model.bestModel
-            best_pipeline.write().overwrite().save(str(args.models_dir / f"{name}_v1"))
+            best_pipeline.write().overwrite().save(str(models_dir / f"{name}_v1"))
 
             pred_by_model[name] = {}
             for split_name, sdf in (("train", train_sdf), ("test", test_sdf)):
@@ -442,7 +446,7 @@ def main() -> int:
                 metrics_rows.append({"model": name, "split": split_name, **m})
                 pred_by_model[name][split_name] = pred_pdf
             importance_tables.append(feature_importance_table(best_pipeline, name))
-            log.info("%s best params: %s", name, report["best_params"])
+            log.info("%s best params: %s", name, cv_report["best_params"])
     finally:
         stop_spark(spark)
 
@@ -502,6 +506,10 @@ def main() -> int:
         "n_test": len(test),
         **cold,
         "winner": winner,
+        # Test MAE per model, keyed by name -- what a champion/challenger comparison
+        # actually reads, rather than re-parsing `metrics` back out of a list of rows.
+        "test_mae": {name: float(test_m.loc[name, "mae_min"]) for name in (*MLLIB_SPECS, "corridor_mean", "OSRM")},
+        "models_dir": str(models_dir),
         "metrics": metrics_rows,
         "classifier_metrics": clf_rows,
         "corridors_in_test": len(corridor_gains),
@@ -512,20 +520,34 @@ def main() -> int:
     log.info("Model tables -> %s", raw)
 
     docs.write_section(
-        args.out_md,
+        out_md,
         "beat-osrm",
         render_doc(train, test, metrics, clf_metrics, corridor_gains, importances, winner, cv_reports),
         header=W4_DOC_HEADER,
     )
-    log.info("Beat-OSRM writeup -> %s (section: beat-osrm)", args.out_md)
+    log.info("Beat-OSRM writeup -> %s (section: beat-osrm)", out_md)
 
-    osrm_mae = test_m.loc["OSRM", "mae_min"]
-    corr_mae = test_m.loc["corridor_mean", "mae_min"]
-    win_mae = test_m.loc[winner, "mae_min"]
     log.info(
         "Test MAE (min): OSRM %.1f, corridor mean %.1f, %s (winner) %.1f, over %s legs.",
-        osrm_mae, corr_mae, winner, win_mae, f"{len(test):,}",
+        report["test_mae"]["OSRM"], report["test_mae"]["corridor_mean"], winner,
+        report["test_mae"][winner], f"{len(test):,}",
     )
+    return report
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Stage 6 -- Random Forest + GBT (MLlib)")
+    parser.add_argument("--input", type=Path, default=config.FEATURES_V1)
+    parser.add_argument("--out-md", type=Path, default=config.DOCS_DIR / "W4_lahari_beat_osrm.md")
+    parser.add_argument("--models-dir", type=Path, default=config.MODELS_DIR)
+    parser.add_argument("--folds", type=int, default=CV_FOLDS)
+    args = parser.parse_args()
+
+    if not args.input.exists():
+        log.error("Missing %s -- run `python -m src.pipeline.features` first.", args.input)
+        return 1
+
+    run(args.input, args.out_md, args.models_dir, args.folds)
     return 0
 
 
