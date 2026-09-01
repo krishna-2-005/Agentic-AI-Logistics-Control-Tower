@@ -25,7 +25,7 @@ D-005 promised a time-based split; this is where it gets fixed
 ----------------------------------------------------------------
 D-005 (Week 1) decided the split would be on `trip_creation_time` rather than the
 dataset's own `data` column, and left the exact cut to whichever week first trains
-something. That is this week — see D-020. `time_split()` below is the one function
+something. That is this week — see D-022. `time_split()` below is the one function
 Week 4 must import rather than reimplement: a "beats these baselines" claim only means
 something if the Week 4 model was trained on the same legs and scored on the same
 held-out ones.
@@ -40,7 +40,7 @@ exactly the legs the baseline cannot help with. They stay in every evaluated set
 corridor-mean baseline falls back to OSRM's own prediction (zero gap) on a leg it has
 no history for; the linear model gets an explicit `{corr,src,dst}_is_cold` indicator
 per key alongside a zero-filled mean, so "no history yet" is a feature rather than a
-silently wrong zero — see D-021.
+silently wrong zero — see D-023.
 
 Compute shape
 -------------
@@ -88,7 +88,7 @@ TARGET = "gap_min"
 #: since `actual_time = planned_min + gap_min`.
 CLASSIFIER_TARGET = "is_delayed"
 
-#: Fraction of legs, ordered by `trip_creation_time`, held out for training. D-020
+#: Fraction of legs, ordered by `trip_creation_time`, held out for training. D-022
 #: fixes this at Week 3 per D-005. Week 4 must import this constant (or the function
 #: below) rather than pick its own cut.
 TIME_SPLIT_FRAC = 0.80
@@ -106,7 +106,7 @@ HISTORY_STATS = (
 )
 #: Null on a cold leg (`{p}_n_prior == 0`) for every stat except `std_log_ratio`, which
 #: is also null on a single-observation leg (`n_prior == 1`) — variance needs two
-#: points. `n_prior` itself is never null (D-021).
+#: points. `n_prior` itself is never null (D-023).
 COLD_ONLY_NULL_STATS = ("mean_log_ratio", "mean_gap_min", "last_log_ratio", "hours_since_last")
 
 FEATURES = [
@@ -143,7 +143,7 @@ def add_delay_label(pdf: pd.DataFrame) -> pd.DataFrame:
 
 
 def time_split(pdf: pd.DataFrame, frac: float = TIME_SPLIT_FRAC) -> tuple[pd.DataFrame, pd.DataFrame, pd.Timestamp]:
-    """Chronological train/test split on `trip_creation_time` — D-020.
+    """Chronological train/test split on `trip_creation_time` — D-022.
 
     Not a random split: a random split would score a model on legs that are, in wall
     clock, mixed in among the ones it trained on, which is not how the model would
@@ -169,7 +169,7 @@ def prepare_model_features(pdf: pd.DataFrame) -> pd.DataFrame:
     `corr_mean_log_ratio` would tell the model "this corridor runs exactly on plan"
     for every corridor it has never seen — the opposite of not knowing. So every
     filled column is paired with an `{p}_is_cold` indicator carrying the fact that was
-    actually observed (D-021): nothing here is knowable, not that it is knowable and
+    actually observed (D-023): nothing here is knowable, not that it is knowable and
     zero.
     """
     out = pdf.copy()
@@ -297,7 +297,7 @@ W3_DOC_HEADER = """# W3 · Lahari — baselines
 
 Week 3 deliverable: the first three rows of `benchmarks/ml_results.md`'s "baseline to
 beat" table, the time-based split D-005 deferred to this week, and delay classifier v1
-(D-023).
+(D-025).
 
 Regenerate rather than editing numbers by hand:
 
@@ -337,7 +337,7 @@ def render_doc(
         "`planned_min` is known and identical for every model.\n"
     )
     o.append(
-        f"**The split is chronological, not random — D-020, closing D-005.** Legs with "
+        f"**The split is chronological, not random — D-022, closing D-005.** Legs with "
         f"`trip_creation_time` on or before **{cutoff.floor('s')}** are training "
         f"({len(train):,} legs, {len(train) / (len(train) + len(test)) * 100:.0f}%); "
         f"everything after is held out ({len(test):,} legs). Every model here is fitted "
@@ -347,7 +347,7 @@ def render_doc(
         "true if both were scored on the same held-out legs.\n"
     )
 
-    o.append("## 2. Cold start — D-021\n")
+    o.append("## 2. Cold start — D-023\n")
     o.append(
         f"A leg is a corridor's/hub's first sighting on "
         f"{cold['pct_corr_cold']:.1f}% / {cold['pct_src_cold']:.1f}% / "
@@ -389,7 +389,7 @@ def render_doc(
         "(`docs/W1_lahari_data_dictionary_and_eda.md`).\n"
     )
 
-    o.append("### The linear model does not clear the corridor mean — D-022\n")
+    o.append("### The linear model does not clear the corridor mean — D-024\n")
     o.append(
         f"The full-feature linear regression scores {lin_test['mae_min']:.1f} min MAE on "
         f"test, **worse than the {corr_test['mae_min']:.1f} min corridor mean**, despite a "
@@ -397,7 +397,7 @@ def render_doc(
         f"better R2 ({lin_test['r2']:.3f} vs {corr_test['r2']:.3f}). This is not a bug — OLS "
         "minimises squared error, which is exactly RMSE and R2's objective and not MAE's. "
         "The two metrics rank these two models in opposite order, which is why "
-        "**D-022 fixes MAE, not RMSE or R2, as the metric Week 4 is judged on** — it is "
+        "**D-024 fixes MAE, not RMSE or R2, as the metric Week 4 is judged on** — it is "
         "the metric `benchmarks/ml_results.md` was already tracking, and it is the one a "
         "reader means by \"average error in minutes\".\n"
     )
@@ -428,7 +428,7 @@ def render_doc(
     o.append("")
     o.append(f"Intercept: {coefs['intercept'].iloc[0]:.2f} min. Full table in `benchmarks/raw/w3_linreg_coefficients.csv`.\n")
 
-    o.append("## 5. Delay classifier v1 — D-023\n")
+    o.append("## 5. Delay classifier v1 — D-025\n")
     o.append(
         f"D-003 fixed the label at `actual_time > {config.DELAY_THRESHOLD:.2f}x "
         f"planned_min` (`is_delayed`, **{pct_delayed:.1f}%** positive over all "

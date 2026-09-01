@@ -595,7 +595,7 @@ carried forward with an owner and a named blocker — nothing is closed by silen
 
 ---
 
-## D-020 · Baseline train/test split fixed at the 80th percentile of `trip_creation_time` — `DECIDED`
+## D-022 · Baseline train/test split fixed at the 80th percentile of `trip_creation_time` — `DECIDED`
 **Week 3 · Lahari · fixes the split D-005 deferred**
 
 D-005 decided the split would be time-based rather than the dataset's own `data`
@@ -627,7 +627,7 @@ Evidence: `docs/W3_lahari_baselines.md` §1, `benchmarks/raw/w3_baseline_report.
 
 ---
 
-## D-021 · Cold-start corridor/hub history gets an explicit indicator, not a silent zero — `DECIDED`
+## D-023 · Cold-start corridor/hub history gets an explicit indicator, not a silent zero — `DECIDED`
 **Week 3 · Lahari**
 
 11.09% of legs are a corridor's first sighting (`corr_n_prior == 0`; 6.56% / 6.33% for
@@ -658,7 +658,7 @@ Evidence: `docs/W3_lahari_baselines.md` §2,
 
 ---
 
-## D-022 · Week 4 is judged on MAE, not RMSE or R2 — `DECIDED`
+## D-024 · Week 4 is judged on MAE, not RMSE or R2 — `DECIDED`
 **Week 3 · Lahari · forced by a real disagreement between the two**
 
 The Week 3 linear regression scores worse than the much simpler corridor-mean baseline
@@ -686,12 +686,12 @@ Evidence: `docs/W3_lahari_baselines.md` §3, `benchmarks/raw/w3_baseline_metrics
 
 ---
 
-## D-023 · Delay classifier v1 is logistic regression, scored beside every model's implied threshold call — `DECIDED`
+## D-025 · Delay classifier v1 is logistic regression, scored beside every model's implied threshold call — `DECIDED`
 **Week 3 · Lahari**
 
 The execution plan's W3 D3-D4 asks for a delay classifier and an evaluation harness
 computing precision/recall/F1 for every model, alongside the MAE/RMSE regression
-table D-020 through D-022 already closed. `is_delayed` is D-003's label, unchanged:
+table D-022 through D-024 already closed. `is_delayed` is D-003's label, unchanged:
 `actual_time > 2.00x planned_min`, 49.7% positive over all 26,369 legs — close enough
 to even that D-003's own concern (report the majority rate beside every classifier
 metric, permanently) actually bites here, unlike at the blueprint's 93.6%-positive
@@ -713,7 +713,7 @@ regression reaches 0.764 F1 on test (0.761 precision, 0.767 recall) against the
 majority class's 0.000; thresholding the corridor mean reaches 0.762 F1 with more
 recall (0.831) and less precision (0.704). `OSRM`'s threshold and the majority class
 make the identical degenerate call — "not delayed" for every leg — since OSRM's own
-estimate never disagrees with itself by 2x. Unlike D-022, MAE and F1 do not disagree
+estimate never disagrees with itself by 2x. Unlike D-024, MAE and F1 do not disagree
 about which model is better here: logistic regression is not the same object as the
 linear regressor (it is fit on `is_delayed` directly, not thresholded from `gap_min`),
 so this is a separate result rather than the same finding restated.

@@ -212,7 +212,7 @@ Weeks 1–2, on the frozen `features_v1` table (Stage 4, Mounika).
 
 D-005 (Week 1) decided the split would be time-based rather than the dataset's own
 `data` column and left the exact cut to whichever week trains something first —
-**D-020 fixes it here**: the 80th percentile of `trip_creation_time`, giving 21,095
+**D-022 fixes it here**: the 80th percentile of `trip_creation_time`, giving 21,095
 training legs (up to 2018-09-28 23:12:35 UTC) and 5,274 held out. Every number below
 is on the held-out set unless marked otherwise, and Week 4 must reuse
 `src.ml.baselines.time_split(frac=0.80)` rather than define its own cut — comparing
@@ -223,7 +223,7 @@ against these baselines only means something on the same held-out legs.
 | Model | MAE (min) | RMSE (min) | R2 |
 |---|---|---|---|
 | OSRM production estimate | 107.1 | 246.7 | −0.230 |
-| **Corridor mean** (past-only, D-021) | **36.1** | 101.7 | 0.791 |
+| **Corridor mean** (past-only, D-023) | **36.1** | 101.7 | 0.791 |
 | Linear regression (full as-of feature set) | 41.2 | **96.8** | **0.811** |
 
 **The corridor mean alone recovers 66% of OSRM's error**, using nothing but Stage 4's
@@ -232,14 +232,14 @@ have to clear is 36.1 min, not OSRM's 107.1, or the eventual "beats OSRM" headli
 overstates what a model contributes on top of a mean anyone could compute.
 
 **The linear model does not clear the corridor mean, and that is the finding worth
-carrying forward — D-022.** It has the better RMSE and R2 and the worse MAE, on the
+carrying forward — D-024.** It has the better RMSE and R2 and the worse MAE, on the
 same test split. OLS minimises squared error, not MAE, and the network's own
 heavy-tailed corridors (up to 13.9× per D-018) are exactly the shape of data where that
 gap shows up: a few extreme corridors are worth a linear model trading some bias on
 ordinary legs for less squared error on them, a trade the corridor mean's per-corridor
 local averages never make. **Decided: Week 4 is ranked on MAE**, since it is the metric
 this table already reports and the one "average error in minutes" plainly means; RMSE
-and R2 stay beside it because their disagreement here is itself informative (P-25).
+and R2 stay beside it because their disagreement here is itself informative (P-28).
 
 ### Cold start handled explicitly, not dropped
 
@@ -247,9 +247,9 @@ and R2 stay beside it because their disagreement here is itself informative (P-2
 (6.56% / 6.33% for source / destination hub). None are dropped from either evaluated
 set: the corridor-mean baseline falls back to OSRM's own prediction on them, and the
 linear model gets an explicit `{corr,src,dst}_is_cold` indicator beside a zero-filled
-mean (D-021), so "no history yet" is a feature rather than a wrong zero.
+mean (D-023), so "no history yet" is a feature rather than a wrong zero.
 
-### Delay classifier v1 — D-023
+### Delay classifier v1 — D-025
 
 D-003's `is_delayed` label (`actual_time > 2.00x planned_min`) is 49.7% positive over
 all 26,369 legs — near enough to even that a majority-class baseline scores 0.000 F1
@@ -278,11 +278,11 @@ framings stay comparable across the whole table.
 
 ### Both Week 3 decisions this section depends on
 
-- **D-020 decided** — the split is the 80th percentile of `trip_creation_time`, and
+- **D-022 decided** — the split is the 80th percentile of `trip_creation_time`, and
   Week 4 must reuse it.
-- **D-022 decided** — MAE is the metric Week 4 is judged and ranked on, forced by a
-  genuine RMSE/MAE disagreement between the linear model and the corridor mean (P-25).
-- **D-023 decided** — delay classifier v1 is logistic regression over the Week 3
+- **D-024 decided** — MAE is the metric Week 4 is judged and ranked on, forced by a
+  genuine RMSE/MAE disagreement between the linear model and the corridor mean (P-28).
+- **D-025 decided** — delay classifier v1 is logistic regression over the Week 3
   `FEATURES`, and Week 4's Random Forest and GBT owe the same classifier table,
   scored with `add_delay_label` / `threshold_to_label` rather than a redefined label.
 

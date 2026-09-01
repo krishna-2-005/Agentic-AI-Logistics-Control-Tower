@@ -343,7 +343,7 @@ checking a number, never by reading the file.
   decision changes the shape of a shared artefact, the checklist is every consumer of
   that artefact, not the ones that come to mind.
 
-### P-25 · A model with the better RMSE and R2 had the worse MAE
+### P-28 · A model with the better RMSE and R2 had the worse MAE
 **Week 3 · Lahari · resolved**
 
 - **Symptom.** The Week 3 linear regression beat OSRM comfortably and looked like a
@@ -357,7 +357,7 @@ checking a number, never by reading the file.
   between for less squared error on the extreme few. The corridor mean cannot make that
   trade: each corridor's prediction comes from its own local average, so one extreme
   corridor's history never leaks bias into a calmer corridor sharing a coefficient.
-- **Fix.** Not a model change — a stated choice. D-022 fixes MAE as the metric Week 4
+- **Fix.** Not a model change — a stated choice. D-024 fixes MAE as the metric Week 4
   is ranked on, since it is the one `benchmarks/ml_results.md` was already reporting and
   the one "average error in minutes" plainly means. RMSE and R2 stay in every model's
   row as diagnostics, specifically because their disagreement with MAE is itself
@@ -370,7 +370,7 @@ checking a number, never by reading the file.
   them — a model can be a genuine improvement by one honest metric and a regression by
   another, on the same held-out legs.
 
-### P-26 · The delay classifier would not converge until the features were scaled
+### P-29 · The delay classifier would not converge until the features were scaled
 **Week 3 · Lahari · resolved**
 
 - **Symptom.** `LogisticRegression().fit(train[FEATURES], train["is_delayed"])` raised

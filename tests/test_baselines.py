@@ -3,11 +3,11 @@
     pytest tests/test_baselines.py -q
 
 `time_split` and `prepare_model_features` are pure pandas and are exactly the two
-things Week 4 depends on getting right: the split Week 4 must reuse verbatim (D-020),
+things Week 4 depends on getting right: the split Week 4 must reuse verbatim (D-022),
 and the cold-start fill Week 4's own feature prep has to match if it wants comparable
 numbers. `add_delay_label`, `threshold_to_label`, `majority_class_predictions` and
 `evaluate_classifier` are the same kind of dependency for D-003's label — Week 4's
-Random Forest and GBT owe the same classifier table (D-023), scored the same way. All
+Random Forest and GBT owe the same classifier table (D-025), scored the same way. All
 are asserted here on small, hand-built frames rather than the real 26,369-row table,
 so a future change to Stage 4's column names breaks a fast test instead of a
 30-second Spark job.
