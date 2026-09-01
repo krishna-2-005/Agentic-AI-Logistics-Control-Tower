@@ -169,7 +169,7 @@ still reads `in_transit`. `GET /exceptions` filters by `status`/`severity`;
 `external_invoice_number`). **Charges are stored exactly as submitted** —
 `total_amount` is not reconciled against `freight_charge + other_charges` on the way
 in. That reconciliation is the Week 6 Invoice Auditor's whole job; an API that
-silently fixed the arithmetic would make D-020's (Krishna's doc-corpus decision)
+silently fixed the arithmetic would make D-021's (Krishna's doc-corpus decision)
 `total_mismatch` seeded error unevaluable once it reaches the TMS side.
 `PATCH /invoices/{ref}` moves `submitted -> approved` or `submitted -> disputed`, and
 disputing without a `dispute_reason` is rejected (422) — a disputed invoice always

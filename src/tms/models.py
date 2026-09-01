@@ -195,7 +195,7 @@ class Invoice(SQLModel, table=True):
     shipment_id: int = Field(foreign_key="shipment.id", index=True)
     #: The number printed on the (synthetic) invoice document itself — distinct from
     #: `invoice_ref`, which is this system's own reference. Not unique: the doc
-    #: corpus's `duplicate_document_number` seeded error (D-020) exists precisely so
+    #: corpus's `duplicate_document_number` seeded error (D-021) exists precisely so
     #: the same external number can legitimately arrive twice.
     external_invoice_number: str | None = Field(default=None, index=True)
 
@@ -279,7 +279,7 @@ class InvoiceCreate(BaseModel):
     """What the Week 6 Invoice Auditor (or, for now, a curl against the corpus)
     submits. Charges are handed over exactly as printed — `total_amount` is *not*
     recomputed from `freight_charge + other_charges` here, because whether the two
-    agree is precisely what the auditor is for (D-020's `total_mismatch` seeded
+    agree is precisely what the auditor is for (D-021's `total_mismatch` seeded
     error exists to be caught downstream, not silently fixed on the way in)."""
 
     shipment_ref: str

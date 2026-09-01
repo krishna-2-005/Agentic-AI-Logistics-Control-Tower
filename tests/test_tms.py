@@ -370,7 +370,7 @@ def test_submitting_an_invoice_assigns_a_reference_and_carries_the_corridor(clie
 def test_invoice_totals_are_stored_as_submitted_even_if_they_do_not_add_up(client):
     """Reconciling `freight_charge + other_charges` against `total_amount` is the
     Week 6 auditor's job — the API must not silently fix a mismatched invoice, or
-    D-020's `total_mismatch` seeded error would have nothing to be caught by."""
+    D-021's `total_mismatch` seeded error would have nothing to be caught by."""
     ref = make_shipment(client)
     body = client.post(
         "/invoices",

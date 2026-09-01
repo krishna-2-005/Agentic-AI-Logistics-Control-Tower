@@ -555,7 +555,7 @@ def create_invoice(
     Charges are stored exactly as submitted, `total_amount` included — this endpoint
     does not check `freight_charge + other_charges == total_amount` on the way in.
     Whether they agree is what the Week 6 Invoice Auditor checks; an API that silently
-    corrected the arithmetic would make D-020's `total_mismatch` seeded error
+    corrected the arithmetic would make D-021's `total_mismatch` seeded error
     unevaluable.
     """
     shipment = _get_shipment_or_404(session, payload.shipment_ref)
