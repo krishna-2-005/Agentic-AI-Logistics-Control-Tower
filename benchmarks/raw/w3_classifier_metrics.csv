@@ -1,0 +1,11 @@
+model,split,n,accuracy,precision,recall,f1,majority_class_rate
+majority_class,train,21095,0.5011,0.0,0.0,0.0,0.5011
+OSRM_threshold,train,21095,0.5011,0.0,0.0,0.0,0.5011
+corridor_mean_threshold,train,21095,0.7209,0.7205,0.7198,0.7202,0.5011
+linear_regression_threshold,train,21095,0.7116,0.6732,0.82,0.7394,0.5011
+logistic_regression,train,21095,0.7559,0.7628,0.7411,0.7518,0.5011
+majority_class,test,5274,0.5108,0.0,0.0,0.0,0.5108
+OSRM_threshold,test,5274,0.5108,0.0,0.0,0.0,0.5108
+corridor_mean_threshold,test,5274,0.7461,0.7038,0.8306,0.762,0.5108
+linear_regression_threshold,test,5274,0.7266,0.6991,0.7744,0.7348,0.5108
+logistic_regression,test,5274,0.7683,0.7614,0.7667,0.764,0.5108

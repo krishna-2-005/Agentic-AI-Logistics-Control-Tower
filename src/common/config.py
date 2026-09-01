@@ -24,7 +24,14 @@ DOCS_DIR = REPO_ROOT / "docs"
 BENCHMARKS_DIR = REPO_ROOT / "benchmarks"
 BENCHMARKS_RAW_DIR = BENCHMARKS_DIR / "raw"
 DEMO_DIR = REPO_ROOT / "demo"
+DEMO_SAMPLE_DOCUMENTS_DIR = DEMO_DIR / "sample_documents"
 MODELS_DIR = DATA_DIR / "models"
+
+# Full synthetic document corpus (Week 3). Gitignored like every other generated
+# artefact under data/ — regenerate with `python -m src.agents.doc_corpus.generate`.
+# The committed evidence is the curated subset in DEMO_SAMPLE_DOCUMENTS_DIR and the
+# manifest in BENCHMARKS_RAW_DIR.
+DOCUMENTS_DIR = DATA_DIR / "documents"
 
 RAW_CSV = RAW_DIR / "delhivery_data.csv"
 
@@ -92,5 +99,5 @@ SPARK_LOCAL_DIR = REPO_ROOT / os.getenv("SPARK_LOCAL_DIR", "data/spark-tmp")
 
 def ensure_dirs() -> None:
     """Create the generated-output directories. Safe to call repeatedly."""
-    for path in (PROCESSED_DIR, BENCHMARKS_RAW_DIR, MODELS_DIR, SPARK_LOCAL_DIR):
+    for path in (PROCESSED_DIR, BENCHMARKS_RAW_DIR, MODELS_DIR, SPARK_LOCAL_DIR, DOCUMENTS_DIR):
         path.mkdir(parents=True, exist_ok=True)

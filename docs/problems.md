@@ -169,6 +169,36 @@ checking a number, never by reading the file.
 
 ---
 
+### P-27 · A seeded "invoice error" printed a negative total
+**Week 3 · Lahari, reviewing Krishna's D-021 · resolved**
+
+- **Symptom.** `total_mismatch` (D-021's seeded-error taxonomy) picked a delta from a
+  fixed `+/-50..500` range and added it to the invoice's `total_amount`. Nothing raised.
+  Checking the actual 120-record run against its own manifest, one of the five
+  `total_mismatch` invoices (`w3_00059`, a small Carting shipment: freight 230.00 +
+  other 29.07 = 259.07) printed `total_amount = -116.40`.
+- **Cause.** The delta's range was picked to look reasonable against a typical
+  mid-sized invoice and never checked against the smallest ones. This network's
+  Carting shipments run as low as ~₹30 in `freight_charge` (Week 1's route-type split
+  already showed Carting is proportionally the worse-behaved route type); a delta of
+  up to 500 absolute rupees dwarfs a total that size.
+- **Fix.** The delta is now a percentage of the invoice's own `total_amount`
+  (5-30%, either sign) rather than a fixed rupee amount, so it scales with the invoice
+  it lands on and cannot cross zero at this magnitude. Same two `rng` calls as the
+  version it replaces (a `choice` then a `uniform`), so which records get which seeded
+  error kind — the part everything else in the corpus depends on being reproducible —
+  is unchanged; only the `total_mismatch` records' printed totals moved.
+- **Cost.** ~20 minutes once the manifest was actually checked against the label JSON
+  rather than trusted because the generator ran cleanly. **A negative total is the
+  wrong kind of "wrong"** for what this error is supposed to test: rule 5 asks an
+  extraction agent to report an arithmetic mismatch exactly as printed rather than
+  reconcile it, and a mismatch has to look like a plausible clerical error for that to
+  be a meaningful test — a negative grand total reads as an obviously broken document
+  before any extraction is attempted, on this document alone giving away the exact
+  thing the corpus is supposed to be testing whether an agent can catch quietly.
+
+---
+
 ## Method problems — the analysis was wrong, not the code
 
 ### P-12 · The blueprint's delay threshold labels 93.6% of legs "delayed"
@@ -342,6 +372,102 @@ checking a number, never by reading the file.
   and said nothing about placement, because the ramp was the visible half. When a
   decision changes the shape of a shared artefact, the checklist is every consumer of
   that artefact, not the ones that come to mind.
+
+### P-25 · The natural corridor-history clock leaks the future
+**Week 3 · Mounika · resolved**
+
+- **Symptom.** The obvious first draft of the Stage 4 feature pipeline ordered each
+  corridor's history by `od_start_time` — a leg "knows about" every corridor leg that
+  had already *departed* by the time it was created. It runs, produces plausible
+  numbers, and raises nothing.
+- **Cause.** Departure is not when a leg's outcome becomes knowable; *arrival*
+  (`od_end_time`) is, because the duration itself is not known until the leg lands.
+  Measured directly rather than argued: on the naive clock, **46.4% of legs** are
+  created and dispatched in the same second, so a leg reads its own departure as
+  already-known history; a further **8.4%** are handed the duration of a different
+  journey that had departed but not yet landed. **48.6% of the 26,369-leg table is
+  affected either way**, and the direction of the error only helps the model — a leg
+  that has partly seen its own answer scores *better*, not worse, so nothing about the
+  output would have looked wrong.
+- **Fix.** History is ordered on `od_end_time` instead: every leg emits a *fact* when
+  it finishes and a *query* when it is created, and a leg only ever sees facts that
+  landed before its own query. Verified with a hand-built adversarial case
+  (`tests/test_features.py::test_in_flight_leg_is_excluded`) — a leg still on the road
+  at query time must contribute nothing — and by an independent recomputation of
+  `corr_n_prior` on a 200-row sample with the predicate spelled out longhand
+  (`od_end_time <= trip_creation_time`), which matched the window's output exactly.
+  Recorded as D-020.
+- **Cost.** ~1.5 hours, entirely spent because the naive version *looked* finished — it
+  ran clean, the coverage numbers were plausible, and nothing about a leakage bug looks
+  different from a correct feature until it is checked against an independent
+  computation. The 46.4%/8.4% numbers now live in the feature report so the trap stays
+  visible even after the fix, rather than disappearing the moment the code is right.
+
+### P-26 · The obvious noise pipeline needs a system binary nobody has installed
+**Week 3 · Krishna · resolved**
+
+- **Symptom.** The natural way to add scan artefacts — render the PDF, rasterise it
+  with `pdf2image`, degrade the raster — throws `PDFInfoNotInstalledError` before it
+  ever reaches the degradation step.
+- **Cause.** `pdf2image` shells out to `poppler`'s `pdftoppm`, a system binary that
+  `pip install` does not provide and that none of the three machines this project runs
+  on has — the same class of "the pip package is not the whole dependency" problem
+  D-012 spent an afternoon on for Spark's `winutils.exe`.
+- **Fix.** `noise.py` draws the same field list `templates.py` prints
+  (`templates.field_rows`, one shared source per D-021's write-up) straight onto a
+  Pillow canvas with `ImageFont.load_default(size=...)` rather than any installed
+  font, then degrades that raster directly. Two independent renderers over one shared
+  field list, not a render-then-rasterise pipeline — reproducible on any of the three
+  machines with only what `requirements.txt` already installs.
+- **Cost.** ~20 minutes, caught before writing a single document rather than after
+  building 120 of them on a machine that happened to have poppler. `pdf2image` and
+  `pytesseract` stay in `requirements.txt` for Week 4, when OCR runs against these
+  images for real.
+
+### P-28 · A model with the better RMSE and R2 had the worse MAE
+**Week 3 · Lahari · resolved**
+
+- **Symptom.** The Week 3 linear regression beat OSRM comfortably and looked like a
+  clean win on RMSE (96.8 vs the corridor-mean baseline's 101.7) and R2 (0.811 vs
+  0.791). Its MAE was *worse* — 41.2 min against the corridor mean's 36.1 — on the same
+  test split. Two metrics, two different answers to "which model is better."
+- **Cause.** Not a bug in either number. OLS minimises squared error, which is exactly
+  what RMSE and R2 measure and not what MAE measures. The audited network has corridors
+  running up to 13.9× its own typical overrun (D-018) — genuine heavy-tailed outliers —
+  and a single global coefficient set can trade a little bias on the ordinary legs in
+  between for less squared error on the extreme few. The corridor mean cannot make that
+  trade: each corridor's prediction comes from its own local average, so one extreme
+  corridor's history never leaks bias into a calmer corridor sharing a coefficient.
+- **Fix.** Not a model change — a stated choice. D-024 fixes MAE as the metric Week 4
+  is ranked on, since it is the one `benchmarks/ml_results.md` was already reporting and
+  the one "average error in minutes" plainly means. RMSE and R2 stay in every model's
+  row as diagnostics, specifically because their disagreement with MAE is itself
+  informative, not because either could quietly become the tiebreaker.
+- **Cost.** ~20 minutes once the numbers were actually compared rather than skimmed —
+  the RMSE and R2 columns alone read as an unambiguous win, and would have if MAE had
+  not been checked against the same table.
+- **Carry:** whichever metric a report leads with has to be the one models are picked
+  on, checked explicitly against the alternatives rather than assumed to agree with
+  them — a model can be a genuine improvement by one honest metric and a regression by
+  another, on the same held-out legs.
+
+### P-29 · The delay classifier would not converge until the features were scaled
+**Week 3 · Lahari · resolved**
+
+- **Symptom.** `LogisticRegression().fit(train[FEATURES], train["is_delayed"])` raised
+  `ConvergenceWarning: lbfgs failed to converge after 1000 iteration(s)`, and raising
+  `max_iter` further did not clear it.
+- **Cause.** `FEATURES` was built for OLS, which has a closed-form solution and never
+  cared about feature scale. Logistic regression's `lbfgs` solver is gradient-based and
+  does — `planned_min` and `planned_km` run into the hundreds while the `*_is_cold`
+  indicators are 0/1, so the loss surface is badly conditioned along some coordinates
+  and barely moves along others.
+- **Fix.** `StandardScaler` in a pipeline ahead of `LogisticRegression`, exactly the fix
+  sklearn's own warning links to — not a sign the fit itself was wrong, and not a reason
+  to touch `FEATURES` (the linear regressor still uses it unscaled, correctly).
+- **Cost.** ~10 minutes. Worth remembering for Week 4: any gradient-based MLlib model
+  reading the same feature table needs the same scaling step; the tree-based
+  Random Forest and GBT it is actually built for do not.
 
 ## Process and tooling
 

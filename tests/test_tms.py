@@ -263,3 +263,151 @@ def test_shipments_are_filterable_by_corridor(client):
     assert len(hits) == 1
     assert hits[0]["order_ref"] == ref
     assert client.get("/shipments", params={"corridor": "IND1>IND2"}).json() == []
+
+
+# ── Week 3: shipment status updates ──────────────────────────────────────────
+def make_shipment(client) -> str:
+    order_ref = client.post("/orders", json=order_payload()).json()["order_ref"]
+    return client.post("/shipments", json={"order_ref": order_ref}).json()["shipment_ref"]
+
+
+def test_shipment_status_moves_through_the_lifecycle(client):
+    ref = make_shipment(client)
+    body = client.patch(f"/shipments/{ref}", json={"status": "in_transit"}).json()
+    assert body["status"] == "in_transit"
+    body = client.patch(
+        f"/shipments/{ref}", json={"status": "delivered", "notes": "signed for at the dock"}
+    ).json()
+    assert body["status"] == "delivered"
+    assert body["notes"] == "signed for at the dock"
+
+
+def test_delivered_shipments_are_terminal(client):
+    ref = make_shipment(client)
+    client.patch(f"/shipments/{ref}", json={"status": "delivered"})
+    response = client.patch(f"/shipments/{ref}", json={"status": "in_transit"})
+    assert response.status_code == 409
+
+
+def test_unknown_shipment_status_update_is_404(client):
+    assert client.patch("/shipments/SHP-999999", json={"status": "in_transit"}).status_code == 404
+
+
+# ── Week 3: exception tickets ─────────────────────────────────────────────────
+def test_filing_an_exception_flags_the_shipment_and_assigns_a_reference(client):
+    ref = make_shipment(client)
+    body = client.post(
+        "/exceptions",
+        json={"shipment_ref": ref, "severity": "high", "reason": "predicted delay 3.2x plan"},
+    ).json()
+    assert body["ticket_ref"] == "EXC-000001"
+    assert body["shipment_ref"] == ref
+    assert body["corridor_id"] == f"{ORIGIN}>{DEST}"
+    assert body["status"] == "open"
+    assert client.get(f"/shipments/{ref}").json()["status"] == "exception"
+
+
+def test_exception_against_unknown_shipment_is_404(client):
+    response = client.post(
+        "/exceptions",
+        json={"shipment_ref": "SHP-999999", "severity": "low", "reason": "n/a"},
+    )
+    assert response.status_code == 404
+
+
+def test_exception_resolution_stamps_resolved_at(client):
+    ref = make_shipment(client)
+    ticket_ref = client.post(
+        "/exceptions", json={"shipment_ref": ref, "severity": "medium", "reason": "late scan"}
+    ).json()["ticket_ref"]
+
+    acknowledged = client.patch(f"/exceptions/{ticket_ref}", json={"status": "acknowledged"}).json()
+    assert acknowledged["status"] == "acknowledged"
+    assert acknowledged["resolved_at"] is None
+
+    resolved = client.patch(
+        f"/exceptions/{ticket_ref}", json={"status": "resolved", "notes": "customer notified"}
+    ).json()
+    assert resolved["status"] == "resolved"
+    assert resolved["resolved_at"] is not None
+    assert resolved["notes"] == "customer notified"
+
+
+def test_exceptions_are_filterable_by_status_and_severity(client):
+    ref = make_shipment(client)
+    client.post("/exceptions", json={"shipment_ref": ref, "severity": "critical", "reason": "a"})
+    assert len(client.get("/exceptions", params={"severity": "critical"}).json()) == 1
+    assert client.get("/exceptions", params={"status": "resolved"}).json() == []
+
+
+def test_unknown_exception_ticket_is_404(client):
+    assert client.get("/exceptions/EXC-999999").status_code == 404
+
+
+# ── Week 3: invoices ─────────────────────────────────────────────────────────
+def invoice_payload(shipment_ref: str, **overrides) -> dict:
+    payload = {
+        "shipment_ref": shipment_ref,
+        "external_invoice_number": "INVOICE-0001",
+        "freight_charge": 4200.0,
+        "other_charges": 300.0,
+        "total_amount": 4500.0,
+        "currency": "INR",
+    }
+    payload.update(overrides)
+    return payload
+
+
+def test_submitting_an_invoice_assigns_a_reference_and_carries_the_corridor(client):
+    ref = make_shipment(client)
+    body = client.post("/invoices", json=invoice_payload(ref)).json()
+    assert body["invoice_ref"] == "INV-000001"
+    assert body["shipment_ref"] == ref
+    assert body["corridor_id"] == f"{ORIGIN}>{DEST}"
+    assert body["status"] == "submitted"
+
+
+def test_invoice_totals_are_stored_as_submitted_even_if_they_do_not_add_up(client):
+    """Reconciling `freight_charge + other_charges` against `total_amount` is the
+    Week 6 auditor's job — the API must not silently fix a mismatched invoice, or
+    D-021's `total_mismatch` seeded error would have nothing to be caught by."""
+    ref = make_shipment(client)
+    body = client.post(
+        "/invoices",
+        json=invoice_payload(ref, freight_charge=1000.0, other_charges=0.0, total_amount=9999.0),
+    ).json()
+    assert body["total_amount"] == 9999.0
+
+
+def test_invoice_against_unknown_shipment_is_404(client):
+    assert client.post("/invoices", json=invoice_payload("SHP-999999")).status_code == 404
+
+
+def test_disputing_an_invoice_requires_a_reason(client):
+    ref = make_shipment(client)
+    invoice_ref = client.post("/invoices", json=invoice_payload(ref)).json()["invoice_ref"]
+    response = client.patch(f"/invoices/{invoice_ref}", json={"status": "disputed"})
+    assert response.status_code == 422
+
+
+def test_disputing_an_invoice_with_a_reason_succeeds(client):
+    ref = make_shipment(client)
+    invoice_ref = client.post("/invoices", json=invoice_payload(ref)).json()["invoice_ref"]
+    body = client.patch(
+        f"/invoices/{invoice_ref}",
+        json={"status": "disputed", "dispute_reason": "freight_charge inconsistent with corridor history"},
+    ).json()
+    assert body["status"] == "disputed"
+    assert "corridor history" in body["dispute_reason"]
+
+
+def test_invoices_are_filterable_by_corridor(client):
+    ref = make_shipment(client)
+    client.post("/invoices", json=invoice_payload(ref))
+    hits = client.get("/invoices", params={"corridor": f"{ORIGIN}>{DEST}"}).json()
+    assert len(hits) == 1
+    assert client.get("/invoices", params={"corridor": "IND1>IND2"}).json() == []
+
+
+def test_unknown_invoice_is_404(client):
+    assert client.get("/invoices/INV-999999").status_code == 404

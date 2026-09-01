@@ -578,6 +578,130 @@ Evidence: `docs/W2_lahari_corridor_audit.md` §4,
 
 ---
 
+## D-020 · Leak-free feature pipeline: past-only history via an event-stream as-of join — `DECIDED`
+**Week 3 · Mounika · closes the Week 2 open item on corridor history**
+
+D-018's open item said it plainly: `excess_ratio` in `w2_corridor_audit.csv` is fitted
+over the **whole** 26-day window, so handing it to a model as-is means training on a
+column that already contains the answer for every leg it will later be scored on
+(D-005). Stage 4 (`src/pipeline/features.py`) recomputes corridor, source-hub and
+destination-hub history from scratch, **as of each leg's own `trip_creation_time`**,
+so the number a leg sees is only ever built from legs that had already happened.
+
+**The trap was the clock, not the aggregation.** A leg is created at
+`trip_creation_time` and that is a legitimate decision point — checked across all
+26,369 legs, `trip_creation_time <= od_start_time` without exception. But a *prior*
+leg's outcome is not usable the moment it starts; it is usable when it **finishes**,
+at `od_end_time`. Ordering a corridor's history by `od_start_time` — the natural thing
+to write — quietly reads outcomes from journeys still on the road. Measured directly
+rather than argued: on the naive clock, **46.4% of legs would read their own
+departure as a known fact** (created and dispatched in the same second) and a further
+**8.4% would be handed another journey's duration before that journey had landed**;
+**48.6% of the table is affected either way.** This is logged as P-25.
+
+**How the as-of aggregate avoids a self-join.** A per-corridor self-join with an
+inequality predicate is a cross join per corridor — the busiest corridor in this data
+runs 151 legs, which is 22,801 pairwise comparisons for one corridor alone, and the
+cost grows with the square of traffic rather than with it. Instead every leg emits a
+**fact** at `od_end_time` ("this outcome is now known") and a **query** at
+`trip_creation_time` ("what was known here?"); both are unioned, partitioned by key,
+ordered by `(event_time, kind)` with facts sorting first, and a running window
+accumulates the fact columns up to each query row in one pass. The same shape gives
+hub history by partitioning on the centre code instead of the corridor.
+
+**What the table refuses to contain.** `actual_time`, `dwell_min`, `gap_ratio`,
+`n_segments`, every `segment_*` sum, and the OD window itself are outcomes, not
+features — listed in `BANNED_FEATURES`, and the writer raises rather than emits a
+table containing any of them. `gap_min`, `log_gap_ratio` and `is_delayed` are carried
+through only as `TARGETS` for Lahari's Week 3 baselines and Week 4 models.
+
+**Coverage, at build time:** 88.91% of legs have at least one prior leg on their own
+corridor (mean 10.77 prior legs, median 6), 93.44% have source-hub history, and the
+remaining 11.09% are a corridor's genuine first sighting — nulled, not defaulted to
+zero, so a model can tell "never seen" from "seen and calm" (D-018's wider 10-leg
+floor is what makes 88.91% possible at all; at the old 30-leg floor's 18.9%-of-legs
+coverage this number would be far lower).
+
+**Both hub ends get history, closing D-015's open note.** Week 2 found hub friction
+and corridor friction are close to independent (`docs/decisions.md` D-015) and said
+Week 3 should carry hub friction as its own feature rather than assume corridor
+history already encodes it. `src_*` and `dst_*` columns are the same as-of join
+partitioned on `source_center`/`destination_center`, so the feature table carries all
+three histories side by side rather than one standing in for the others.
+
+**Frozen as `features_v1`, versioned like every other cache (D-016).** `leg_id`
+(`trip_uuid|od_start_time|corridor_id`) replaces `trips_v1`'s three-column key because
+a trip can legitimately repeat a corridor on a different day and the key needs the
+departure time to stay unique. Registered in `src/pipeline/contracts.py` as a new
+`Contract`; `python -m src.pipeline.contracts --keys` passes at 26,369 rows, 33
+columns, same grain as `trips_v1` — no leg is dropped by this stage.
+
+Evidence: `docs/W3_mounika_feature_pipeline_and_tms.md`,
+`data/processed/features_v1/_feature_report.json`, `tests/test_features.py`.
+
+---
+
+## D-021 · Document chain and GSTIN shape for the synthetic corpus — `DECIDED (confirmed by Lahari)`
+**Week 3 · Krishna**
+
+Two calls W2 §4 left open for the sync: whether the document set generates chains
+independently or with deliberate mismatches, and whether synthetic GSTINs should be
+checksum-valid or obviously fake. The execution plan puts the seeded-error taxonomy
+jointly with Lahari (W3 D3-D4, D5); this entry was Krishna's half of that, built and
+run solo, and carried the same provisional status D-014 held until Lahari confirmed
+it below.
+
+**Proposed, and what the generator currently does:**
+
+1. **One `ConsignmentRecord` backs both the BOL and the invoice**, never generated
+   independently — W2 §4's own finding was that independent generation makes
+   cross-document consistency unevaluable. `seed_errors.py`'s `corridor_mismatch` kind
+   then deliberately breaks that agreement on a minority of records, rather than the
+   two documents never agreeing to begin with.
+2. **GSTINs are shape-valid, not checksum-valid.** Right length, right character
+   classes, a real state-code prefix drawn from the consignment's own state — but the
+   final checksum character is random, not computed, so nothing generated here could
+   be mistaken for a real, checkable GSTIN. Declared as scaffolding, the same word
+   D-017 uses for the mock TMS.
+3. **A five-kind seeded-error taxonomy at a 15% rate** — `total_mismatch`,
+   `duplicate_document_number`, `corridor_mismatch`, `ocr_confusable_corruption`,
+   `missing_field` — each chosen to exercise a rule already written into
+   `doc_extraction/v1.md` rather than an arbitrary corruption. Detail and counts on
+   the 120-document run: `docs/W3_krishna_doc_corpus.md` §3.
+
+**Why this needed Lahari's sign-off before Week 4 relies on it.** She evaluates every
+agent Krishna builds by design (execution plan §2, "keeps builder and judge
+separate"); a seeded-error taxonomy the builder chose alone is exactly the kind of
+thing that evaluation separation exists to catch problems with.
+
+**Lahari's confirmation (W3 D5).** All three proposed points are sound and stay as
+written: one shared record backing both documents is the only way `corridor_mismatch`
+means anything (§1 above), GSTINs declared as shape-only scaffolding is the right call
+for the same reason D-017 scaffolds the mock TMS, and five kinds each tied to a named
+`doc_extraction/v1.md` rule is a taxonomy that tests the prompt rather than an
+arbitrary corruption grab-bag. Confirmed with one fix and one caveat carried forward:
+
+- **`total_mismatch` printed a negative invoice total on one of the five generated
+  instances** (`w3_00059`, freight+other = 259.07, printed total = -116.40) — its
+  fixed `+/-50..500` rupee delta was never checked against this network's smallest
+  Carting shipments, where `total_amount` itself can be under that range. Fixed to a
+  percentage of the invoice's own total (5-30%, either sign), which cannot cross zero
+  at this magnitude; the corpus was regenerated and every other record's assigned
+  error kind is unchanged (same two `rng` draws, same stream position). Logged as
+  P-27.
+- **Carried as a caveat, not a blocker, for Week 4's evaluation writeup:** at 120
+  documents and five kinds sampled independently at 15%, `corridor_mismatch` landed on
+  only 2 of 120 records. A per-kind accuracy claim at that count is anecdotal in
+  exactly the way D-004's 30-leg floor was before D-018 — Week 4 should report
+  per-kind detection counts alongside accuracy, not accuracy alone, and treat any
+  single-digit-count kind's number as a lead rather than a result, the same reading
+  D-018 gives a bottleneck resting on 10 legs.
+
+Evidence: `docs/W3_krishna_doc_corpus.md`, `src/agents/doc_corpus/seed_errors.py`,
+`benchmarks/raw/w3_doc_corpus_manifest.csv`, `docs/problems.md` P-27.
+
+---
+
 ## Open items carried into Week 3
 
 Week 2's two blocking decisions (D-003, D-018) are both closed above. What remains is
@@ -587,8 +711,140 @@ carried forward with an owner and a named blocker — nothing is closed by silen
 |---|---|---|
 | **One canonical city-alias table.** `src/ml/audit.py:CITY_ALIASES` and `src/dashboard/reference/india_city_coords.csv` now carry the same aliases in two places and can drift — they already did, at the 10-leg floor (P-23). Merging them means a shared reference neither the audit nor the dashboard owns. | Lahari + Krishna | nothing yet; a silent map gap when either list moves |
 | **Null `source_city` / `dest_city` in `clean_v1`** for `Mumbai Hub (Maharashtra)`-shaped facility names. The map works around it (P-21); the cache still carries it, and anything else joining on those columns will hit it. Fixing at source is a `clean_v2` under D-016's versioning rule. | Mounika | any Week 3 feature keyed on city |
-| **Corridor history must be computed past-only.** `excess_ratio` in `w2_corridor_audit.csv` is fitted on the whole period and is a *reporting* number; used as a feature as it stands it leaks (D-005). | Mounika | Week 3 feature pipeline |
+| ~~**Corridor history must be computed past-only.**~~ Resolved by **D-020** — `src/pipeline/features.py` recomputes it as of each leg's own creation time. | Mounika | — |
 | **Week 4 error analysis splits the two audit views.** D-018 found the 10-leg and 30-leg top tables share no corridor; the per-corridor claim has to say which set it is evaluated on. | Lahari | Week 4 headline |
 | JDK 17 + winutils on Lahari's machine (D-012) | Lahari | her local Spark runs |
 | Second LLM key in `.env` so `with_fallback` has somewhere to fall | Krishna | Week 7 eval runs |
 | Weekly dashboard screenshots in `demo/screenshots/` (GIT_RULES §3) — none captured for W1 or W2 | Krishna | Week 8 demo assets |
+
+---
+
+## D-022 · Baseline train/test split fixed at the 80th percentile of `trip_creation_time` — `DECIDED`
+**Week 3 · Lahari · fixes the split D-005 deferred**
+
+D-005 decided the split would be time-based rather than the dataset's own `data`
+column, and left the exact cut to whichever week first trains something. That week is
+this one: the split is the 80th percentile of `trip_creation_time` over the
+26,369-leg `features_v1` table — 21,095 training legs (`trip_creation_time` <=
+2018-09-28 23:12:35 UTC), 5,274 held out.
+
+**Why a quantile and not a fixed date.** A fixed date only matches this exact extract;
+a quantile is the thing Week 4 actually needs to reproduce — the *fraction* held out —
+regardless of small changes upstream. And why chronological rather than random: the
+model this project cares about is deployed once and predicts forward, so a random
+split scores it on legs mixed in time with the ones it trained on, which is not how it
+will ever run.
+
+**Why this cannot leak despite reusing D-005's reasoning almost verbatim.** Every
+as-of feature in `features_v1` (Stage 4) is already computed relative to each leg's
+own `trip_creation_time`, so no choice of split boundary can hand a training leg a
+feature built from a leg that is, in the deployed sense, in its future. The split only
+decides which legs the *baselines and Week 4's models* are fitted and scored on — it
+is not load-bearing for the feature table's own leakage guarantee.
+
+**Binding on Week 4.** `src.ml.baselines.time_split(frac=0.80)` is the one function
+Week 4 imports rather than reimplements. A "beats these baselines" claim is only true
+if the comparison model saw the same 21,095 training legs and was scored on the same
+5,274 held out.
+
+Evidence: `docs/W3_lahari_baselines.md` §1, `benchmarks/raw/w3_baseline_report.json`.
+
+---
+
+## D-023 · Cold-start corridor/hub history gets an explicit indicator, not a silent zero — `DECIDED`
+**Week 3 · Lahari**
+
+11.09% of legs are a corridor's first sighting (`corr_n_prior == 0`; 6.56% / 6.33% for
+source / destination hub) and Stage 4 correctly leaves their `*_mean_log_ratio`,
+`*_mean_gap_min`, `*_last_log_ratio` and `*_hours_since_last` null — there is nothing
+to report. `LinearRegression` cannot take a null, so those columns are filled with 0,
+but paired with a `{corr,src,dst}_is_cold` indicator, and `*_std_log_ratio` is
+additionally filled on the single-observation case (`n_prior == 1`; variance needs two
+points).
+
+**Why the indicator is not optional.** A silent `fillna(0)` on `corr_mean_log_ratio`
+alone would tell the model "this corridor runs exactly on plan" for a corridor it has
+never seen — the opposite of not knowing, and a systematic bias toward under-predicting
+the gap on exactly the legs with no evidence either way. The indicator lets the model
+separate "no history, filled with 0" from "history says 0", and
+`prepare_model_features()` asserts on every run that no column is null anywhere the
+cold flag does not already explain, so a change to Stage 4's null contract fails loudly
+here rather than silently degrading the fit.
+
+**The corridor-mean baseline handles the same 11.09% differently, deliberately.** It
+falls back to OSRM's own prediction (zero gap) rather than a filled mean, because that
+baseline has no coefficients to carry an indicator through — falling back to the
+*other* baseline already in the table is the only choice that does not smuggle in a
+third, unnamed baseline under the corridor-mean's name.
+
+Evidence: `docs/W3_lahari_baselines.md` §2,
+`data/processed/features_v1/_feature_report.json` (`pct_cold_start` 11.09).
+
+---
+
+## D-024 · Week 4 is judged on MAE, not RMSE or R2 — `DECIDED`
+**Week 3 · Lahari · forced by a real disagreement between the two**
+
+The Week 3 linear regression scores worse than the much simpler corridor-mean baseline
+on MAE (41.2 vs 36.1 min) while scoring *better* on RMSE (96.8 vs 101.7) and R2 (0.811
+vs 0.791) — the two families of metric rank the same two models in opposite order, on
+the same test split. This is not a bug in either model: OLS minimises squared error,
+which is RMSE and R2's objective and not MAE's, and the network's own heavy-tailed
+corridors (up to 13.9x per D-018) are exactly the shape of data where that distinction
+shows up — a few extreme legs are worth trading a little bias on ordinary legs to fit
+under a squared loss, and worth nothing under an absolute one.
+
+**Decided: `benchmarks/ml_results.md`'s baseline table, and every Week 4 comparison
+against it, ranks on MAE.** It is the metric the table was already reporting before
+this conflict surfaced, and it is the one a plain reading of "average error in minutes"
+means. RMSE and R2 are still reported beside it as diagnostics — the disagreement
+itself is informative, per this entry — but they do not decide which model is called
+better.
+
+**Consequence for Week 4.** A Random Forest or GBT that improves RMSE without
+improving MAE over the corridor-mean baseline is not a result. Both metrics go in the
+report for every model, exactly as this entry's numbers do, so the choice is visible
+rather than assumed.
+
+Evidence: `docs/W3_lahari_baselines.md` §3, `benchmarks/raw/w3_baseline_metrics.csv`.
+
+---
+
+## D-025 · Delay classifier v1 is logistic regression, scored beside every model's implied threshold call — `DECIDED`
+**Week 3 · Lahari**
+
+The execution plan's W3 D3-D4 asks for a delay classifier and an evaluation harness
+computing precision/recall/F1 for every model, alongside the MAE/RMSE regression
+table D-022 through D-024 already closed. `is_delayed` is D-003's label, unchanged:
+`actual_time > 2.00x planned_min`, 49.7% positive over all 26,369 legs — close enough
+to even that D-003's own concern (report the majority rate beside every classifier
+metric, permanently) actually bites here, unlike at the blueprint's 93.6%-positive
+1.25 threshold.
+
+**Decided: logistic regression over the same `FEATURES` as the Week 3 linear
+regressor is delay classifier v1**, and every regression baseline in the table — OSRM,
+corridor mean, linear regression — gets its classification score by thresholding its
+own `gap_min` prediction against the identical rule the label is built from
+(`threshold_to_label`), rather than fitting a second, separately-calibrated model
+under each baseline's name. `LogisticRegression`'s solver needed the features
+standardised first (`StandardScaler` in a pipeline) to converge — `FEATURES` mixes
+minutes, kilometres and 0/1 indicators on scales OLS's closed-form fit above never had
+to care about.
+
+**Result: the fitted classifier is the strongest model in the table, and the
+corridor-mean threshold is close behind on a different trade-off.** Logistic
+regression reaches 0.764 F1 on test (0.761 precision, 0.767 recall) against the
+majority class's 0.000; thresholding the corridor mean reaches 0.762 F1 with more
+recall (0.831) and less precision (0.704). `OSRM`'s threshold and the majority class
+make the identical degenerate call — "not delayed" for every leg — since OSRM's own
+estimate never disagrees with itself by 2x. Unlike D-024, MAE and F1 do not disagree
+about which model is better here: logistic regression is not the same object as the
+linear regressor (it is fit on `is_delayed` directly, not thresholded from `gap_min`),
+so this is a separate result rather than the same finding restated.
+
+**Consequence for Week 4.** Random Forest and GBT owe this same classifier table,
+scored with `add_delay_label` and `threshold_to_label` rather than a redefined label —
+the model to clear is logistic regression's 0.764 F1, not the majority class's 0.000.
+
+Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metrics.csv`,
+`w3_baseline_report.json`.

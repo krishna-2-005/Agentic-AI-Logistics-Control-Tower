@@ -1,0 +1,165 @@
+{
+  "legs": 26369,
+  "split_frac": 0.8,
+  "split_cutoff": "2018-09-28 23:12:35.939821056",
+  "n_train": 21095,
+  "n_test": 5274,
+  "pct_corr_cold": 11.09,
+  "pct_src_cold": 6.56,
+  "pct_dst_cold": 6.33,
+  "metrics": [
+    {
+      "model": "OSRM",
+      "split": "train",
+      "n": 21095,
+      "mae_min": 111.2,
+      "rmse_min": 241.11,
+      "r2": -0.2678
+    },
+    {
+      "model": "corridor_mean",
+      "split": "train",
+      "n": 21095,
+      "mae_min": 46.13,
+      "rmse_min": 126.24,
+      "r2": 0.6524
+    },
+    {
+      "model": "OSRM",
+      "split": "test",
+      "n": 5274,
+      "mae_min": 107.09,
+      "rmse_min": 246.73,
+      "r2": -0.2304
+    },
+    {
+      "model": "corridor_mean",
+      "split": "test",
+      "n": 5274,
+      "mae_min": 36.13,
+      "rmse_min": 101.73,
+      "r2": 0.7908
+    },
+    {
+      "model": "linear_regression",
+      "split": "train",
+      "n": 21095,
+      "mae_min": 42.92,
+      "rmse_min": 91.63,
+      "r2": 0.8169
+    },
+    {
+      "model": "linear_regression",
+      "split": "test",
+      "n": 5274,
+      "mae_min": 41.17,
+      "rmse_min": 96.8,
+      "r2": 0.8106
+    }
+  ],
+  "pct_delayed": 49.69,
+  "delay_threshold": 2.0,
+  "classifier_metrics": [
+    {
+      "model": "majority_class",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.5011,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "OSRM_threshold",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.5011,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "corridor_mean_threshold",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.7209,
+      "precision": 0.7205,
+      "recall": 0.7198,
+      "f1": 0.7202,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "linear_regression_threshold",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.7116,
+      "precision": 0.6732,
+      "recall": 0.82,
+      "f1": 0.7394,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "logistic_regression",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.7559,
+      "precision": 0.7628,
+      "recall": 0.7411,
+      "f1": 0.7518,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "majority_class",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.5108,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "majority_class_rate": 0.5108
+    },
+    {
+      "model": "OSRM_threshold",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.5108,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "majority_class_rate": 0.5108
+    },
+    {
+      "model": "corridor_mean_threshold",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.7461,
+      "precision": 0.7038,
+      "recall": 0.8306,
+      "f1": 0.762,
+      "majority_class_rate": 0.5108
+    },
+    {
+      "model": "linear_regression_threshold",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.7266,
+      "precision": 0.6991,
+      "recall": 0.7744,
+      "f1": 0.7348,
+      "majority_class_rate": 0.5108
+    },
+    {
+      "model": "logistic_regression",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.7683,
+      "precision": 0.7614,
+      "recall": 0.7667,
+      "f1": 0.764,
+      "majority_class_rate": 0.5108
+    }
+  ],
+  "generated_at": "2026-09-01T10:03:43.771785+00:00"
+}
