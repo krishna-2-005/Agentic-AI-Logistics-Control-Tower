@@ -848,3 +848,53 @@ the model to clear is logistic regression's 0.764 F1, not the majority class's 0
 
 Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metrics.csv`,
 `w3_baseline_report.json`.
+
+---
+
+## D-026 · Random Forest and GBT are trained through real MLlib, not scikit-learn — `DECIDED`
+**Week 4 · Lahari**
+
+Week 3's baselines (`src.ml.baselines`) fit their linear/logistic models in
+scikit-learn on purpose, arguing that 26,369 rows is not a distributed workload and
+scikit-learn would not distribute it even if it were. That argument does not carry
+over to this stage. `README.md`'s architecture and its own resume-line claim are
+specifically "trains MLlib models that outperform that planner" — this is the one
+stage where that has to be literally true, not merely compatible with being true. So
+Random Forest and GBT are trained through `pyspark.ml` (`RandomForestRegressor`,
+`GBTRegressor`) in a real MLlib `Pipeline`, tuned via MLlib's own `CrossValidator`, per
+the "Honest scope" defence the README already makes for the rest of the batch layer.
+
+**What does *not* move into Spark: the split, the cold-start fill, and the
+`{corr,src,dst}_is_cold` indicators.** `time_split` and `prepare_model_features`
+(`src.ml.baselines`, D-022/D-023) are imported, not reimplemented in Spark SQL.
+Rebuilding D-023's null-handling policy a second time is the exact shape of the trap
+P-23 already cost this project once — two lists holding one truth, which had already
+drifted by the time it was noticed. `features_v1` is 26,369 rows; collecting it once
+to pandas for the split and the fill, then handing the prepared frames to Spark only
+for the model fit and the hyperparameter search, is the one division of labour that
+does not duplicate anything.
+
+**Why k-fold CV over the training rows does not reopen D-022's leakage question.**
+D-022 argued that no choice of split boundary can leak, because every as-of feature in
+`features_v1` is already computed relative to each leg's own creation time — the
+guarantee lives in the feature table, not in how its rows are partitioned. That
+argument is general, not specific to an 80/20 cut: it applies equally to a k-fold split
+of the training rows for hyperparameter selection. `CrossValidator` below folds only
+the 21,095 training legs the test set never touches, and Spark's own contract for
+`CrossValidator.bestModel` refits the winning hyperparameters on the entire training
+set before this module calls `.transform()` on it.
+
+**Result, reported as it stands.** Random Forest is the stronger of the two Week 4
+models (36.9 min MAE on test vs GBT's 38.3), and both comfortably beat OSRM (107.1) and
+the linear regressor (41.2) — but **neither clears the corridor-mean baseline's 36.1
+min**, the number D-024 already fixed as what Week 4 actually has to beat. This is not
+reframed around RMSE or R2 (Random Forest's are the best in the table: 93.2 min RMSE,
+0.824 R2): D-024 decided MAE is what ranks these models, and a tuned tree ensemble
+trailing a single per-corridor average by 0.8 min is the honest result, not a headline
+to round away. Per-corridor, Random Forest still improves 1,369 of 1,646 test corridors
+over OSRM (83%), so the network-wide number is not hiding a model that only helps a
+handful of corridors — see `docs/W4_lahari_beat_osrm.md` §2.
+
+Evidence: `docs/W4_lahari_beat_osrm.md`, `benchmarks/raw/w4_model_metrics.csv`,
+`w4_corridor_gains.csv`, `w4_feature_importances.csv`, `w4_cv_report.json`,
+`w4_model_report.json`, `docs/problems.md` P-30.

@@ -469,6 +469,55 @@ checking a number, never by reading the file.
   reading the same feature table needs the same scaling step; the tree-based
   Random Forest and GBT it is actually built for do not.
 
+### P-30 · Random Forest's first CV run exhausted the driver heap
+**Week 4 · Lahari · resolved**
+
+- **Symptom.** `python -m src.ml.models` died mid-`RandomForestRegressor` fit with
+  `java.lang.OutOfMemoryError: Java heap space` inside `RandomForest.findBestSplits`,
+  during the first hyperparameter combination of the very first fold.
+- **Cause.** Two compounding choices, not one. `maxDepth=10` was in the first grid —
+  `findBestSplits` collects per-node, per-feature, per-bin split statistics on the
+  driver, and node count grows with depth roughly like 2^depth, so depth 10 is a real
+  memory step up from depth 5-8. That alone might have fit; `CrossValidator(...,
+  parallelism=2)` then ran two such fits concurrently in the same local[*] JVM, on a
+  machine with only ~5.6 GB free of 16 GB total alongside a normal dev session
+  (browser, IDE). Neither choice was wrong in isolation on a machine with more
+  headroom; together, on this one, they were.
+- **Fix.** `maxDepth` capped at 8 in both grids, `CrossValidator(parallelism=1)` so
+  only one candidate model fits at a time. Depth 8 still comfortably outgrows the
+  linear model's fixed global coefficients (D-026), and sequential CV cost this run
+  about 25-30 minutes wall clock against a faster but heap-exhausting parallel one that
+  never finished at all.
+- **Cost.** ~15 minutes to read the stack trace and identify both contributing
+  factors, then one clean run to confirm the fix. Worth carrying to Week 5's streaming
+  job and Week 7's scale appendix: this machine's real memory headroom during a normal
+  work session is well under Spark's configured driver memory, not the 16 GB the
+  spec sheet says.
+
+### P-31 · `command | tee logfile` reported success for a job that had crashed
+**Week 4 · Lahari · resolved**
+
+- **Symptom.** The first, OOM-killing run of `python -m src.ml.models` (P-30) was
+  launched as `python -m src.ml.models | tee run.log`, and the tool that ran it
+  reported exit code 0 — read at a glance, a green run that had in fact thrown a
+  `Py4JJavaError` and a Python traceback partway through, both sitting in `run.log`
+  the exit code claimed was clean.
+- **Cause.** In a POSIX pipeline, `$?` (and this project's tooling reads the same
+  signal) is the *last* command's exit status by default — `tee`'s, which succeeds
+  as long as it can write the file, regardless of what the process feeding it did.
+  A crashed left-hand command is invisible to anyone checking only the pipeline's
+  reported result.
+- **Fix.** Redirect to a file directly (`command > log 2>&1`) rather than piping
+  through `tee`, so the shell's own exit status is the command's; where a pipeline is
+  unavoidable, `set -o pipefail` (or bash's `${PIPESTATUS[0]}`) recovers the real
+  status. Caught here only because the output files were checked by hand against what
+  the run should have produced, not because anything flagged the mismatch — the same
+  "verify by running and checking, not by a green light" instinct `CONTRIBUTING.md` §10
+  already asks for, extended to the exit code itself.
+- **Cost.** No wrong number reached a report — this was caught before anything
+  downstream read the (nonexistent) output of the crashed run. Worth carrying forward:
+  a reported success is only as trustworthy as what it is actually measuring.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
