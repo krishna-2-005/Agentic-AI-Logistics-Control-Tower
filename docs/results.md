@@ -286,12 +286,24 @@ framings stay comparable across the whole table.
   `FEATURES`, and Week 4's Random Forest and GBT owe the same classifier table,
   scored with `add_delay_label` / `threshold_to_label` rather than a redefined label.
 
-### Gate 3 — feature table and baselines
+### Gate 3 — met
 
-`ruff` clean over `src/` and `tests/`, 33 tests passing (26 at the Week 2 gate + 7 new
-in `tests/test_baselines.py`). Merge to `dev`/`main` and the `week3-complete` tag
-follow once Krishna's document corpus and Mounika's feature pipeline land on the same
-branch as this section, per GIT_RULES §6.
+All three legs of the gate are on the same branch now: `features_v1` frozen (Mounika,
+33 columns, 26,369 rows, leak-free per D-020), baseline numbers on the board including
+delay classifier v1 (Lahari, this section), and the 120-document labelled corpus
+(Krishna, `docs/W3_krishna_doc_corpus.md`) — Gate 3 asked for 100+.
+
+`ruff` clean over `src/` and `tests/`, 75 tests passing (26 at the Week 2 gate + 49 new
+across `tests/test_features.py`, `tests/test_doc_corpus.py`, `tests/test_tms.py` and
+`tests/test_baselines.py`), and `python -m src.pipeline.contracts --keys` green on all
+four caches — `clean_v1` 144,867 rows, `trips_v1` 26,369, `hubs_v1` 1,657, `features_v1`
+26,369.
+
+Merged to `main` and tagged `week3-complete`. The three branches' independently
+numbered decisions and problems (`D-020` × 3, `P-25` × 3, `P-26` × 2) were renumbered
+clear of each other before merging — Mounika's D-020/P-25 kept their numbers, Krishna's
+moved to D-021/P-26/P-27, Lahari's moved to D-022–D-025/P-28/P-29 — rather than left to
+collide silently inside a single shared `decisions.md`.
 
 ## Week 4 — beat-OSRM headline
 
