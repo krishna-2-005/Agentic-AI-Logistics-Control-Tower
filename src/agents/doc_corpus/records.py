@@ -89,7 +89,7 @@ def _vehicle_number(state: str | None, rng: random.Random) -> str:
 
 def _gstin(state: str | None, rng: random.Random) -> str:
     """Shape-only synthetic GSTIN: right length and character classes, **not** a
-    checksum-valid number. D-020 declares this scaffolding rather than validated —
+    checksum-valid number. D-021 declares this scaffolding rather than validated —
     see docs/decisions.md.
     """
     code = STATE_GST_CODE.get(state or "", "00")
@@ -106,7 +106,7 @@ class ConsignmentRecord:
     """One consignment, and everything both the BOL and the invoice print about it.
 
     A single instance backs both documents so they can never disagree unless
-    `seed_errors.py` deliberately makes them (D-020).
+    `seed_errors.py` deliberately makes them (D-021).
     """
 
     seq: int

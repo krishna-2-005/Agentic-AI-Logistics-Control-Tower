@@ -41,7 +41,7 @@ audited corridor (120 of 1,130, no repeats at this corpus size).
 
 The synthesised fields are declared as such the same way D-017 declares the mock
 TMS scaffolding: GSTINs are shape-valid (state code + PAN-shaped body + entity digit,
-`D-020`) but **not** checksum-valid, and must never be read as real. Vehicle numbers
+`D-021`) but **not** checksum-valid, and must never be read as real. Vehicle numbers
 use the standard RTO state letters with a random series. HSN/SAC `996791` (Goods
 Transport Agency services) is the one code on the invoice that is a real, correct
 public reference rather than a synthesised value.
@@ -50,7 +50,7 @@ public reference rather than a synthesised value.
 
 The execution plan puts this design jointly with Lahari (W3 D3-D4, and W3 D5 "defines
 the ground-truth label schema and seeded-error taxonomy ... with Sai Krishna"). This
-session built and ran Krishna's half solo, so it is logged as **D-020, OPEN pending
+session built and ran Krishna's half solo, so it is logged as **D-021, OPEN pending
 Lahari's confirmation** — the same status D-014 carried until she confirmed it —
 rather than presented as an already-agreed team decision.
 
@@ -81,7 +81,7 @@ and degrades that: small rotation, Gaussian pixel noise, a light blur, a
 brightness/contrast jitter, and a random-quality JPEG re-encode. The clean PDF and the
 noisy "scan" are two independent renderers over one shared field list rather than a
 render-then-rasterise pipeline, so they cannot drift relative to each other — recorded
-as P-25. `pdf2image` and `pytesseract` stay in `requirements.txt`, reserved for Week 4
+as P-26. `pdf2image` and `pytesseract` stay in `requirements.txt`, reserved for Week 4
 when they will run OCR against these rasterised images for real.
 
 ## 5. Gate 3 numbers
@@ -99,9 +99,9 @@ when they will run OCR against these rasterised images for real.
 
 ## 6. What's next
 
-- **D-020 confirmed by Lahari (W3 D5).** One fix came out of the review —
+- **D-021 confirmed by Lahari (W3 D5).** One fix came out of the review —
   `total_mismatch` was printing a negative invoice total on the network's smallest
-  Carting shipments (P-26) — applied in `seed_errors.py` and the corpus regenerated;
+  Carting shipments (P-27) — applied in `seed_errors.py` and the corpus regenerated;
   every other record's assigned error kind is unchanged. Carried forward as a caveat
   rather than a blocker: `corridor_mismatch` landed on only 2 of 120 records, so
   Week 4's per-kind accuracy on it is a lead, not a result, at this corpus size.

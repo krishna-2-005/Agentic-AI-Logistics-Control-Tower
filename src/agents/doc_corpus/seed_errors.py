@@ -3,10 +3,10 @@
 The execution plan puts this design jointly with Lahari (W3 D3-D4: "seeded-error
 design ... with Lahari"; W3 D5: "defines the ground-truth label schema and
 seeded-error taxonomy ... with Sai Krishna"). Krishna built this module solo and
-Lahari confirmed the taxonomy at the W3 D5 sync (docs/decisions.md D-020), with one
+Lahari confirmed the taxonomy at the W3 D5 sync (docs/decisions.md D-021), with one
 fix out of that review: `total_mismatch`'s delta is a percentage of the invoice's own
 total rather than a fixed rupee amount, after the fixed range printed a negative total
-on one of five generated instances (P-26).
+on one of five generated instances (P-27).
 
 Five error kinds, chosen to be the mistakes an evaluation harness actually needs to
 distinguish from an agent's own extraction errors — each maps to a rule already
@@ -115,7 +115,7 @@ def _apply_one(
         # A fixed absolute delta (the first version of this branch used +/-50..500)
         # is not scaled to the invoice it lands on: on this network's smallest Carting
         # shipments `total_amount` itself can be under 50, so a fixed delta can and did
-        # push the printed total negative (P-26) - implausible on a real invoice, and a
+        # push the printed total negative (P-27) - implausible on a real invoice, and a
         # tell that gives the corruption away instead of testing rule 5 honestly. A
         # percentage of the invoice's own total scales with it and cannot cross zero at
         # this magnitude.

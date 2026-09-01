@@ -104,5 +104,5 @@ whole module's structure (labels read back out of printed fields, never kept
 separately from them).
 
 Carried open: the seeded-error taxonomy is my proposal, not yet Lahari's confirmed
-sign-off (D-020) — the execution plan puts that decision jointly, and I only had my
+sign-off (D-021) — the execution plan puts that decision jointly, and I only had my
 own half of the conversation this session.

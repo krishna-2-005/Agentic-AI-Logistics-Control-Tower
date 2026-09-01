@@ -578,7 +578,7 @@ Evidence: `docs/W2_lahari_corridor_audit.md` §4,
 
 ---
 
-## D-020 · Document chain and GSTIN shape for the synthetic corpus — `DECIDED (confirmed by Lahari)`
+## D-021 · Document chain and GSTIN shape for the synthetic corpus — `DECIDED (confirmed by Lahari)`
 **Week 3 · Krishna**
 
 Two calls W2 §4 left open for the sync: whether the document set generates chains
@@ -625,7 +625,7 @@ arbitrary corruption grab-bag. Confirmed with one fix and one caveat carried for
   percentage of the invoice's own total (5-30%, either sign), which cannot cross zero
   at this magnitude; the corpus was regenerated and every other record's assigned
   error kind is unchanged (same two `rng` draws, same stream position). Logged as
-  P-26.
+  P-27.
 - **Carried as a caveat, not a blocker, for Week 4's evaluation writeup:** at 120
   documents and five kinds sampled independently at 15%, `corridor_mismatch` landed on
   only 2 of 120 records. A per-kind accuracy claim at that count is anecdotal in
@@ -635,7 +635,7 @@ arbitrary corruption grab-bag. Confirmed with one fix and one caveat carried for
   D-018 gives a bottleneck resting on 10 legs.
 
 Evidence: `docs/W3_krishna_doc_corpus.md`, `src/agents/doc_corpus/seed_errors.py`,
-`benchmarks/raw/w3_doc_corpus_manifest.csv`, `docs/problems.md` P-26.
+`benchmarks/raw/w3_doc_corpus_manifest.csv`, `docs/problems.md` P-27.
 
 ---
 
