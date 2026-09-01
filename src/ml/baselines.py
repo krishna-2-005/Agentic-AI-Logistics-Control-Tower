@@ -1,4 +1,5 @@
-"""Stage 5 — baselines: OSRM, the past-only corridor mean, and linear regression.
+"""Stage 5 — baselines: OSRM, the past-only corridor mean, linear regression, and the
+delay classifier.
 
     python -m src.ml.baselines
 
@@ -6,7 +7,10 @@ Reads the frozen, leak-free feature table (`features_v1`, Stage 4) and fills in 
 first three rows of the "baseline to beat" table in `benchmarks/ml_results.md`: how
 far off the production planner already is, how much of that gap a corridor's own past
 mean already explains, and what a linear model over the rest of the as-of features
-buys on top of that. Random Forest and GBT are Week 4.
+buys on top of that. It also fits delay classifier v1 (logistic regression on D-003's
+`is_delayed` label) and scores every regressor's implied classification alongside it,
+with the majority-class rate D-003 requires reported beside each. Random Forest and
+GBT are Week 4.
 
 Grain and target
 -----------------
@@ -57,8 +61,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 from pyspark.sql import SparkSession
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    f1_score,
+    mean_absolute_error,
+    mean_squared_error,
+    precision_score,
+    r2_score,
+    recall_score,
+)
+from sklearn.pipeline import Pipeline, make_pipeline
+from sklearn.preprocessing import StandardScaler
 
 from src.common import config, docs
 from src.common.logging_setup import get_logger
@@ -68,6 +82,11 @@ log = get_logger("ml.baselines")
 
 #: What every model predicts. Never `actual_time` directly — see module docstring.
 TARGET = "gap_min"
+
+#: D-003's label, reused rather than redefined: `actual_time > DELAY_THRESHOLD x
+#: planned_min`. In `gap_min` terms — `gap_min > (DELAY_THRESHOLD - 1) * planned_min` —
+#: since `actual_time = planned_min + gap_min`.
+CLASSIFIER_TARGET = "is_delayed"
 
 #: Fraction of legs, ordered by `trip_creation_time`, held out for training. D-020
 #: fixes this at Week 3 per D-005. Week 4 must import this constant (or the function
@@ -108,6 +127,19 @@ def load_features(spark: SparkSession, path: Path) -> pd.DataFrame:
     pdf = sdf.toPandas()
     log.info("%s feature rows, %s columns", f"{len(pdf):,}", len(pdf.columns))
     return pdf.sort_values("trip_creation_time").reset_index(drop=True)
+
+
+def add_delay_label(pdf: pd.DataFrame) -> pd.DataFrame:
+    """D-003's classification label, computed once before the split so both halves of
+    `time_split` carry it like any other column.
+
+    `actual_time = planned_min + gap_min`, so `actual_time > DELAY_THRESHOLD x
+    planned_min` is `gap_min > (DELAY_THRESHOLD - 1) * planned_min` — at the decided
+    2.00x threshold, a leg is "delayed" when its gap alone exceeds what was planned.
+    """
+    out = pdf.copy()
+    out[CLASSIFIER_TARGET] = (out[TARGET] > (config.DELAY_THRESHOLD - 1) * out["planned_min"]).astype(int)
+    return out
 
 
 def time_split(pdf: pd.DataFrame, frac: float = TIME_SPLIT_FRAC) -> tuple[pd.DataFrame, pd.DataFrame, pd.Timestamp]:
@@ -196,6 +228,60 @@ def fit_linear_regression(train: pd.DataFrame) -> LinearRegression:
     return model
 
 
+def threshold_to_label(gap_pred: np.ndarray, planned_min: np.ndarray) -> np.ndarray:
+    """Turn any model's continuous `gap_min` prediction into D-003's binary label,
+    using the exact rule `add_delay_label` builds the true label from.
+
+    This is how OSRM, the corridor mean, and the linear regressor each get a
+    classification score "for free" in the table below — thresholding what they
+    already predict, rather than fitting a second, differently-calibrated model under
+    each baseline's name.
+    """
+    return (gap_pred > (config.DELAY_THRESHOLD - 1) * planned_min).astype(int)
+
+
+def majority_class_predictions(train_labels: pd.Series, n: int) -> np.ndarray:
+    """D-003: report the majority-class rate beside every classifier metric.
+
+    Fit on train only, like every other model here — the majority class itself is a
+    parameter learned from data, not a given — and broadcast to whichever split's
+    length is being scored.
+    """
+    majority = int(train_labels.mean() >= 0.5)
+    return np.full(n, majority, dtype=int)
+
+
+def fit_logistic_regression(train: pd.DataFrame) -> Pipeline:
+    """Delay classifier v1 — the same `FEATURES` as the Week 3 linear regressor, fit
+    directly on `is_delayed` rather than derived by thresholding a regression.
+
+    `FEATURES` mixes minutes, kilometres, and 0/1 indicators on wildly different
+    scales, which is what `LogisticRegression`'s own gradient-based solver is
+    sensitive to (unlike OLS's closed-form fit above) — standardising first is the
+    fix sklearn's convergence warning points at, not a sign the fit itself is wrong.
+    """
+    model = make_pipeline(StandardScaler(), LogisticRegression(max_iter=1000))
+    model.fit(train[FEATURES], train[CLASSIFIER_TARGET])
+    return model
+
+
+def evaluate_classifier(y_true: np.ndarray, y_pred: np.ndarray) -> dict:
+    """Precision/recall/F1, plus the majority-class rate D-003 requires reported
+    beside every classifier metric — computed from `y_true`, so it is the same number
+    on every model's row for a given split, not something each model can improve on
+    by construction.
+    """
+    majority_rate = round(float(max(y_true.mean(), 1 - y_true.mean())), 4)
+    return {
+        "n": len(y_true),
+        "accuracy": round(float(accuracy_score(y_true, y_pred)), 4),
+        "precision": round(float(precision_score(y_true, y_pred, zero_division=0)), 4),
+        "recall": round(float(recall_score(y_true, y_pred, zero_division=0)), 4),
+        "f1": round(float(f1_score(y_true, y_pred, zero_division=0)), 4),
+        "majority_class_rate": majority_rate,
+    }
+
+
 def coefficient_table(model: LinearRegression) -> pd.DataFrame:
     return (
         pd.DataFrame({"feature": FEATURES, "coefficient": model.coef_})
@@ -210,7 +296,8 @@ def coefficient_table(model: LinearRegression) -> pd.DataFrame:
 W3_DOC_HEADER = """# W3 · Lahari — baselines
 
 Week 3 deliverable: the first three rows of `benchmarks/ml_results.md`'s "baseline to
-beat" table, and the time-based split D-005 deferred to this week.
+beat" table, the time-based split D-005 deferred to this week, and delay classifier v1
+(D-023).
 
 Regenerate rather than editing numbers by hand:
 
@@ -220,11 +307,20 @@ python -m src.ml.baselines
 
 Reads `data/processed/features_v1` (Stage 4, Mounika) and writes
 `benchmarks/raw/w3_baseline_metrics.csv`, `w3_linreg_coefficients.csv`,
-`w3_baseline_report.json`, and this section.
+`w3_classifier_metrics.csv`, `w3_baseline_report.json`, and this section.
 """
 
 
-def render_doc(train: pd.DataFrame, test: pd.DataFrame, cutoff: pd.Timestamp, metrics: pd.DataFrame, coefs: pd.DataFrame, cold: dict) -> str:
+def render_doc(
+    train: pd.DataFrame,
+    test: pd.DataFrame,
+    cutoff: pd.Timestamp,
+    metrics: pd.DataFrame,
+    coefs: pd.DataFrame,
+    cold: dict,
+    clf_metrics: pd.DataFrame,
+    pct_delayed: float,
+) -> str:
     o: list[str] = []
     o.append("# Baselines\n")
     o.append(
@@ -332,7 +428,67 @@ def render_doc(train: pd.DataFrame, test: pd.DataFrame, cutoff: pd.Timestamp, me
     o.append("")
     o.append(f"Intercept: {coefs['intercept'].iloc[0]:.2f} min. Full table in `benchmarks/raw/w3_linreg_coefficients.csv`.\n")
 
-    o.append("## 5. What this hands on\n")
+    o.append("## 5. Delay classifier v1 — D-023\n")
+    o.append(
+        f"D-003 fixed the label at `actual_time > {config.DELAY_THRESHOLD:.2f}x "
+        f"planned_min` (`is_delayed`, **{pct_delayed:.1f}%** positive over all "
+        f"{len(train) + len(test):,} legs) and asked for the majority-class rate to be "
+        "reported beside every classifier metric, permanently. Both land here now that "
+        "a classifier exists to attach them to.\n"
+    )
+    o.append(
+        "Every regressor above also gets a classification score **for free**: "
+        "threshold its own `gap_min` prediction against the exact rule the true label "
+        "is built from (`threshold_to_label`), rather than fitting a second, "
+        "differently-calibrated model under each baseline's name. `logistic_regression` "
+        "is the one model here actually fit on `is_delayed` directly, over the same "
+        "`FEATURES` as the Week 3 linear regressor — this is Week 3's delay classifier "
+        "v1.\n"
+    )
+    o.append("| Model | Split | n | Accuracy | Precision | Recall | F1 | Majority rate |")
+    o.append("|---|---|---|---|---|---|---|---|")
+    for _, r in clf_metrics.iterrows():
+        bold = "**" if r["split"] == "test" else ""
+        o.append(
+            f"| {r['model']} | {r['split']} | {int(r['n']):,} | {r['accuracy']:.3f} "
+            f"| {bold}{r['precision']:.3f}{bold} | {bold}{r['recall']:.3f}{bold} "
+            f"| {bold}{r['f1']:.3f}{bold} | {r['majority_class_rate']:.3f} |"
+        )
+    o.append("")
+
+    maj_test = clf_metrics[(clf_metrics["model"] == "majority_class") & (clf_metrics["split"] == "test")].iloc[0]
+    log_test = clf_metrics[(clf_metrics["model"] == "logistic_regression") & (clf_metrics["split"] == "test")].iloc[0]
+    osrm_clf_test = clf_metrics[(clf_metrics["model"] == "OSRM_threshold") & (clf_metrics["split"] == "test")].iloc[0]
+    corr_clf_test = clf_metrics[(clf_metrics["model"] == "corridor_mean_threshold") & (clf_metrics["split"] == "test")].iloc[0]
+    o.append(
+        f"**The majority-class rate is {maj_test['majority_class_rate']:.1%} on test** — "
+        "D-003's whole reason for moving the threshold off the blueprint's 1.25 in the "
+        "first place: at 2.00x, guessing the larger class is barely better than a coin "
+        "flip, so an accuracy number on this label means something, unlike at the "
+        "93.6%-positive threshold the blueprint proposed.\n"
+    )
+    o.append(
+        f"**`logistic_regression` reaches {log_test['f1']:.3f} F1 on test** "
+        f"({log_test['precision']:.3f} precision, {log_test['recall']:.3f} recall) "
+        f"against the majority baseline's {maj_test['f1']:.3f} — the same "
+        "corridor-history and temporal features that beat OSRM's regression error also "
+        "carry real signal for the classification framing, not only the continuous "
+        f"one. `OSRM_threshold` scores {osrm_clf_test['f1']:.3f} F1, because OSRM's own "
+        "estimate never disagrees with itself by 2x — it predicts \"not delayed\" for "
+        f"every leg, the same degenerate call the majority baseline makes here. "
+        f"`corridor_mean_threshold` is the closer comparison, at "
+        f"{corr_clf_test['f1']:.3f} F1 — within {abs(log_test['f1'] - corr_clf_test['f1']):.3f} "
+        "of the fitted classifier, but on a different trade-off: "
+        f"{corr_clf_test['recall']:.3f} recall against logistic regression's "
+        f"{log_test['recall']:.3f}, and {corr_clf_test['precision']:.3f} precision "
+        f"against {log_test['precision']:.3f}. A single per-corridor average, "
+        "thresholded, catches more of the true delays and is wrong more often when it "
+        "flags one; the fitted classifier balances the two instead of leaning either "
+        "way, which is what its extra features (temporal, hub-level, not just "
+        "corridor) buy over a threshold call on one number.\n"
+    )
+
+    o.append("## 6. What this hands on\n")
     o.append(
         "- **Week 4's Random Forest and GBT** are trained and scored with "
         "`src.ml.baselines.time_split(frac=0.80)` on this same `features_v1` table, "
@@ -340,9 +496,10 @@ def render_doc(train: pd.DataFrame, test: pd.DataFrame, cutoff: pd.Timestamp, me
         "- **The ablations** (`benchmarks/ml_results.md`) drop the corridor-history "
         "block or the temporal block from `FEATURES` here and refit — both blocks "
         "already exist as named prefixes, nothing new to build.\n"
-        "- **The majority-class rate** (D-003) has nothing to attach to yet — every "
-        "model here is a regressor on `gap_min`. It is reported the moment a "
-        "classifier metric appears in this document, per D-003, not before.\n"
+        "- **The majority-class rate** (D-003) is reported above beside every "
+        "classifier metric, as decided; Week 4's Random Forest and GBT owe the same "
+        "table, scored with `add_delay_label` and `threshold_to_label` rather than a "
+        "redefined label.\n"
     )
     return "\n".join(o)
 
@@ -364,6 +521,7 @@ def main() -> int:
         pdf = load_features(spark, args.input)
     finally:
         stop_spark(spark)
+    pdf = add_delay_label(pdf)
 
     train_raw, test_raw, cutoff = time_split(pdf, args.split_frac)
     train = prepare_model_features(train_raw)
@@ -383,9 +541,28 @@ def main() -> int:
     metrics = pd.DataFrame(rows)
     coefs = coefficient_table(model)
 
+    # Delay classifier v1, and every model's classification score alongside it (D-003).
+    clf_model = fit_logistic_regression(train)
+    clf_rows = []
+    for split_name, split in (("train", train), ("test", test)):
+        y_true = split[CLASSIFIER_TARGET].to_numpy()
+        planned = split["planned_min"].to_numpy()
+        predictions = {
+            "majority_class": majority_class_predictions(train[CLASSIFIER_TARGET], len(split)),
+            "OSRM_threshold": threshold_to_label(osrm_predictions(split), planned),
+            "corridor_mean_threshold": threshold_to_label(corridor_mean_predictions(split), planned),
+            "linear_regression_threshold": threshold_to_label(model.predict(split[FEATURES]), planned),
+            "logistic_regression": clf_model.predict(split[FEATURES]),
+        }
+        for name, y_pred in predictions.items():
+            clf_rows.append({"model": name, "split": split_name, **evaluate_classifier(y_true, y_pred)})
+    clf_metrics = pd.DataFrame(clf_rows)
+    pct_delayed = float(pdf[CLASSIFIER_TARGET].mean() * 100)
+
     raw = config.BENCHMARKS_RAW_DIR
     metrics.to_csv(raw / "w3_baseline_metrics.csv", index=False)
     coefs.to_csv(raw / "w3_linreg_coefficients.csv", index=False)
+    clf_metrics.to_csv(raw / "w3_classifier_metrics.csv", index=False)
 
     report = {
         "legs": len(pdf),
@@ -395,12 +572,20 @@ def main() -> int:
         "n_test": len(test),
         **cold,
         "metrics": rows,
+        "pct_delayed": round(pct_delayed, 2),
+        "delay_threshold": config.DELAY_THRESHOLD,
+        "classifier_metrics": clf_rows,
         "generated_at": datetime.now(timezone.utc).isoformat(),
     }
     (raw / "w3_baseline_report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     log.info("Baseline tables -> %s", raw)
 
-    docs.write_section(args.out_md, "baselines", render_doc(train, test, cutoff, metrics, coefs, cold), header=W3_DOC_HEADER)
+    docs.write_section(
+        args.out_md,
+        "baselines",
+        render_doc(train, test, cutoff, metrics, coefs, cold, clf_metrics, pct_delayed),
+        header=W3_DOC_HEADER,
+    )
     log.info("Baselines writeup -> %s (section: baselines)", args.out_md)
 
     osrm_test = metrics[(metrics["model"] == "OSRM") & (metrics["split"] == "test")].iloc[0]
@@ -409,6 +594,12 @@ def main() -> int:
     log.info(
         "Test MAE (min): OSRM %.1f, corridor mean %.1f, linear regression %.1f, over %s legs.",
         osrm_test["mae_min"], corr_test["mae_min"], lin_test["mae_min"], f"{int(osrm_test['n']):,}",
+    )
+    log_clf_test = clf_metrics[(clf_metrics["model"] == "logistic_regression") & (clf_metrics["split"] == "test")].iloc[0]
+    maj_clf_test = clf_metrics[(clf_metrics["model"] == "majority_class") & (clf_metrics["split"] == "test")].iloc[0]
+    log.info(
+        "Test F1: majority class %.3f, logistic regression %.3f, %.1f%% of legs delayed at %.2fx.",
+        maj_clf_test["f1"], log_clf_test["f1"], pct_delayed, config.DELAY_THRESHOLD,
     )
     return 0
 

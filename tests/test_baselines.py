@@ -5,9 +5,12 @@
 `time_split` and `prepare_model_features` are pure pandas and are exactly the two
 things Week 4 depends on getting right: the split Week 4 must reuse verbatim (D-020),
 and the cold-start fill Week 4's own feature prep has to match if it wants comparable
-numbers. Both are asserted here on small, hand-built frames rather than the real
-26,369-row table, so a future change to Stage 4's column names breaks a fast test
-instead of a 30-second Spark job.
+numbers. `add_delay_label`, `threshold_to_label`, `majority_class_predictions` and
+`evaluate_classifier` are the same kind of dependency for D-003's label — Week 4's
+Random Forest and GBT owe the same classifier table (D-023), scored the same way. All
+are asserted here on small, hand-built frames rather than the real 26,369-row table,
+so a future change to Stage 4's column names breaks a fast test instead of a
+30-second Spark job.
 """
 
 from __future__ import annotations
@@ -15,11 +18,17 @@ from __future__ import annotations
 import numpy as np
 import pandas as pd
 
+from src.common import config
 from src.ml.baselines import (
+    CLASSIFIER_TARGET,
     FEATURES,
+    add_delay_label,
     corridor_mean_predictions,
+    evaluate_classifier,
+    majority_class_predictions,
     osrm_predictions,
     prepare_model_features,
+    threshold_to_label,
     time_split,
 )
 
@@ -98,3 +107,51 @@ def test_corridor_mean_baseline_falls_back_to_the_osrm_prediction_when_cold():
     # silently falling back too.
     warm = ~cold
     assert np.array_equal(corr_pred[warm], pdf.loc[warm, "corr_mean_gap_min"].to_numpy())
+
+
+def test_add_delay_label_matches_d003_threshold():
+    pdf = _toy_frame(10)
+    labelled = add_delay_label(pdf)
+
+    expected = (pdf["gap_min"] > (config.DELAY_THRESHOLD - 1) * pdf["planned_min"]).astype(int)
+    assert (labelled[CLASSIFIER_TARGET] == expected).all()
+    # A copy's new column, not a mutation of the frame the caller still holds.
+    assert CLASSIFIER_TARGET not in pdf.columns
+
+
+def test_threshold_to_label_reproduces_the_true_label_from_the_true_gap():
+    labelled = add_delay_label(_toy_frame(10))
+
+    # Thresholding gap_min itself must reproduce is_delayed exactly — the whole point
+    # of building both from the same rule (D-003), rather than the label and a
+    # model's classification score disagreeing on what "delayed" means.
+    implied = threshold_to_label(labelled["gap_min"].to_numpy(), labelled["planned_min"].to_numpy())
+    assert np.array_equal(implied, labelled[CLASSIFIER_TARGET].to_numpy())
+
+
+def test_majority_class_predictions_is_fit_on_train_and_broadcast_to_any_length():
+    majority_positive = pd.Series([1, 1, 1, 0, 0])  # 60% positive
+    pred = majority_class_predictions(majority_positive, n=7)
+    assert len(pred) == 7
+    assert (pred == 1).all()
+
+    majority_negative = pd.Series([1, 0, 0, 0])  # 25% positive
+    pred_neg = majority_class_predictions(majority_negative, n=3)
+    assert len(pred_neg) == 3
+    assert (pred_neg == 0).all()
+
+
+def test_evaluate_classifier_reports_majority_rate_from_y_true_not_y_pred():
+    y_true = np.array([1, 1, 1, 0, 0])  # 60% positive -> majority rate 0.6
+    y_pred = np.array([0, 0, 0, 0, 0])  # a degenerate model, e.g. OSRM_threshold
+
+    metrics = evaluate_classifier(y_true, y_pred)
+
+    assert metrics["n"] == 5
+    assert metrics["majority_class_rate"] == 0.6
+    # Never predicting the positive class: precision, recall and F1 on it are all
+    # exactly zero rather than raising — the harness must be able to score a model
+    # this degenerate, not just a well-behaved one.
+    assert metrics["precision"] == 0.0
+    assert metrics["recall"] == 0.0
+    assert metrics["f1"] == 0.0

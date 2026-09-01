@@ -57,5 +57,109 @@
       "r2": 0.8106
     }
   ],
-  "generated_at": "2026-08-31T16:03:44.015448+00:00"
+  "pct_delayed": 49.69,
+  "delay_threshold": 2.0,
+  "classifier_metrics": [
+    {
+      "model": "majority_class",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.5011,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "OSRM_threshold",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.5011,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "corridor_mean_threshold",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.7209,
+      "precision": 0.7205,
+      "recall": 0.7198,
+      "f1": 0.7202,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "linear_regression_threshold",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.7116,
+      "precision": 0.6732,
+      "recall": 0.82,
+      "f1": 0.7394,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "logistic_regression",
+      "split": "train",
+      "n": 21095,
+      "accuracy": 0.7559,
+      "precision": 0.7628,
+      "recall": 0.7411,
+      "f1": 0.7518,
+      "majority_class_rate": 0.5011
+    },
+    {
+      "model": "majority_class",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.5108,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "majority_class_rate": 0.5108
+    },
+    {
+      "model": "OSRM_threshold",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.5108,
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "majority_class_rate": 0.5108
+    },
+    {
+      "model": "corridor_mean_threshold",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.7461,
+      "precision": 0.7038,
+      "recall": 0.8306,
+      "f1": 0.762,
+      "majority_class_rate": 0.5108
+    },
+    {
+      "model": "linear_regression_threshold",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.7266,
+      "precision": 0.6991,
+      "recall": 0.7744,
+      "f1": 0.7348,
+      "majority_class_rate": 0.5108
+    },
+    {
+      "model": "logistic_regression",
+      "split": "test",
+      "n": 5274,
+      "accuracy": 0.7683,
+      "precision": 0.7614,
+      "recall": 0.7667,
+      "f1": 0.764,
+      "majority_class_rate": 0.5108
+    }
+  ],
+  "generated_at": "2026-09-01T06:37:16.149455+00:00"
 }
