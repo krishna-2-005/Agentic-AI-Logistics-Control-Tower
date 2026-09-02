@@ -33,9 +33,11 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import shutil
 import subprocess
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -60,21 +62,73 @@ CHAMPION_METRICS_JSON = config.MODELS_DIR / "champion_metrics.json"
 #: number in `benchmarks/` is (GIT_RULES SS4).
 RETRAIN_HISTORY_JSONL = config.BENCHMARKS_RAW_DIR / "w4_retrain_history.jsonl"
 
+#: A stage gets this many attempts before the run gives up on it -- bounded, not
+#: infinite, because a genuinely broken stage (bad code, bad input) will fail the
+#: same way every time and a retry loop should not turn that into a long silent hang.
+#: Two is enough to ride out the transient case this project has actually hit (P-30's
+#: driver-heap exhaustion, where a retry after other processes free memory can
+#: succeed) without masking a real failure as a slow one.
+MAX_STAGE_ATTEMPTS = 2
+RETRY_BACKOFF_SECONDS = 10
+
+
+class EnvironmentNotReady(RuntimeError):
+    """Raised by `preflight()` -- the run stopped before touching Spark at all."""
+
+
+def preflight() -> None:
+    """Fail fast, with one clear message, rather than let all four Spark stages fail
+    the same cryptic way one after another.
+
+    D-012 / P-06 already found what a broken `JAVA_HOME` looks like from inside
+    Spark's own boot sequence: a stack trace with no mention of Java anywhere near
+    the top. Checking the same thing `check_env.check_java` checks -- before
+    `ensure_batch_pipeline` spends minutes running stages that cannot possibly
+    succeed -- is the difference between a one-line error naming the actual cause
+    and a person reading four identical Spark tracebacks to find it themselves.
+    """
+    java_home = os.environ.get("JAVA_HOME", "")
+    exe_name = "java.exe" if os.name == "nt" else "java"
+    if not java_home or not (Path(java_home) / "bin" / exe_name).exists():
+        raise EnvironmentNotReady(
+            f"JAVA_HOME is not set to a valid JDK (got {java_home!r}). Every stage "
+            "below needs Spark, and Spark will not start without it -- see "
+            "docs/decisions.md D-012 or run `python -m src.common.check_env`."
+        )
+
 
 def ensure_batch_pipeline(force: bool = False) -> None:
     """Run each Stage 1-4 module as a subprocess, skipping one whose frozen output
     already exists. Each stage owns and stops its own SparkSession (`src.common.spark`);
     running them as separate processes rather than in-process imports means this
     script never has to reason about two stages sharing one JVM.
+
+    Each stage gets up to `MAX_STAGE_ATTEMPTS` tries with a short backoff between them
+    -- hardening against the transient case (a Spark job that fails once under memory
+    pressure and would succeed a moment later, P-30's own shape of problem), not
+    against a stage that is actually broken, which will exhaust its attempts and raise
+    exactly as before.
     """
     for module, output_path in PIPELINE_STAGES:
         if output_path.exists() and not force:
             log.info("%s -> %s already exists, skipping", module, output_path.name)
             continue
-        log.info("running python -m %s ...", module)
-        result = subprocess.run([sys.executable, "-m", module], check=False)
-        if result.returncode != 0:
-            raise RuntimeError(f"{module} exited {result.returncode} -- batch pipeline stopped")
+
+        last_returncode = None
+        for attempt in range(1, MAX_STAGE_ATTEMPTS + 1):
+            log.info("running python -m %s (attempt %d/%d)...", module, attempt, MAX_STAGE_ATTEMPTS)
+            result = subprocess.run([sys.executable, "-m", module], check=False)
+            if result.returncode == 0:
+                break
+            last_returncode = result.returncode
+            log.warning("%s exited %d on attempt %d/%d", module, result.returncode, attempt, MAX_STAGE_ATTEMPTS)
+            if attempt < MAX_STAGE_ATTEMPTS:
+                time.sleep(RETRY_BACKOFF_SECONDS)
+        else:
+            raise RuntimeError(
+                f"{module} exited {last_returncode} on every one of {MAX_STAGE_ATTEMPTS} "
+                "attempts -- batch pipeline stopped"
+            )
 
 
 def train_challenger(folds: int, models_dir: Path) -> dict:
@@ -157,6 +211,12 @@ def main() -> int:
     args = parser.parse_args()
 
     config.ensure_dirs()
+    try:
+        preflight()
+    except EnvironmentNotReady as exc:
+        log.error(str(exc))
+        return 1
+
     ensure_batch_pipeline(force=args.force_rebuild)
     report = train_challenger(args.folds, args.models_dir)
     outcome = promote_challenger(report, args.models_dir)
