@@ -898,3 +898,41 @@ handful of corridors — see `docs/W4_lahari_beat_osrm.md` §2.
 Evidence: `docs/W4_lahari_beat_osrm.md`, `benchmarks/raw/w4_model_metrics.csv`,
 `w4_corridor_gains.csv`, `w4_feature_importances.csv`, `w4_cv_report.json`,
 `w4_model_report.json`, `docs/problems.md` P-30.
+
+---
+
+## D-027 · Ablations refit at the already-tuned hyperparameter point, not a fresh grid search per feature block — `DECIDED`
+**Week 4 · Lahari · D3-D4**
+
+The execution plan asks D3-D4 to check two blocks of `FEATURES`: corridor-history
+(`corr_*`) and temporal (`created_hour`/`created_dayofweek`/`created_is_weekend`). The
+question an ablation is actually answering matters for how expensive it has to be:
+**"what does this block cost the model D1-D2 already tuned"** is a different, far
+cheaper question than **"what is the best model without this block"** — the second
+needs its own `CrossValidator` grid search per ablation (roughly tripling D1-D2's
+Spark cost for a number nothing downstream reads), the first needs one fit per
+ablation at the hyperparameters `w4_cv_report.json` already recorded.
+
+**Decided: `fit_fixed_mllib_model()` refits once per (model, ablation) pair at the
+already-tuned `best_params`, no `CrossValidator`.** Six fits total (2 models × 3
+configs: full, drop-corridor-history, drop-temporal) rather than 24 (2 models × 3
+configs × the D1-D2 grid), and the result answers the question D3-D4 actually asks —
+whether a block earns its keep at the model this project is actually shipping, not at
+some other, unshipped hyperparameter point a second search might have preferred for a
+smaller feature set.
+
+**Result: the corridor-history block dominates, on both models — confirming D1-D2's
+feature-importance ranking against a real refit rather than reading it off the fitted
+model's internal split statistics alone.** Dropping `corr_*` costs Random Forest 3.30
+min MAE and GBT 2.43; dropping the three temporal columns costs 0.11 and 0.72
+respectively — a real but much smaller effect. A high split-based importance and a
+high held-out MAE cost are not guaranteed to agree (a feature can look important to
+the fitting algorithm's internal bookkeeping without actually being load-bearing for
+generalisation); here they do, which is itself worth stating rather than assuming.
+
+**What this does not test.** An "FTL vs Carting separately" ablation was floated
+speculatively in `benchmarks/ml_results.md` at the Week 3 close but is not part of the
+execution plan's actual D3-D4 line and was not run — noted there as an open idea
+rather than silently implied by this entry's results.
+
+Evidence: `docs/W4_lahari_beat_osrm.md` §6, `benchmarks/raw/w4_ablations.csv`.

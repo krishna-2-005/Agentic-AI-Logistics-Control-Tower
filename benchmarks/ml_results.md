@@ -84,15 +84,32 @@ prediction are different objectives. Full table, train-split numbers, and the
 precision/recall trade-off between the corridor mean and the fitted classifier:
 `docs/W3_lahari_baselines.md` §5, `docs/W4_lahari_beat_osrm.md` §4.
 
-## Ablations (Week 4, D3-D4 — pending)
+## Ablations (Week 4, D3-D4)
 
-- drop corridor-history features
-- drop temporal features
-- FTL vs Carting separately
-- Reuses `src.ml.baselines.time_split(frac=0.80)` (D-022) and the same `FEATURES` set
-  Random Forest/GBT were just tuned over (`docs/W4_lahari_beat_osrm.md`), refit without
-  each block to check the feature-importance ranking (§3 there) against an actual MAE
-  cost rather than reading it off the fitted model alone.
+Source: `python -m src.ml.models --ablations` → `docs/W4_lahari_beat_osrm.md` §6,
+`benchmarks/raw/w4_ablations.csv`. Each model refit at its D1-D2 tuned hyperparameter
+point (no fresh CV search per ablation — D-027), same D-022 test split.
+
+| Model | Ablation | Features | Test MAE (min) | Cost vs full |
+|---|---|---|---|---|
+| Random Forest | full | 27 | **36.89** | — |
+| Random Forest | drop corridor-history | 20 | 40.19 | **+3.30** |
+| Random Forest | drop temporal | 24 | 37.00 | +0.11 |
+| GBT | full | 27 | **38.28** | — |
+| GBT | drop corridor-history | 20 | 40.71 | **+2.43** |
+| GBT | drop temporal | 24 | 39.00 | +0.72 |
+
+**The corridor-history block is worth far more than the temporal block, on both
+models** — dropping it costs 2.4–3.3 min MAE, against 0.1–0.7 min for dropping
+`created_hour`/`created_dayofweek`/`created_is_weekend`. This confirms D1-D2's
+feature-importance ranking (`corr_mean_gap_min` top-3 for both models) against an
+actual held-out cost rather than the fitted model's internal split statistics alone —
+the two agree here, which was not guaranteed.
+
+**Not done, and not asked for by the execution plan's actual D3-D4 line** (only
+"drop corridor-history, drop temporal" is specified there): a separate FTL-vs-Carting
+ablation was listed here speculatively at the Week 3 close and is left as an open idea
+rather than implemented, so as not to silently claim a result nothing computed.
 
 ## Document-extraction evaluation harness (Week 4 D5 — pending)
 
