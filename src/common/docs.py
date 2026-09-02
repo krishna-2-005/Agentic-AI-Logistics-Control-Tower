@@ -24,7 +24,10 @@ from pathlib import Path
 #: Canonical order of the generated sections. A section being appended for the first
 #: time is inserted at its position here rather than at the end, so the document reads
 #: the same regardless of which script happened to run first.
-SECTION_ORDER = ["data-dictionary", "eda", "corridor-audit", "hub-ranking", "baselines", "beat-osrm"]
+SECTION_ORDER = [
+    "data-dictionary", "eda", "corridor-audit", "hub-ranking", "baselines",
+    "beat-osrm", "beat-osrm-ablations",
+]
 
 
 def _markers(section_id: str) -> tuple[str, str]:
