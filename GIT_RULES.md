@@ -208,6 +208,9 @@ anyway. The `commit-msg` hook rejects it.
   before the PR.
 - **Never commit:** raw data, `.env`, API keys, model binaries over 50 MB, notebook output cells
   (clear outputs before committing — `nbstripout --install`).
+- **Stage explicit paths, never a blanket `git add -A` or `git add .`.** A commit should
+  contain exactly the files its message describes — not whatever an editor happened to
+  leave open, not a half-finished change on the side that belongs in a later commit.
 
 ---
 
@@ -257,6 +260,16 @@ exactly why vague bulk commits are banned.
 - **If a member's week slips:** the PR still opens when the team closes the week, with whatever is
   done **plus the doc stating what's missing**; the gap moves to next week's branch. An honest
   partial PR beats a silent missing week.
+- **Force-push is never automatic.** A `--force-with-lease` (or `--force`) rejection means the
+  remote moved — someone else's push or merge landed — and that means **stop and look**, never
+  retry after a quick fetch. Force-pushing needs a stated reason, applies only to the one branch
+  that reason concerns, and is never the default way past a rejection.
+- **Rewriting history** (rebase, amend, `filter-branch`) is rare and deliberate, not a default way
+  to "tidy up." When it genuinely happens: preserve the original commit structure and every
+  original author/committer date — a rewrite corrects metadata, it does not make an old commit
+  look like it was made today (`CONTRIBUTING.md` §5's real-timestamps rule, extended to edits as
+  well as new work). Scope it to only the commits that actually need it; never rewrite a commit
+  that predates the change being made, without asking first.
 
 ---
 
