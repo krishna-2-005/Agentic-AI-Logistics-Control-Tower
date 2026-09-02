@@ -900,3 +900,54 @@ comparison logic and for a human to read without deserialising a Spark model.
 
 Evidence: `src/automation/retrain.py`, `benchmarks/raw/w4_retrain_history.jsonl`,
 `data/models/champion_metrics.json`.
+
+---
+
+## D-027 · Pipeline hardening: a preflight check before Spark, a bounded retry per stage — `DECIDED`
+**Week 4 · Mounika · D3-D4**
+
+D1-D2 already made `retrain.py` skip a cached stage and isolate every stage in its
+own subprocess (D-026). D3-D4's "pipeline hardening" asks what happens when a stage
+*fails*, which D1-D2 left as an immediate, un-retried `RuntimeError`.
+
+**A preflight check runs before any subprocess, not after the first one fails.**
+`preflight()` checks the same thing `check_env.check_java` checks — `JAVA_HOME` set
+and pointing at a real JDK — and raises one clear message naming the cause if it does
+not. **Found while testing this, not by inspection:** this machine's own local `.env`
+(gitignored, per-machine) still carried `JAVA_HOME=C:\Users\HP\jdks\...` — the *other*
+machine's path from `spark-run-environment`'s own account of Week 1-2's history —
+masked only because the correct value already sits in the User-scope environment
+variable and `load_dotenv()` does not override a variable that already exists. Popping
+`JAVA_HOME` from `os.environ` before calling `preflight()` (simulating a shell where
+that precedence does not hold) surfaced the stale value immediately, and it was
+fixed on this machine's `.env` as a result — a landmine this decision's own testing
+found rather than one that was ever hit for real. Without the preflight check, that
+same stale value would have made all four pipeline stages fail with an identical,
+unhelpful Spark bootstrap traceback instead of one line naming `JAVA_HOME`. Logged as
+P-31.
+
+**Each stage gets `MAX_STAGE_ATTEMPTS = 2` with a fixed backoff, not an unbounded
+retry loop.** This project has one concrete transient failure on record — P-30's
+driver-heap exhaustion during Random Forest's CV search, resolved partly by
+sequential fitting and partly by the observation that memory pressure on this
+machine varies with what else is open. A bounded retry gives a stage one more chance
+after a transient resource squeeze without turning a genuinely broken stage (bad
+code, bad input) into a long, silent hang — it will simply fail the same way twice
+and raise, exactly as D1-D2's version did on the first attempt.
+
+**Verified without re-running the batch pipeline for real.** Retrying the actual
+~40-minute Spark chain twice to test a retry loop would cost 80 minutes to check
+behaviour that does not depend on Spark at all. `tests/test_retrain.py` checks
+`preflight()` against a missing, a present-but-empty, and a valid `JAVA_HOME`; checks
+`ensure_batch_pipeline` skips an existing output without invoking anything, and
+retries exactly `MAX_STAGE_ATTEMPTS` times against a deliberately-nonexistent module
+before raising; and checks `promote_challenger` promotes with no champion on record,
+declines a challenger that does not beat one, promotes one that does, and leaves the
+champion directory untouched on a decline — all against throwaway `tmp_path`
+champion/models directories, never the developer's real `data/models/champion`. The
+real Stage 1-4 modules and Lahari's `run()` were already exercised end to end in
+D1-D2; this entry hardens and tests the orchestration around them, not the stages
+themselves.
+
+Evidence: `src/automation/retrain.py` (`preflight`, `MAX_STAGE_ATTEMPTS`),
+`tests/test_retrain.py`.

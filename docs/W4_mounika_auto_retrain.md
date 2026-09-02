@@ -75,10 +75,53 @@ Lahari's entry point locally hit a shared-file coupling (`docs/problems.md` P-30
 resolved without re-running the ~40-minute training, by promoting from the
 already-written `w4_model_report.json` directly.
 
+## D3–D4 · A preflight check, a bounded retry, and a real test suite
+
+Two hardening gaps D1-D2 left: a failing stage raised immediately with no retry, and
+nothing checked the environment *before* handing four Spark jobs to a JVM that might
+not even start.
+
+**`preflight()` runs before the first subprocess, not after it fails.** It checks the
+one thing every one of the four stages needs and none of them checks for itself:
+`JAVA_HOME` set to a real JDK. Testing this against a deliberately broken value found
+a real bug rather than a hypothetical one — this machine's own `.env` still carried
+`JAVA_HOME=C:\Users\HP\jdks\...`, the *other* machine's path from Week 1-2, masked
+only because the correct value already sits in the User-scope environment variable
+and `load_dotenv()` never overrides a variable that already exists. Fixed on this
+machine's `.env` as a direct result of writing this check, not before.
+
+**Each stage gets `MAX_STAGE_ATTEMPTS = 2` with a short backoff, not an unbounded
+retry.** The one transient failure this project has actually hit is Lahari's P-30 —
+driver-heap exhaustion that a retry after memory frees up can plausibly survive. A
+genuinely broken stage fails the same way twice and raises exactly as before; nothing
+here turns a real failure into a silent hang.
+
+**`tests/test_retrain.py` — nine tests, none of which touch Spark or train a model.**
+Retrying the real ~40-minute batch chain to test a two-line retry loop would cost 80
+minutes checking behaviour that has nothing to do with Spark. Instead: `preflight()`
+against a missing / empty / valid `JAVA_HOME`; `ensure_batch_pipeline` skipping an
+existing output without invoking anything, and retrying a deliberately-nonexistent
+module exactly twice before raising; and `promote_challenger` promoting with no
+champion on record, declining a worse challenger without touching the champion
+directory, and promoting a better one — all against throwaway `tmp_path` directories,
+never `data/models/champion` itself. D-027 has the full account.
+
+## First real run
+
+The loop's first run trained both models via Lahari's `run()` (3-fold CV, the same
+grid `docs/W4_lahari_beat_osrm.md` reports), named **Random Forest** the challenger at
+**36.89 min test MAE** (against GBT's 38.28), and promoted it — there was no champion
+on record yet, so nothing had to be beaten. `data/models/champion` now holds that
+`PipelineModel`; `data/models/champion_metrics.json` and
+`benchmarks/raw/w4_retrain_history.jsonl` both carry the same number, so a second run
+that trains a worse model has something concrete to fail to beat.
+
+One real snag surfaced validating this before either branch had merged: replaying
+Lahari's entry point locally hit a shared-file coupling (`docs/problems.md` P-30) —
+resolved without re-running the ~40-minute training, by promoting from the
+already-written `w4_model_report.json` directly.
+
 ## What is not in this section yet
 
-- **Pipeline hardening / one-command batch run (D3-D4)** — retries on a transient
-  stage failure, and a documented single entry point a fresh clone can run start to
-  finish.
 - **Stream event JSON schema (D5)**, agreed with Krishna and Lahari for Week 5's Kafka
   producer.

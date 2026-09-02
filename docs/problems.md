@@ -495,6 +495,35 @@ checking a number, never by reading the file.
   (`src/common/docs.py`'s `SECTION_ORDER`) couples whoever calls it to whoever last
   edited that shared list, in a way a function signature alone does not reveal.
 
+### P-31 · A stale `JAVA_HOME` from a different machine, masked by variable precedence
+**Week 4 · Mounika · resolved, found while writing D-027's preflight check**
+
+- **Symptom.** Writing `retrain.preflight()` (D-027) and testing it against a
+  deliberately broken `JAVA_HOME` turned up a second, real problem: popping
+  `JAVA_HOME` from the process environment and letting `config.py`'s `load_dotenv()`
+  fill the gap surfaced `JAVA_HOME=C:\Users\HP\jdks\jdk-17.0.20+8` — a path that does
+  not exist on this machine at all.
+- **Cause.** This machine's local `.env` (gitignored, never shared, never the same
+  file across the three members' machines) still carried the *other* machine's JDK
+  path — `spark-run-environment`'s own note that "the earlier Week 1–2 work was built
+  on a different machine (`C:\Users\HP\...`)" was about the Parquet caches, but the
+  same stale value had also been sitting unnoticed in `.env` since around then. It
+  never caused a visible failure because the correct value already sits in this
+  machine's User-scope environment variable, set outside the repo, and
+  `python-dotenv`'s `load_dotenv()` does not override a variable that already exists
+  in `os.environ` — so every real run of every stage this whole project has used the
+  right value, by precedence, while the wrong one sat one layer underneath it.
+- **Fix.** Corrected `.env`'s `JAVA_HOME` to this machine's real path. Not committed —
+  `.env` is gitignored by design (GIT_RULES §7) — so this is a local fix, not a repo
+  change, and each of the three members' own `.env` needs checking on its own merits
+  rather than assumed correct because Spark has always worked so far.
+- **Cost.** ~5 minutes once `preflight()`'s own test surfaced it. **The general point
+  the fix doesn't cover:** environment-variable precedence means a wrong value in one
+  layer can sit silently underneath a right value in another for months, invisible
+  until something removes the layer that was covering for it — the same shape of trap
+  as P-06's Parquet cache built on a machine that no longer existed, just one layer
+  further down the stack.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
