@@ -1,10 +1,9 @@
 # W4 (D1-D2) · Krishna — Document Intelligence Agent v1
 
 Week 4 deliverable, first half (execution plan W4 D1-D2): OCR + LLM extraction to
-structured JSON, over Week 3's labelled document corpus. Prompt iteration against
-Lahari's evaluation numbers (D3-D4) and the what-if delay-predictor dashboard page
-(D5) are the rest of the week and land in a later section of this file, per
-GIT_RULES §2.
+structured JSON, over Week 3's labelled document corpus. Prompt iteration (D3-D4,
+§5 below) and the what-if delay-predictor dashboard page (D5) are the rest of the
+week, per GIT_RULES §2.
 
 ```bash
 python -m src.agents.doc_corpus.generate      # rebuild the local (gitignored) corpus first
@@ -30,12 +29,17 @@ already argued for from the map-coverage bugs.
 
 A first run against `w3_00001_bol_scan.jpg` shows why the split matters: the raw
 Tesseract text reads `1ND241124AAB` for a centre code and `\NVOO00001` for an invoice
-number — exactly the `0/O`, `1/I/l` confusions `doc_extraction/v1.md` rule 6 names —
-and the LLM call resolves both correctly against the `IND` + digits + letters shape
-the rule points at. It does *not* resolve every character: `Farrukhbad_Pnchight_D`
-comes back for the true `Farrukhbad_Pnchlght_D`, an `i`/`l` confusion the model this
-time reads the wrong way. Both outcomes are the evaluation harness's job to count, not
-this module's — which is the argument for building it before scoring gets designed.
+number — exactly the `0/O`, `1/I/l` confusions `doc_extraction/v1.md` rule 6 names.
+**Checked against the label rather than assumed from a glance at the raw text:** v1
+resolves the centre code correctly but not the invoice number (`\NVOO00001` is
+returned as printed, not corrected to `INV0000001`) — rule 6 named centre codes
+explicitly and never said the same shape-based reasoning applies to a document
+number, which is exactly the gap D3-D4 (§5) closes. A first read of this one document
+in isolation looked like both resolved; a proper comparison against 16 labels (§5)
+found `document_number` was wrong on 15 of them. Worth stating plainly: **the
+easy-looking single-document spot-check was wrong, and only a real comparison against
+the label caught it** — the same lesson `docs/problems.md` P-22 already drew about a
+generated document's prose outliving the data it described.
 
 ## 2. Three real problems, none of them about the agent's own extraction logic
 
@@ -83,14 +87,54 @@ names), and one facility name did not (`Farrukhbad_Pnchight_D` for the true
 outcomes are the evaluation harness's job to count, not this module's — which is the
 argument for building the agent before the scoring gets designed.
 
-## 4. What is not in this section yet
+## 5. Prompt iteration — `doc_extraction/v2` (D3-D4)
 
-- **Field-level accuracy/F1** is Lahari's D5 evaluation harness, scored against the
-  same predictions file this module writes — not duplicated here.
+`v1` stays, per D-008; `v2` is a new file
+(`src/agents/prompts/doc_extraction/v2.md`). Three changes, each tied to a concrete
+failure the D1-D2 run actually produced, not a speculative rewrite:
+
+1. **Shape-based correction extended to `document_number`** (and a facility-name
+   suffix code). Rule 6 already told the agent to resolve an ambiguous character
+   against a centre code's fixed `IND` + 6 digits + 3 letters shape; it never said the
+   same applies to `LR`/`INV` + 7 digits, which is exactly why v1 returned
+   `\NVOO00001` and `LROOOOOO6` as printed instead of resolving them.
+2. **`|` added to the OCR-confusable set** — this pipeline's own rendering of a
+   misread `I`/`l`, not a fourth, unrelated character.
+3. **Lost-decimal-point handling** for `weight_kg` and amount fields, where the OCR
+   pipeline occasionally drops the `.` entirely.
+
+**Measured on the 16 documents both versions actually extracted** (a fresh v2 batch,
+capped by the same daily quota as D-026 — seq 1-8, both document types):
+
+| Field | v1 correct | v2 correct |
+|---|---|---|
+| `document_number` | 1/16 | **16/16** |
+| `origin_centre_code` | 14/16 | 16/16 |
+| `origin_facility` | 8/16 | 10/16 |
+| `destination_centre_code` | 16/16 | 15/16 |
+| **Full document, every field correct** | **0/16** | **5/16** |
+
+**`document_number` goes from essentially never right to always right** — the
+single biggest, cleanest number this section has produced. Full reasoning on the one
+field that looks like a regression (`destination_centre_code`, 16/16 → 15/16) — it
+is not one, it is a real trade-off the seeded-error corpus happened to catch —
+lives in D-027, not repeated here.
+
+Regenerate the comparison:
+
+```bash
+python -m src.agents.document_agent --count 10 --prompt-version v2 \
+    --out benchmarks/raw/w4_doc_agent_predictions_v2.json
+```
+
+## 6. What is not in this section yet
+
+- **Field-level accuracy/F1 over the full corpus** is still Lahari's D5 evaluation
+  harness — §5's table above is Krishna's own qualitative check to decide whether
+  `v2` was worth keeping, scored by eye against 16 labels, not the authoritative,
+  arms-length number (D-027).
 - **A full 120-document run** needs a second LLM provider key or several days against
   the current free tier (D-026) — not a code change on this module's side.
-- **Prompt iteration (D3-D4)** happens against her numbers once they exist, versioned
-  as `doc_extraction/v2` per D-008 (v1 stays).
 - **The what-if delay-predictor dashboard page (D5)** reads the champion model
   Mounika's auto-retraining script (`week4-mounika-auto-retrain`) promotes to
   `data/models/champion`.

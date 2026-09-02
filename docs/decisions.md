@@ -897,3 +897,28 @@ running smaller than planned.
 
 Evidence: `benchmarks/raw/w4_doc_agent_predictions.json` (22 ok, 18 `RESOURCE_EXHAUSTED`
 of 40 attempted), `docs/problems.md` P-32.
+
+---
+
+## D-027 · Prompt v2: `document_number` fixed from 6% to 100% correct, with one honest trade-off exposed by the seeded-error corpus — `DECIDED`
+**Week 4 · Krishna · D3-D4**
+
+D1-D2's 22 successful extractions were read by eye against ground truth (`docs/W4_krishna_doc_agent.md` §3) and one field stood out: `document_number` was transcribed as raw OCR noise (`\NVOO00001`, `LROOOOOO6`) rather than resolved to the fixed `LR`/`INV` + 7-digit shape `doc_extraction/v1.md`'s own rule 6 already applies to centre codes but never extended to this field. `doc_extraction/v2.md` extends the same shape-based correction to `document_number` and a facility-name suffix code, adds `|` to the OCR-confusable set (this pipeline's own rendering of a misread `I`/`l`), and adds lost-decimal-point handling for `weight_kg`/amount fields — each tied to a concrete failure observed in D1-D2's output, not a speculative rewrite.
+
+**Measured, on the 16 documents both prompt versions actually extracted** (a fresh v2 batch capped by the same daily quota as D-026 — 8 consignments, seq 1-8, both document types):
+
+| Field | v1 correct | v2 correct |
+|---|---|---|
+| `document_number` | 1/16 | **16/16** |
+| `origin_centre_code` | 14/16 | 16/16 |
+| `origin_facility` | 8/16 | 10/16 |
+| `destination_centre_code` | 16/16 | 15/16 |
+| Full document, every field correct | 0/16 | **5/16** |
+
+**The one apparent regression is not a regression — the seeded-error corpus caught a genuine, honest trade-off in v2's own design.** The single `destination_centre_code` miss is `SHP-000008`, manifest-flagged `error_types: ocr_confusable_corruption` (D-021's seeded taxonomy). `seed_errors.py` corrupts a character on the shared `ConsignmentRecord` *before* either the rendered document or the ground-truth label is generated from it (D-021 §1: one record backs both), so for this record the label itself legitimately reads `INDI40118AAA` — the corrupted value is what both the printed document and the ground truth agree really is there. v1's literal transcription matched it by coincidence, having no correction logic to second-guess. v2's shape-based rule 6/7 cannot distinguish "OCR degraded a correctly-printed character" from "the document was deliberately printed with a confusable-but-wrong one" — it resolves toward the fixed shape either way, correctly on the first case and incorrectly on the second. **This is real and stays in the table rather than being explained away**: a prompt that gets better at recovering OCR noise is, by the same mechanism, worse at faithfully reporting a genuine printed error the way rule 2 asks it to. At n=1 for this seeded kind in this sample, it is a documented trade-off, not yet a rate — the same "single-digit-count kind's number is a lead, not a result" reading D-021 already gives `corridor_mismatch`'s 2-of-120 count.
+
+**Not the formal evaluation.** This comparison is Krishna's own qualitative check to decide whether v2 was worth keeping, scored by eye against 16 documents' labels — not Lahari's D5 harness, which is the authoritative, arms-length number (execution plan: "keeps builder and judge separate"). `benchmarks/agent_evaluation.md` is left for her harness to populate; this entry's table is provisional and may not match her numbers exactly once she scores the full corpus.
+
+Evidence: `src/agents/prompts/doc_extraction/v2.md`, `benchmarks/raw/w4_doc_agent_predictions.json` (v1),
+`w4_doc_agent_predictions_v2.json` (v2), `data/documents/w3_00008_bol.json`,
+`benchmarks/raw/w3_doc_corpus_manifest.csv`.

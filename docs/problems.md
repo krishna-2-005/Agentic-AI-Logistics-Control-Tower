@@ -551,6 +551,40 @@ checking a number, never by reading the file.
   The real cost is forward-looking: a full 120-document corpus run needs a second
   provider key or several days, not a code fix.
 
+### P-33 · Every python invocation on this machine silently spawns a second interpreter
+**Week 4 · Krishna · resolved (worked around; root cause is machine-level, not this repo's)**
+
+- **Symptom.** Launching the D3-D4 prompt-comparison batch produced two live
+  `python.exe` processes for one command — one from this project's venv, a second
+  from an unrelated system-wide Python 3.12 install, both running the identical
+  `-m src.agents.document_agent ...` argv, the second a direct child of the first.
+  Killing what looked like a stray duplicate and relaunching reproduced the same
+  pair again. A trivial control command (`python -c "import time; time.sleep(6)"`,
+  no project code, no imports beyond the standard library) doubled the exact same
+  way, proving this has nothing to do with `document_agent.py`, `pytesseract`, or
+  `langchain_google_genai`.
+- **Cause.** Not identified — some machine-level hook (a `sitecustomize.py`/`.pth`
+  file, or third-party monitoring software) that every `python.exe` on this machine
+  runs at interpreter startup, re-executing the same command under a second
+  interpreter as a child process. Out of scope to chase down further here: it is a
+  property of this machine, not of anything in `requirements.txt` or this repo's
+  code, and every long batch run this project has actually needed (Lahari's model
+  training, Mounika's retrain script, this agent's batch runs) has completed
+  correctly despite it.
+- **Fix.** Checked, rather than assumed harmless: the log each run produces is a
+  single clean sequence with no duplicated or interleaved lines, meaning only one of
+  the two processes does real work while the other sits inert — a genuine risk this
+  project cannot fully rule out is that a *concurrency-sensitive* future task (Week
+  5's Kafka producer, anything that writes to a shared file without one process's
+  lock) could see actual doubled work rather than a harmless spawn. Documented so
+  the next long-running background command started on this machine is checked the
+  same way (`Get-CimInstance Win32_Process` for a second matching command line)
+  rather than assumed single-process.
+- **Cost.** ~15 minutes and one wasted LLM quota call (3 documents extracted then
+  killed, mid-write, before `run_corpus` reached its single end-of-run
+  `out_json.write_text` — those 3 results are unrecoverable, though the quota spend
+  itself is the only real cost since nothing downstream ever read them).
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
