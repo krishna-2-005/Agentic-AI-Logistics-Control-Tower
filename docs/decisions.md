@@ -1139,3 +1139,127 @@ declared Week 5 task) both need to agree with before either is built against it.
 
 Evidence: `docs/schemas/stream_event.schema.json`, `src/streaming/schema.py`,
 `tests/test_stream_schema.py`, `demo/sample_events/trip_replay_sample.json`.
+
+---
+
+## D-032 · The Document Intelligence Agent's free-tier LLM quota is a hard daily cap, and partial coverage is reported as such — `DECIDED`
+**Week 4 · Krishna**
+
+The Week 2 sync's open-items table flagged this in the abstract: "second LLM key in
+`.env` so `with_fallback` has somewhere to fall — blocks Week 7 eval runs." It arrived
+three weeks early. A 40-document smoke run (20 consignments) against
+`gemini-3.6-flash` succeeded on 22 documents and failed the remaining 18 on
+`429 RESOURCE_EXHAUSTED`, quoting the free tier's own limit:
+`GenerateRequestsPerDayPerProjectPerModel-FreeTier`, `quotaValue: 20`. This is a
+**daily** cap per project per model, not a per-minute rate limit `with_fallback`'s
+retry logic could wait out — the run's own escalating `retryDelay`s (14s, 36s, 58s...)
+show the client backing off correctly against a ceiling that does not lift again until
+tomorrow.
+
+**Decided: the agent's own error-handling already does the right thing, and stays as
+built rather than gaining retry-until-tomorrow logic.** `run_corpus`'s per-document
+`try/except` (not one big transaction) means a quota wall does not corrupt or abort
+the run — it produces exactly what it produced: 22 real predictions and 18 documents
+each recording *why* they have none, in the same predictions file. A `RESOURCE_EXHAUSTED`
+entry and a `json.JSONDecodeError` entry both look like `predicted_fields: null`, which
+is correct — both are "the agent could not extract this one," and Lahari's D5 harness
+needs exactly that shape regardless of cause.
+
+**Consequence for D5 and beyond.** The evaluation harness must score whatever the
+predictions file actually contains and report **coverage** (documents attempted vs.
+documents that produced a prediction) beside every accuracy number — the same
+"majority-class rate reported beside every classifier metric, permanently" instinct
+D-003 established, applied to a different kind of denominator problem. A field-level
+accuracy computed only over the 22 that succeeded is not wrong, but it is silent about
+being computed over 55% of the intended sample unless the harness says so. Running the
+full 120-document corpus in one day is not currently possible on the configured free
+tier; it either wants a second provider key (`ANTHROPIC_API_KEY`, the Week 2 open item,
+finally forced rather than merely anticipated) or spreading a full-corpus run across
+several days.
+
+**What this is not.** Not a document-extraction bug, and not evidence the agent
+performs badly — of the 22 attempted with a live quota, extraction succeeded on all of
+them (D3-D4's prompt-iteration numbers are the ones that will say how *well*). This is
+a provider-capacity ceiling, the same class of thing D-007 built `with_fallback` to
+survive and the same class of thing P-35 already found once this week (a pinned model
+name going stale) — free-tier LLM access is not a stable foundation to size an
+evaluation corpus against, and the project's numbers have to say so rather than quietly
+running smaller than planned.
+
+Evidence: `benchmarks/raw/w4_doc_agent_predictions.json` (22 ok, 18 `RESOURCE_EXHAUSTED`
+of 40 attempted), `docs/problems.md` P-36.
+
+---
+
+## D-033 · Prompt v2: `document_number` fixed from 6% to 100% correct, with one honest trade-off exposed by the seeded-error corpus — `DECIDED`
+**Week 4 · Krishna · D3-D4**
+
+D1-D2's 22 successful extractions were read by eye against ground truth (`docs/W4_krishna_doc_agent.md` §3) and one field stood out: `document_number` was transcribed as raw OCR noise (`\NVOO00001`, `LROOOOOO6`) rather than resolved to the fixed `LR`/`INV` + 7-digit shape `doc_extraction/v1.md`'s own rule 6 already applies to centre codes but never extended to this field. `doc_extraction/v2.md` extends the same shape-based correction to `document_number` and a facility-name suffix code, adds `|` to the OCR-confusable set (this pipeline's own rendering of a misread `I`/`l`), and adds lost-decimal-point handling for `weight_kg`/amount fields — each tied to a concrete failure observed in D1-D2's output, not a speculative rewrite.
+
+**Measured, on the 16 documents both prompt versions actually extracted** (a fresh v2 batch capped by the same daily quota as D-032 — 8 consignments, seq 1-8, both document types):
+
+| Field | v1 correct | v2 correct |
+|---|---|---|
+| `document_number` | 1/16 | **16/16** |
+| `origin_centre_code` | 14/16 | 16/16 |
+| `origin_facility` | 8/16 | 10/16 |
+| `destination_centre_code` | 16/16 | 15/16 |
+| Full document, every field correct | 0/16 | **5/16** |
+
+**The one apparent regression is not a regression — the seeded-error corpus caught a genuine, honest trade-off in v2's own design.** The single `destination_centre_code` miss is `SHP-000008`, manifest-flagged `error_types: ocr_confusable_corruption` (D-021's seeded taxonomy). `seed_errors.py` corrupts a character on the shared `ConsignmentRecord` *before* either the rendered document or the ground-truth label is generated from it (D-021 §1: one record backs both), so for this record the label itself legitimately reads `INDI40118AAA` — the corrupted value is what both the printed document and the ground truth agree really is there. v1's literal transcription matched it by coincidence, having no correction logic to second-guess. v2's shape-based rule 6/7 cannot distinguish "OCR degraded a correctly-printed character" from "the document was deliberately printed with a confusable-but-wrong one" — it resolves toward the fixed shape either way, correctly on the first case and incorrectly on the second. **This is real and stays in the table rather than being explained away**: a prompt that gets better at recovering OCR noise is, by the same mechanism, worse at faithfully reporting a genuine printed error the way rule 2 asks it to. At n=1 for this seeded kind in this sample, it is a documented trade-off, not yet a rate — the same "single-digit-count kind's number is a lead, not a result" reading D-021 already gives `corridor_mismatch`'s 2-of-120 count.
+
+**Not the formal evaluation.** This comparison is Krishna's own qualitative check to decide whether v2 was worth keeping, scored by eye against 16 documents' labels — not Lahari's D5 harness, which is the authoritative, arms-length number (execution plan: "keeps builder and judge separate"). `benchmarks/agent_evaluation.md` is left for her harness to populate; this entry's table is provisional and may not match her numbers exactly once she scores the full corpus.
+
+Evidence: `src/agents/prompts/doc_extraction/v2.md`, `benchmarks/raw/w4_doc_agent_predictions.json` (v1),
+`w4_doc_agent_predictions_v2.json` (v2), `data/documents/w3_00008_bol.json`,
+`benchmarks/raw/w3_doc_corpus_manifest.csv`.
+
+---
+
+## D-034 · The what-if predictor is the one dashboard page that starts a SparkSession, and it says so — `DECIDED`
+**Week 4 · Krishna · D5**
+
+D-009 decided the dashboard reads only cached artefacts and never starts Spark, so
+the demo stays responsive. This page cannot honour that literally: the champion is a
+real MLlib `PipelineModel` (D-026), and `PipelineModel.transform()` has no path that
+does not go through a `SparkSession` — there is no cached CSV of "every possible
+what-if input's prediction" to read instead.
+
+**Decided: one narrow, named exception, not a quiet one.** `src/ml/predict.py`
+starts Spark only inside `predict_delay()`, only when the page's "Predict" button is
+actually pressed — every other page, and this page before that click, stays exactly
+as Spark-free as D-009 asks. The page's own caption says so in plain language before
+a user ever clicks, rather than the exception being discoverable only by reading the
+code.
+
+**The corridor picker and the OSRM defaults still come from a cached CSV**
+(`w2_corridor_audit.csv`, already on every other page) — Spark is not needed to
+choose a corridor or default its planned time/distance, only to run the model
+afterward. This keeps the exception as narrow as the thing that actually needs it.
+
+**Corridor and hub history is looked up fresh from `features_v1` inside the same
+Spark session, not duplicated into a second cached file.** Two lists holding one
+truth already cost this project once (P-23); reading Stage 4's own numbers directly,
+every time the page runs, is the version of that lesson that does not require
+remembering to keep a duplicate in sync. The lookup takes each key's single *most
+recent* known snapshot regardless of the departure date chosen in the form — a
+documented simplification of D-020's live as-of join, not a silent one, since
+building a true as-of join for one form submission would re-derive Stage 4's whole
+join a second time for a page whose job is illustrating the model, not re-litigating
+D-020's leakage guarantee. Cold corridors/hubs (D-023's zero-fill-plus-flag policy,
+reused rather than reimplemented) are surfaced in the UI rather than silently
+predicted through.
+
+**Verified against real data, both paths.** A known bottleneck corridor
+(`IND208012AAA>IND209304AAA`, the network's #1 worst per the Week 2 audit) predicts a
+large gap and a delay call the audit's own history makes plausible; a corridor and
+both hub codes that do not exist anywhere in `features_v1` correctly report
+`cold_flags` all `True` and still produce a sane, non-crashing prediction. The
+Spark-free half (`build_result`'s threshold arithmetic) is covered by
+`tests/test_predict.py`; the Spark-dependent half is exercised interactively (the
+same reasoning D-030 on Mounika's branch gives for not re-running a real batch job
+inside a pytest suite) since it needs a real champion model on disk that CI does not
+have.
+
+Evidence: `src/ml/predict.py`, `src/dashboard/app.py` (Delay predictor page),
+`tests/test_predict.py`.

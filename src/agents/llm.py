@@ -24,8 +24,11 @@ from src.common.logging_setup import get_logger
 log = get_logger("agents.llm")
 
 #: Sensible default model per provider. Override per call or via LLM_MODEL in .env.
+#: `gemini-2.0-flash` (the original Week 1 pin) was retired by Google during Week 4 —
+#: the API's own 404 names its replacement. Free-tier model names are not a stable
+#: foundation to build five weeks of agents on; see P-35.
 DEFAULT_MODELS = {
-    "gemini": "gemini-2.0-flash",
+    "gemini": "gemini-3.6-flash",
     "anthropic": "claude-sonnet-5",
     "ollama": "llama3.1:8b",
 }

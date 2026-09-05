@@ -80,6 +80,12 @@ ROUTE_TYPES = ("FTL", "Carting")
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini")
 LLM_MODEL = os.getenv("LLM_MODEL", "gemini-2.0-flash")
 
+# Empty means pytesseract looks up "tesseract" on PATH, which is enough once it is
+# installed the normal way. Set this instead when a machine's install isn't on PATH —
+# each of the three teammates' machines can point this wherever their own install
+# actually landed rather than requiring one shared location (D-012's JDK precedent).
+TESSERACT_CMD = os.getenv("TESSERACT_CMD", "")
+
 TMS_BASE_URL = os.getenv("TMS_BASE_URL", "http://localhost:8000")
 TMS_DB_PATH = REPO_ROOT / os.getenv("TMS_DB_PATH", "data/tms.sqlite")
 # Empty means the mock TMS serves unauthenticated. Set it and every endpoint except
