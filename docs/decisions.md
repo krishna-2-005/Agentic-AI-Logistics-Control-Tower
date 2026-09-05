@@ -967,16 +967,16 @@ majority-class rate beside every classifier metric" instinct D-003 established,
 applied to an extraction task's own degenerate baseline.
 
 **Result: v1 scores 0.853 F1, v2 scores 0.929**, each against the documents that
-version's quota-capped run actually produced (D-026) — not the identical sample in
+version's quota-capped run actually produced (D-032) — not the identical sample in
 both cases, so this is not a perfectly controlled before/after on the exact same
-documents (D-027's smaller, paired 16-document comparison is that view; this is the
+documents (D-033's smaller, paired 16-document comparison is that view; this is the
 full-coverage view). Per-field detail lives in `docs/W4_lahari_beat_osrm.md`'s
 doc-eval section, not repeated here.
 
 **What this entry could not do, stated rather than silently skipped.**
 `agent_evaluation.md`'s own recording rules ask for a trivial *regex* baseline beside
 the metric, which would say more than "predict nothing" does about the fixed-shape
-fields (`document_number`, the two centre codes) D-027's v2 prompt specifically
+fields (`document_number`, the two centre codes) D-033's v2 prompt specifically
 targets. `document_agent.run_corpus` does not persist the raw OCR text in its
 predictions file, only a character count, so a regex-on-OCR-text baseline cannot be
 computed from what exists today — carried forward as an open item for whoever next

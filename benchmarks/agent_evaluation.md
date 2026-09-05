@@ -15,8 +15,8 @@ text).
 
 | Agent | Metric | Value | Prompt version | Test set | LLM |
 |---|---|---|---|---|---|
-| Document Intelligence | field-level F1 (micro) | **0.853** | `doc_extraction/v1` | 22 of 40 documents (D-026 quota cap) | `gemini-3.6-flash` |
-| Document Intelligence | field-level F1 (micro) | **0.929** | `doc_extraction/v2` | 16 of 20 documents (D-026 quota cap) | `gemini-3.6-flash` |
+| Document Intelligence | field-level F1 (micro) | **0.853** | `doc_extraction/v1` | 22 of 40 documents (D-032 quota cap) | `gemini-3.6-flash` |
+| Document Intelligence | field-level F1 (micro) | **0.929** | `doc_extraction/v2` | 16 of 20 documents (D-032 quota cap) | `gemini-3.6-flash` |
 | Document Intelligence | null baseline (predict nothing) | 0.000 F1 | — | same documents as v1 | — |
 | Document Intelligence | character error rate post-OCR | _not measured_ — no reference transcript exists to diff against, only the field-level label | | |
 | Order Entry | end-to-end success rate | _pending W5_ | | 50-case set |

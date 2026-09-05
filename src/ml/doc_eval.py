@@ -5,7 +5,7 @@ Layer 2 (agent) evaluation number.
 
 Scores Krishna's Document Intelligence Agent predictions against the Week 3 ground
 truth labels: field-level accuracy, micro-averaged precision/recall/F1, and coverage
-(how many of the attempted documents actually produced a prediction, D-026). This
+(how many of the attempted documents actually produced a prediction, D-032). This
 module never calls an LLM and never imports `src.agents.document_agent` beyond
 reading the JSON file it already wrote -- deliberately separate code, per the
 execution plan's own note that keeping builder and judge apart is "better science,
@@ -30,7 +30,7 @@ log = get_logger("ml.doc_eval")
 
 #: Every predictions file this harness knows how to find, keyed by prompt version.
 #: A version whose file does not exist yet is skipped, not an error -- D3-D4's `v2`
-#: run is capped by the same daily LLM quota as D1-D2 (D-026) and may not exist on
+#: run is capped by the same daily LLM quota as D1-D2 (D-032) and may not exist on
 #: every machine at every point in the week.
 PREDICTIONS_FILES: dict[str, Path] = {
     "v1": config.BENCHMARKS_RAW_DIR / "w4_doc_agent_predictions.json",
@@ -181,7 +181,7 @@ def render_doc(results: dict[str, dict], baseline: dict) -> str:
         "Precision/recall/F1 are micro-averaged over every (document, field) pair: a "
         "field counts as a true positive only when the true value is non-null and the "
         "prediction matches it exactly (a correctly-returned null is neither a hit nor "
-        "a miss). Coverage is documents scored / documents attempted -- D-026's free-tier "
+        "a miss). Coverage is documents scored / documents attempted -- D-032's free-tier "
         "quota wall means this is well under 100% for both versions.\n"
     )
     o.append("| Prompt | Attempted | Scored | Coverage | Exact-match docs | Precision | Recall | F1 |")
@@ -206,8 +206,8 @@ def render_doc(results: dict[str, dict], baseline: dict) -> str:
             f"**`{new_v}` improves F1 from {results[base_v]['f1']:.3f} to "
             f"{results[new_v]['f1']:.3f}** over the documents each version actually "
             "scored -- not the identical sample in every case, since each run's quota "
-            "cutoff lands on a different document (D-026). Per-field detail and the "
-            "specific `document_number` fix are in D-027, not repeated here.\n"
+            "cutoff lands on a different document (D-032). Per-field detail and the "
+            "specific `document_number` fix are in D-033, not repeated here.\n"
         )
 
     o.append("### Per-field accuracy\n")
