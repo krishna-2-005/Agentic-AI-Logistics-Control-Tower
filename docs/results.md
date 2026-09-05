@@ -322,8 +322,8 @@ for the batch numbers; the document numbers are on Week 3's 120-document corpus.
 | Per-corridor gains | 1,369 of 1,646 test corridors improve over OSRM (83%) |
 | Feature-block ablations | Corridor-history costs 3.30 (RF) / 2.43 (GBT) min MAE if dropped; temporal costs only 0.11 / 0.72 |
 | Delay classifier table | GBT-thresholded reaches 0.771 F1, edging logistic regression's 0.764 (D-025) — a different ranking from the MAE table, and not a contradiction (D-024/P-28's own lesson) |
-| Document Intelligence Agent v1→v2 | Field-extraction F1 **0.853 → 0.929** (micro-averaged); `document_number` accuracy 1/16 → 16/16 on the paired comparison (D-027) |
-| Auto-retraining loop | First run promoted Random Forest as champion at 36.89 min MAE; hardened with a preflight check and bounded per-stage retry (D-027 on Mounika's branch) |
+| Document Intelligence Agent v1→v2 | Field-extraction F1 **0.853 → 0.929** (micro-averaged); `document_number` accuracy 1/16 → 16/16 on the paired comparison (D-033) |
+| Auto-retraining loop | First run promoted Random Forest as champion at 36.89 min MAE; hardened with a preflight check and bounded per-stage retry (D-030 on Mounika's branch) |
 
 **The batch-ML headline is an honest one, not a triumphant one, and that is the
 finding.** A tuned MLlib Random Forest beats OSRM by a wide margin and improves the
@@ -340,35 +340,44 @@ produced the predictions it scored (D-028).
 
 ### Real constraints, surfaced and worked around rather than hidden
 
-- **The Gemini free tier's real limit is 20 requests/day, not per minute** (D-026) —
+- **The Gemini free tier's real limit is 20 requests/day, not per minute** (D-032) —
   every document-agent number above is reported with its coverage (22/40, 16/20)
   rather than implying a completed run.
 - **This machine's real memory headroom exhausted a first, wider CV grid** (P-30) —
   fixed by capping tree depth and running CV sequentially rather than in parallel.
 - **A stale `JAVA_HOME` from a different machine sat masked by variable precedence**
-  in this machine's local `.env` (P-31) — found only because D-027's preflight check
+  in this machine's local `.env` (P-33) — found only because D-030's preflight check
   was written and tested against a deliberately broken environment.
 
 ### Both Week 4 decisions this section depends on
 
 - **D-024 (Week 3) is what this week is judged against** — MAE, not RMSE or R2, and
   the corridor mean's 36.1 min, not OSRM's 107.1.
-- **D-026 decided the document-agent's quota constraint is reported as coverage
+- **D-032 decided the document-agent's quota constraint is reported as coverage
   beside every accuracy number**, not treated as a run that silently completed.
 - **D-028 decided document-extraction F1 is micro-averaged over (document, field)
   pairs**, with a correctly-returned null counted as neither a hit nor a miss —
   verified against a null-baseline extractor that scores exactly 0.000 F1.
 
-### Gate 4
+### Gate 4 — met
 
-All three legs are on their branches: batch ML complete with the beat-OSRM headline
-(Lahari, this section), Document Intelligence Agent extracting with measured accuracy
-(Krishna + Lahari's D5 harness together), and the auto-retraining loop running
-end-to-end with a real promoted champion (Mounika). `ruff` clean and the full test
-suite passing on every branch (84 tests on Lahari's and Krishna's, including the new
-`test_retrain.py` and `test_doc_eval.py` suites — Mounika's branch adds 9 more of its
-own). Merge and tag status recorded once `dev` → `main` actually happens, per
-GIT_RULES §6.
+All three legs closed: batch ML complete with the beat-OSRM headline (Lahari, this
+section), Document Intelligence Agent extracting with measured accuracy (Krishna +
+Lahari's D5 harness together), and the auto-retraining loop running end-to-end with a
+real promoted champion (Mounika). `ruff` clean and the full suite passing at
+**103 tests** on `dev` after all three branches merged (75 at the Week 3 gate + 28
+new: 9 `test_retrain.py`, 6 `test_stream_schema.py`, 9 `test_doc_eval.py`,
+4 `test_predict.py`).
+
+The three branches' independently numbered Week 4 decisions and problems (`D-026` ×
+3, `D-027` × 3, `D-028` × 3, `P-30` × 3, `P-31` × 3, plus Krishna's own `P-32`/`P-33`)
+were renumbered clear of each other before merging, same pattern as Week 3's close —
+Lahari's D-026–028/P-30–31 kept their numbers, Mounika's moved to D-029–031/P-32–33,
+Krishna's moved to D-032–034/P-34–37 — rather than left to collide silently inside a
+single shared `decisions.md`.
+
+Merged to `dev` and, from there, to `main` and tagged `week4-complete`
+(`batch-complete`).
 
 ## Week 5 — streaming
 
