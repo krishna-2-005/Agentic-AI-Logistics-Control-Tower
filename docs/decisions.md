@@ -922,3 +922,53 @@ D1-D2's 22 successful extractions were read by eye against ground truth (`docs/W
 Evidence: `src/agents/prompts/doc_extraction/v2.md`, `benchmarks/raw/w4_doc_agent_predictions.json` (v1),
 `w4_doc_agent_predictions_v2.json` (v2), `data/documents/w3_00008_bol.json`,
 `benchmarks/raw/w3_doc_corpus_manifest.csv`.
+
+---
+
+## D-028 · The what-if predictor is the one dashboard page that starts a SparkSession, and it says so — `DECIDED`
+**Week 4 · Krishna · D5**
+
+D-009 decided the dashboard reads only cached artefacts and never starts Spark, so
+the demo stays responsive. This page cannot honour that literally: the champion is a
+real MLlib `PipelineModel` (D-026), and `PipelineModel.transform()` has no path that
+does not go through a `SparkSession` — there is no cached CSV of "every possible
+what-if input's prediction" to read instead.
+
+**Decided: one narrow, named exception, not a quiet one.** `src/ml/predict.py`
+starts Spark only inside `predict_delay()`, only when the page's "Predict" button is
+actually pressed — every other page, and this page before that click, stays exactly
+as Spark-free as D-009 asks. The page's own caption says so in plain language before
+a user ever clicks, rather than the exception being discoverable only by reading the
+code.
+
+**The corridor picker and the OSRM defaults still come from a cached CSV**
+(`w2_corridor_audit.csv`, already on every other page) — Spark is not needed to
+choose a corridor or default its planned time/distance, only to run the model
+afterward. This keeps the exception as narrow as the thing that actually needs it.
+
+**Corridor and hub history is looked up fresh from `features_v1` inside the same
+Spark session, not duplicated into a second cached file.** Two lists holding one
+truth already cost this project once (P-23); reading Stage 4's own numbers directly,
+every time the page runs, is the version of that lesson that does not require
+remembering to keep a duplicate in sync. The lookup takes each key's single *most
+recent* known snapshot regardless of the departure date chosen in the form — a
+documented simplification of D-020's live as-of join, not a silent one, since
+building a true as-of join for one form submission would re-derive Stage 4's whole
+join a second time for a page whose job is illustrating the model, not re-litigating
+D-020's leakage guarantee. Cold corridors/hubs (D-023's zero-fill-plus-flag policy,
+reused rather than reimplemented) are surfaced in the UI rather than silently
+predicted through.
+
+**Verified against real data, both paths.** A known bottleneck corridor
+(`IND208012AAA>IND209304AAA`, the network's #1 worst per the Week 2 audit) predicts a
+large gap and a delay call the audit's own history makes plausible; a corridor and
+both hub codes that do not exist anywhere in `features_v1` correctly report
+`cold_flags` all `True` and still produce a sane, non-crashing prediction. The
+Spark-free half (`build_result`'s threshold arithmetic) is covered by
+`tests/test_predict.py`; the Spark-dependent half is exercised interactively (the
+same reasoning D-027 on Mounika's branch gives for not re-running a real batch job
+inside a pytest suite) since it needs a real champion model on disk that CI does not
+have.
+
+Evidence: `src/ml/predict.py`, `src/dashboard/app.py` (Delay predictor page),
+`tests/test_predict.py`.

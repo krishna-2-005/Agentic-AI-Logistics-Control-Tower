@@ -1,9 +1,9 @@
-# W4 (D1-D2) · Krishna — Document Intelligence Agent v1
+# W4 · Krishna — Document Intelligence Agent v1, prompt iteration, what-if predictor
 
-Week 4 deliverable, first half (execution plan W4 D1-D2): OCR + LLM extraction to
-structured JSON, over Week 3's labelled document corpus. Prompt iteration (D3-D4,
-§5 below) and the what-if delay-predictor dashboard page (D5) are the rest of the
-week, per GIT_RULES §2.
+Week 4 in full: the Document Intelligence Agent (OCR + LLM extraction to structured
+JSON over Week 3's labelled corpus, D1-D2, §1-4), a second prompt version that fixes
+its clearest failure mode (D3-D4, §5), and the what-if delay-predictor dashboard page
+that reads Mounika's champion model (D5, §6).
 
 ```bash
 python -m src.agents.doc_corpus.generate      # rebuild the local (gitignored) corpus first
@@ -127,7 +127,36 @@ python -m src.agents.document_agent --count 10 --prompt-version v2 \
     --out benchmarks/raw/w4_doc_agent_predictions_v2.json
 ```
 
-## 6. What is not in this section yet
+## 6. What-if delay predictor (D5)
+
+`src/ml/predict.py` + the "Delay predictor" dashboard page. Pick a corridor from the
+Week 2 audit (cached CSV, no Spark), set planned time/distance/route type and a
+departure date, hit Predict — the page starts a real `SparkSession` at that point,
+loads Mounika's champion `PipelineModel`, looks up the corridor's and both hubs'
+freshest known history from `features_v1`, and shows the predicted gap, predicted
+total time, and whether the model calls it delayed under D-003's rule.
+
+**This is the one page that starts Spark**, and it says so before the click, not
+just in a code comment — D-009 says the dashboard never runs Spark, and this page
+genuinely cannot honour that literally, because there is no cached table of "every
+possible what-if input's answer" to read instead. D-028 has the full reasoning: why
+the exception is scoped to one function and one button-click, why the history lookup
+reads `features_v1` fresh rather than duplicating it into a second file, and the
+documented simplification that lookup makes relative to a live as-of join.
+
+Verified against real data both ways: the network's #1 worst bottleneck corridor
+(`IND208012AAA>IND209304AAA`, Week 2's audit) predicts a large gap and a delay call
+consistent with that corridor's own history; a corridor and both hub codes invented
+to not exist anywhere in `features_v1` correctly report as cold and still return a
+sane prediction rather than erroring.
+
+```bash
+python -m src.ml.predict --corridor IND208012AAA>IND209304AAA \
+    --planned-min 593.5 --planned-km 19.8 --route-type FTL \
+    --departure "2018-09-20 14:30"
+```
+
+## 7. What is not in this section yet
 
 - **Field-level accuracy/F1 over the full corpus** is still Lahari's D5 evaluation
   harness — §5's table above is Krishna's own qualitative check to decide whether
@@ -135,6 +164,5 @@ python -m src.agents.document_agent --count 10 --prompt-version v2 \
   arms-length number (D-027).
 - **A full 120-document run** needs a second LLM provider key or several days against
   the current free tier (D-026) — not a code change on this module's side.
-- **The what-if delay-predictor dashboard page (D5)** reads the champion model
-  Mounika's auto-retraining script (`week4-mounika-auto-retrain`) promotes to
-  `data/models/champion`.
+
+Week 4 is complete on this branch: D1-D2 (§1-4), D3-D4 (§5), D5 (§6).
