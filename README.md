@@ -235,7 +235,7 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | Corridor audit — robustness view at the old 30-leg floor | 34 slower and 36 faster of 99 tested; worst 1.92×. Shares **no corridor** with the 10-leg top 20 — see D-018 | [`benchmarks/raw/w2_corridor_audit_support30.csv`](benchmarks/raw/w2_corridor_audit_support30.csv) |
 | Hub friction — ranked hubs (≥30 outbound legs) | 121 of 1,657; median leg dwell 49 min (34.6% of wall clock) | [`benchmarks/raw/w2_hub_dwell.csv`](benchmarks/raw/w2_hub_dwell.csv) |
 | India map — audited corridors placed | 1,130 of 1,130; the 273 bottlenecks sit in 169 cities and 70 of them are intra-city | [`benchmarks/raw/w2_corridor_audit.csv`](benchmarks/raw/w2_corridor_audit.csv) |
-| Best model MAE vs OSRM MAE | _pending W4_ | `benchmarks/ml_results.md` |
+| Best model MAE vs OSRM MAE | Random Forest (MLlib) 36.9 min vs OSRM 107.1 min — 65.5% lower; still 0.8 min behind the past-only corridor-mean baseline (36.1 min), reported as such per D-024 | [`benchmarks/raw/w4_model_metrics.csv`](benchmarks/raw/w4_model_metrics.csv) |
 | Sustained streaming throughput | _pending W5_ | `benchmarks/streaming_throughput.md` |
 | Agent evaluation summary | _pending W7_ | `benchmarks/agent_evaluation.md` |
 | Scale appendix (50M+ rows) | _pending W7_ | `benchmarks/scale_appendix.md` |

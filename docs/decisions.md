@@ -848,3 +848,140 @@ the model to clear is logistic regression's 0.764 F1, not the majority class's 0
 
 Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metrics.csv`,
 `w3_baseline_report.json`.
+
+---
+
+## D-026 · Random Forest and GBT are trained through real MLlib, not scikit-learn — `DECIDED`
+**Week 4 · Lahari**
+
+Week 3's baselines (`src.ml.baselines`) fit their linear/logistic models in
+scikit-learn on purpose, arguing that 26,369 rows is not a distributed workload and
+scikit-learn would not distribute it even if it were. That argument does not carry
+over to this stage. `README.md`'s architecture and its own resume-line claim are
+specifically "trains MLlib models that outperform that planner" — this is the one
+stage where that has to be literally true, not merely compatible with being true. So
+Random Forest and GBT are trained through `pyspark.ml` (`RandomForestRegressor`,
+`GBTRegressor`) in a real MLlib `Pipeline`, tuned via MLlib's own `CrossValidator`, per
+the "Honest scope" defence the README already makes for the rest of the batch layer.
+
+**What does *not* move into Spark: the split, the cold-start fill, and the
+`{corr,src,dst}_is_cold` indicators.** `time_split` and `prepare_model_features`
+(`src.ml.baselines`, D-022/D-023) are imported, not reimplemented in Spark SQL.
+Rebuilding D-023's null-handling policy a second time is the exact shape of the trap
+P-23 already cost this project once — two lists holding one truth, which had already
+drifted by the time it was noticed. `features_v1` is 26,369 rows; collecting it once
+to pandas for the split and the fill, then handing the prepared frames to Spark only
+for the model fit and the hyperparameter search, is the one division of labour that
+does not duplicate anything.
+
+**Why k-fold CV over the training rows does not reopen D-022's leakage question.**
+D-022 argued that no choice of split boundary can leak, because every as-of feature in
+`features_v1` is already computed relative to each leg's own creation time — the
+guarantee lives in the feature table, not in how its rows are partitioned. That
+argument is general, not specific to an 80/20 cut: it applies equally to a k-fold split
+of the training rows for hyperparameter selection. `CrossValidator` below folds only
+the 21,095 training legs the test set never touches, and Spark's own contract for
+`CrossValidator.bestModel` refits the winning hyperparameters on the entire training
+set before this module calls `.transform()` on it.
+
+**Result, reported as it stands.** Random Forest is the stronger of the two Week 4
+models (36.9 min MAE on test vs GBT's 38.3), and both comfortably beat OSRM (107.1) and
+the linear regressor (41.2) — but **neither clears the corridor-mean baseline's 36.1
+min**, the number D-024 already fixed as what Week 4 actually has to beat. This is not
+reframed around RMSE or R2 (Random Forest's are the best in the table: 93.2 min RMSE,
+0.824 R2): D-024 decided MAE is what ranks these models, and a tuned tree ensemble
+trailing a single per-corridor average by 0.8 min is the honest result, not a headline
+to round away. Per-corridor, Random Forest still improves 1,369 of 1,646 test corridors
+over OSRM (83%), so the network-wide number is not hiding a model that only helps a
+handful of corridors — see `docs/W4_lahari_beat_osrm.md` §2.
+
+Evidence: `docs/W4_lahari_beat_osrm.md`, `benchmarks/raw/w4_model_metrics.csv`,
+`w4_corridor_gains.csv`, `w4_feature_importances.csv`, `w4_cv_report.json`,
+`w4_model_report.json`, `docs/problems.md` P-30.
+
+---
+
+## D-027 · Ablations refit at the already-tuned hyperparameter point, not a fresh grid search per feature block — `DECIDED`
+**Week 4 · Lahari · D3-D4**
+
+The execution plan asks D3-D4 to check two blocks of `FEATURES`: corridor-history
+(`corr_*`) and temporal (`created_hour`/`created_dayofweek`/`created_is_weekend`). The
+question an ablation is actually answering matters for how expensive it has to be:
+**"what does this block cost the model D1-D2 already tuned"** is a different, far
+cheaper question than **"what is the best model without this block"** — the second
+needs its own `CrossValidator` grid search per ablation (roughly tripling D1-D2's
+Spark cost for a number nothing downstream reads), the first needs one fit per
+ablation at the hyperparameters `w4_cv_report.json` already recorded.
+
+**Decided: `fit_fixed_mllib_model()` refits once per (model, ablation) pair at the
+already-tuned `best_params`, no `CrossValidator`.** Six fits total (2 models × 3
+configs: full, drop-corridor-history, drop-temporal) rather than 24 (2 models × 3
+configs × the D1-D2 grid), and the result answers the question D3-D4 actually asks —
+whether a block earns its keep at the model this project is actually shipping, not at
+some other, unshipped hyperparameter point a second search might have preferred for a
+smaller feature set.
+
+**Result: the corridor-history block dominates, on both models — confirming D1-D2's
+feature-importance ranking against a real refit rather than reading it off the fitted
+model's internal split statistics alone.** Dropping `corr_*` costs Random Forest 3.30
+min MAE and GBT 2.43; dropping the three temporal columns costs 0.11 and 0.72
+respectively — a real but much smaller effect. A high split-based importance and a
+high held-out MAE cost are not guaranteed to agree (a feature can look important to
+the fitting algorithm's internal bookkeeping without actually being load-bearing for
+generalisation); here they do, which is itself worth stating rather than assuming.
+
+**What this does not test.** An "FTL vs Carting separately" ablation was floated
+speculatively in `benchmarks/ml_results.md` at the Week 3 close but is not part of the
+execution plan's actual D3-D4 line and was not run — noted there as an open idea
+rather than silently implied by this entry's results.
+
+Evidence: `docs/W4_lahari_beat_osrm.md` §6, `benchmarks/raw/w4_ablations.csv`.
+
+---
+
+## D-028 · Document-extraction F1 is micro-averaged over (document, field) pairs, and a null prediction is neither a hit nor a miss — `DECIDED`
+**Week 4 · Lahari · D5**
+
+The first Layer 2 evaluation number this project has produced. `src/ml/doc_eval.py`
+scores Krishna's predictions files against the Week 3 ground-truth labels, never
+importing `src.agents.document_agent` beyond reading the JSON it already wrote — the
+execution plan's "keeps builder and judge separate" applied literally, not just in
+spirit.
+
+**Micro-averaging, not per-document-then-averaged.** Precision/recall/F1 are computed
+by pooling true/false positives and false negatives over every (document, field) pair
+in the scored set, then computing one P/R/F1 from the pooled counts — not by scoring
+each document separately and averaging document-level F1 scores. A macro average
+would let a document with fewer populated fields (a BOL's two always-null fields)
+count exactly as much as a fully-populated invoice; pooling first means every field
+extraction counts the same regardless of which document it came from.
+
+**A field is a true positive only when the true value is non-null and the prediction
+matches it exactly.** Correctly returning null on a field the document genuinely does
+not carry (a BOL's `total_amount`, rule 1's "never invent a value") is excluded from
+precision/recall entirely — not rewarded as a hit, not penalised as a miss. Verified
+this is not a coincidence of how the numbers happened to land: the **null baseline**
+(predict nothing, ever) scores exactly **0.000 F1** here, which is what a trivial
+extractor scoring against a well-posed metric should score — the same "report the
+majority-class rate beside every classifier metric" instinct D-003 established,
+applied to an extraction task's own degenerate baseline.
+
+**Result: v1 scores 0.853 F1, v2 scores 0.929**, each against the documents that
+version's quota-capped run actually produced (D-026) — not the identical sample in
+both cases, so this is not a perfectly controlled before/after on the exact same
+documents (D-027's smaller, paired 16-document comparison is that view; this is the
+full-coverage view). Per-field detail lives in `docs/W4_lahari_beat_osrm.md`'s
+doc-eval section, not repeated here.
+
+**What this entry could not do, stated rather than silently skipped.**
+`agent_evaluation.md`'s own recording rules ask for a trivial *regex* baseline beside
+the metric, which would say more than "predict nothing" does about the fixed-shape
+fields (`document_number`, the two centre codes) D-027's v2 prompt specifically
+targets. `document_agent.run_corpus` does not persist the raw OCR text in its
+predictions file, only a character count, so a regex-on-OCR-text baseline cannot be
+computed from what exists today — carried forward as an open item for whoever next
+touches that module, not implied to have been checked.
+
+Evidence: `src/ml/doc_eval.py`, `tests/test_doc_eval.py`,
+`benchmarks/raw/w4_doc_eval_field_accuracy.csv`, `w4_doc_eval_summary.json`,
+`benchmarks/agent_evaluation.md`.

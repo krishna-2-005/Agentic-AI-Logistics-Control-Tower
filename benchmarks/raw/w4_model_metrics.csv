@@ -1,0 +1,11 @@
+model,split,n,mae_min,rmse_min,r2
+random_forest,train,21095,34.38,73.09,0.8835
+random_forest,test,5274,36.89,93.22,0.8244
+gbt,train,21095,32.05,65.66,0.906
+gbt,test,5274,38.28,102.19,0.7889
+OSRM,train,21095,111.2,241.11,-0.2678
+corridor_mean,train,21095,46.13,126.24,0.6524
+OSRM,test,5274,107.09,246.73,-0.2304
+corridor_mean,test,5274,36.13,101.73,0.7908
+linear_regression,train,21095,42.92,91.63,0.8169
+linear_regression,test,5274,41.17,96.8,0.8106
