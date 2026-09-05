@@ -71,7 +71,7 @@ on record yet, so nothing had to be beaten. `data/models/champion` now holds tha
 that trains a worse model has something concrete to fail to beat.
 
 One real snag surfaced validating this before either branch had merged: replaying
-Lahari's entry point locally hit a shared-file coupling (`docs/problems.md` P-30) —
+Lahari's entry point locally hit a shared-file coupling (`docs/problems.md` P-32) —
 resolved without re-running the ~40-minute training, by promoting from the
 already-written `w4_model_report.json` directly.
 
@@ -104,7 +104,7 @@ existing output without invoking anything, and retrying a deliberately-nonexiste
 module exactly twice before raising; and `promote_challenger` promoting with no
 champion on record, declining a worse challenger without touching the champion
 directory, and promoting a better one — all against throwaway `tmp_path` directories,
-never `data/models/champion` itself. D-027 has the full account.
+never `data/models/champion` itself. D-030 has the full account.
 
 ## D5 · The stream event schema is D-020's fact/query design, replayed as JSON
 
@@ -133,7 +133,7 @@ validates every event against the schema before writing
 `planned_min=46.0`, `gap_min=101.0` → `actual_time=147` min →
 `00:02:09 + 147 min = 02:29:09`, exactly what the module produced.
 
-**Status: proposed, not yet confirmed** (D-028) — there is no Week 5 producer or
+**Status: proposed, not yet confirmed** (D-031) — there is no Week 5 producer or
 streaming job built against it yet for a real cross-check to be about. Carried into
 Week 5 as the schema both Krishna's producer-adjacent work and Lahari's declared
 stream-equals-batch correctness test need to agree on before either is built.

@@ -469,7 +469,7 @@ checking a number, never by reading the file.
   reading the same feature table needs the same scaling step; the tree-based
   Random Forest and GBT it is actually built for do not.
 
-### P-30 · Calling Lahari's entry point mid-week needs her branch's file, not just her function signature
+### P-32 · Calling Lahari's entry point mid-week needs her branch's file, not just her function signature
 **Week 4 · Mounika · resolved (a testing-process finding, not a code defect)**
 
 - **Symptom.** Validating `src.automation.retrain` locally (before either branch had
@@ -495,10 +495,10 @@ checking a number, never by reading the file.
   (`src/common/docs.py`'s `SECTION_ORDER`) couples whoever calls it to whoever last
   edited that shared list, in a way a function signature alone does not reveal.
 
-### P-31 · A stale `JAVA_HOME` from a different machine, masked by variable precedence
-**Week 4 · Mounika · resolved, found while writing D-027's preflight check**
+### P-33 · A stale `JAVA_HOME` from a different machine, masked by variable precedence
+**Week 4 · Mounika · resolved, found while writing D-030's preflight check**
 
-- **Symptom.** Writing `retrain.preflight()` (D-027) and testing it against a
+- **Symptom.** Writing `retrain.preflight()` (D-030) and testing it against a
   deliberately broken `JAVA_HOME` turned up a second, real problem: popping
   `JAVA_HOME` from the process environment and letting `config.py`'s `load_dotenv()`
   fill the gap surfaced `JAVA_HOME=C:\Users\HP\jdks\jdk-17.0.20+8` — a path that does

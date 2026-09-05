@@ -851,7 +851,7 @@ Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metri
 
 ---
 
-## D-026 · Auto-retraining skips a cached stage rather than always rebuilding, and champion swap is a strict MAE improvement — `DECIDED`
+## D-029 · Auto-retraining skips a cached stage rather than always rebuilding, and champion swap is a strict MAE improvement — `DECIDED`
 **Week 4 · Mounika**
 
 `src.automation.retrain` (execution plan W4 D1-D2) is the one command that runs
@@ -903,11 +903,11 @@ Evidence: `src/automation/retrain.py`, `benchmarks/raw/w4_retrain_history.jsonl`
 
 ---
 
-## D-027 · Pipeline hardening: a preflight check before Spark, a bounded retry per stage — `DECIDED`
+## D-030 · Pipeline hardening: a preflight check before Spark, a bounded retry per stage — `DECIDED`
 **Week 4 · Mounika · D3-D4**
 
 D1-D2 already made `retrain.py` skip a cached stage and isolate every stage in its
-own subprocess (D-026). D3-D4's "pipeline hardening" asks what happens when a stage
+own subprocess (D-029). D3-D4's "pipeline hardening" asks what happens when a stage
 *fails*, which D1-D2 left as an immediate, un-retried `RuntimeError`.
 
 **A preflight check runs before any subprocess, not after the first one fails.**
@@ -924,7 +924,7 @@ fixed on this machine's `.env` as a result — a landmine this decision's own te
 found rather than one that was ever hit for real. Without the preflight check, that
 same stale value would have made all four pipeline stages fail with an identical,
 unhelpful Spark bootstrap traceback instead of one line naming `JAVA_HOME`. Logged as
-P-31.
+P-33.
 
 **Each stage gets `MAX_STAGE_ATTEMPTS = 2` with a fixed backoff, not an unbounded
 retry loop.** This project has one concrete transient failure on record — P-30's
@@ -954,7 +954,7 @@ Evidence: `src/automation/retrain.py` (`preflight`, `MAX_STAGE_ATTEMPTS`),
 
 ---
 
-## D-028 · The stream event schema is D-020's fact/query design, replayed as JSON — `DECIDED (proposed; Krishna and Lahari to confirm at the Week 5 sync)`
+## D-031 · The stream event schema is D-020's fact/query design, replayed as JSON — `DECIDED (proposed; Krishna and Lahari to confirm at the Week 5 sync)`
 **Week 4 · Mounika · D5**
 
 The execution plan's D5 line asks for a stream event JSON schema, agreed with both
