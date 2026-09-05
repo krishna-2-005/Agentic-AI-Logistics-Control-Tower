@@ -936,3 +936,52 @@ execution plan's actual D3-D4 line and was not run — noted there as an open id
 rather than silently implied by this entry's results.
 
 Evidence: `docs/W4_lahari_beat_osrm.md` §6, `benchmarks/raw/w4_ablations.csv`.
+
+---
+
+## D-028 · Document-extraction F1 is micro-averaged over (document, field) pairs, and a null prediction is neither a hit nor a miss — `DECIDED`
+**Week 4 · Lahari · D5**
+
+The first Layer 2 evaluation number this project has produced. `src/ml/doc_eval.py`
+scores Krishna's predictions files against the Week 3 ground-truth labels, never
+importing `src.agents.document_agent` beyond reading the JSON it already wrote — the
+execution plan's "keeps builder and judge separate" applied literally, not just in
+spirit.
+
+**Micro-averaging, not per-document-then-averaged.** Precision/recall/F1 are computed
+by pooling true/false positives and false negatives over every (document, field) pair
+in the scored set, then computing one P/R/F1 from the pooled counts — not by scoring
+each document separately and averaging document-level F1 scores. A macro average
+would let a document with fewer populated fields (a BOL's two always-null fields)
+count exactly as much as a fully-populated invoice; pooling first means every field
+extraction counts the same regardless of which document it came from.
+
+**A field is a true positive only when the true value is non-null and the prediction
+matches it exactly.** Correctly returning null on a field the document genuinely does
+not carry (a BOL's `total_amount`, rule 1's "never invent a value") is excluded from
+precision/recall entirely — not rewarded as a hit, not penalised as a miss. Verified
+this is not a coincidence of how the numbers happened to land: the **null baseline**
+(predict nothing, ever) scores exactly **0.000 F1** here, which is what a trivial
+extractor scoring against a well-posed metric should score — the same "report the
+majority-class rate beside every classifier metric" instinct D-003 established,
+applied to an extraction task's own degenerate baseline.
+
+**Result: v1 scores 0.853 F1, v2 scores 0.929**, each against the documents that
+version's quota-capped run actually produced (D-026) — not the identical sample in
+both cases, so this is not a perfectly controlled before/after on the exact same
+documents (D-027's smaller, paired 16-document comparison is that view; this is the
+full-coverage view). Per-field detail lives in `docs/W4_lahari_beat_osrm.md`'s
+doc-eval section, not repeated here.
+
+**What this entry could not do, stated rather than silently skipped.**
+`agent_evaluation.md`'s own recording rules ask for a trivial *regex* baseline beside
+the metric, which would say more than "predict nothing" does about the fixed-shape
+fields (`document_number`, the two centre codes) D-027's v2 prompt specifically
+targets. `document_agent.run_corpus` does not persist the raw OCR text in its
+predictions file, only a character count, so a regex-on-OCR-text baseline cannot be
+computed from what exists today — carried forward as an open item for whoever next
+touches that module, not implied to have been checked.
+
+Evidence: `src/ml/doc_eval.py`, `tests/test_doc_eval.py`,
+`benchmarks/raw/w4_doc_eval_field_accuracy.csv`, `w4_doc_eval_summary.json`,
+`benchmarks/agent_evaluation.md`.
