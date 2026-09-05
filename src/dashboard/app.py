@@ -16,6 +16,7 @@ from __future__ import annotations
 import json
 import math
 import re
+from datetime import date, datetime, time
 from pathlib import Path
 
 import folium
@@ -656,7 +657,85 @@ elif page == "Hub friction":
 
 elif page == "Delay predictor":
     st.title("What-if delay predictor")
-    pending("Week 4", "Krishna", "Enter a shipment, get the trained model's predicted delay.")
+    champion_exists = (config.MODELS_DIR / "champion").exists()
+    audit_for_predictor = load_csv(config.BENCHMARKS_RAW_DIR / "w2_corridor_audit.csv")
+
+    if not champion_exists:
+        pending("Week 4", "Mounika", "Run `python -m src.automation.retrain` to promote a champion model.")
+    elif audit_for_predictor is None:
+        pending("Week 2", "Lahari", "Corridor audit not built yet -- needed for the corridor picker.")
+    else:
+        st.caption(
+            "**This is the one page that starts a SparkSession** — every other page "
+            "reads cached artefacts only (D-009) — because the champion is a real "
+            "MLlib `PipelineModel` and `.transform()` needs Spark to run at all "
+            "(D-028). Corridor history is each key's most recent known snapshot in "
+            "`features_v1`, not a live as-of join for the exact date chosen below — "
+            "see D-028 for what that simplifies away."
+        )
+
+        ranked = audit_for_predictor.sort_values("n_legs", ascending=False).reset_index(drop=True)
+        options = list(ranked.index)
+        chosen = st.selectbox(
+            "Corridor",
+            options,
+            format_func=lambda i: (
+                f"{ranked.loc[i, 'source_name']} -> {ranked.loc[i, 'destination_name']} "
+                f"({ranked.loc[i, 'corridor_id']}, {int(ranked.loc[i, 'n_legs'])} legs)"
+            ),
+        )
+        row = ranked.loc[chosen]
+
+        c1, c2, c3 = st.columns(3)
+        planned_min = c1.number_input(
+            "Planned time (min, OSRM)", min_value=1.0, value=round(float(row["mean_osrm_time"]), 1)
+        )
+        planned_km = c2.number_input(
+            "Planned distance (km, OSRM)", min_value=0.1, value=round(float(row["mean_osrm_km"]), 1)
+        )
+        route_type = c3.radio(
+            "Route type", ["FTL", "Carting"], horizontal=True,
+            index=0 if row["ftl_share"] >= 0.5 else 1,
+        )
+
+        c4, c5 = st.columns(2)
+        dep_date = c4.date_input("Departure date", value=date(2018, 9, 20))
+        dep_time = c5.time_input("Departure time", value=time(14, 30))
+
+        if st.button("Predict", type="primary"):
+            from src.ml.predict import predict_delay
+
+            with st.spinner("Starting Spark and scoring against the champion model..."):
+                try:
+                    result = predict_delay(
+                        corridor_id=row["corridor_id"],
+                        source_center=row["source_center"],
+                        destination_center=row["destination_center"],
+                        route_type=route_type,
+                        planned_min=planned_min,
+                        planned_km=planned_km,
+                        departure=datetime.combine(dep_date, dep_time),
+                    )
+                except FileNotFoundError as exc:
+                    st.error(str(exc))
+                    result = None
+
+            if result:
+                m1, m2, m3 = st.columns(3)
+                m1.metric("Predicted gap", f"{result['predicted_gap_min']:+.1f} min")
+                m2.metric("Predicted total time", f"{result['predicted_total_min']:.1f} min")
+                m3.metric(
+                    "Delayed? (D-003: gap > 1x plan)",
+                    "YES" if result["is_delayed_predicted"] else "no",
+                )
+                cold = result["cold_flags"]
+                if any(cold.values()):
+                    cold_names = [{"corr": "this corridor", "src": "the origin hub", "dst": "the destination hub"}[k] for k, v in cold.items() if v]
+                    st.info(
+                        f"**Cold start:** {', '.join(cold_names)} — no history seen yet in "
+                        "`features_v1` (D-023's fallback), so those inputs are zero-filled "
+                        "with an explicit cold flag rather than a guessed value."
+                    )
 
 elif page == "Live alerts":
     st.title("Live alerts")
