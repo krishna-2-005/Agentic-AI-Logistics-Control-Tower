@@ -3,12 +3,22 @@
 **Owner: Lahari** (deliberately not Krishna, who builds the agents — execution plan §4
 keeps builder and judge separate). Populated Weeks 4-7.
 
-## Status: awaiting Week 4
+## Status: Week 4 D5 done (the first number)
 
-| Agent | Metric | Value | Prompt version | Test set |
-|---|---|---|---|---|
-| Document Intelligence | field-level accuracy / F1 | _pending W4_ | | labelled synthetic corpus |
-| Document Intelligence | character error rate post-OCR | _pending W4_ | | |
+Source: `python -m src.ml.doc_eval` → `docs/W4_lahari_beat_osrm.md` (doc-eval section),
+`benchmarks/raw/w4_doc_eval_field_accuracy.csv`, `w4_doc_eval_summary.json`. Scored
+against Krishna's predictions files (`week4-krishna-doc-agent`) and the Week 3
+labelled corpus — D-028 has the full method (micro-averaged P/R/F1, why a
+correctly-returned null is neither a hit nor a miss) and its own gap (no
+regex-on-raw-OCR baseline is computable — `document_agent` does not persist OCR
+text).
+
+| Agent | Metric | Value | Prompt version | Test set | LLM |
+|---|---|---|---|---|---|
+| Document Intelligence | field-level F1 (micro) | **0.853** | `doc_extraction/v1` | 22 of 40 documents (D-032 quota cap) | `gemini-3.6-flash` |
+| Document Intelligence | field-level F1 (micro) | **0.929** | `doc_extraction/v2` | 16 of 20 documents (D-032 quota cap) | `gemini-3.6-flash` |
+| Document Intelligence | null baseline (predict nothing) | 0.000 F1 | — | same documents as v1 | — |
+| Document Intelligence | character error rate post-OCR | _not measured_ — no reference transcript exists to diff against, only the field-level label | | |
 | Order Entry | end-to-end success rate | _pending W5_ | | 50-case set |
 | Order Entry | clarification-instead-of-guess rate | _pending W5_ | | ambiguous subset |
 | Tracking & Exception | notification precision | _pending W6_ | | replay |

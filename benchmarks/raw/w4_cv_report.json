@@ -1,0 +1,78 @@
+{
+  "random_forest": {
+    "model": "random_forest",
+    "cv_folds": 3,
+    "best_params": {
+      "numTrees": 150,
+      "maxDepth": 8
+    },
+    "grid_search": [
+      {
+        "params": {
+          "numTrees": 50,
+          "maxDepth": 5
+        },
+        "cv_mae": 42.817
+      },
+      {
+        "params": {
+          "numTrees": 50,
+          "maxDepth": 8
+        },
+        "cv_mae": 38.99
+      },
+      {
+        "params": {
+          "numTrees": 150,
+          "maxDepth": 5
+        },
+        "cv_mae": 42.608
+      },
+      {
+        "params": {
+          "numTrees": 150,
+          "maxDepth": 8
+        },
+        "cv_mae": 38.78
+      }
+    ]
+  },
+  "gbt": {
+    "model": "gbt",
+    "cv_folds": 3,
+    "best_params": {
+      "maxIter": 50,
+      "maxDepth": 5
+    },
+    "grid_search": [
+      {
+        "params": {
+          "maxIter": 50,
+          "maxDepth": 3
+        },
+        "cv_mae": 40.219
+      },
+      {
+        "params": {
+          "maxIter": 50,
+          "maxDepth": 5
+        },
+        "cv_mae": 39.552
+      },
+      {
+        "params": {
+          "maxIter": 100,
+          "maxDepth": 3
+        },
+        "cv_mae": 39.659
+      },
+      {
+        "params": {
+          "maxIter": 100,
+          "maxDepth": 5
+        },
+        "cv_mae": 39.974
+      }
+    ]
+  }
+}

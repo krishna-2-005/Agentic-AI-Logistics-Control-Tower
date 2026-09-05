@@ -1,0 +1,7 @@
+model,ablation,n_features,n,mae_min,rmse_min,r2
+random_forest,full,27,5274,36.89,93.22,0.8244
+random_forest,drop_corridor_history,20,5274,40.19,97.5,0.8079
+random_forest,drop_temporal,24,5274,37.0,93.13,0.8247
+gbt,full,27,5274,38.28,102.19,0.7889
+gbt,drop_corridor_history,20,5274,40.71,103.14,0.785
+gbt,drop_temporal,24,5274,39.0,103.15,0.785

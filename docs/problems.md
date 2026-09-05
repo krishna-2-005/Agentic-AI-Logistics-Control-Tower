@@ -469,6 +469,226 @@ checking a number, never by reading the file.
   reading the same feature table needs the same scaling step; the tree-based
   Random Forest and GBT it is actually built for do not.
 
+### P-30 · Random Forest's first CV run exhausted the driver heap
+**Week 4 · Lahari · resolved**
+
+- **Symptom.** `python -m src.ml.models` died mid-`RandomForestRegressor` fit with
+  `java.lang.OutOfMemoryError: Java heap space` inside `RandomForest.findBestSplits`,
+  during the first hyperparameter combination of the very first fold.
+- **Cause.** Two compounding choices, not one. `maxDepth=10` was in the first grid —
+  `findBestSplits` collects per-node, per-feature, per-bin split statistics on the
+  driver, and node count grows with depth roughly like 2^depth, so depth 10 is a real
+  memory step up from depth 5-8. That alone might have fit; `CrossValidator(...,
+  parallelism=2)` then ran two such fits concurrently in the same local[*] JVM, on a
+  machine with only ~5.6 GB free of 16 GB total alongside a normal dev session
+  (browser, IDE). Neither choice was wrong in isolation on a machine with more
+  headroom; together, on this one, they were.
+- **Fix.** `maxDepth` capped at 8 in both grids, `CrossValidator(parallelism=1)` so
+  only one candidate model fits at a time. Depth 8 still comfortably outgrows the
+  linear model's fixed global coefficients (D-026), and sequential CV cost this run
+  about 25-30 minutes wall clock against a faster but heap-exhausting parallel one that
+  never finished at all.
+- **Cost.** ~15 minutes to read the stack trace and identify both contributing
+  factors, then one clean run to confirm the fix. Worth carrying to Week 5's streaming
+  job and Week 7's scale appendix: this machine's real memory headroom during a normal
+  work session is well under Spark's configured driver memory, not the 16 GB the
+  spec sheet says.
+
+### P-31 · `command | tee logfile` reported success for a job that had crashed
+**Week 4 · Lahari · resolved**
+
+- **Symptom.** The first, OOM-killing run of `python -m src.ml.models` (P-30) was
+  launched as `python -m src.ml.models | tee run.log`, and the tool that ran it
+  reported exit code 0 — read at a glance, a green run that had in fact thrown a
+  `Py4JJavaError` and a Python traceback partway through, both sitting in `run.log`
+  the exit code claimed was clean.
+- **Cause.** In a POSIX pipeline, `$?` (and this project's tooling reads the same
+  signal) is the *last* command's exit status by default — `tee`'s, which succeeds
+  as long as it can write the file, regardless of what the process feeding it did.
+  A crashed left-hand command is invisible to anyone checking only the pipeline's
+  reported result.
+- **Fix.** Redirect to a file directly (`command > log 2>&1`) rather than piping
+  through `tee`, so the shell's own exit status is the command's; where a pipeline is
+  unavoidable, `set -o pipefail` (or bash's `${PIPESTATUS[0]}`) recovers the real
+  status. Caught here only because the output files were checked by hand against what
+  the run should have produced, not because anything flagged the mismatch — the same
+  "verify by running and checking, not by a green light" instinct `CONTRIBUTING.md` §10
+  already asks for, extended to the exit code itself.
+- **Cost.** No wrong number reached a report — this was caught before anything
+  downstream read the (nonexistent) output of the crashed run. Worth carrying forward:
+  a reported success is only as trustworthy as what it is actually measuring.
+
+### P-32 · Calling Lahari's entry point mid-week needs her branch's file, not just her function signature
+**Week 4 · Mounika · resolved (a testing-process finding, not a code defect)**
+
+- **Symptom.** Validating `src.automation.retrain` locally (before either branch had
+  merged to `dev`) by temporarily placing a copy of `src/ml/models.py` on this branch
+  ran the full Random Forest + GBT fit successfully, then crashed on the very last
+  step: `ValueError: Unknown section 'beat-osrm'. Add it to SECTION_ORDER...` from
+  `src/common/docs.py`.
+- **Cause.** `models.run()` calls `docs.write_section(..., "beat-osrm", ...)`, and
+  `"beat-osrm"` was added to the shared `SECTION_ORDER` list as part of *Lahari's*
+  commit — which, on this branch, does not exist, because only her `models.py` was
+  copied over for the test, not the one-line `docs.py` change that goes with it. A
+  genuine `git merge` would never hit this: both files land on `dev` together when
+  her PR merges. This is an artefact of validating one branch's entry point against
+  another still-unmerged branch's code, on one machine, before the week's gate.
+- **Fix.** Not a change to either branch. The already-computed `w4_model_report.json`
+  (written to disk *before* the crashed `docs.write_section` call — model artefacts
+  and CSVs are saved earlier in `run()`) was replayed through `promote_challenger()`
+  directly, rather than re-running the ~40-minute training a second time. Champion
+  promotion and the history log both completed correctly against that report.
+- **Cost.** ~5 minutes to read the traceback and recognise it as a local-testing
+  artefact rather than a bug in either branch's committed code. Worth carrying to
+  Week 5 and beyond: an entry point that writes to a *shared* file
+  (`src/common/docs.py`'s `SECTION_ORDER`) couples whoever calls it to whoever last
+  edited that shared list, in a way a function signature alone does not reveal.
+
+### P-33 · A stale `JAVA_HOME` from a different machine, masked by variable precedence
+**Week 4 · Mounika · resolved, found while writing D-030's preflight check**
+
+- **Symptom.** Writing `retrain.preflight()` (D-030) and testing it against a
+  deliberately broken `JAVA_HOME` turned up a second, real problem: popping
+  `JAVA_HOME` from the process environment and letting `config.py`'s `load_dotenv()`
+  fill the gap surfaced `JAVA_HOME=C:\Users\HP\jdks\jdk-17.0.20+8` — a path that does
+  not exist on this machine at all.
+- **Cause.** This machine's local `.env` (gitignored, never shared, never the same
+  file across the three members' machines) still carried the *other* machine's JDK
+  path — `spark-run-environment`'s own note that "the earlier Week 1–2 work was built
+  on a different machine (`C:\Users\HP\...`)" was about the Parquet caches, but the
+  same stale value had also been sitting unnoticed in `.env` since around then. It
+  never caused a visible failure because the correct value already sits in this
+  machine's User-scope environment variable, set outside the repo, and
+  `python-dotenv`'s `load_dotenv()` does not override a variable that already exists
+  in `os.environ` — so every real run of every stage this whole project has used the
+  right value, by precedence, while the wrong one sat one layer underneath it.
+- **Fix.** Corrected `.env`'s `JAVA_HOME` to this machine's real path. Not committed —
+  `.env` is gitignored by design (GIT_RULES §7) — so this is a local fix, not a repo
+  change, and each of the three members' own `.env` needs checking on its own merits
+  rather than assumed correct because Spark has always worked so far.
+- **Cost.** ~5 minutes once `preflight()`'s own test surfaced it. **The general point
+  the fix doesn't cover:** environment-variable precedence means a wrong value in one
+  layer can sit silently underneath a right value in another for months, invisible
+  until something removes the layer that was covering for it — the same shape of trap
+  as P-06's Parquet cache built on a machine that no longer existed, just one layer
+  further down the stack.
+
+### P-34 · The official Tesseract download mirror is unreachable from this machine
+**Week 4 · Krishna · resolved**
+
+- **Symptom.** `README.md`'s prerequisite table has listed Tesseract since Week 1
+  (`check_env`'s Optional check has warned `FileNotFoundError` every week since), and
+  the obvious next step — the UB-Mannheim installer linked from Tesseract's own wiki,
+  `digi.bib.uni-mannheim.de/tesseract/...` — would not connect at all: not a slow
+  download, a connection failure, while every other host tried (github.com, pypi.org,
+  sourceforge.net, huggingface.co) resolved fine.
+- **Cause.** That one host, specifically, appears to be unreachable from this network
+  — not a Tesseract problem, a that-domain problem. No proxy or DNS override was
+  available to fix the host itself, and the mirror is the only place UB-Mannheim
+  ships the installer from directly.
+- **Fix.** Tesseract's own GitHub releases (`tesseract-ocr/tesseract`, tag `5.5.3`)
+  mirror the identical installer as a release asset, authored by the same maintainer
+  who builds the UB-Mannheim installer (`stweil`) — a legitimate alternate host for
+  the same official artefact, not a third-party rebuild. NSIS installers can be
+  extracted directly with 7-Zip without running them (`7z x installer.exe`), which
+  gave `tesseract.exe` and its DLLs without ever executing an installer or needing
+  admin/UAC — the same portable-extraction instinct D-012 already used for the JDK
+  zip. The installer itself does not bundle language data (it downloads `eng.
+  traineddata` at install time via an NSIS plugin); that file was fetched separately
+  from `tesseract-ocr/tessdata_fast` on GitHub. Both live outside the repo at
+  `C:\Users\kuchu\tesseract-ocr\`, on `PATH`, with `TESSDATA_PREFIX` set at User scope
+  — mirroring exactly how `JAVA_HOME`/`HADOOP_HOME` are documented in
+  `spark-run-environment`, not committed anywhere.
+- **Cost.** ~25 minutes, almost all of it a slow download of a 26.6 MB file. Worth
+  remembering: a single unreachable domain looks exactly like "the tool doesn't have
+  a Windows build" until every other host is checked and turns out fine.
+
+### P-35 · The Week 1 default Gemini model was retired mid-project
+**Week 4 · Krishna · resolved**
+
+- **Symptom.** The Document Intelligence Agent's first real LLM call failed with
+  `404 NOT_FOUND: This model models/gemini-2.0-flash is no longer available`, quoting
+  its own replacement name in the error.
+- **Cause.** `gemini-2.0-flash` was pinned as the default in `.env.example` and
+  `src.agents.llm.DEFAULT_MODELS` back in Week 1 and never revisited — every agent
+  since (`hello_agent`, the doc corpus generator's LLM-free path) either did not call
+  the model or was not exercised again in the months since. A free-tier model name is
+  not a fact that stays true for the length of an 8-week project; D-007's single LLM
+  construction site meant this was one string to fix, not five.
+- **Fix.** `DEFAULT_MODELS["gemini"]` and both `.env`/`.env.example` moved to
+  `gemini-3.6-flash`, the name the 404 itself named. Separately, and only visible
+  once the model call actually succeeded: `response.content` came back as a **list**
+  of content-block dicts rather than a plain string — a shape difference between
+  Gemini's newer responses and what `hello_agent`'s original smoke test (a short,
+  simple prompt) happened to see. `document_agent._response_text()` flattens either
+  shape once, the same "one call site" reasoning D-007 already applies to construction
+  rather than to response parsing.
+- **Cost.** ~20 minutes. Worth carrying to Week 7's evaluation runs and Week 6's
+  agent-eval: a model pinned once at the start of an agentic project is exactly the
+  kind of dependency that goes stale silently until the code that calls it actually
+  runs again.
+
+### P-36 · The free-tier LLM quota is 20 requests *per day*, not per minute
+**Week 4 · Krishna · resolved (accepted as a documented constraint, not a bug)**
+
+- **Symptom.** A 40-document smoke run (`--count 20`, 20 consignments × BOL+invoice)
+  processed the first 19 documents cleanly, then every call from the 20th on failed
+  `429 RESOURCE_EXHAUSTED` — with escalating suggested retry delays (14s, 36s, 58s...)
+  that occasionally let a later call sneak through, landing at 22/40 succeeding rather
+  than a clean 19/40.
+- **Cause.** The error body names the exact quota:
+  `GenerateRequestsPerDayPerProjectPerModel-FreeTier`, `quotaValue: 20` — a **daily**
+  cap per project per model on `gemini-3.6-flash`'s free tier, not the per-minute rate
+  limit `with_fallback`'s retry-and-backoff design (D-007) was built to survive. The
+  Week 2 sync's open-items table already named exactly this risk ("second LLM key... —
+  blocks Week 7 eval runs") — it simply arrived at Week 4 instead of Week 7, the moment
+  an agent that actually calls the model at any volume first existed.
+- **Fix.** Not a retry loop — a daily cap does not lift by waiting seconds. The
+  per-document `try/except` already in `run_corpus` (not a single all-or-nothing call)
+  meant the quota wall did not corrupt the run: it produced 22 real predictions and 18
+  documents each recording the `RESOURCE_EXHAUSTED` reason in their own `error` field,
+  in the one predictions file. Decided in D-032: the evaluation harness (Lahari, D5)
+  scores whatever the file actually contains and reports coverage beside accuracy,
+  rather than the agent pretending a clean run happened.
+- **Cost.** ~10 minutes to read the error body all the way to the quota name, plus the
+  ~18 minutes the run itself spent retrying against a wall that was not going to move.
+  The real cost is forward-looking: a full 120-document corpus run needs a second
+  provider key or several days, not a code fix.
+
+### P-37 · Every python invocation on this machine silently spawns a second interpreter
+**Week 4 · Krishna · resolved (worked around; root cause is machine-level, not this repo's)**
+
+- **Symptom.** Launching the D3-D4 prompt-comparison batch produced two live
+  `python.exe` processes for one command — one from this project's venv, a second
+  from an unrelated system-wide Python 3.12 install, both running the identical
+  `-m src.agents.document_agent ...` argv, the second a direct child of the first.
+  Killing what looked like a stray duplicate and relaunching reproduced the same
+  pair again. A trivial control command (`python -c "import time; time.sleep(6)"`,
+  no project code, no imports beyond the standard library) doubled the exact same
+  way, proving this has nothing to do with `document_agent.py`, `pytesseract`, or
+  `langchain_google_genai`.
+- **Cause.** Not identified — some machine-level hook (a `sitecustomize.py`/`.pth`
+  file, or third-party monitoring software) that every `python.exe` on this machine
+  runs at interpreter startup, re-executing the same command under a second
+  interpreter as a child process. Out of scope to chase down further here: it is a
+  property of this machine, not of anything in `requirements.txt` or this repo's
+  code, and every long batch run this project has actually needed (Lahari's model
+  training, Mounika's retrain script, this agent's batch runs) has completed
+  correctly despite it.
+- **Fix.** Checked, rather than assumed harmless: the log each run produces is a
+  single clean sequence with no duplicated or interleaved lines, meaning only one of
+  the two processes does real work while the other sits inert — a genuine risk this
+  project cannot fully rule out is that a *concurrency-sensitive* future task (Week
+  5's Kafka producer, anything that writes to a shared file without one process's
+  lock) could see actual doubled work rather than a harmless spawn. Documented so
+  the next long-running background command started on this machine is checked the
+  same way (`Get-CimInstance Win32_Process` for a second matching command line)
+  rather than assumed single-process.
+- **Cost.** ~15 minutes and one wasted LLM quota call (3 documents extracted then
+  killed, mid-write, before `run_corpus` reached its single end-of-run
+  `out_json.write_text` — those 3 results are unrecoverable, though the quota spend
+  itself is the only real cost since nothing downstream ever read them).
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27

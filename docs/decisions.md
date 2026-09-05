@@ -848,3 +848,418 @@ the model to clear is logistic regression's 0.764 F1, not the majority class's 0
 
 Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metrics.csv`,
 `w3_baseline_report.json`.
+
+---
+
+## D-026 · Random Forest and GBT are trained through real MLlib, not scikit-learn — `DECIDED`
+**Week 4 · Lahari**
+
+Week 3's baselines (`src.ml.baselines`) fit their linear/logistic models in
+scikit-learn on purpose, arguing that 26,369 rows is not a distributed workload and
+scikit-learn would not distribute it even if it were. That argument does not carry
+over to this stage. `README.md`'s architecture and its own resume-line claim are
+specifically "trains MLlib models that outperform that planner" — this is the one
+stage where that has to be literally true, not merely compatible with being true. So
+Random Forest and GBT are trained through `pyspark.ml` (`RandomForestRegressor`,
+`GBTRegressor`) in a real MLlib `Pipeline`, tuned via MLlib's own `CrossValidator`, per
+the "Honest scope" defence the README already makes for the rest of the batch layer.
+
+**What does *not* move into Spark: the split, the cold-start fill, and the
+`{corr,src,dst}_is_cold` indicators.** `time_split` and `prepare_model_features`
+(`src.ml.baselines`, D-022/D-023) are imported, not reimplemented in Spark SQL.
+Rebuilding D-023's null-handling policy a second time is the exact shape of the trap
+P-23 already cost this project once — two lists holding one truth, which had already
+drifted by the time it was noticed. `features_v1` is 26,369 rows; collecting it once
+to pandas for the split and the fill, then handing the prepared frames to Spark only
+for the model fit and the hyperparameter search, is the one division of labour that
+does not duplicate anything.
+
+**Why k-fold CV over the training rows does not reopen D-022's leakage question.**
+D-022 argued that no choice of split boundary can leak, because every as-of feature in
+`features_v1` is already computed relative to each leg's own creation time — the
+guarantee lives in the feature table, not in how its rows are partitioned. That
+argument is general, not specific to an 80/20 cut: it applies equally to a k-fold split
+of the training rows for hyperparameter selection. `CrossValidator` below folds only
+the 21,095 training legs the test set never touches, and Spark's own contract for
+`CrossValidator.bestModel` refits the winning hyperparameters on the entire training
+set before this module calls `.transform()` on it.
+
+**Result, reported as it stands.** Random Forest is the stronger of the two Week 4
+models (36.9 min MAE on test vs GBT's 38.3), and both comfortably beat OSRM (107.1) and
+the linear regressor (41.2) — but **neither clears the corridor-mean baseline's 36.1
+min**, the number D-024 already fixed as what Week 4 actually has to beat. This is not
+reframed around RMSE or R2 (Random Forest's are the best in the table: 93.2 min RMSE,
+0.824 R2): D-024 decided MAE is what ranks these models, and a tuned tree ensemble
+trailing a single per-corridor average by 0.8 min is the honest result, not a headline
+to round away. Per-corridor, Random Forest still improves 1,369 of 1,646 test corridors
+over OSRM (83%), so the network-wide number is not hiding a model that only helps a
+handful of corridors — see `docs/W4_lahari_beat_osrm.md` §2.
+
+Evidence: `docs/W4_lahari_beat_osrm.md`, `benchmarks/raw/w4_model_metrics.csv`,
+`w4_corridor_gains.csv`, `w4_feature_importances.csv`, `w4_cv_report.json`,
+`w4_model_report.json`, `docs/problems.md` P-30.
+
+---
+
+## D-027 · Ablations refit at the already-tuned hyperparameter point, not a fresh grid search per feature block — `DECIDED`
+**Week 4 · Lahari · D3-D4**
+
+The execution plan asks D3-D4 to check two blocks of `FEATURES`: corridor-history
+(`corr_*`) and temporal (`created_hour`/`created_dayofweek`/`created_is_weekend`). The
+question an ablation is actually answering matters for how expensive it has to be:
+**"what does this block cost the model D1-D2 already tuned"** is a different, far
+cheaper question than **"what is the best model without this block"** — the second
+needs its own `CrossValidator` grid search per ablation (roughly tripling D1-D2's
+Spark cost for a number nothing downstream reads), the first needs one fit per
+ablation at the hyperparameters `w4_cv_report.json` already recorded.
+
+**Decided: `fit_fixed_mllib_model()` refits once per (model, ablation) pair at the
+already-tuned `best_params`, no `CrossValidator`.** Six fits total (2 models × 3
+configs: full, drop-corridor-history, drop-temporal) rather than 24 (2 models × 3
+configs × the D1-D2 grid), and the result answers the question D3-D4 actually asks —
+whether a block earns its keep at the model this project is actually shipping, not at
+some other, unshipped hyperparameter point a second search might have preferred for a
+smaller feature set.
+
+**Result: the corridor-history block dominates, on both models — confirming D1-D2's
+feature-importance ranking against a real refit rather than reading it off the fitted
+model's internal split statistics alone.** Dropping `corr_*` costs Random Forest 3.30
+min MAE and GBT 2.43; dropping the three temporal columns costs 0.11 and 0.72
+respectively — a real but much smaller effect. A high split-based importance and a
+high held-out MAE cost are not guaranteed to agree (a feature can look important to
+the fitting algorithm's internal bookkeeping without actually being load-bearing for
+generalisation); here they do, which is itself worth stating rather than assuming.
+
+**What this does not test.** An "FTL vs Carting separately" ablation was floated
+speculatively in `benchmarks/ml_results.md` at the Week 3 close but is not part of the
+execution plan's actual D3-D4 line and was not run — noted there as an open idea
+rather than silently implied by this entry's results.
+
+Evidence: `docs/W4_lahari_beat_osrm.md` §6, `benchmarks/raw/w4_ablations.csv`.
+
+---
+
+## D-028 · Document-extraction F1 is micro-averaged over (document, field) pairs, and a null prediction is neither a hit nor a miss — `DECIDED`
+**Week 4 · Lahari · D5**
+
+The first Layer 2 evaluation number this project has produced. `src/ml/doc_eval.py`
+scores Krishna's predictions files against the Week 3 ground-truth labels, never
+importing `src.agents.document_agent` beyond reading the JSON it already wrote — the
+execution plan's "keeps builder and judge separate" applied literally, not just in
+spirit.
+
+**Micro-averaging, not per-document-then-averaged.** Precision/recall/F1 are computed
+by pooling true/false positives and false negatives over every (document, field) pair
+in the scored set, then computing one P/R/F1 from the pooled counts — not by scoring
+each document separately and averaging document-level F1 scores. A macro average
+would let a document with fewer populated fields (a BOL's two always-null fields)
+count exactly as much as a fully-populated invoice; pooling first means every field
+extraction counts the same regardless of which document it came from.
+
+**A field is a true positive only when the true value is non-null and the prediction
+matches it exactly.** Correctly returning null on a field the document genuinely does
+not carry (a BOL's `total_amount`, rule 1's "never invent a value") is excluded from
+precision/recall entirely — not rewarded as a hit, not penalised as a miss. Verified
+this is not a coincidence of how the numbers happened to land: the **null baseline**
+(predict nothing, ever) scores exactly **0.000 F1** here, which is what a trivial
+extractor scoring against a well-posed metric should score — the same "report the
+majority-class rate beside every classifier metric" instinct D-003 established,
+applied to an extraction task's own degenerate baseline.
+
+**Result: v1 scores 0.853 F1, v2 scores 0.929**, each against the documents that
+version's quota-capped run actually produced (D-032) — not the identical sample in
+both cases, so this is not a perfectly controlled before/after on the exact same
+documents (D-033's smaller, paired 16-document comparison is that view; this is the
+full-coverage view). Per-field detail lives in `docs/W4_lahari_beat_osrm.md`'s
+doc-eval section, not repeated here.
+
+**What this entry could not do, stated rather than silently skipped.**
+`agent_evaluation.md`'s own recording rules ask for a trivial *regex* baseline beside
+the metric, which would say more than "predict nothing" does about the fixed-shape
+fields (`document_number`, the two centre codes) D-033's v2 prompt specifically
+targets. `document_agent.run_corpus` does not persist the raw OCR text in its
+predictions file, only a character count, so a regex-on-OCR-text baseline cannot be
+computed from what exists today — carried forward as an open item for whoever next
+touches that module, not implied to have been checked.
+
+Evidence: `src/ml/doc_eval.py`, `tests/test_doc_eval.py`,
+`benchmarks/raw/w4_doc_eval_field_accuracy.csv`, `w4_doc_eval_summary.json`,
+`benchmarks/agent_evaluation.md`.
+
+---
+
+## D-029 · Auto-retraining skips a cached stage rather than always rebuilding, and champion swap is a strict MAE improvement — `DECIDED`
+**Week 4 · Mounika**
+
+`src.automation.retrain` (execution plan W4 D1-D2) is the one command that runs
+clean → reconstruct → hubs → features → train → evaluate → champion/challenger swap.
+Two design calls in it are load-bearing enough to record.
+
+**A stage runs only if its frozen output does not already exist.** D-016 versions
+`clean_v1` / `trips_v1` / `hubs_v1` / `features_v1` precisely so a schema change adds a
+new version rather than silently repointing one — an "auto-retraining" script that
+rebuilds all four Spark caches from raw on every invocation would defeat that: it would
+turn a scheduled or triggered retrain into a scheduled full reprocessing job, at whatever
+cost Stage 1-4 take on 145K raw rows, for no reason on a day nothing upstream changed.
+`--force-rebuild` is the explicit escape hatch for "the raw data actually changed, start
+over" — the default is not.
+
+**Each pipeline stage runs as its own subprocess, not an in-process import.** Every
+stage module (`src.pipeline.clean`, `.reconstruct`, `.hubs`, `.features`) opens and
+stops its own `SparkSession`. Importing four of them into one Python process and
+calling their `main()`s in sequence would mean reasoning about whether a second
+`get_spark()` call inside the same process returns the first stage's still-open
+session or conflicts with it — `src.common.spark.get_spark()` is a module-level
+singleton via `getOrCreate()`, so it would. `subprocess.run([sys.executable, "-m",
+module])` gives every stage a clean JVM and a clean exit, the same isolation the stages
+already have when run by hand from the command line.
+
+**Champion swap is `challenger_mae < champion_mae`, nothing softer.** The challenger
+is whichever of Random Forest/GBT `src.ml.models.run()` (Lahari's entry point, not
+reimplemented here) already picked as its own winner on test MAE (D-024). No champion
+on record promotes automatically — there is nothing to lose to. Otherwise the swap
+requires a strictly better number, not a tie, not a percentage improvement, not human
+approval: an unattended loop that requires a person to approve every promotion is not
+autonomous, and a threshold looser than "better" risks a slow ratchet toward a worse
+model across many small, technically-passing swaps. The promotion still leaves a
+paper trail either way — `w4_retrain_history.jsonl` gets a line whether or not the
+challenger won, so "the loop ran and declined to promote" is as visible as "the loop
+ran and promoted."
+
+**What the champion actually is, on disk.** `MODELS_DIR / "champion"` is a direct copy
+of whichever `{name}_v1` MLlib `PipelineModel` directory won — not a JSON pointer to
+it. This matches an existing convention already written into
+`src/dashboard/app.py`'s artefact-status check
+(`(config.MODELS_DIR / "champion").exists()`), built before this decision, for the
+not-yet-built what-if predictor page (Krishna, D5) to load directly with
+`PipelineModel.load()`. `champion_metrics.json` sits alongside it for this script's own
+comparison logic and for a human to read without deserialising a Spark model.
+
+Evidence: `src/automation/retrain.py`, `benchmarks/raw/w4_retrain_history.jsonl`,
+`data/models/champion_metrics.json`.
+
+---
+
+## D-030 · Pipeline hardening: a preflight check before Spark, a bounded retry per stage — `DECIDED`
+**Week 4 · Mounika · D3-D4**
+
+D1-D2 already made `retrain.py` skip a cached stage and isolate every stage in its
+own subprocess (D-029). D3-D4's "pipeline hardening" asks what happens when a stage
+*fails*, which D1-D2 left as an immediate, un-retried `RuntimeError`.
+
+**A preflight check runs before any subprocess, not after the first one fails.**
+`preflight()` checks the same thing `check_env.check_java` checks — `JAVA_HOME` set
+and pointing at a real JDK — and raises one clear message naming the cause if it does
+not. **Found while testing this, not by inspection:** this machine's own local `.env`
+(gitignored, per-machine) still carried `JAVA_HOME=C:\Users\HP\jdks\...` — the *other*
+machine's path from `spark-run-environment`'s own account of Week 1-2's history —
+masked only because the correct value already sits in the User-scope environment
+variable and `load_dotenv()` does not override a variable that already exists. Popping
+`JAVA_HOME` from `os.environ` before calling `preflight()` (simulating a shell where
+that precedence does not hold) surfaced the stale value immediately, and it was
+fixed on this machine's `.env` as a result — a landmine this decision's own testing
+found rather than one that was ever hit for real. Without the preflight check, that
+same stale value would have made all four pipeline stages fail with an identical,
+unhelpful Spark bootstrap traceback instead of one line naming `JAVA_HOME`. Logged as
+P-33.
+
+**Each stage gets `MAX_STAGE_ATTEMPTS = 2` with a fixed backoff, not an unbounded
+retry loop.** This project has one concrete transient failure on record — P-30's
+driver-heap exhaustion during Random Forest's CV search, resolved partly by
+sequential fitting and partly by the observation that memory pressure on this
+machine varies with what else is open. A bounded retry gives a stage one more chance
+after a transient resource squeeze without turning a genuinely broken stage (bad
+code, bad input) into a long, silent hang — it will simply fail the same way twice
+and raise, exactly as D1-D2's version did on the first attempt.
+
+**Verified without re-running the batch pipeline for real.** Retrying the actual
+~40-minute Spark chain twice to test a retry loop would cost 80 minutes to check
+behaviour that does not depend on Spark at all. `tests/test_retrain.py` checks
+`preflight()` against a missing, a present-but-empty, and a valid `JAVA_HOME`; checks
+`ensure_batch_pipeline` skips an existing output without invoking anything, and
+retries exactly `MAX_STAGE_ATTEMPTS` times against a deliberately-nonexistent module
+before raising; and checks `promote_challenger` promotes with no champion on record,
+declines a challenger that does not beat one, promotes one that does, and leaves the
+champion directory untouched on a decline — all against throwaway `tmp_path`
+champion/models directories, never the developer's real `data/models/champion`. The
+real Stage 1-4 modules and Lahari's `run()` were already exercised end to end in
+D1-D2; this entry hardens and tests the orchestration around them, not the stages
+themselves.
+
+Evidence: `src/automation/retrain.py` (`preflight`, `MAX_STAGE_ATTEMPTS`),
+`tests/test_retrain.py`.
+
+---
+
+## D-031 · The stream event schema is D-020's fact/query design, replayed as JSON — `DECIDED (proposed; Krishna and Lahari to confirm at the Week 5 sync)`
+**Week 4 · Mounika · D5**
+
+The execution plan's D5 line asks for a stream event JSON schema, agreed with both
+teammates, ahead of Week 5's Kafka producer. The design question that actually
+matters is not field names — it is *what a Kafka producer replaying `trips_v1`
+should emit*, and D-020 already answered a version of that question for the batch
+feature pipeline.
+
+**Decided: one topic, two event kinds — `query` and `fact` — the same two D-020
+already built.** A `query` event fires at a leg's `trip_creation_time` and carries
+exactly what the champion model predicts on (`route_type`, `planned_min`,
+`planned_km`, `created_hour`/`created_dayofweek`/`created_is_weekend`). A `fact`
+event fires at `od_end_time` and carries exactly the outcome columns D-020's
+`BANNED_FEATURES` boundary already forbids a query from seeing (`gap_min`,
+`log_gap_ratio`, `is_delayed`). Week 5's Structured Streaming job joins incoming
+`query` events against a broadcast table built from `fact` events the same way Stage
+4 already joins a leg's query against every fact that landed before it — the
+streaming layer answers to the same contract the batch layer already proved leak-free
+(P-25), rather than a second, independently-invented event shape for the same idea.
+
+**Why this is not scope creep from D5's actual ask.** A schema with no connection to
+how the model was trained is a schema someone will get wrong the first time the
+streaming join is written — the two would drift the way `CITY_ALIASES` and
+`india_city_coords.csv` already drifted once (P-23) before either list was reasoned
+about to be different from the other. Reusing D-020's split by construction, not by
+convention, is what keeps that from happening a second time.
+
+**Verified against real data, not asserted on paper.** `src/streaming/schema.py
+--examples` reads real rows from `features_v1`, derives each fact event's
+`event_time` as `od_start_time + actual_time` (`actual_time = gap_min + planned_min`,
+`src.ml.baselines`'s own `TARGET` definition) rather than approximating it, and
+validates every generated event against `docs/schemas/stream_event.schema.json`
+before writing it. Hand-checked one example end to end: `planned_min=46.0`,
+`gap_min=101.0` → `actual_time=147` min → `od_start_time 00:02:09` + 147 min =
+`event_time 02:29:09`, exactly what the module computed; `is_delayed=1` matches
+D-003's `147 > 2.0 * 46` and `log_gap_ratio` matches `log(147/46)` to the printed
+precision.
+
+**Status: proposed, not confirmed.** Unlike D-021 (Krishna's seeded-error taxonomy,
+confirmed by Lahari at the Week 3 sync and recorded as such), this entry has not yet
+had that conversation — there is no Week 5 producer or streaming job built against it
+yet for a confirmation to be about. Carried into Week 5 as the schema Krishna's
+Kafka-adjacent work and Lahari's stream-equals-batch correctness test (her own
+declared Week 5 task) both need to agree with before either is built against it.
+
+Evidence: `docs/schemas/stream_event.schema.json`, `src/streaming/schema.py`,
+`tests/test_stream_schema.py`, `demo/sample_events/trip_replay_sample.json`.
+
+---
+
+## D-032 · The Document Intelligence Agent's free-tier LLM quota is a hard daily cap, and partial coverage is reported as such — `DECIDED`
+**Week 4 · Krishna**
+
+The Week 2 sync's open-items table flagged this in the abstract: "second LLM key in
+`.env` so `with_fallback` has somewhere to fall — blocks Week 7 eval runs." It arrived
+three weeks early. A 40-document smoke run (20 consignments) against
+`gemini-3.6-flash` succeeded on 22 documents and failed the remaining 18 on
+`429 RESOURCE_EXHAUSTED`, quoting the free tier's own limit:
+`GenerateRequestsPerDayPerProjectPerModel-FreeTier`, `quotaValue: 20`. This is a
+**daily** cap per project per model, not a per-minute rate limit `with_fallback`'s
+retry logic could wait out — the run's own escalating `retryDelay`s (14s, 36s, 58s...)
+show the client backing off correctly against a ceiling that does not lift again until
+tomorrow.
+
+**Decided: the agent's own error-handling already does the right thing, and stays as
+built rather than gaining retry-until-tomorrow logic.** `run_corpus`'s per-document
+`try/except` (not one big transaction) means a quota wall does not corrupt or abort
+the run — it produces exactly what it produced: 22 real predictions and 18 documents
+each recording *why* they have none, in the same predictions file. A `RESOURCE_EXHAUSTED`
+entry and a `json.JSONDecodeError` entry both look like `predicted_fields: null`, which
+is correct — both are "the agent could not extract this one," and Lahari's D5 harness
+needs exactly that shape regardless of cause.
+
+**Consequence for D5 and beyond.** The evaluation harness must score whatever the
+predictions file actually contains and report **coverage** (documents attempted vs.
+documents that produced a prediction) beside every accuracy number — the same
+"majority-class rate reported beside every classifier metric, permanently" instinct
+D-003 established, applied to a different kind of denominator problem. A field-level
+accuracy computed only over the 22 that succeeded is not wrong, but it is silent about
+being computed over 55% of the intended sample unless the harness says so. Running the
+full 120-document corpus in one day is not currently possible on the configured free
+tier; it either wants a second provider key (`ANTHROPIC_API_KEY`, the Week 2 open item,
+finally forced rather than merely anticipated) or spreading a full-corpus run across
+several days.
+
+**What this is not.** Not a document-extraction bug, and not evidence the agent
+performs badly — of the 22 attempted with a live quota, extraction succeeded on all of
+them (D3-D4's prompt-iteration numbers are the ones that will say how *well*). This is
+a provider-capacity ceiling, the same class of thing D-007 built `with_fallback` to
+survive and the same class of thing P-35 already found once this week (a pinned model
+name going stale) — free-tier LLM access is not a stable foundation to size an
+evaluation corpus against, and the project's numbers have to say so rather than quietly
+running smaller than planned.
+
+Evidence: `benchmarks/raw/w4_doc_agent_predictions.json` (22 ok, 18 `RESOURCE_EXHAUSTED`
+of 40 attempted), `docs/problems.md` P-36.
+
+---
+
+## D-033 · Prompt v2: `document_number` fixed from 6% to 100% correct, with one honest trade-off exposed by the seeded-error corpus — `DECIDED`
+**Week 4 · Krishna · D3-D4**
+
+D1-D2's 22 successful extractions were read by eye against ground truth (`docs/W4_krishna_doc_agent.md` §3) and one field stood out: `document_number` was transcribed as raw OCR noise (`\NVOO00001`, `LROOOOOO6`) rather than resolved to the fixed `LR`/`INV` + 7-digit shape `doc_extraction/v1.md`'s own rule 6 already applies to centre codes but never extended to this field. `doc_extraction/v2.md` extends the same shape-based correction to `document_number` and a facility-name suffix code, adds `|` to the OCR-confusable set (this pipeline's own rendering of a misread `I`/`l`), and adds lost-decimal-point handling for `weight_kg`/amount fields — each tied to a concrete failure observed in D1-D2's output, not a speculative rewrite.
+
+**Measured, on the 16 documents both prompt versions actually extracted** (a fresh v2 batch capped by the same daily quota as D-032 — 8 consignments, seq 1-8, both document types):
+
+| Field | v1 correct | v2 correct |
+|---|---|---|
+| `document_number` | 1/16 | **16/16** |
+| `origin_centre_code` | 14/16 | 16/16 |
+| `origin_facility` | 8/16 | 10/16 |
+| `destination_centre_code` | 16/16 | 15/16 |
+| Full document, every field correct | 0/16 | **5/16** |
+
+**The one apparent regression is not a regression — the seeded-error corpus caught a genuine, honest trade-off in v2's own design.** The single `destination_centre_code` miss is `SHP-000008`, manifest-flagged `error_types: ocr_confusable_corruption` (D-021's seeded taxonomy). `seed_errors.py` corrupts a character on the shared `ConsignmentRecord` *before* either the rendered document or the ground-truth label is generated from it (D-021 §1: one record backs both), so for this record the label itself legitimately reads `INDI40118AAA` — the corrupted value is what both the printed document and the ground truth agree really is there. v1's literal transcription matched it by coincidence, having no correction logic to second-guess. v2's shape-based rule 6/7 cannot distinguish "OCR degraded a correctly-printed character" from "the document was deliberately printed with a confusable-but-wrong one" — it resolves toward the fixed shape either way, correctly on the first case and incorrectly on the second. **This is real and stays in the table rather than being explained away**: a prompt that gets better at recovering OCR noise is, by the same mechanism, worse at faithfully reporting a genuine printed error the way rule 2 asks it to. At n=1 for this seeded kind in this sample, it is a documented trade-off, not yet a rate — the same "single-digit-count kind's number is a lead, not a result" reading D-021 already gives `corridor_mismatch`'s 2-of-120 count.
+
+**Not the formal evaluation.** This comparison is Krishna's own qualitative check to decide whether v2 was worth keeping, scored by eye against 16 documents' labels — not Lahari's D5 harness, which is the authoritative, arms-length number (execution plan: "keeps builder and judge separate"). `benchmarks/agent_evaluation.md` is left for her harness to populate; this entry's table is provisional and may not match her numbers exactly once she scores the full corpus.
+
+Evidence: `src/agents/prompts/doc_extraction/v2.md`, `benchmarks/raw/w4_doc_agent_predictions.json` (v1),
+`w4_doc_agent_predictions_v2.json` (v2), `data/documents/w3_00008_bol.json`,
+`benchmarks/raw/w3_doc_corpus_manifest.csv`.
+
+---
+
+## D-034 · The what-if predictor is the one dashboard page that starts a SparkSession, and it says so — `DECIDED`
+**Week 4 · Krishna · D5**
+
+D-009 decided the dashboard reads only cached artefacts and never starts Spark, so
+the demo stays responsive. This page cannot honour that literally: the champion is a
+real MLlib `PipelineModel` (D-026), and `PipelineModel.transform()` has no path that
+does not go through a `SparkSession` — there is no cached CSV of "every possible
+what-if input's prediction" to read instead.
+
+**Decided: one narrow, named exception, not a quiet one.** `src/ml/predict.py`
+starts Spark only inside `predict_delay()`, only when the page's "Predict" button is
+actually pressed — every other page, and this page before that click, stays exactly
+as Spark-free as D-009 asks. The page's own caption says so in plain language before
+a user ever clicks, rather than the exception being discoverable only by reading the
+code.
+
+**The corridor picker and the OSRM defaults still come from a cached CSV**
+(`w2_corridor_audit.csv`, already on every other page) — Spark is not needed to
+choose a corridor or default its planned time/distance, only to run the model
+afterward. This keeps the exception as narrow as the thing that actually needs it.
+
+**Corridor and hub history is looked up fresh from `features_v1` inside the same
+Spark session, not duplicated into a second cached file.** Two lists holding one
+truth already cost this project once (P-23); reading Stage 4's own numbers directly,
+every time the page runs, is the version of that lesson that does not require
+remembering to keep a duplicate in sync. The lookup takes each key's single *most
+recent* known snapshot regardless of the departure date chosen in the form — a
+documented simplification of D-020's live as-of join, not a silent one, since
+building a true as-of join for one form submission would re-derive Stage 4's whole
+join a second time for a page whose job is illustrating the model, not re-litigating
+D-020's leakage guarantee. Cold corridors/hubs (D-023's zero-fill-plus-flag policy,
+reused rather than reimplemented) are surfaced in the UI rather than silently
+predicted through.
+
+**Verified against real data, both paths.** A known bottleneck corridor
+(`IND208012AAA>IND209304AAA`, the network's #1 worst per the Week 2 audit) predicts a
+large gap and a delay call the audit's own history makes plausible; a corridor and
+both hub codes that do not exist anywhere in `features_v1` correctly report
+`cold_flags` all `True` and still produce a sane, non-crashing prediction. The
+Spark-free half (`build_result`'s threshold arithmetic) is covered by
+`tests/test_predict.py`; the Spark-dependent half is exercised interactively (the
+same reasoning D-030 on Mounika's branch gives for not re-running a real batch job
+inside a pytest suite) since it needs a real champion model on disk that CI does not
+have.
+
+Evidence: `src/ml/predict.py`, `src/dashboard/app.py` (Delay predictor page),
+`tests/test_predict.py`.
