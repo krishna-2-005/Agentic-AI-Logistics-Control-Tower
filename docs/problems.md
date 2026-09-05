@@ -518,6 +518,61 @@ checking a number, never by reading the file.
   downstream read the (nonexistent) output of the crashed run. Worth carrying forward:
   a reported success is only as trustworthy as what it is actually measuring.
 
+### P-32 · Calling Lahari's entry point mid-week needs her branch's file, not just her function signature
+**Week 4 · Mounika · resolved (a testing-process finding, not a code defect)**
+
+- **Symptom.** Validating `src.automation.retrain` locally (before either branch had
+  merged to `dev`) by temporarily placing a copy of `src/ml/models.py` on this branch
+  ran the full Random Forest + GBT fit successfully, then crashed on the very last
+  step: `ValueError: Unknown section 'beat-osrm'. Add it to SECTION_ORDER...` from
+  `src/common/docs.py`.
+- **Cause.** `models.run()` calls `docs.write_section(..., "beat-osrm", ...)`, and
+  `"beat-osrm"` was added to the shared `SECTION_ORDER` list as part of *Lahari's*
+  commit — which, on this branch, does not exist, because only her `models.py` was
+  copied over for the test, not the one-line `docs.py` change that goes with it. A
+  genuine `git merge` would never hit this: both files land on `dev` together when
+  her PR merges. This is an artefact of validating one branch's entry point against
+  another still-unmerged branch's code, on one machine, before the week's gate.
+- **Fix.** Not a change to either branch. The already-computed `w4_model_report.json`
+  (written to disk *before* the crashed `docs.write_section` call — model artefacts
+  and CSVs are saved earlier in `run()`) was replayed through `promote_challenger()`
+  directly, rather than re-running the ~40-minute training a second time. Champion
+  promotion and the history log both completed correctly against that report.
+- **Cost.** ~5 minutes to read the traceback and recognise it as a local-testing
+  artefact rather than a bug in either branch's committed code. Worth carrying to
+  Week 5 and beyond: an entry point that writes to a *shared* file
+  (`src/common/docs.py`'s `SECTION_ORDER`) couples whoever calls it to whoever last
+  edited that shared list, in a way a function signature alone does not reveal.
+
+### P-33 · A stale `JAVA_HOME` from a different machine, masked by variable precedence
+**Week 4 · Mounika · resolved, found while writing D-030's preflight check**
+
+- **Symptom.** Writing `retrain.preflight()` (D-030) and testing it against a
+  deliberately broken `JAVA_HOME` turned up a second, real problem: popping
+  `JAVA_HOME` from the process environment and letting `config.py`'s `load_dotenv()`
+  fill the gap surfaced `JAVA_HOME=C:\Users\HP\jdks\jdk-17.0.20+8` — a path that does
+  not exist on this machine at all.
+- **Cause.** This machine's local `.env` (gitignored, never shared, never the same
+  file across the three members' machines) still carried the *other* machine's JDK
+  path — `spark-run-environment`'s own note that "the earlier Week 1–2 work was built
+  on a different machine (`C:\Users\HP\...`)" was about the Parquet caches, but the
+  same stale value had also been sitting unnoticed in `.env` since around then. It
+  never caused a visible failure because the correct value already sits in this
+  machine's User-scope environment variable, set outside the repo, and
+  `python-dotenv`'s `load_dotenv()` does not override a variable that already exists
+  in `os.environ` — so every real run of every stage this whole project has used the
+  right value, by precedence, while the wrong one sat one layer underneath it.
+- **Fix.** Corrected `.env`'s `JAVA_HOME` to this machine's real path. Not committed —
+  `.env` is gitignored by design (GIT_RULES §7) — so this is a local fix, not a repo
+  change, and each of the three members' own `.env` needs checking on its own merits
+  rather than assumed correct because Spark has always worked so far.
+- **Cost.** ~5 minutes once `preflight()`'s own test surfaced it. **The general point
+  the fix doesn't cover:** environment-variable precedence means a wrong value in one
+  layer can sit silently underneath a right value in another for months, invisible
+  until something removes the layer that was covering for it — the same shape of trap
+  as P-06's Parquet cache built on a machine that no longer existed, just one layer
+  further down the stack.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27

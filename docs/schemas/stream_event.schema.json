@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-ai-logistics-control-tower/schemas/stream_event.schema.json",
+  "title": "Kafka trip-replay event (Week 5 producer -> Structured Streaming)",
+  "description": "Execution plan W4 D5 (Mounika, proposed -- Krishna and Lahari to confirm at the Week 5 sync). Two kinds of event on one topic, mirroring the fact/query event-stream design D-020 already built for the batch feature pipeline (src/pipeline/features.py) rather than inventing a second shape for the same idea: a 'query' event is a leg being created (what the champion model predicts on), a 'fact' event is a leg finishing (what feeds the broadcast history the next query needs). Replaying both kinds of the same historical events Stage 2 (Mounika) already reconstructed keeps the streaming layer and the batch layer answering to the same D-020 contract instead of two independently-invented ones.",
+  "type": "object",
+  "required": ["event_id", "kind", "event_time", "corridor_id", "source_center", "destination_center", "trip_uuid", "leg_id"],
+  "properties": {
+    "event_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "One per emitted Kafka message. Consumer-side idempotency key -- a replayed or redelivered message must not double-count into the broadcast history or double-fire an alert (the same idempotency reasoning D-017 already gives the mock TMS's external_ref)."
+    },
+    "kind": {
+      "enum": ["query", "fact"],
+      "description": "query: a leg is created, at trip_creation_time -- carries what the model predicts on. fact: a leg finishes, at od_end_time -- carries the outcome that becomes usable history for every query after it. Same two kinds, same ordering rule (facts sort before queries at equal event_time) as D-020's as_of_history."
+    },
+    "event_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The REAL historical timestamp being replayed (trip_creation_time for a query, od_end_time for a fact) -- not the wall-clock time the producer actually sent the message, which time-compresses the ~26-day observation window. Kafka's own message timestamp is the wall-clock send time; this field is what streaming's as-of join keys off, exactly as Stage 4 keys off it in batch."
+    },
+    "corridor_id": {"type": "string", "description": "D-002's key: source_center + '>' + destination_center."},
+    "source_center": {"type": "string", "pattern": "^IND"},
+    "destination_center": {"type": "string", "pattern": "^IND"},
+    "trip_uuid": {"type": "string"},
+    "leg_id": {
+      "type": "string",
+      "description": "D-020's key: trip_uuid|od_start_time|corridor_id. A trip can repeat a corridor on a different day, so the key needs the departure time to stay unique -- reused here rather than redefined, the same reasoning D-026 (Lahari, Week 4) gives for reusing time_split rather than reimplementing it."
+    },
+
+    "route_type": {"enum": ["FTL", "Carting"], "description": "query only."},
+    "planned_min": {"type": "number", "minimum": 0, "description": "query only -- OSRM's planned duration."},
+    "planned_km": {"type": "number", "minimum": 0, "description": "query only -- OSRM's planned distance."},
+    "created_hour": {"type": "integer", "minimum": 0, "maximum": 23, "description": "query only."},
+    "created_dayofweek": {"type": "integer", "minimum": 0, "maximum": 6, "description": "query only."},
+    "created_is_weekend": {"type": "integer", "enum": [0, 1], "description": "query only."},
+
+    "gap_min": {"type": "number", "description": "fact only -- actual_time - planned_min, D-020's TARGETS."},
+    "log_gap_ratio": {"type": "number", "description": "fact only."},
+    "is_delayed": {"type": "integer", "enum": [0, 1], "description": "fact only -- D-003's label, gap_min > (DELAY_THRESHOLD - 1) * planned_min."}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"kind": {"const": "query"}}},
+      "then": {"required": ["route_type", "planned_min", "planned_km", "created_hour", "created_dayofweek", "created_is_weekend"]}
+    },
+    {
+      "if": {"properties": {"kind": {"const": "fact"}}},
+      "then": {"required": ["gap_min", "log_gap_ratio", "is_delayed"]}
+    }
+  ],
+  "additionalProperties": false
+}

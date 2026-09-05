@@ -31,6 +31,7 @@ scikit-learn>=1.5           # sanity baselines + metric helpers alongside MLlib
 
 # ── Streaming (Mounika, Week 5) ──────────────────────────────────────────────
 kafka-python>=2.0.2
+jsonschema>=4.20    # validates stream events against docs/schemas/stream_event.schema.json (W4 D5)
 
 # ── Mock TMS (Mounika, Week 2) ───────────────────────────────────────────────
 fastapi>=0.111

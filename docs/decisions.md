@@ -985,3 +985,157 @@ touches that module, not implied to have been checked.
 Evidence: `src/ml/doc_eval.py`, `tests/test_doc_eval.py`,
 `benchmarks/raw/w4_doc_eval_field_accuracy.csv`, `w4_doc_eval_summary.json`,
 `benchmarks/agent_evaluation.md`.
+
+---
+
+## D-029 · Auto-retraining skips a cached stage rather than always rebuilding, and champion swap is a strict MAE improvement — `DECIDED`
+**Week 4 · Mounika**
+
+`src.automation.retrain` (execution plan W4 D1-D2) is the one command that runs
+clean → reconstruct → hubs → features → train → evaluate → champion/challenger swap.
+Two design calls in it are load-bearing enough to record.
+
+**A stage runs only if its frozen output does not already exist.** D-016 versions
+`clean_v1` / `trips_v1` / `hubs_v1` / `features_v1` precisely so a schema change adds a
+new version rather than silently repointing one — an "auto-retraining" script that
+rebuilds all four Spark caches from raw on every invocation would defeat that: it would
+turn a scheduled or triggered retrain into a scheduled full reprocessing job, at whatever
+cost Stage 1-4 take on 145K raw rows, for no reason on a day nothing upstream changed.
+`--force-rebuild` is the explicit escape hatch for "the raw data actually changed, start
+over" — the default is not.
+
+**Each pipeline stage runs as its own subprocess, not an in-process import.** Every
+stage module (`src.pipeline.clean`, `.reconstruct`, `.hubs`, `.features`) opens and
+stops its own `SparkSession`. Importing four of them into one Python process and
+calling their `main()`s in sequence would mean reasoning about whether a second
+`get_spark()` call inside the same process returns the first stage's still-open
+session or conflicts with it — `src.common.spark.get_spark()` is a module-level
+singleton via `getOrCreate()`, so it would. `subprocess.run([sys.executable, "-m",
+module])` gives every stage a clean JVM and a clean exit, the same isolation the stages
+already have when run by hand from the command line.
+
+**Champion swap is `challenger_mae < champion_mae`, nothing softer.** The challenger
+is whichever of Random Forest/GBT `src.ml.models.run()` (Lahari's entry point, not
+reimplemented here) already picked as its own winner on test MAE (D-024). No champion
+on record promotes automatically — there is nothing to lose to. Otherwise the swap
+requires a strictly better number, not a tie, not a percentage improvement, not human
+approval: an unattended loop that requires a person to approve every promotion is not
+autonomous, and a threshold looser than "better" risks a slow ratchet toward a worse
+model across many small, technically-passing swaps. The promotion still leaves a
+paper trail either way — `w4_retrain_history.jsonl` gets a line whether or not the
+challenger won, so "the loop ran and declined to promote" is as visible as "the loop
+ran and promoted."
+
+**What the champion actually is, on disk.** `MODELS_DIR / "champion"` is a direct copy
+of whichever `{name}_v1` MLlib `PipelineModel` directory won — not a JSON pointer to
+it. This matches an existing convention already written into
+`src/dashboard/app.py`'s artefact-status check
+(`(config.MODELS_DIR / "champion").exists()`), built before this decision, for the
+not-yet-built what-if predictor page (Krishna, D5) to load directly with
+`PipelineModel.load()`. `champion_metrics.json` sits alongside it for this script's own
+comparison logic and for a human to read without deserialising a Spark model.
+
+Evidence: `src/automation/retrain.py`, `benchmarks/raw/w4_retrain_history.jsonl`,
+`data/models/champion_metrics.json`.
+
+---
+
+## D-030 · Pipeline hardening: a preflight check before Spark, a bounded retry per stage — `DECIDED`
+**Week 4 · Mounika · D3-D4**
+
+D1-D2 already made `retrain.py` skip a cached stage and isolate every stage in its
+own subprocess (D-029). D3-D4's "pipeline hardening" asks what happens when a stage
+*fails*, which D1-D2 left as an immediate, un-retried `RuntimeError`.
+
+**A preflight check runs before any subprocess, not after the first one fails.**
+`preflight()` checks the same thing `check_env.check_java` checks — `JAVA_HOME` set
+and pointing at a real JDK — and raises one clear message naming the cause if it does
+not. **Found while testing this, not by inspection:** this machine's own local `.env`
+(gitignored, per-machine) still carried `JAVA_HOME=C:\Users\HP\jdks\...` — the *other*
+machine's path from `spark-run-environment`'s own account of Week 1-2's history —
+masked only because the correct value already sits in the User-scope environment
+variable and `load_dotenv()` does not override a variable that already exists. Popping
+`JAVA_HOME` from `os.environ` before calling `preflight()` (simulating a shell where
+that precedence does not hold) surfaced the stale value immediately, and it was
+fixed on this machine's `.env` as a result — a landmine this decision's own testing
+found rather than one that was ever hit for real. Without the preflight check, that
+same stale value would have made all four pipeline stages fail with an identical,
+unhelpful Spark bootstrap traceback instead of one line naming `JAVA_HOME`. Logged as
+P-33.
+
+**Each stage gets `MAX_STAGE_ATTEMPTS = 2` with a fixed backoff, not an unbounded
+retry loop.** This project has one concrete transient failure on record — P-30's
+driver-heap exhaustion during Random Forest's CV search, resolved partly by
+sequential fitting and partly by the observation that memory pressure on this
+machine varies with what else is open. A bounded retry gives a stage one more chance
+after a transient resource squeeze without turning a genuinely broken stage (bad
+code, bad input) into a long, silent hang — it will simply fail the same way twice
+and raise, exactly as D1-D2's version did on the first attempt.
+
+**Verified without re-running the batch pipeline for real.** Retrying the actual
+~40-minute Spark chain twice to test a retry loop would cost 80 minutes to check
+behaviour that does not depend on Spark at all. `tests/test_retrain.py` checks
+`preflight()` against a missing, a present-but-empty, and a valid `JAVA_HOME`; checks
+`ensure_batch_pipeline` skips an existing output without invoking anything, and
+retries exactly `MAX_STAGE_ATTEMPTS` times against a deliberately-nonexistent module
+before raising; and checks `promote_challenger` promotes with no champion on record,
+declines a challenger that does not beat one, promotes one that does, and leaves the
+champion directory untouched on a decline — all against throwaway `tmp_path`
+champion/models directories, never the developer's real `data/models/champion`. The
+real Stage 1-4 modules and Lahari's `run()` were already exercised end to end in
+D1-D2; this entry hardens and tests the orchestration around them, not the stages
+themselves.
+
+Evidence: `src/automation/retrain.py` (`preflight`, `MAX_STAGE_ATTEMPTS`),
+`tests/test_retrain.py`.
+
+---
+
+## D-031 · The stream event schema is D-020's fact/query design, replayed as JSON — `DECIDED (proposed; Krishna and Lahari to confirm at the Week 5 sync)`
+**Week 4 · Mounika · D5**
+
+The execution plan's D5 line asks for a stream event JSON schema, agreed with both
+teammates, ahead of Week 5's Kafka producer. The design question that actually
+matters is not field names — it is *what a Kafka producer replaying `trips_v1`
+should emit*, and D-020 already answered a version of that question for the batch
+feature pipeline.
+
+**Decided: one topic, two event kinds — `query` and `fact` — the same two D-020
+already built.** A `query` event fires at a leg's `trip_creation_time` and carries
+exactly what the champion model predicts on (`route_type`, `planned_min`,
+`planned_km`, `created_hour`/`created_dayofweek`/`created_is_weekend`). A `fact`
+event fires at `od_end_time` and carries exactly the outcome columns D-020's
+`BANNED_FEATURES` boundary already forbids a query from seeing (`gap_min`,
+`log_gap_ratio`, `is_delayed`). Week 5's Structured Streaming job joins incoming
+`query` events against a broadcast table built from `fact` events the same way Stage
+4 already joins a leg's query against every fact that landed before it — the
+streaming layer answers to the same contract the batch layer already proved leak-free
+(P-25), rather than a second, independently-invented event shape for the same idea.
+
+**Why this is not scope creep from D5's actual ask.** A schema with no connection to
+how the model was trained is a schema someone will get wrong the first time the
+streaming join is written — the two would drift the way `CITY_ALIASES` and
+`india_city_coords.csv` already drifted once (P-23) before either list was reasoned
+about to be different from the other. Reusing D-020's split by construction, not by
+convention, is what keeps that from happening a second time.
+
+**Verified against real data, not asserted on paper.** `src/streaming/schema.py
+--examples` reads real rows from `features_v1`, derives each fact event's
+`event_time` as `od_start_time + actual_time` (`actual_time = gap_min + planned_min`,
+`src.ml.baselines`'s own `TARGET` definition) rather than approximating it, and
+validates every generated event against `docs/schemas/stream_event.schema.json`
+before writing it. Hand-checked one example end to end: `planned_min=46.0`,
+`gap_min=101.0` → `actual_time=147` min → `od_start_time 00:02:09` + 147 min =
+`event_time 02:29:09`, exactly what the module computed; `is_delayed=1` matches
+D-003's `147 > 2.0 * 46` and `log_gap_ratio` matches `log(147/46)` to the printed
+precision.
+
+**Status: proposed, not confirmed.** Unlike D-021 (Krishna's seeded-error taxonomy,
+confirmed by Lahari at the Week 3 sync and recorded as such), this entry has not yet
+had that conversation — there is no Week 5 producer or streaming job built against it
+yet for a confirmation to be about. Carried into Week 5 as the schema Krishna's
+Kafka-adjacent work and Lahari's stream-equals-batch correctness test (her own
+declared Week 5 task) both need to agree with before either is built against it.
+
+Evidence: `docs/schemas/stream_event.schema.json`, `src/streaming/schema.py`,
+`tests/test_stream_schema.py`, `demo/sample_events/trip_replay_sample.json`.
