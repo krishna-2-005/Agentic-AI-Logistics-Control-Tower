@@ -951,3 +951,54 @@ themselves.
 
 Evidence: `src/automation/retrain.py` (`preflight`, `MAX_STAGE_ATTEMPTS`),
 `tests/test_retrain.py`.
+
+---
+
+## D-028 · The stream event schema is D-020's fact/query design, replayed as JSON — `DECIDED (proposed; Krishna and Lahari to confirm at the Week 5 sync)`
+**Week 4 · Mounika · D5**
+
+The execution plan's D5 line asks for a stream event JSON schema, agreed with both
+teammates, ahead of Week 5's Kafka producer. The design question that actually
+matters is not field names — it is *what a Kafka producer replaying `trips_v1`
+should emit*, and D-020 already answered a version of that question for the batch
+feature pipeline.
+
+**Decided: one topic, two event kinds — `query` and `fact` — the same two D-020
+already built.** A `query` event fires at a leg's `trip_creation_time` and carries
+exactly what the champion model predicts on (`route_type`, `planned_min`,
+`planned_km`, `created_hour`/`created_dayofweek`/`created_is_weekend`). A `fact`
+event fires at `od_end_time` and carries exactly the outcome columns D-020's
+`BANNED_FEATURES` boundary already forbids a query from seeing (`gap_min`,
+`log_gap_ratio`, `is_delayed`). Week 5's Structured Streaming job joins incoming
+`query` events against a broadcast table built from `fact` events the same way Stage
+4 already joins a leg's query against every fact that landed before it — the
+streaming layer answers to the same contract the batch layer already proved leak-free
+(P-25), rather than a second, independently-invented event shape for the same idea.
+
+**Why this is not scope creep from D5's actual ask.** A schema with no connection to
+how the model was trained is a schema someone will get wrong the first time the
+streaming join is written — the two would drift the way `CITY_ALIASES` and
+`india_city_coords.csv` already drifted once (P-23) before either list was reasoned
+about to be different from the other. Reusing D-020's split by construction, not by
+convention, is what keeps that from happening a second time.
+
+**Verified against real data, not asserted on paper.** `src/streaming/schema.py
+--examples` reads real rows from `features_v1`, derives each fact event's
+`event_time` as `od_start_time + actual_time` (`actual_time = gap_min + planned_min`,
+`src.ml.baselines`'s own `TARGET` definition) rather than approximating it, and
+validates every generated event against `docs/schemas/stream_event.schema.json`
+before writing it. Hand-checked one example end to end: `planned_min=46.0`,
+`gap_min=101.0` → `actual_time=147` min → `od_start_time 00:02:09` + 147 min =
+`event_time 02:29:09`, exactly what the module computed; `is_delayed=1` matches
+D-003's `147 > 2.0 * 46` and `log_gap_ratio` matches `log(147/46)` to the printed
+precision.
+
+**Status: proposed, not confirmed.** Unlike D-021 (Krishna's seeded-error taxonomy,
+confirmed by Lahari at the Week 3 sync and recorded as such), this entry has not yet
+had that conversation — there is no Week 5 producer or streaming job built against it
+yet for a confirmation to be about. Carried into Week 5 as the schema Krishna's
+Kafka-adjacent work and Lahari's stream-equals-batch correctness test (her own
+declared Week 5 task) both need to agree with before either is built against it.
+
+Evidence: `docs/schemas/stream_event.schema.json`, `src/streaming/schema.py`,
+`tests/test_stream_schema.py`, `demo/sample_events/trip_replay_sample.json`.

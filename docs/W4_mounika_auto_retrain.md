@@ -106,22 +106,38 @@ champion on record, declining a worse challenger without touching the champion
 directory, and promoting a better one — all against throwaway `tmp_path` directories,
 never `data/models/champion` itself. D-027 has the full account.
 
-## First real run
+## D5 · The stream event schema is D-020's fact/query design, replayed as JSON
 
-The loop's first run trained both models via Lahari's `run()` (3-fold CV, the same
-grid `docs/W4_lahari_beat_osrm.md` reports), named **Random Forest** the challenger at
-**36.89 min test MAE** (against GBT's 38.28), and promoted it — there was no champion
-on record yet, so nothing had to be beaten. `data/models/champion` now holds that
-`PipelineModel`; `data/models/champion_metrics.json` and
-`benchmarks/raw/w4_retrain_history.jsonl` both carry the same number, so a second run
-that trains a worse model has something concrete to fail to beat.
+The execution plan's D5 line asks for a schema, agreed with Krishna and Lahari, for
+Week 5's Kafka producer. Rather than invent field names from scratch, one topic
+carries two event kinds that are already this project's own design:
 
-One real snag surfaced validating this before either branch had merged: replaying
-Lahari's entry point locally hit a shared-file coupling (`docs/problems.md` P-30) —
-resolved without re-running the ~40-minute training, by promoting from the
-already-written `w4_model_report.json` directly.
+- **`query`** fires at a leg's `trip_creation_time`, carrying exactly what the
+  champion model predicts on (`planned_min`, `planned_km`, `route_type`,
+  `created_hour`/`created_dayofweek`/`created_is_weekend`).
+- **`fact`** fires at `od_end_time`, carrying exactly the outcome columns D-020's
+  `BANNED_FEATURES` boundary already forbids a query from seeing (`gap_min`,
+  `log_gap_ratio`, `is_delayed`).
+
+This is the same split `src/pipeline/features.py`'s `as_of_history` already uses for
+the batch feature pipeline — Week 5's streaming join reads as the live version of a
+join Stage 4 already proved leak-free, rather than a second event shape someone has
+to reason about being equivalent to the first.
+
+`docs/schemas/stream_event.schema.json` is the formal JSON Schema.
+`src/streaming/schema.py --examples 5` reads real rows from `features_v1`, derives
+each fact's `event_time` as `od_start_time + actual_time` (not approximated —
+`actual_time = gap_min + planned_min`, `src.ml.baselines`'s own definition), and
+validates every event against the schema before writing
+`demo/sample_events/trip_replay_sample.json`. Hand-checked one event end to end:
+`planned_min=46.0`, `gap_min=101.0` → `actual_time=147` min →
+`00:02:09 + 147 min = 02:29:09`, exactly what the module produced.
+
+**Status: proposed, not yet confirmed** (D-028) — there is no Week 5 producer or
+streaming job built against it yet for a real cross-check to be about. Carried into
+Week 5 as the schema both Krishna's producer-adjacent work and Lahari's declared
+stream-equals-batch correctness test need to agree on before either is built.
 
 ## What is not in this section yet
 
-- **Stream event JSON schema (D5)**, agreed with Krishna and Lahari for Week 5's Kafka
-  producer.
+Nothing — D1-D2, D3-D4, and D5 are all in this file now.
