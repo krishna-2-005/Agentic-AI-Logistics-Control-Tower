@@ -669,9 +669,9 @@ elif page == "Delay predictor":
             "**This is the one page that starts a SparkSession** — every other page "
             "reads cached artefacts only (D-009) — because the champion is a real "
             "MLlib `PipelineModel` and `.transform()` needs Spark to run at all "
-            "(D-028). Corridor history is each key's most recent known snapshot in "
+            "(D-034). Corridor history is each key's most recent known snapshot in "
             "`features_v1`, not a live as-of join for the exact date chosen below — "
-            "see D-028 for what that simplifies away."
+            "see D-034 for what that simplifies away."
         )
 
         ranked = audit_for_predictor.sort_values("n_legs", ascending=False).reset_index(drop=True)

@@ -70,7 +70,7 @@ def _response_text(response: object) -> str:
     """Flatten a chat model's `.content` to plain text.
 
     Most providers return a plain string. Some (Gemini among them, as of the
-    `gemini-3.6-flash` pin -- P-32) return a list of content-block dicts instead, each
+    `gemini-3.6-flash` pin -- P-35) return a list of content-block dicts instead, each
     carrying its text under a `"text"` key. Handling both here, once, is the same
     reasoning as D-007's single LLM construction site: every agent that calls
     `get_llm()` gets this for free rather than each writing its own unwrap.

@@ -131,7 +131,7 @@ Invoke-WebRequest "https://github.com/tesseract-ocr/tessdata_fast/raw/main/eng.t
 
 The base installer does not bundle language data — it fetches it during setup via an
 NSIS plugin, which extraction skips, hence the separate `eng.traineddata` download.
-Needs 7-Zip; reopen the terminal afterwards. See `docs/problems.md` P-30.
+Needs 7-Zip; reopen the terminal afterwards. See `docs/problems.md` P-34.
 
 ### 1. Setup
 

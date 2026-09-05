@@ -469,7 +469,7 @@ checking a number, never by reading the file.
   reading the same feature table needs the same scaling step; the tree-based
   Random Forest and GBT it is actually built for do not.
 
-### P-30 · The official Tesseract download mirror is unreachable from this machine
+### P-34 · The official Tesseract download mirror is unreachable from this machine
 **Week 4 · Krishna · resolved**
 
 - **Symptom.** `README.md`'s prerequisite table has listed Tesseract since Week 1
@@ -499,7 +499,7 @@ checking a number, never by reading the file.
   remembering: a single unreachable domain looks exactly like "the tool doesn't have
   a Windows build" until every other host is checked and turns out fine.
 
-### P-31 · The Week 1 default Gemini model was retired mid-project
+### P-35 · The Week 1 default Gemini model was retired mid-project
 **Week 4 · Krishna · resolved**
 
 - **Symptom.** The Document Intelligence Agent's first real LLM call failed with
@@ -524,7 +524,7 @@ checking a number, never by reading the file.
   kind of dependency that goes stale silently until the code that calls it actually
   runs again.
 
-### P-32 · The free-tier LLM quota is 20 requests *per day*, not per minute
+### P-36 · The free-tier LLM quota is 20 requests *per day*, not per minute
 **Week 4 · Krishna · resolved (accepted as a documented constraint, not a bug)**
 
 - **Symptom.** A 40-document smoke run (`--count 20`, 20 consignments × BOL+invoice)
@@ -543,7 +543,7 @@ checking a number, never by reading the file.
   per-document `try/except` already in `run_corpus` (not a single all-or-nothing call)
   meant the quota wall did not corrupt the run: it produced 22 real predictions and 18
   documents each recording the `RESOURCE_EXHAUSTED` reason in their own `error` field,
-  in the one predictions file. Decided in D-026: the evaluation harness (Lahari, D5)
+  in the one predictions file. Decided in D-032: the evaluation harness (Lahari, D5)
   scores whatever the file actually contains and reports coverage beside accuracy,
   rather than the agent pretending a clean run happened.
 - **Cost.** ~10 minutes to read the error body all the way to the quota name, plus the
@@ -551,7 +551,7 @@ checking a number, never by reading the file.
   The real cost is forward-looking: a full 120-document corpus run needs a second
   provider key or several days, not a code fix.
 
-### P-33 · Every python invocation on this machine silently spawns a second interpreter
+### P-37 · Every python invocation on this machine silently spawns a second interpreter
 **Week 4 · Krishna · resolved (worked around; root cause is machine-level, not this repo's)**
 
 - **Symptom.** Launching the D3-D4 prompt-comparison batch produced two live

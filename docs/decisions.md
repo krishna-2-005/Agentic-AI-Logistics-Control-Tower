@@ -851,7 +851,7 @@ Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metri
 
 ---
 
-## D-026 · The Document Intelligence Agent's free-tier LLM quota is a hard daily cap, and partial coverage is reported as such — `DECIDED`
+## D-032 · The Document Intelligence Agent's free-tier LLM quota is a hard daily cap, and partial coverage is reported as such — `DECIDED`
 **Week 4 · Krishna**
 
 The Week 2 sync's open-items table flagged this in the abstract: "second LLM key in
@@ -890,22 +890,22 @@ several days.
 performs badly — of the 22 attempted with a live quota, extraction succeeded on all of
 them (D3-D4's prompt-iteration numbers are the ones that will say how *well*). This is
 a provider-capacity ceiling, the same class of thing D-007 built `with_fallback` to
-survive and the same class of thing P-31 already found once this week (a pinned model
+survive and the same class of thing P-35 already found once this week (a pinned model
 name going stale) — free-tier LLM access is not a stable foundation to size an
 evaluation corpus against, and the project's numbers have to say so rather than quietly
 running smaller than planned.
 
 Evidence: `benchmarks/raw/w4_doc_agent_predictions.json` (22 ok, 18 `RESOURCE_EXHAUSTED`
-of 40 attempted), `docs/problems.md` P-32.
+of 40 attempted), `docs/problems.md` P-36.
 
 ---
 
-## D-027 · Prompt v2: `document_number` fixed from 6% to 100% correct, with one honest trade-off exposed by the seeded-error corpus — `DECIDED`
+## D-033 · Prompt v2: `document_number` fixed from 6% to 100% correct, with one honest trade-off exposed by the seeded-error corpus — `DECIDED`
 **Week 4 · Krishna · D3-D4**
 
 D1-D2's 22 successful extractions were read by eye against ground truth (`docs/W4_krishna_doc_agent.md` §3) and one field stood out: `document_number` was transcribed as raw OCR noise (`\NVOO00001`, `LROOOOOO6`) rather than resolved to the fixed `LR`/`INV` + 7-digit shape `doc_extraction/v1.md`'s own rule 6 already applies to centre codes but never extended to this field. `doc_extraction/v2.md` extends the same shape-based correction to `document_number` and a facility-name suffix code, adds `|` to the OCR-confusable set (this pipeline's own rendering of a misread `I`/`l`), and adds lost-decimal-point handling for `weight_kg`/amount fields — each tied to a concrete failure observed in D1-D2's output, not a speculative rewrite.
 
-**Measured, on the 16 documents both prompt versions actually extracted** (a fresh v2 batch capped by the same daily quota as D-026 — 8 consignments, seq 1-8, both document types):
+**Measured, on the 16 documents both prompt versions actually extracted** (a fresh v2 batch capped by the same daily quota as D-032 — 8 consignments, seq 1-8, both document types):
 
 | Field | v1 correct | v2 correct |
 |---|---|---|
@@ -925,7 +925,7 @@ Evidence: `src/agents/prompts/doc_extraction/v2.md`, `benchmarks/raw/w4_doc_agen
 
 ---
 
-## D-028 · The what-if predictor is the one dashboard page that starts a SparkSession, and it says so — `DECIDED`
+## D-034 · The what-if predictor is the one dashboard page that starts a SparkSession, and it says so — `DECIDED`
 **Week 4 · Krishna · D5**
 
 D-009 decided the dashboard reads only cached artefacts and never starts Spark, so
@@ -966,7 +966,7 @@ both hub codes that do not exist anywhere in `features_v1` correctly report
 `cold_flags` all `True` and still produce a sane, non-crashing prediction. The
 Spark-free half (`build_result`'s threshold arithmetic) is covered by
 `tests/test_predict.py`; the Spark-dependent half is exercised interactively (the
-same reasoning D-027 on Mounika's branch gives for not re-running a real batch job
+same reasoning D-030 on Mounika's branch gives for not re-running a real batch job
 inside a pytest suite) since it needs a real champion model on disk that CI does not
 have.
 

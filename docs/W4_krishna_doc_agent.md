@@ -46,20 +46,20 @@ generated document's prose outliving the data it described.
 - **The Tesseract binary needed a real install, and the official mirror would not
   resolve from this network.** Its own GitHub releases carry the identical installer
   as an asset, extractable with 7-Zip without running it — see `docs/problems.md`
-  P-30 and the README's updated prerequisites section.
+  P-34 and the README's updated prerequisites section.
 - **`gemini-2.0-flash`, pinned since Week 1, was retired by Google mid-project.** The
   404 named its own replacement (`gemini-3.6-flash`); fixed in one place
   (`src.agents.llm.DEFAULT_MODELS`, D-007's whole point) plus the two `.env` files.
   A second wrinkle surfaced only once the call actually succeeded: the response
   `.content` came back as a list of content blocks rather than a string on this model,
   handled once in `_response_text()` rather than at every call site. Full account:
-  `docs/problems.md` P-31.
+  `docs/problems.md` P-35.
 - **The free tier's real limit is 20 requests *per day*, not per minute.** A 40-document
   run hit `429 RESOURCE_EXHAUSTED` after 19 clean calls and never fully recovered that
   day. This is the Week 2 sync's own anticipated risk ("second LLM key... blocks Week 7
-  eval runs") arriving three weeks early — decided in D-026: the harness scores what
+  eval runs") arriving three weeks early — decided in D-032: the harness scores what
   the predictions file actually contains and reports coverage beside accuracy, rather
-  than the run pretending to be complete. Full account: `docs/problems.md` P-32.
+  than the run pretending to be complete. Full account: `docs/problems.md` P-36.
 
 None of the three is really about document extraction — all three are "an external
 dependency changed out from under a project that pinned it months ago", the same
@@ -71,10 +71,10 @@ class of trap D-012 already spent an afternoon on for Spark's `winutils.exe`.
 invoice pair each (40 documents). Every document is attempted independently — one OCR
 failure or malformed LLM response does not abort the run, it is recorded with its own
 `error` field in `w4_doc_agent_predictions.json` — the same "a crashed job must not
-look like a clean one" instinct P-31's own tooling problem argues for. That design
-choice is what turned P-32's quota wall into a clean partial result instead of a
+look like a clean one" instinct P-35's own tooling problem argues for. That design
+choice is what turned P-36's quota wall into a clean partial result instead of a
 crashed run: **22 of 40 documents extracted** before the free tier's daily cap started
-rejecting calls (D-026); the other 18 each carry their own `RESOURCE_EXHAUSTED` error
+rejecting calls (D-032); the other 18 each carry their own `RESOURCE_EXHAUSTED` error
 string rather than a silent gap. Prompt `doc_extraction/v1`, full record in
 `benchmarks/raw/w4_doc_agent_predictions.json`.
 
@@ -104,7 +104,7 @@ failure the D1-D2 run actually produced, not a speculative rewrite:
    pipeline occasionally drops the `.` entirely.
 
 **Measured on the 16 documents both versions actually extracted** (a fresh v2 batch,
-capped by the same daily quota as D-026 — seq 1-8, both document types):
+capped by the same daily quota as D-032 — seq 1-8, both document types):
 
 | Field | v1 correct | v2 correct |
 |---|---|---|
@@ -118,7 +118,7 @@ capped by the same daily quota as D-026 — seq 1-8, both document types):
 single biggest, cleanest number this section has produced. Full reasoning on the one
 field that looks like a regression (`destination_centre_code`, 16/16 → 15/16) — it
 is not one, it is a real trade-off the seeded-error corpus happened to catch —
-lives in D-027, not repeated here.
+lives in D-033, not repeated here.
 
 Regenerate the comparison:
 
@@ -139,7 +139,7 @@ total time, and whether the model calls it delayed under D-003's rule.
 **This is the one page that starts Spark**, and it says so before the click, not
 just in a code comment — D-009 says the dashboard never runs Spark, and this page
 genuinely cannot honour that literally, because there is no cached table of "every
-possible what-if input's answer" to read instead. D-028 has the full reasoning: why
+possible what-if input's answer" to read instead. D-034 has the full reasoning: why
 the exception is scoped to one function and one button-click, why the history lookup
 reads `features_v1` fresh rather than duplicating it into a second file, and the
 documented simplification that lookup makes relative to a live as-of join.
@@ -161,8 +161,8 @@ python -m src.ml.predict --corridor IND208012AAA>IND209304AAA \
 - **Field-level accuracy/F1 over the full corpus** is still Lahari's D5 evaluation
   harness — §5's table above is Krishna's own qualitative check to decide whether
   `v2` was worth keeping, scored by eye against 16 labels, not the authoritative,
-  arms-length number (D-027).
+  arms-length number (D-033).
 - **A full 120-document run** needs a second LLM provider key or several days against
-  the current free tier (D-026) — not a code change on this module's side.
+  the current free tier (D-032) — not a code change on this module's side.
 
 Week 4 is complete on this branch: D1-D2 (§1-4), D3-D4 (§5), D5 (§6).

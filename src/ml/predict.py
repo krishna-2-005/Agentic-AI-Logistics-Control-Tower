@@ -1,15 +1,15 @@
 """What-if delay prediction (execution plan W4 D5) -- the one place the dashboard
-starts a SparkSession, per D-028's documented exception to D-009.
+starts a SparkSession, per D-034's documented exception to D-009.
 
     python -m src.ml.predict --corridor IND208012AAA>IND209304AAA \
         --planned-min 593 --planned-km 19.8 --route-type FTL \
         --departure "2018-09-20 14:30"
 
 Loads the champion `PipelineModel` (Mounika's auto-retrain script promotes it,
-D-026) and looks up the corridor's and both hubs' most recent as-of history straight
+D-029) and looks up the corridor's and both hubs' most recent as-of history straight
 from `features_v1`, in the same Spark session -- not a second, independently
 recomputed history. Reusing Stage 4's own numbers rather than a second cached copy
-is the same reasoning D-026 gives for calling `src.ml.models.run()` instead of
+is the same reasoning D-029 gives for calling `src.ml.models.run()` instead of
 reimplementing it, applied one level further downstream.
 
 **A documented simplification, not a rigorous backtest.** The history looked up is
@@ -20,7 +20,7 @@ right: nothing has happened since. For a hypothetical departure date *inside* th
 window, this can hand the model a snapshot that is technically from after that date,
 which the batch pipeline's own as-of join (D-020) would never do. Accepted here
 because rebuilding a live as-of join for one form submission would mean re-deriving
-Stage 4's entire logic a second time (the exact duplication D-026 already avoided
+Stage 4's entire logic a second time (the exact duplication D-029 already avoided
 once) for a page whose purpose is illustrating the model, not re-litigating D-020's
 leakage guarantee.
 """
