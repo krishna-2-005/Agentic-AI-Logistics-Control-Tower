@@ -1263,3 +1263,54 @@ have.
 
 Evidence: `src/ml/predict.py`, `src/dashboard/app.py` (Delay predictor page),
 `tests/test_predict.py`.
+
+---
+
+## D-036 · An ambiguous order produces one question, and the agent never guesses a field the email did not state — `DECIDED`
+**Week 5 · Krishna · D1-D2**
+
+The `order_entry` prompt slot has carried the requirement since Week 3: *"an ambiguous
+order must produce a question, not a confident guess."* This entry records how that is
+actually built and, more usefully, how it is made *measurable*.
+
+**Decided: the model returns its own `file` / `clarify` decision, and a `clarify`
+names the single field it is blocked on.** Not a confidence score, not a list of
+everything imperfect — one `missing_field` and one sentence a customer can answer.
+A list of five questions is a form, and a customer who receives a form does the work
+the agent was supposed to do.
+
+**Why the corpus contains deliberately broken emails.** An agent judged only on clean
+input scores perfectly and tells you nothing: there is no way to distinguish "asks
+when it should" from "never asks at all". `src/agents/order_corpus.py` therefore
+generates five variants — `clean`, `missing_weight`, `missing_pieces`,
+`vague_origin`, `ambiguous_route` — and every non-clean one records
+`expected_missing`, the field a good question has to be about. That is what lets
+Lahari's D5 harness score *which* question was asked, not merely whether one was.
+Ground truth also **omits** whatever the variant removed from the email, so an agent
+is never marked wrong for declining to invent a value nobody wrote — the same
+"the label is what is printed, not what is true" principle D-021 fixed for the
+document corpus.
+
+**Validation is a separate stage from extraction, on purpose.** `validate_order()` is
+pure Python and re-checks what the TMS's `OrderCreate` will check anyway. That looks
+like duplication and is not: a model returning `pieces: 0` is a *prompt* problem, and
+catching it one function from where it happened says so, where the same failure
+arriving as a 422 from an HTTP call three layers away looks like an *environment*
+problem. The three stages fail differently because they are broken differently.
+
+**Result, six development emails:** 6 of 6 correct — three clean emails filed as
+real orders in the TMS (`ORD-000001` .. `ORD-000003`, `source=agent`), three ambiguous
+ones clarified, and each clarification named the right field. Extraction matched
+ground truth on every field the emails stated, with no mismatches. Re-posting a filed
+`external_ref` returns 200 and creates nothing, so a replayed email cannot double-file
+(D-017's key doing exactly what it was built for).
+
+**What this result is not.** Six emails, from the corpus the agent was developed
+against. The number that counts is Lahari's, on the 50-case set she authors at D5,
+which the agent has never seen — the same builder/judge separation D-028 applies
+to document extraction. This entry's 6-of-6 is a smoke test that the path works end to
+end, not an accuracy claim.
+
+Evidence: `src/agents/order_agent.py`, `src/agents/order_corpus.py`,
+`src/agents/prompts/order_entry/v1.md`, `tests/test_order_agent.py`,
+`benchmarks/raw/w5_order_agent_runs.json`, `docs/problems.md` P-40, P-41.

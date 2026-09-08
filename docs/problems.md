@@ -689,6 +689,58 @@ checking a number, never by reading the file.
   `out_json.write_text` — those 3 results are unrecoverable, though the quota spend
   itself is the only real cost since nothing downstream ever read them).
 
+### P-40 · `src.tms.seed` cannot do the one thing its docstring promises
+**Week 5 · found by Krishna, owned by Mounika · open (worked around)**
+
+- **Symptom.** `python -m src.tms.seed`, run to prepare the TMS for the Order Entry
+  Agent, died with `sqlalchemy.exc.IntegrityError: FOREIGN KEY constraint failed` on
+  `DELETE FROM facility`.
+- **Cause.** `seed()` promises in its own docstring that *"orders and shipments survive
+  unless `reset`"*, and then calls `session.exec(delete(Facility))` unconditionally.
+  `Order` holds a foreign key to `Facility`. So the moment the database contains a
+  single order, the non-reset path — the one the docstring describes as the safe
+  default — cannot run at all. It has never worked; it just was not exercised,
+  because until now nothing had filed an order before a re-seed.
+- **Worked around, not fixed.** `--reset` cleared one leftover Week 2 test order and
+  the seed completed. That is fine today: the row was throwaway. It will not be fine
+  in Week 6, when the agents have filed orders worth keeping and someone re-runs the
+  seed after a pipeline re-run — they will either hit this error or reach for
+  `--reset` and destroy real agent-filed data.
+- **The actual fix, for its owner.** Upsert the facilities rather than delete-then-
+  insert: the 1,657 codes are the same on both sides of a re-seed, so nothing needs
+  deleting for the reference data to be refreshed. Left to Mounika as the area owner
+  (GIT_RULES SS10) rather than patched from an agents branch — it is her module,
+  and the fix wants a test that files an order and then re-seeds, which belongs with
+  the TMS suite.
+- **Cost.** ~10 minutes to diagnose, none to work around. Logged rather than fixed in
+  passing because a silent `--reset` habit is exactly how the Week 6 version of this
+  becomes "where did the orders go?"
+
+### P-41 · The agent's own validator passed an order the TMS rejected
+**Week 5 · Krishna · resolved**
+
+- **Symptom.** Every clean email extracted perfectly, validated clean, and then came
+  back `HTTP 422` from `POST /orders`:
+  `source: Input should be 'api', 'agent' or 'seed'`. Three of six emails failed at the
+  last step, after everything the agent could check had passed.
+- **Cause.** `post_order` set `"source": "EMAIL"` — a value invented at the call
+  site because it read well, and not a member of the TMS's `OrderSource` enum. The
+  agent's `validate_order()` had nothing to say about it for a structural reason worth
+  naming: **it validates the fields the model extracted, and `source` is not one of
+  them.** It is set by the agent itself, in the payload builder, downstream of every
+  check.
+- **Fix.** Import the enum and use `OrderSource.AGENT.value`. Not "add `source` to the
+  validator" — that would catch the next wrong string, but this class of bug
+  disappears entirely when the value cannot be invented in the first place. Same
+  reasoning as D-031 reusing one event schema and P-23's two-lists-one-truth lesson:
+  where a contract already exists in code, import it rather than retype it.
+- **Cost.** ~10 minutes and three wasted LLM calls against a 20-a-day quota (D-032),
+  which is the part that stung. **The generalisable lesson:** a validation layer that
+  checks *the model's output* rather than *the payload actually sent* has a blind spot
+  exactly the size of whatever the code adds afterwards — and everything in that
+  blind spot fails at the far end of a network call, where it looks like someone
+  else's problem.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
