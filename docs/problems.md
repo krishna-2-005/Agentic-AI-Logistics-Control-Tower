@@ -689,6 +689,40 @@ checking a number, never by reading the file.
   `out_json.write_text` — those 3 results are unrecoverable, though the quota spend
   itself is the only real cost since nothing downstream ever read them).
 
+### P-39 · Spark counts days from Sunday, Python from Monday, and nothing raises
+**Week 5 · Lahari · resolved**
+
+- **Symptom.** The stream-equals-batch test's second check came back
+  **0 agreements out of 500**. Predictions were bit-identical, but the temporal
+  features a streaming job would recompute from `event_time` disagreed with the ones
+  the event carries on *every single row*.
+- **Cause.** Not a bug in either computation — two different, both-correct
+  conventions for the same idea. Stage 4 builds the feature with Spark's
+  `F.dayofweek`, which is **Sunday = 1** through Saturday = 7. A Python consumer
+  reaching for `datetime.weekday()` gets **Monday = 0** through Sunday = 6. For
+  2018-09-12, a Wednesday, that is **4 against 2**. The model was trained on the
+  Spark encoding, so a consumer using the Python one would feed it a number on a
+  different scale for every event.
+- **Fix.** One shared `src.streaming.schema.temporal_features()` that both sides
+  import, using `isoweekday() % 7 + 1` to reproduce Spark's encoding exactly. The
+  streaming job (D3-D4) imports it rather than re-deriving day-of-week, which is the
+  same "two lists holding one truth" trap P-23 already cost this project once
+  — and this time the shared helper exists *before* the second consumer is
+  written, not after it drifted. `tests/test_stream_validation.py` pins all four
+  weekday values against Spark's convention.
+- **Cost.** ~20 minutes, and it was free in the sense that mattered: **the test was
+  written before the streaming job, so the trap was found before anything could fall
+  into it.** Had the job been built first, this would have surfaced as a model
+  quietly scoring every streamed event on a wrong day-of-week — no exception, no
+  null, no row count out of place, and a per-corridor error small enough to look like
+  ordinary model noise. `created_is_weekend` is genuinely convention-independent
+  (both readings mean Saturday-or-Sunday), which is exactly why only one of the three
+  fields disagreed and why a spot-check of the other two would have concluded
+  everything was fine.
+- **Carry:** *any* feature the batch pipeline computes with a Spark builtin and a
+  consumer recomputes in Python needs one shared implementation, not two that agree
+  on a test date. `created_hour` happens to agree in both; that is luck, not design.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
