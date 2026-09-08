@@ -1263,3 +1263,47 @@ have.
 
 Evidence: `src/ml/predict.py`, `src/dashboard/app.py` (Delay predictor page),
 `tests/test_predict.py`.
+
+---
+
+## D-035 · The replay runs on the file sink, and the Kafka path ships unexercised rather than unwritten — `DECIDED`
+**Week 5 · Mounika · D1-D2**
+
+The execution plan's W5 line carries its own escape hatch: *"3-day rule: if Kafka
+fights the environment, switch to file-streaming fallback."* On this machine Kafka
+does not fight so much as fail to exist — `docker --version` is not a command
+here, so there is no broker to point a producer at, and `README.md`'s prerequisite
+table already lists Docker as Week-5-optional for exactly this reason.
+
+**Decided: both sinks are written behind one `emit()`, the file sink is what runs,
+and the write-up says which is which.** `FileSink` lands one JSON-lines file per tick
+in `STREAM_TRIPS_DIR` for Spark's file source to pick up; `KafkaSink` is a real
+`KafkaProducer` keyed on `corridor_id`, imported lazily so a machine with no broker
+never touches it. Switching is `--sink kafka` or `STREAM_SOURCE` in `.env`, not a
+rewrite.
+
+**Why write the Kafka path at all if it cannot be run here.** Because the claim the
+architecture makes (`README.md`: "Kafka producer (trip replay) → Spark
+Structured Streaming") is a claim about the code, and code that does not exist cannot
+be reviewed, corrected, or run by a teammate whose machine *does* have Docker. What
+would be dishonest is running the file path and describing it as Kafka; what is
+honest is shipping both and saying plainly that only one has been executed here. The
+same "declared openly as scaffolding" standard `README.md` already applies to the
+mock TMS and the synthetic corpus.
+
+**Two details that are not arbitrary.** Files are written to `.tick_NNNNNN.jsonl.tmp`
+and then renamed, because Spark's file source lists a directory and will read a file
+that is still being written — a half-written final line surfaces at the consumer
+as a malformed record, a long way from its cause. And the Kafka path keys on
+`corridor_id` so one corridor's facts and queries land on one partition in order,
+which is what a future stateful consumer needs and what a round-robin default would
+quietly take away.
+
+**Time compression is proportional, not uniform.** Each event's real `event_time` maps
+linearly onto the replay window, so a quiet night stays quiet and a busy morning still
+bursts. Spreading the events evenly would have produced a smoother, better-looking
+throughput number than the data supports — the same instinct D-003 applies to a
+majority-class baseline, applied to a rate.
+
+Evidence: `src/streaming/producer.py`, `tests/test_producer.py`,
+`docs/W5_mounika_kafka_streaming.md`, `docs/problems.md` P-38.
