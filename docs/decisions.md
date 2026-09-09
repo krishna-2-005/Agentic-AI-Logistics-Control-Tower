@@ -1307,3 +1307,104 @@ majority-class baseline, applied to a rate.
 
 Evidence: `src/streaming/producer.py`, `tests/test_producer.py`,
 `docs/W5_mounika_kafka_streaming.md`, `docs/problems.md` P-38.
+
+---
+
+## D-037 · The streaming job scores by handing each micro-batch to the batch code, and joins a history snapshot it does not update — `DECIDED`
+**Week 5 · Mounika · D3-D4**
+
+Two decisions about `src/streaming/job.py` that are easy to make by accident and
+expensive to reverse.
+
+**Decided: `foreachBatch`, calling the same functions the batch path calls.** Not
+because a streaming DataFrame could not express the join and the model transform —
+it could — but because of what Lahari proved at D1-D2. Her stream-equals-batch
+test shows identical rows produce identical predictions; that guarantee is worth
+something only if the two paths are *the same code*. A streaming-native
+reimplementation would make it a claim about two things that look alike, which is the
+kind of claim that holds until the day it does not. Concretely, the micro-batch goes
+through pandas and back so it can call `src.ml.baselines.prepare_model_features` —
+the same function — rather than a Spark translation of D-023's cold-start policy
+and D-019's `is_ftl` encoding. **The round trip costs 0.08 seconds in a 71-second
+full-replay run: 0.1%.** That number is why the decision is cheap, and it was measured
+rather than assumed (D-038's harness exists partly to answer exactly this).
+
+**Decided: the joined history is a static snapshot, and fact events are counted and
+dropped.** The plan says "join broadcast features", and that is what this is: one
+window function over `features_v1` per key at start-up, broadcast, then joined to every
+query event. A leg finishing mid-replay therefore does **not** update the history the
+next query is scored against.
+
+That is a real limitation and it is stated in three places rather than one, because a
+streaming layer that quietly discards half its input is misrepresenting itself: the
+module docstring, the run summary (`facts_dropped`), and here. Making history live
+means stateful aggregation with as-of semantics — re-deriving Stage 4's guarantee
+inside a stream — which is Week 6+ work, not a flag. `src.ml.predict` already
+takes the identical simplification for the what-if page and documents it identically.
+
+**A consequence worth naming before anyone quotes a number off it.** The snapshot is
+each key's *latest* known history, i.e. from the end of the observation window, and the
+replay then scores legs from the beginning of that window against it. For the intended
+direction — score what happens next against what is known now — that is
+correct. For a replay of history it hands the model a snapshot from after the leg it is
+scoring. So the alert stream's precision and recall (D-038) describe how the sink
+behaves, not how well the model predicts. Lahari's Week 4 test-set numbers remain the
+project's honest accuracy claim.
+
+**Decided: alerts have a written contract, `docs/schemas/alert.schema.json`.** Krishna's
+panel and bot (D3-D4, D5) consume that directory and nothing else of this module. Same
+reasoning D-031 gives for writing the event schema down: three people cannot hold a
+shape in their heads compatibly. `tests/test_stream_job.py` pins the Python and the
+schema to each other in both directions, because a contract in two files drifts.
+
+Evidence: `src/streaming/job.py`, `docs/schemas/alert.schema.json`,
+`tests/test_stream_job.py`, `docs/W5_mounika_kafka_streaming.md`.
+
+---
+
+## D-038 · Throughput is reported as a saturated scoring rate with the stage breakdown beside it, never as one events/sec headline — `DECIDED`
+**Week 5 · Mounika · D5**
+
+The plan asks for "events/sec sustained" and "event-to-alert ms". Both are easy to
+report in a way that is technically true and practically meaningless.
+
+**The trap.** Run the replay at a comfortable rate, watch the job keep up, divide
+events by wall-clock seconds, publish it. That number is the *producer's* pacing
+wearing the job's name: offer 100 events/sec to a pipeline that can do 700 and it
+measures 100. The first version of this harness did exactly that and reported
+figures between 98 and 179 events/sec that varied with the offered load and told us
+nothing about capacity.
+
+**Decided: three numbers, each with a stated denominator.**
+1. **Produced rate** — what the producer actually achieved, from its own wall
+   clock, not its schedule.
+2. **Saturated scoring rate** — events divided by the seconds actually spent
+   inside `process_batch`, excluding every second the stream sat waiting for a file.
+   This is the capacity figure and the only one that does not move with the offered
+   load.
+3. **Event-to-alert latency** — tick-file modification time to alert write,
+   including file-source discovery and the trigger interval, because a consumer
+   waiting for an alert waits for those too.
+
+**Decided: a stage breakdown ships with every measurement.** "14 seconds per
+micro-batch" is a complaint; "13.2 of those 14 seconds are inside
+`createDataFrame` + `transform` + `collect`, and 0.06 is the pandas round trip" is a
+finding. It settled the one design question D-037 left open, and it is what shows the
+pipeline is bound by a **fixed per-batch cost** rather than by event volume — the
+same batch takes ~14s whether it holds 1,618 events or 4,000.
+
+**Consequence: this pipeline gets faster with *fewer, larger* batches**, which is the
+opposite of the usual latency instinct and is why `max_files_per_trigger` is an exposed
+dial rather than a constant. Capping it at 4 files to chase latency made a 20-second
+replay undrainable — 9 batches at ~14s each — while the uncapped run finished
+the same work in 2. Both configurations are kept in `benchmarks/raw/`, because the
+trade-off *is* the result.
+
+**Decided: `kept_up` is computed, not asserted**, from whether the job drained
+everything offered inside the replay plus a drain window of four batch times. Two
+attempts at that verdict were wrong before this one (P-43, P-44), which is the argument
+for the harness returning structured stats a test can hold rather than a log line a
+human reads.
+
+Evidence: `src/streaming/throughput.py`, `benchmarks/raw/w5_stream_throughput*.json`,
+`tests/test_stream_job.py`, `docs/W5_mounika_kafka_streaming.md`.
