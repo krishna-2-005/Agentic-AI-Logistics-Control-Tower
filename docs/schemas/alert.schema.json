@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://agentic-ai-logistics-control-tower/schemas/alert.schema.json",
+  "title": "Delay alert emitted by the Structured Streaming job (Week 5 D3-D4)",
+  "description": "One record per query event the champion model flags as a predicted delay. This is the contract between Mounika's streaming job (producer of these rows, src/streaming/job.py) and Krishna's live alerts panel and alert bot (consumers, D3-D4 and D5) -- written down for the same reason stream_event.schema.json was (D-031): three people cannot agree on a shape by describing it to each other in a group chat. The alert-flagged sink writes one JSON-lines file per micro-batch into STREAM_ALERTS_DIR.",
+  "type": "object",
+  "required": ["alert_id", "leg_id", "trip_uuid", "corridor_id", "source_center", "destination_center", "event_time", "route_type", "planned_min", "predicted_gap_min", "predicted_total_min", "threshold_gap_min", "alert_time", "batch_id"],
+  "properties": {
+    "alert_id": {
+      "type": "string",
+      "description": "The query event's own event_id, carried through unchanged. Consumer-side idempotency key: a micro-batch replayed after a driver restart re-emits the same alert_id, and a panel or bot that keys on it shows one alert rather than two (the reasoning stream_event.schema.json gives for event_id, honoured on the consumer side rather than only stated)."
+    },
+    "leg_id": {"type": "string", "description": "D-020's key: trip_uuid|od_start_time|corridor_id."},
+    "trip_uuid": {"type": "string"},
+    "corridor_id": {"type": "string", "description": "D-002's key. What the alert bot names, and what the panel groups on."},
+    "source_center": {"type": "string", "pattern": "^IND"},
+    "destination_center": {"type": "string", "pattern": "^IND"},
+    "event_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "The REAL historical creation time of the leg being scored, carried from the query event -- not the wall-clock time the alert was produced. A replay compresses ~26 days into a minute, so these two are deliberately different fields and a panel that shows one where it means the other will read as a system with a broken clock."
+    },
+    "route_type": {"enum": ["FTL", "Carting"]},
+    "planned_min": {"type": "number", "minimum": 0, "description": "OSRM's planned duration for the leg."},
+    "planned_km": {"type": "number", "minimum": 0},
+
+    "predicted_gap_min": {"type": "number", "description": "The champion regressor's predicted gap_min (actual minus planned). Positive means late."},
+    "predicted_total_min": {"type": "number", "description": "planned_min + predicted_gap_min, precomputed so a consumer never re-derives it and rounds differently."},
+    "threshold_gap_min": {
+      "type": "number",
+      "description": "(DELAY_THRESHOLD - 1) * planned_min -- the gap above which D-003 calls the leg delayed. Carried on the row rather than left for the consumer to recompute, so an alert stays readable against the threshold that actually produced it even if config.DELAY_THRESHOLD later moves (Lahari's D3-D4 sensitivity sweep exists precisely because that number is a choice, not a constant of nature)."
+    },
+    "delay_threshold": {"type": "number", "description": "The DELAY_THRESHOLD multiplier in force when this alert was produced, e.g. 2.0."},
+
+    "corr_is_cold": {"type": "integer", "enum": [0, 1], "description": "1 when this corridor had no prior history at the snapshot the job broadcast. A prediction off an all-zero history is not the same claim as 'this corridor is normally on time', and D-023 already made that distinction in the features; the alert carries it so a panel can say so rather than presenting both with equal confidence."},
+    "src_is_cold": {"type": "integer", "enum": [0, 1]},
+    "dst_is_cold": {"type": "integer", "enum": [0, 1]},
+
+    "emit_time": {
+      "type": "string",
+      "format": "date-time",
+      "description": "Wall-clock modification time of the tick file this event arrived in -- i.e. when the producer released it. Present for the file sink; absent for a Kafka source, which carries its own message timestamp instead."
+    },
+    "alert_time": {"type": "string", "format": "date-time", "description": "Wall-clock time the micro-batch produced this alert."},
+    "latency_ms": {
+      "type": "number",
+      "description": "alert_time - emit_time in milliseconds: the event-to-alert figure the D5 harness reports. Computed once, here, rather than by each consumer subtracting two timestamps its own way."
+    },
+    "batch_id": {"type": "integer", "minimum": 0, "description": "Structured Streaming micro-batch id. Two rows sharing one batch_id were scored in the same pass."}
+  },
+  "additionalProperties": false
+}
