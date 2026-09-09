@@ -33,7 +33,7 @@
     "planned_min": {"type": "number", "minimum": 0, "description": "query only -- OSRM's planned duration."},
     "planned_km": {"type": "number", "minimum": 0, "description": "query only -- OSRM's planned distance."},
     "created_hour": {"type": "integer", "minimum": 0, "maximum": 23, "description": "query only."},
-    "created_dayofweek": {"type": "integer", "minimum": 0, "maximum": 6, "description": "query only."},
+    "created_dayofweek": {"type": "integer", "minimum": 1, "maximum": 7, "description": "query only. SPARK's convention -- Sunday = 1 through Saturday = 7, what F.dayofweek returns and what the champion model was trained on. Written out because the range alone is the whole bug: this field was declared 0-6, Python's datetime.weekday() convention, and every Saturday leg in features_v1 (3,607 of 26,369) fails validation against it. A consumer that recomputes this field from event_time must use src.streaming.schema.temporal_features rather than weekday() -- see P-39 and P-45."},
     "created_is_weekend": {"type": "integer", "enum": [0, 1], "description": "query only."},
 
     "gap_min": {"type": "number", "description": "fact only -- actual_time - planned_min, D-020's TARGETS."},

@@ -1,0 +1,42 @@
+{
+  "legs": 26369,
+  "events": 52738,
+  "tick_seconds": 0.5,
+  "max_files_per_trigger": 1000,
+  "drain_seconds": 300.0,
+  "steps": [
+    {
+      "offered_duration_s": 60.0,
+      "events_offered": 52738,
+      "offered_rate_eps": 879.0,
+      "produced_rate_eps": 886.4,
+      "producer_wall_s": 59.5,
+      "tick_files": 120,
+      "events_processed": 52738,
+      "queries_scored": 26369,
+      "facts_dropped": 26369,
+      "alerts": 17317,
+      "batches": 4,
+      "job_wall_s": 360.48,
+      "processed_rate_eps": 146.3,
+      "scoring_seconds": 71.28,
+      "scoring_rate_eps": 739.9,
+      "slowest_batch_s": 19.78,
+      "stage_seconds": {
+        "count": 4.14,
+        "join_and_collect": 4.58,
+        "prepare_features": 0.08,
+        "score": 61.55,
+        "write": 0.3
+      },
+      "kept_up": true,
+      "latency_p50_ms": 28877.233642578125,
+      "latency_p95_ms": 37999.916015625,
+      "latency_max_ms": 40511.916015625,
+      "latency_samples": 17317
+    }
+  ],
+  "sustained_eps": 886.4,
+  "sustained_latency_p95_ms": 37999.916015625,
+  "scoring_rate_eps": 739.9
+}
