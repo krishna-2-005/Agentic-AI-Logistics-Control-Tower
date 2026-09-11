@@ -689,6 +689,32 @@ checking a number, never by reading the file.
   `out_json.write_text` — those 3 results are unrecoverable, though the quota spend
   itself is the only real cost since nothing downstream ever read them).
 
+### P-38 · Mixed-precision timestamps broke the replay schedule — the same trap as P-09, two layers up
+**Week 5 · Mounika · resolved**
+
+- **Symptom.** The first real producer run died in `compress_schedule` with
+  `ValueError: time data "2018-09-12T00:23:34" doesn't match format
+  "%Y-%m-%dT%H:%M:%S.%f"`. Event *building* and schema *validation* had both already
+  passed on all 600 events; only the scheduling step threw.
+- **Cause.** `pd.to_datetime` on a list infers one format from the first element. A
+  **query** event's `event_time` is `trip_creation_time.isoformat()`, which keeps
+  microseconds; a **fact** event's is `od_start_time + timedelta(minutes=actual_time)`,
+  which lands on a whole second whenever the leg's duration is a whole number of
+  minutes — and on this data it very often is. First element had microseconds,
+  so every whole-second fact event failed to parse.
+- **Fix.** `pd.to_datetime(..., format="ISO8601")`, which accepts both shapes.
+  `tests/test_producer.py::test_schedule_handles_mixed_precision_timestamps` is the
+  regression guard, built from the two literal timestamps that actually collided.
+- **Cost.** ~10 minutes. **This is P-09 again** — Week 1's `cutoff_timestamp`
+  being second-precision on 141,438 rows and microsecond on 3,429 — and it
+  arrived by a completely different route: not from the publisher's file this time,
+  but from *our own* two event builders, one formatting a stored timestamp and the
+  other formatting a computed one. The carry from P-09 was "one explicit format,
+  never an inferred one"; that rule was applied to the Spark reader in Stage 1 and
+  never to a pandas parse, so the second half of the codebase relearned it. Worth
+  stating as a rule rather than a fix: **anywhere a timestamp is parsed from a
+  collection, name the format.**
+
 ### P-39 · Spark counts days from Sunday, Python from Monday, and nothing raises
 **Week 5 · Lahari · resolved**
 
@@ -722,6 +748,189 @@ checking a number, never by reading the file.
 - **Carry:** *any* feature the batch pipeline computes with a Spark builtin and a
   consumer recomputes in Python needs one shared implementation, not two that agree
   on a test date. `created_hour` happens to agree in both; that is luck, not design.
+
+### P-40 · `src.tms.seed` cannot do the one thing its docstring promises
+**Week 5 · found by Krishna, owned by Mounika · open (worked around)**
+
+- **Symptom.** `python -m src.tms.seed`, run to prepare the TMS for the Order Entry
+  Agent, died with `sqlalchemy.exc.IntegrityError: FOREIGN KEY constraint failed` on
+  `DELETE FROM facility`.
+- **Cause.** `seed()` promises in its own docstring that *"orders and shipments survive
+  unless `reset`"*, and then calls `session.exec(delete(Facility))` unconditionally.
+  `Order` holds a foreign key to `Facility`. So the moment the database contains a
+  single order, the non-reset path — the one the docstring describes as the safe
+  default — cannot run at all. It has never worked; it just was not exercised,
+  because until now nothing had filed an order before a re-seed.
+- **Worked around, not fixed.** `--reset` cleared one leftover Week 2 test order and
+  the seed completed. That is fine today: the row was throwaway. It will not be fine
+  in Week 6, when the agents have filed orders worth keeping and someone re-runs the
+  seed after a pipeline re-run — they will either hit this error or reach for
+  `--reset` and destroy real agent-filed data.
+- **The actual fix, for its owner.** Upsert the facilities rather than delete-then-
+  insert: the 1,657 codes are the same on both sides of a re-seed, so nothing needs
+  deleting for the reference data to be refreshed. Left to Mounika as the area owner
+  (GIT_RULES SS10) rather than patched from an agents branch — it is her module,
+  and the fix wants a test that files an order and then re-seeds, which belongs with
+  the TMS suite.
+- **Cost.** ~10 minutes to diagnose, none to work around. Logged rather than fixed in
+  passing because a silent `--reset` habit is exactly how the Week 6 version of this
+  becomes "where did the orders go?"
+
+### P-41 · The agent's own validator passed an order the TMS rejected
+**Week 5 · Krishna · resolved**
+
+- **Symptom.** Every clean email extracted perfectly, validated clean, and then came
+  back `HTTP 422` from `POST /orders`:
+  `source: Input should be 'api', 'agent' or 'seed'`. Three of six emails failed at the
+  last step, after everything the agent could check had passed.
+- **Cause.** `post_order` set `"source": "EMAIL"` — a value invented at the call
+  site because it read well, and not a member of the TMS's `OrderSource` enum. The
+  agent's `validate_order()` had nothing to say about it for a structural reason worth
+  naming: **it validates the fields the model extracted, and `source` is not one of
+  them.** It is set by the agent itself, in the payload builder, downstream of every
+  check.
+- **Fix.** Import the enum and use `OrderSource.AGENT.value`. Not "add `source` to the
+  validator" — that would catch the next wrong string, but this class of bug
+  disappears entirely when the value cannot be invented in the first place. Same
+  reasoning as D-031 reusing one event schema and P-23's two-lists-one-truth lesson:
+  where a contract already exists in code, import it rather than retype it.
+- **Cost.** ~10 minutes and three wasted LLM calls against a 20-a-day quota (D-032),
+  which is the part that stung. **The generalisable lesson:** a validation layer that
+  checks *the model's output* rather than *the payload actually sent* has a blind spot
+  exactly the size of whatever the code adds afterwards — and everything in that
+  blind spot fails at the far end of a network call, where it looks like someone
+  else's problem.
+
+### P-42 · The stream was about to publish a label computed at the threshold the project rejected in Week 2
+**Week 5 · Mounika · resolved**
+
+- **Symptom.** Scoring the replay's alerts against the `is_delayed` its own fact events
+  carried gave precision 0.981 and recall 0.688. Both numbers were wrong, and the tell
+  was the base rate beside them: **93.6% of the 26,369 replayed legs came back
+  "delayed"**, against the 49.7% D-003 records for the decided threshold. 93.6% is not
+  a near miss. It is *exactly* the figure D-003's own table gives for `T = 1.25` —
+  the blueprint's threshold, which the team rejected at the Week 2 sync.
+- **Cause.** `src.pipeline.reconstruct` writes `is_delayed` into the parquet using
+  `config.DELAY_THRESHOLD` **as it stood when the cache was built**. D-003 moved that
+  constant from 1.25 to 2.00; the frozen caches (D-016) were never rebuilt, so the
+  column has been stale ever since. 11,583 of 26,369 legs — 43.9% — carry a
+  label that contradicts the same threshold recomputed from `gap_min` and `planned_min`.
+- **Why eight weeks passed without anyone noticing.** `src.ml.baselines.add_delay_label`
+  recomputes the label from `gap_min` before every fit, on purpose. So every model in
+  Weeks 3 and 4 trained and scored on the *correct* label, and the stale column was
+  overwritten on the only code path that had ever read it. It was not hidden by luck;
+  it was hidden by a downstream correction working exactly as designed. `fact_event` was
+  the first consumer to read the column straight from the parquet and put it on the wire.
+- **Fix.** `fact_event` recomputes the label rather than carrying it, and `is_delayed`
+  was **removed from `EXAMPLE_COLUMNS` altogether** — not loading a stale column is
+  a stronger guarantee than remembering not to use it. Four tests pin the behaviour, and
+  the fixture row deliberately carries the *wrong* stale value, because a fixture holding
+  the right answer cannot tell "recomputes" from "copies". With the label corrected the
+  same comparison reads precision 0.686, recall 0.907 — a different system's worth
+  of difference from what the stale label showed.
+- **Not fixed here, deliberately: the parquet still holds the stale column.** Rebuilding
+  it means re-running the pipeline and unfreezing a cache D-016 froze on purpose, and the
+  two consumers that matter now both recompute. The remaining risk is a *third* consumer
+  reading it directly, which is why this entry exists and why the column is no longer
+  loaded on the path that would have.
+- **Carry.** A cached column computed from a constant is a snapshot of that constant, not
+  a definition of it. Anywhere a decision changes a threshold, every derived cache is
+  stale from that moment — and a downstream recomputation that quietly papers over
+  it removes the only symptom anyone would have seen.
+
+### P-43 · A micro-batch that never finished was counted as work completed
+**Week 5 · Mounika · resolved**
+
+- **Symptom.** Two throughput steps replaying **identical** events reported 661 alerts
+  and 1,347 alerts, while both claimed all 4,000 events processed and both reported
+  `kept_up: true`.
+- **Cause.** `process_batch` incremented the event counters at the top, before scoring.
+  When the stream was stopped at the end of a step, a micro-batch still in flight had
+  already booked its full event count but never wrote its alerts. So the run that did
+  half the work looked identical to the run that did all of it — on the very field
+  the harness uses to decide whether the pipeline kept up.
+- **Fix.** One `_record()` call at the end of the successful path, plus the same call on
+  the "all facts, nothing to score" path so that batch is still counted. The counters now
+  mean *finished*, not *started*.
+- **Cost.** ~20 minutes, all of it in noticing. **What made it visible was a number that
+  should have been constant not being constant** — the same events must produce the
+  same alerts. Nothing in the harness's own output flagged it; the run reported success
+  in the field designed to report failure.
+- **Carry.** Instrumentation placed for convenience measures something adjacent to what
+  it claims. A counter incremented on entry counts attempts; if the metric's name says
+  "processed", it has to be incremented where processing ends.
+
+### P-44 · The drain window was one batch long, so "did it keep up" was decided by the clock
+**Week 5 · Mounika · resolved**
+
+- **Symptom.** The same 4,000 events scored 1,618 in one run and 4,000 in the next
+  — at a *lower* offered rate. `kept_up` flipped between runs of the same
+  configuration.
+- **Cause.** The harness gave the job 20 seconds to finish its backlog after the replay
+  stopped. A micro-batch on this machine takes ~14 seconds. So whether a step "kept up"
+  depended on whether the 20-second timer happened to fall inside a batch or between two
+  — a coin flip weighted by luck, reported as a capacity measurement.
+- **Fix.** `DRAIN_SECONDS = 60`, about four batch times, chosen *from the measured batch
+  duration* rather than from taste. The verdicts became stable and, more usefully,
+  started disagreeing with each other for real reasons: the 4-files-per-trigger
+  configuration genuinely cannot drain a 36-file replay, and now says so every time.
+- **Carry.** Any timeout in a measurement harness is a parameter of the measurement. If
+  it is within one unit of work of the thing being measured, it is measuring itself.
+
+### P-45 · The event schema declared Python's day-of-week while the pipeline emits Spark's
+**Week 5 · Mounika · resolved**
+
+- **Symptom.** `python -m src.streaming.producer --limit 8000 --validate` died with
+  `7 is greater than the maximum of 6` on `created_dayofweek`.
+- **Cause.** `stream_event.schema.json` declared the field `minimum: 0, maximum: 6`
+  — `datetime.weekday()`'s range. Stage 4 builds it with Spark's `F.dayofweek`,
+  which is **1 through 7**. 3,607 of 26,369 legs (13.7%) are Saturday, value 7, and fail
+  validation against the contract that is supposed to describe them.
+- **Why D1-D2 did not catch it.** The producer's smoke run replayed 300 legs, and
+  `--limit` takes a *prefix* of the chronological order, so all 300 came from the first
+  3.9 hours of 2018-09-12 — a Wednesday, value 4, comfortably inside 0-6. Every
+  event validated. The validator was working; it was handed a slice that could not
+  disagree with the bug.
+- **Fix.** `minimum: 1, maximum: 7`, and the description now names the convention and
+  points at `temporal_features` for anyone recomputing the field. 16,000 events spanning
+  a full week validate.
+- **This is P-39's trap in a third place.** Lahari found it between Stage 4 and a Python
+  consumer and fixed it with a shared helper; it was also sitting in the *contract*, and
+  a shared helper does not fix a schema. **P-39's closing claim that the trap was found
+  "before anything could fall into it" was too strong** — two things already had.
+  This is the second; the first is `src.ml.predict`, still live on the what-if page.
+- **Carry.** When a convention mismatch is found, grep for the *values*, not just the
+  code: every place the range 0-6 or 1-7 is written down is a place the convention was
+  decided, including JSON Schemas, docstrings and test fixtures.
+
+### P-46 · The what-if page has fed the model the wrong day of the week since Week 4
+**Week 5 · found by Krishna, owned by Krishna · open until the Week 5 merge**
+
+- **Symptom.** None visible, which is the problem. Found by reading, not by a failure:
+  after P-45 turned up the day-of-week convention in a JSON Schema, the carry from that
+  entry said to grep for every place the convention is decided, and
+  `src/ml/predict.py` builds the what-if row with
+  `"created_dayofweek": departure.weekday()`.
+- **Cause.** `weekday()` is Monday = 0 through Sunday = 6. The champion was trained on
+  Spark's `F.dayofweek`, Sunday = 1 through Saturday = 7 (P-39). The two never agree on
+  any day — a Wednesday is 2 on the page and 4 to the model — so every what-if
+  prediction since Week 4 D5 has been made on a day-of-week value from a different scale
+  than the one the model learned. `created_is_weekend` is computed correctly on the same
+  line, because "Saturday or Sunday" means the same thing in both conventions; that is
+  exactly why the other two temporal fields looked fine at a glance.
+- **Why this is P-39's first victim, not a new trap.** P-39 says the convention was
+  caught "before anything could fall into it". This had already fallen in, a week
+  earlier, on a page a user can click. P-45's entry already corrects P-39's claim;
+  this is the case it refers to.
+- **Why it is not fixed on this branch.** The right fix imports the one shared helper,
+  `src.streaming.schema.temporal_features`, rather than writing
+  `isoweekday() % 7 + 1` a third time — a third implementation of one convention is
+  how P-39, P-45 and this entry all happened. That helper is on Lahari's branch and
+  lands at the Week 5 merge, so the fix is made there, by the owner of this module, with
+  the size of the effect measured against the old encoding rather than guessed.
+- **Carry.** Grep for the *values* a convention produces, not just the function that
+  produces them. `weekday()` appears nowhere near the word "dayofweek" in a way a
+  search for the schema field would find.
 
 ## Process and tooling
 

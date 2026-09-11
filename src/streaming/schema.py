@@ -43,8 +43,11 @@ EXAMPLE_COLUMNS = [
     "leg_id", "trip_uuid", "corridor_id", "source_center", "destination_center",
     "trip_creation_time", "route_type", "planned_min", "planned_km",
     "created_hour", "created_dayofweek", "created_is_weekend",
-    "gap_min", "log_gap_ratio", "is_delayed",
+    "gap_min", "log_gap_ratio",
 ]
+#: `is_delayed` is deliberately absent from that list. The column exists in
+#: `features_v1` and is stale (P-42); not loading it is what stops it being used by
+#: accident, which is a stronger guarantee than remembering not to.
 
 
 def temporal_features(when: datetime) -> dict:
@@ -113,7 +116,24 @@ def query_event(row: pd.Series) -> dict:
 
 
 def fact_event(row: pd.Series) -> dict:
+    """The outcome half of a leg. `is_delayed` is **recomputed**, not carried.
+
+    `features_v1` has an `is_delayed` column and it is stale: it was written by
+    `src.pipeline.reconstruct` when `config.DELAY_THRESHOLD` was still the blueprint's
+    1.25, and D-003 moved the project to 2.00 at the Week 2 sync without the frozen
+    parquet caches (D-016) being rebuilt. 24,687 of 26,369 legs carry `True` there --
+    93.6%, which is precisely D-003's rejected-threshold row -- against 13,104 (49.7%)
+    at the threshold the project actually decided on. Every model in Weeks 3 and 4 is
+    unaffected because `src.ml.baselines.add_delay_label` recomputes the label before
+    every fit, which is also why nobody had noticed: the stale column is overwritten on
+    the only path that had ever read it. The stream is the second reader, and it would
+    have been the first to publish it (P-42).
+    """
     actual_time = row["gap_min"] + row["planned_min"]
+    # D-003's rule, in gap terms: actual > T x planned is gap > (T - 1) x planned.
+    # Same expression `add_delay_label` applies; Lahari's D3-D4 threshold sweep folds
+    # both call sites into one parameterised helper, which is where it belongs.
+    is_delayed = int(row["gap_min"] > (config.DELAY_THRESHOLD - 1) * row["planned_min"])
     od_end_time = _od_start_time(row["leg_id"]) + timedelta(minutes=float(actual_time))
     return {
         "event_id": f"fact-{row['leg_id']}",
@@ -126,7 +146,7 @@ def fact_event(row: pd.Series) -> dict:
         "leg_id": row["leg_id"],
         "gap_min": float(row["gap_min"]),
         "log_gap_ratio": float(row["log_gap_ratio"]),
-        "is_delayed": int(row["is_delayed"]),
+        "is_delayed": is_delayed,
     }
 
 

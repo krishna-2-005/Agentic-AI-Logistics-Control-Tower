@@ -96,6 +96,26 @@ KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 KAFKA_TOPIC_TRIPS = os.getenv("KAFKA_TOPIC_TRIPS", "delhivery.trips")
 KAFKA_TOPIC_ALERTS = os.getenv("KAFKA_TOPIC_ALERTS", "delhivery.alerts")
 STREAM_SOURCE = os.getenv("STREAM_SOURCE", "kafka")
+# Where the file-source fallback lands its JSON-lines batches when no Kafka broker is
+# reachable (execution plan W5's own 3-day rule, D-035). Gitignored like every other
+# generated artefact under data/ -- the committed evidence is the small sample in
+# demo/sample_events/, not the replay output.
+STREAM_DIR = DATA_DIR / os.getenv("STREAM_DIR", "stream")
+STREAM_TRIPS_DIR = STREAM_DIR / "trips"
+STREAM_ALERTS_DIR = STREAM_DIR / "alerts"
+STREAM_CHECKPOINT_DIR = STREAM_DIR / "checkpoints"
+
+# Alert bot channels (W5 D5). Declared in .env.example since Week 1 and read here for
+# the first time. All empty by default: the bot's `file` channel needs none of them and
+# is what actually runs on this machine, and a channel selected without its variables
+# refuses at start-up naming what it wants (D-039).
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+SMTP_HOST = os.getenv("SMTP_HOST", "")
+SMTP_PORT = int(os.getenv("SMTP_PORT", "587"))
+SMTP_USER = os.getenv("SMTP_USER", "")
+SMTP_PASSWORD = os.getenv("SMTP_PASSWORD", "")
+ALERT_EMAIL_TO = os.getenv("ALERT_EMAIL_TO", "")
 
 CHROMA_PERSIST_DIR = REPO_ROOT / os.getenv("CHROMA_PERSIST_DIR", "data/chroma_db")
 

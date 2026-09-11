@@ -1263,3 +1263,251 @@ have.
 
 Evidence: `src/ml/predict.py`, `src/dashboard/app.py` (Delay predictor page),
 `tests/test_predict.py`.
+
+---
+
+## D-035 · The replay runs on the file sink, and the Kafka path ships unexercised rather than unwritten — `DECIDED`
+**Week 5 · Mounika · D1-D2**
+
+The execution plan's W5 line carries its own escape hatch: *"3-day rule: if Kafka
+fights the environment, switch to file-streaming fallback."* On this machine Kafka
+does not fight so much as fail to exist — `docker --version` is not a command
+here, so there is no broker to point a producer at, and `README.md`'s prerequisite
+table already lists Docker as Week-5-optional for exactly this reason.
+
+**Decided: both sinks are written behind one `emit()`, the file sink is what runs,
+and the write-up says which is which.** `FileSink` lands one JSON-lines file per tick
+in `STREAM_TRIPS_DIR` for Spark's file source to pick up; `KafkaSink` is a real
+`KafkaProducer` keyed on `corridor_id`, imported lazily so a machine with no broker
+never touches it. Switching is `--sink kafka` or `STREAM_SOURCE` in `.env`, not a
+rewrite.
+
+**Why write the Kafka path at all if it cannot be run here.** Because the claim the
+architecture makes (`README.md`: "Kafka producer (trip replay) → Spark
+Structured Streaming") is a claim about the code, and code that does not exist cannot
+be reviewed, corrected, or run by a teammate whose machine *does* have Docker. What
+would be dishonest is running the file path and describing it as Kafka; what is
+honest is shipping both and saying plainly that only one has been executed here. The
+same "declared openly as scaffolding" standard `README.md` already applies to the
+mock TMS and the synthetic corpus.
+
+**Two details that are not arbitrary.** Files are written to `.tick_NNNNNN.jsonl.tmp`
+and then renamed, because Spark's file source lists a directory and will read a file
+that is still being written — a half-written final line surfaces at the consumer
+as a malformed record, a long way from its cause. And the Kafka path keys on
+`corridor_id` so one corridor's facts and queries land on one partition in order,
+which is what a future stateful consumer needs and what a round-robin default would
+quietly take away.
+
+**Time compression is proportional, not uniform.** Each event's real `event_time` maps
+linearly onto the replay window, so a quiet night stays quiet and a busy morning still
+bursts. Spreading the events evenly would have produced a smoother, better-looking
+throughput number than the data supports — the same instinct D-003 applies to a
+majority-class baseline, applied to a rate.
+
+Evidence: `src/streaming/producer.py`, `tests/test_producer.py`,
+`docs/W5_mounika_kafka_streaming.md`, `docs/problems.md` P-38.
+
+---
+
+## D-036 · An ambiguous order produces one question, and the agent never guesses a field the email did not state — `DECIDED`
+**Week 5 · Krishna · D1-D2**
+
+The `order_entry` prompt slot has carried the requirement since Week 3: *"an ambiguous
+order must produce a question, not a confident guess."* This entry records how that is
+actually built and, more usefully, how it is made *measurable*.
+
+**Decided: the model returns its own `file` / `clarify` decision, and a `clarify`
+names the single field it is blocked on.** Not a confidence score, not a list of
+everything imperfect — one `missing_field` and one sentence a customer can answer.
+A list of five questions is a form, and a customer who receives a form does the work
+the agent was supposed to do.
+
+**Why the corpus contains deliberately broken emails.** An agent judged only on clean
+input scores perfectly and tells you nothing: there is no way to distinguish "asks
+when it should" from "never asks at all". `src/agents/order_corpus.py` therefore
+generates five variants — `clean`, `missing_weight`, `missing_pieces`,
+`vague_origin`, `ambiguous_route` — and every non-clean one records
+`expected_missing`, the field a good question has to be about. That is what lets
+Lahari's D5 harness score *which* question was asked, not merely whether one was.
+Ground truth also **omits** whatever the variant removed from the email, so an agent
+is never marked wrong for declining to invent a value nobody wrote — the same
+"the label is what is printed, not what is true" principle D-021 fixed for the
+document corpus.
+
+**Validation is a separate stage from extraction, on purpose.** `validate_order()` is
+pure Python and re-checks what the TMS's `OrderCreate` will check anyway. That looks
+like duplication and is not: a model returning `pieces: 0` is a *prompt* problem, and
+catching it one function from where it happened says so, where the same failure
+arriving as a 422 from an HTTP call three layers away looks like an *environment*
+problem. The three stages fail differently because they are broken differently.
+
+**Result, six development emails:** 6 of 6 correct — three clean emails filed as
+real orders in the TMS (`ORD-000001` .. `ORD-000003`, `source=agent`), three ambiguous
+ones clarified, and each clarification named the right field. Extraction matched
+ground truth on every field the emails stated, with no mismatches. Re-posting a filed
+`external_ref` returns 200 and creates nothing, so a replayed email cannot double-file
+(D-017's key doing exactly what it was built for).
+
+**What this result is not.** Six emails, from the corpus the agent was developed
+against. The number that counts is Lahari's, on the 50-case set she authors at D5,
+which the agent has never seen — the same builder/judge separation D-028 applies
+to document extraction. This entry's 6-of-6 is a smoke test that the path works end to
+end, not an accuracy claim.
+
+Evidence: `src/agents/order_agent.py`, `src/agents/order_corpus.py`,
+`src/agents/prompts/order_entry/v1.md`, `tests/test_order_agent.py`,
+`benchmarks/raw/w5_order_agent_runs.json`, `docs/problems.md` P-40, P-41.
+
+---
+
+## D-037 · The streaming job scores by handing each micro-batch to the batch code, and joins a history snapshot it does not update — `DECIDED`
+**Week 5 · Mounika · D3-D4**
+
+Two decisions about `src/streaming/job.py` that are easy to make by accident and
+expensive to reverse.
+
+**Decided: `foreachBatch`, calling the same functions the batch path calls.** Not
+because a streaming DataFrame could not express the join and the model transform —
+it could — but because of what Lahari proved at D1-D2. Her stream-equals-batch
+test shows identical rows produce identical predictions; that guarantee is worth
+something only if the two paths are *the same code*. A streaming-native
+reimplementation would make it a claim about two things that look alike, which is the
+kind of claim that holds until the day it does not. Concretely, the micro-batch goes
+through pandas and back so it can call `src.ml.baselines.prepare_model_features` —
+the same function — rather than a Spark translation of D-023's cold-start policy
+and D-019's `is_ftl` encoding. **The round trip costs 0.08 seconds in a 71-second
+full-replay run: 0.1%.** That number is why the decision is cheap, and it was measured
+rather than assumed (D-038's harness exists partly to answer exactly this).
+
+**Decided: the joined history is a static snapshot, and fact events are counted and
+dropped.** The plan says "join broadcast features", and that is what this is: one
+window function over `features_v1` per key at start-up, broadcast, then joined to every
+query event. A leg finishing mid-replay therefore does **not** update the history the
+next query is scored against.
+
+That is a real limitation and it is stated in three places rather than one, because a
+streaming layer that quietly discards half its input is misrepresenting itself: the
+module docstring, the run summary (`facts_dropped`), and here. Making history live
+means stateful aggregation with as-of semantics — re-deriving Stage 4's guarantee
+inside a stream — which is Week 6+ work, not a flag. `src.ml.predict` already
+takes the identical simplification for the what-if page and documents it identically.
+
+**A consequence worth naming before anyone quotes a number off it.** The snapshot is
+each key's *latest* known history, i.e. from the end of the observation window, and the
+replay then scores legs from the beginning of that window against it. For the intended
+direction — score what happens next against what is known now — that is
+correct. For a replay of history it hands the model a snapshot from after the leg it is
+scoring. So the alert stream's precision and recall (D-038) describe how the sink
+behaves, not how well the model predicts. Lahari's Week 4 test-set numbers remain the
+project's honest accuracy claim.
+
+**Decided: alerts have a written contract, `docs/schemas/alert.schema.json`.** Krishna's
+panel and bot (D3-D4, D5) consume that directory and nothing else of this module. Same
+reasoning D-031 gives for writing the event schema down: three people cannot hold a
+shape in their heads compatibly. `tests/test_stream_job.py` pins the Python and the
+schema to each other in both directions, because a contract in two files drifts.
+
+Evidence: `src/streaming/job.py`, `docs/schemas/alert.schema.json`,
+`tests/test_stream_job.py`, `docs/W5_mounika_kafka_streaming.md`.
+
+---
+
+## D-038 · Throughput is reported as a saturated scoring rate with the stage breakdown beside it, never as one events/sec headline — `DECIDED`
+**Week 5 · Mounika · D5**
+
+The plan asks for "events/sec sustained" and "event-to-alert ms". Both are easy to
+report in a way that is technically true and practically meaningless.
+
+**The trap.** Run the replay at a comfortable rate, watch the job keep up, divide
+events by wall-clock seconds, publish it. That number is the *producer's* pacing
+wearing the job's name: offer 100 events/sec to a pipeline that can do 700 and it
+measures 100. The first version of this harness did exactly that and reported
+figures between 98 and 179 events/sec that varied with the offered load and told us
+nothing about capacity.
+
+**Decided: three numbers, each with a stated denominator.**
+1. **Produced rate** — what the producer actually achieved, from its own wall
+   clock, not its schedule.
+2. **Saturated scoring rate** — events divided by the seconds actually spent
+   inside `process_batch`, excluding every second the stream sat waiting for a file.
+   This is the capacity figure and the only one that does not move with the offered
+   load.
+3. **Event-to-alert latency** — tick-file modification time to alert write,
+   including file-source discovery and the trigger interval, because a consumer
+   waiting for an alert waits for those too.
+
+**Decided: a stage breakdown ships with every measurement.** "14 seconds per
+micro-batch" is a complaint; "13.2 of those 14 seconds are inside
+`createDataFrame` + `transform` + `collect`, and 0.06 is the pandas round trip" is a
+finding. It settled the one design question D-037 left open, and it is what shows the
+pipeline is bound by a **fixed per-batch cost** rather than by event volume — the
+same batch takes ~14s whether it holds 1,618 events or 4,000.
+
+**Consequence: this pipeline gets faster with *fewer, larger* batches**, which is the
+opposite of the usual latency instinct and is why `max_files_per_trigger` is an exposed
+dial rather than a constant. Capping it at 4 files to chase latency made a 20-second
+replay undrainable — 9 batches at ~14s each — while the uncapped run finished
+the same work in 2. Both configurations are kept in `benchmarks/raw/`, because the
+trade-off *is* the result.
+
+**Decided: `kept_up` is computed, not asserted**, from whether the job drained
+everything offered inside the replay plus a drain window of four batch times. Two
+attempts at that verdict were wrong before this one (P-43, P-44), which is the argument
+for the harness returning structured stats a test can hold rather than a log line a
+human reads.
+
+Evidence: `src/streaming/throughput.py`, `benchmarks/raw/w5_stream_throughput*.json`,
+`tests/test_stream_job.py`, `docs/W5_mounika_kafka_streaming.md`.
+
+---
+
+## D-039 · The alert bot sends a shortlist, not the stream, and says which channel actually ran — `DECIDED`
+**Week 5 · Krishna · D3-D4 and D5**
+
+Mounika's full replay produced **17,317 alerts from 26,369 legs** (D-037, D-038). That
+number is the design input for everything downstream of it: a panel that lists them
+all is a log, and a bot that forwards them all is a firehose with a phone number. The
+dependable outcome of paging someone for two of every three shipments is that they stop
+reading, at which point the alerting system has negative value — it costs attention
+and trains people to ignore it.
+
+**Decided: the bot sends a shortlist, and every part of the shortlist is a stated rule.**
+1. **New only**, keyed on `alert_id` — the idempotency key `alert.schema.json`
+   defines for exactly this. Seen ids persist in a small state file, so a restart or a
+   re-emitted micro-batch does not page anybody twice. Verified by running it twice
+   against the real sink: 10 sent, then the *next* 10, 20 distinct ids, no repeats.
+2. **Worst first, by excess over the leg's own threshold**, not by raw predicted
+   minutes. A 400-minute haul running 30 minutes long is ordinary; a 40-minute run doing
+   the same is not. `excess_min` is the quantity D-003's rule already tests, so the
+   ranking and the flag are the same measurement.
+3. **A hard cap per run** (`--top`, default 10), with the held-back count logged
+   (`1344 held back by the cap`). A cap that truncates visibly is a policy; a bot that
+   silently drops is a bug nobody can see.
+
+**Decided: the message carries two things the plan did not ask for.** The plan says
+"shipment, corridor, predicted delay". A delay with no scale is unreadable — "+511
+min" means something different on a 132-minute leg than on a 900-minute one — so
+the planned time rides along. And a prediction made off a cold history says so, because
+D-023 already established that a zero-filled history is not the same claim as a
+corridor that runs on time.
+
+**Decided: the file channel is what runs, and the documentation says so.** Telegram
+and email are implemented, and the SMTP and Bot API calls are real code, but this
+project has no bot account and no SMTP credentials, so **neither has ever been run
+against a live service**. That is D-035's rule for the Kafka sink applied a second
+time: the choice is one flag, and the write-up says which flag was actually pulled
+rather than letting three channel classes imply three working integrations. A channel
+selected without its variables refuses at start-up naming what it needs (`telegram
+channel needs TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID`), rather than failing per message
+halfway through a send loop and leaving the state file half-written.
+
+**Decided: the panel and the bot read the sink through one module**,
+`src.dashboard.alerts`. Parsing two differently-natured clocks, deduplicating replayed
+batches and ranking by severity are each easy to get subtly wrong, and getting them
+wrong in two places is how the panel and the bot would come to disagree about which
+alert is worst. The page also stays inside D-009: no Spark on a page that only reads a
+directory.
+
+Evidence: `src/dashboard/alerts.py`, `src/agents/alert_bot.py`, the Live alerts page in
+`src/dashboard/app.py`, `tests/test_alerts_panel.py`, `docs/W5_krishna_order_entry.md`.
