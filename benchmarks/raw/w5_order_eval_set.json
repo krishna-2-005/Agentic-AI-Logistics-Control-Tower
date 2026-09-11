@@ -1,0 +1,772 @@
+[
+  {
+    "seq": 5001,
+    "variant": "clean_table",
+    "subject": "Consignment request - IND834002AAB",
+    "body": "Dear team,\n\nKindly arrange the following consignment.\n\nOrigin hub code:       IND834002AAB (Ranchi_Hub (Jharkhand))\nDestination hub code:  IND826004AAA (Dhanbad_Kalynpur_I (Jharkhand))\nNo. of packages:       17\nGross weight:          475.9 kg\nMode:                  Carting (part load)\nReceiver:              Dhanbad Distribution Hub\n\nBest regards,\nRavi Kumar\nLogistics desk, Ranchi Distributors",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Ranchi Distributors",
+      "origin_centre": "IND834002AAB",
+      "dest_centre": "IND826004AAA",
+      "route_type": "Carting",
+      "pieces": 17,
+      "weight_kg": 475.9
+    }
+  },
+  {
+    "seq": 5002,
+    "variant": "tonnes",
+    "subject": "Pallets ready for pickup",
+    "body": "Hello,\n\nWe have 6 pallets ready at Rampur_RoshnBgh_I (Uttar Pradesh) (code IND244901AAB) for Amroha_SamitiRd_D (Uttar Pradesh) (code IND244221AAA), consignee Amroha Mart.\nTotal load is 3.723 tonnes. Full Truck Load please.\n\nBest regards,\nAnita Sharma\nLogistics desk, Rampur Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Rampur Logistics Pvt Ltd",
+      "origin_centre": "IND244901AAB",
+      "dest_centre": "IND244221AAA",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 3723.0
+    }
+  },
+  {
+    "seq": 5003,
+    "variant": "pieces_in_words",
+    "subject": "Carton collection",
+    "body": "Hi,\n\nPlease collect one carton from Rajam_SamathBv_D (Andhra Pradesh) (IND532127AAA) and deliver to Salur Stores at Salur_ward9_D (Andhra Pradesh) (IND535591AAA). Combined weight 8701.8 kg. Service: FTL.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Rajam Freight Carriers",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Rajam Freight Carriers",
+      "origin_centre": "IND532127AAA",
+      "dest_centre": "IND535591AAA",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 8701.8
+    }
+  },
+  {
+    "seq": 5004,
+    "variant": "prose_reversed",
+    "subject": "Delivery to Hanumangarh",
+    "body": "Good morning,\n\nThis needs to reach Hanumangarh Stores at Hanumangarh_DC (Rajasthan), hub IND335513AAA. It will be collected from our RaisingNgr_BisnolDPP_D (Rajasthan) premises, hub code IND335051AAA. 16 crates, 183.2 kg altogether, on Carting (part load).\n\nBest regards,\nMeena Das\nLogistics desk, Raisingngr Exports",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Raisingngr Exports",
+      "origin_centre": "IND335051AAA",
+      "dest_centre": "IND335513AAA",
+      "route_type": "Carting",
+      "pieces": 16,
+      "weight_kg": 183.2
+    }
+  },
+  {
+    "seq": 5005,
+    "variant": "correction",
+    "subject": "Fwd: booking (weight corrected)",
+    "body": "Hi again,\n\nCorrection to my mail below: the weight is 8457.4 kg, not 10994.6 kg. Everything else stands.\n\n---------- Forwarded message ----------\nPlease book 5 pieces from Karanjia_Sarubali_D (Orissa) (IND757037AAA) to Bhadrak_Central_I_2 (Orissa) (IND756100AAC), consignee Bhadrak Distribution Hub. Weight 10994.6 kg. FTL.\n\nBest regards,\nArjun Patel\nLogistics desk, Karanjia Traders",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Karanjia Traders",
+      "origin_centre": "IND757037AAA",
+      "dest_centre": "IND756100AAC",
+      "route_type": "FTL",
+      "pieces": 5,
+      "weight_kg": 8457.4
+    }
+  },
+  {
+    "seq": 5006,
+    "variant": "weight_range",
+    "subject": "Booking request",
+    "body": "Hello,\n\nBooking needed from Vapi_IndEstat_I (Gujarat) (IND396191AAC) to Silvassa_Samrvrni_D (Dadra and Nagar Haveli) (IND396232AAA) for Silvassa Agencies. 5 pieces, Carting.\nTotal weight should be somewhere between 1 and 2 tonnes.\n\nBest regards,\nRavi Kumar\nLogistics desk, Vapi Traders",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Vapi Traders",
+      "origin_centre": "IND396191AAC",
+      "dest_centre": "IND396232AAA",
+      "route_type": "Carting",
+      "pieces": 5
+    }
+  },
+  {
+    "seq": 5007,
+    "variant": "city_destination",
+    "subject": "Shipment to Lalru",
+    "body": "Hi,\n\nPlease move 3 pieces (275.9 kg) from Naraingarh_Ward2DPP_D (Haryana) (IND134203AAA) to our Lalru depot, attention Lalru Agencies. Carting (part load).\n\nBest regards,\nAnita Sharma\nLogistics desk, Naraingarh Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Naraingarh Distributors",
+      "origin_centre": "IND134203AAA",
+      "route_type": "Carting",
+      "pieces": 3,
+      "weight_kg": 275.9
+    }
+  },
+  {
+    "seq": 5008,
+    "variant": "no_service",
+    "subject": "Pickup request",
+    "body": "Dear team,\n\nPickup from CCU_DumDum_DPC (West Bengal) (IND700028AAB), drop at Kolkata_Dankuni_HB (West Bengal) (IND712311AAA). Consignee Kolkata Distribution Hub. 14 pieces, 147.4 kg.\nPlease confirm the pickup time.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Ccu Exports",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Ccu Exports",
+      "origin_centre": "IND700028AAB",
+      "dest_centre": "IND712311AAA",
+      "pieces": 14,
+      "weight_kg": 147.4
+    }
+  },
+  {
+    "seq": 5009,
+    "variant": "pieces_approx",
+    "subject": "Boxes to move",
+    "body": "Hello,\n\nWe need roughly 5-7 boxes moved from Nakodar_ChowkDPP_D (Punjab) (IND144040AAA) to Jalandhar_DPC (Punjab) (IND144001AAB), consignee Jalandhar Stores. Total 3144.8 kg, FTL.\n\nBest regards,\nMeena Das\nLogistics desk, Nakodar Traders",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Nakodar Traders",
+      "origin_centre": "IND144040AAA",
+      "dest_centre": "IND144001AAB",
+      "route_type": "FTL",
+      "weight_kg": 3144.8
+    }
+  },
+  {
+    "seq": 5010,
+    "variant": "missing_two",
+    "subject": "Upcoming shipment",
+    "body": "Hi,\n\n6 pieces to go from Bangalore_Nelmngla_H (Karnataka) (IND562132AAA) to Gurgaon_Bilaspur_HB (Haryana) (IND000000ACB) for Gurgaon Stores. We are still weighing the load and will decide on the vehicle once we know it.\n\nBest regards,\nArjun Patel\nLogistics desk, Bangalore Exports",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Bangalore Exports",
+      "origin_centre": "IND562132AAA",
+      "dest_centre": "IND000000ACB",
+      "pieces": 6
+    }
+  },
+  {
+    "seq": 5011,
+    "variant": "clean_table",
+    "subject": "Consignment request - IND577201AAA",
+    "body": "Dear team,\n\nKindly arrange the following consignment.\n\nOrigin hub code:       IND577201AAA (Shimoga_DC (Karnataka))\nDestination hub code:  IND562132AAA (Bangalore_Nelmngla_H (Karnataka))\nNo. of packages:       1\nGross weight:          3375.5 kg\nMode:                  Full Truck Load\nReceiver:              Bangalore Warehousing\n\nBest regards,\nRavi Kumar\nLogistics desk, Shimoga Distributors",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Shimoga Distributors",
+      "origin_centre": "IND577201AAA",
+      "dest_centre": "IND562132AAA",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 3375.5
+    }
+  },
+  {
+    "seq": 5012,
+    "variant": "tonnes",
+    "subject": "Pallets ready for pickup",
+    "body": "Hello,\n\nWe have 6 pallets ready at Palwal (Haryana) (code IND121102AAA) for FBD_Balabhgarh_DPC (Haryana) (code IND121004AAB), consignee Fbd Agencies.\nTotal load is 0.274 tonnes. Carting (part load) please.\n\nBest regards,\nAnita Sharma\nLogistics desk, Palwal Enterprises",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Palwal Enterprises",
+      "origin_centre": "IND121102AAA",
+      "dest_centre": "IND121004AAB",
+      "route_type": "Carting",
+      "pieces": 6,
+      "weight_kg": 274.0
+    }
+  },
+  {
+    "seq": 5013,
+    "variant": "pieces_in_words",
+    "subject": "Carton collection",
+    "body": "Hi,\n\nPlease collect six cartons from Sheohar_Ward9DPP_D (Bihar) (IND843329AAB) and deliver to Sitamari Agencies at Sitamari_Durma_D (Bihar) (IND843301AAA). Combined weight 8248.4 kg. Service: FTL.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Sheohar Distributors",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Sheohar Distributors",
+      "origin_centre": "IND843329AAB",
+      "dest_centre": "IND843301AAA",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 8248.4
+    }
+  },
+  {
+    "seq": 5014,
+    "variant": "prose_reversed",
+    "subject": "Delivery to AnandprShb",
+    "body": "Good morning,\n\nThis needs to reach Anandprshb Agencies at AnandprShb_PnjPiara_D (Punjab), hub IND140118AAA. It will be collected from our RoopNagar_ChotiHvl_DC (Punjab) premises, hub code IND140001AAA. 2 crates, 6717.7 kg altogether, on Full Truck Load.\n\nBest regards,\nMeena Das\nLogistics desk, Roopnagar Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Roopnagar Logistics Pvt Ltd",
+      "origin_centre": "IND140001AAA",
+      "dest_centre": "IND140118AAA",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 6717.7
+    }
+  },
+  {
+    "seq": 5015,
+    "variant": "correction",
+    "subject": "Fwd: booking (weight corrected)",
+    "body": "Hi again,\n\nCorrection to my mail below: the weight is 8782.0 kg, not 11416.6 kg. Everything else stands.\n\n---------- Forwarded message ----------\nPlease book 2 pieces from Jayamkondan_Chithbrm_D (Tamil Nadu) (IND621802AAA) to Lalpet_PriyrNGR_D (Tamil Nadu) (IND608301AAA), consignee Lalpet Distribution Hub. Weight 11416.6 kg. FTL.\n\nBest regards,\nArjun Patel\nLogistics desk, Jayamkondan Exports",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Jayamkondan Exports",
+      "origin_centre": "IND621802AAA",
+      "dest_centre": "IND608301AAA",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 8782.0
+    }
+  },
+  {
+    "seq": 5016,
+    "variant": "weight_range",
+    "subject": "Booking request",
+    "body": "Hello,\n\nBooking needed from Tirchngode_Mhdhvpur_D (Tamil Nadu) (IND637211AAA) to Mettur_RTOroad_D (Tamil Nadu) (IND636402AAA) for Mettur Mart. 11 pieces, Carting.\nTotal weight should be somewhere between 1 and 2 tonnes.\n\nBest regards,\nRavi Kumar\nLogistics desk, Tirchngode Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Tirchngode Enterprises",
+      "origin_centre": "IND637211AAA",
+      "dest_centre": "IND636402AAA",
+      "route_type": "Carting",
+      "pieces": 11
+    }
+  },
+  {
+    "seq": 5017,
+    "variant": "city_destination",
+    "subject": "Shipment to Ratnagiri",
+    "body": "Hi,\n\nPlease move 6 pieces (6256.4 kg) from Kolhapur_Shivaji_I (Maharashtra) (IND416012AAA) to our Ratnagiri depot, attention Ratnagiri Stores. Full Truck Load.\n\nBest regards,\nAnita Sharma\nLogistics desk, Kolhapur Exports",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Kolhapur Exports",
+      "origin_centre": "IND416012AAA",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 6256.4
+    }
+  },
+  {
+    "seq": 5018,
+    "variant": "no_service",
+    "subject": "Pickup request",
+    "body": "Dear team,\n\nPickup from Degana_BhukrdPP_D (Rajasthan) (IND341503AAB), drop at Merta_Central_DPP_1 (Rajasthan) (IND341510AAB). Consignee Merta Stores. 2 pieces, 5490.4 kg.\nPlease confirm the pickup time.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Degana Industries",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Degana Industries",
+      "origin_centre": "IND341503AAB",
+      "dest_centre": "IND341510AAB",
+      "pieces": 2,
+      "weight_kg": 5490.4
+    }
+  },
+  {
+    "seq": 5019,
+    "variant": "pieces_approx",
+    "subject": "Boxes to move",
+    "body": "Hello,\n\nWe need roughly 4-6 boxes moved from Guna_Raghogrh_D (Madhya Pradesh) (IND473226AAA) to Guna_HnumnDPP_D (Madhya Pradesh) (IND473001AAA), consignee Guna Trading Co. Total 7810.6 kg, FTL.\n\nBest regards,\nMeena Das\nLogistics desk, Guna Industries",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Guna Industries",
+      "origin_centre": "IND473226AAA",
+      "dest_centre": "IND473001AAA",
+      "route_type": "FTL",
+      "weight_kg": 7810.6
+    }
+  },
+  {
+    "seq": 5020,
+    "variant": "missing_two",
+    "subject": "Upcoming shipment",
+    "body": "Hi,\n\n4 pieces to go from MAA_Poonamallee_HB (Tamil Nadu) (IND600056AAB) to Bangalore_Nelmngla_H (Karnataka) (IND562132AAA) for Bangalore Warehousing. We are still weighing the load and will decide on the vehicle once we know it.\n\nBest regards,\nArjun Patel\nLogistics desk, Maa Traders",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Maa Traders",
+      "origin_centre": "IND600056AAB",
+      "dest_centre": "IND562132AAA",
+      "pieces": 4
+    }
+  },
+  {
+    "seq": 5021,
+    "variant": "clean_table",
+    "subject": "Consignment request - IND506132AAA",
+    "body": "Dear team,\n\nKindly arrange the following consignment.\n\nOrigin hub code:       IND506132AAA (Khanpur_Nrsampt_D (Telangana))\nDestination hub code:  IND122001AAJ (Mahbubabad_Yellanda_D (Telangana))\nNo. of packages:       6\nGross weight:          4199.4 kg\nMode:                  Full Truck Load\nReceiver:              Mahbubabad Trading Co\n\nBest regards,\nRavi Kumar\nLogistics desk, Khanpur Exports",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Khanpur Exports",
+      "origin_centre": "IND506132AAA",
+      "dest_centre": "IND122001AAJ",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 4199.4
+    }
+  },
+  {
+    "seq": 5022,
+    "variant": "tonnes",
+    "subject": "Pallets ready for pickup",
+    "body": "Hello,\n\nWe have 20 pallets ready at Bengaluru_Bomsndra_HB (Karnataka) (code IND560099AAB) for Bengaluru_Hoodi_IP (Karnataka) (code IND560048AAB), consignee Bengaluru Distribution Hub.\nTotal load is 0.49 tonnes. Carting (part load) please.\n\nBest regards,\nAnita Sharma\nLogistics desk, Bengaluru Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Bengaluru Logistics Pvt Ltd",
+      "origin_centre": "IND560099AAB",
+      "dest_centre": "IND560048AAB",
+      "route_type": "Carting",
+      "pieces": 20,
+      "weight_kg": 490.0
+    }
+  },
+  {
+    "seq": 5023,
+    "variant": "pieces_in_words",
+    "subject": "Carton collection",
+    "body": "Hi,\n\nPlease collect five cartons from Gurgaon_Bilaspur_HB (Haryana) (IND000000ACB) and deliver to Bangalore Agencies at Bangalore_Nelmngla_H (Karnataka) (IND562132AAA). Combined weight 6543.6 kg. Service: FTL.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Gurgaon Traders",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Gurgaon Traders",
+      "origin_centre": "IND000000ACB",
+      "dest_centre": "IND562132AAA",
+      "route_type": "FTL",
+      "pieces": 5,
+      "weight_kg": 6543.6
+    }
+  },
+  {
+    "seq": 5024,
+    "variant": "prose_reversed",
+    "subject": "Delivery to Ambasamdrm",
+    "body": "Good morning,\n\nThis needs to reach Ambasamdrm Distribution Hub at Ambasamdrm_Solaiprm_D (Tamil Nadu), hub IND627401AAA. It will be collected from our Tenkasi_RailwyRd_D (Tamil Nadu) premises, hub code IND627811AAA. 6 crates, 6587.8 kg altogether, on Full Truck Load.\n\nBest regards,\nMeena Das\nLogistics desk, Tenkasi Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Tenkasi Logistics Pvt Ltd",
+      "origin_centre": "IND627811AAA",
+      "dest_centre": "IND627401AAA",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 6587.8
+    }
+  },
+  {
+    "seq": 5025,
+    "variant": "correction",
+    "subject": "Fwd: booking (weight corrected)",
+    "body": "Hi again,\n\nCorrection to my mail below: the weight is 7048.4 kg, not 9162.9 kg. Everything else stands.\n\n---------- Forwarded message ----------\nPlease book 1 pieces from Suryapet_Krishna_D (Telangana) (IND508213AAB) to Nalgonda_HydRoad_DC (Telangana) (IND508001AAA), consignee Nalgonda Trading Co. Weight 9162.9 kg. FTL.\n\nBest regards,\nArjun Patel\nLogistics desk, Suryapet Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Suryapet Logistics Pvt Ltd",
+      "origin_centre": "IND508213AAB",
+      "dest_centre": "IND508001AAA",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 7048.4
+    }
+  },
+  {
+    "seq": 5026,
+    "variant": "weight_range",
+    "subject": "Booking request",
+    "body": "Hello,\n\nBooking needed from Perambalur_goplpurm_D (Tamil Nadu) (IND621212AAA) to Ariyalur_Kmrajngr_D (Tamil Nadu) (IND621704AAA) for Ariyalur Distribution Hub. 4 pieces, FTL.\nTotal weight should be somewhere between 4 and 5 tonnes.\n\nBest regards,\nRavi Kumar\nLogistics desk, Perambalur Industries",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Perambalur Industries",
+      "origin_centre": "IND621212AAA",
+      "dest_centre": "IND621704AAA",
+      "route_type": "FTL",
+      "pieces": 4
+    }
+  },
+  {
+    "seq": 5027,
+    "variant": "city_destination",
+    "subject": "Shipment to Tenkasi",
+    "body": "Hi,\n\nPlease move 5 pieces (1175.7 kg) from Tirunelveli_VdkkuSrt_I (Tamil Nadu) (IND627005AAA) to our Tenkasi depot, attention Tenkasi Trading Co. Full Truck Load.\n\nBest regards,\nAnita Sharma\nLogistics desk, Tirunelveli Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Tirunelveli Freight Carriers",
+      "origin_centre": "IND627005AAA",
+      "route_type": "FTL",
+      "pieces": 5,
+      "weight_kg": 1175.7
+    }
+  },
+  {
+    "seq": 5028,
+    "variant": "no_service",
+    "subject": "Pickup request",
+    "body": "Dear team,\n\nPickup from AMD_Memnagar (Gujarat) (IND380054AAA), drop at Ahmedabad_East_H_1 (Gujarat) (IND382430AAB). Consignee Ahmedabad Mart. 4 pieces, 296.2 kg.\nPlease confirm the pickup time.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Amd Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Amd Freight Carriers",
+      "origin_centre": "IND380054AAA",
+      "dest_centre": "IND382430AAB",
+      "pieces": 4,
+      "weight_kg": 296.2
+    }
+  },
+  {
+    "seq": 5029,
+    "variant": "pieces_approx",
+    "subject": "Boxes to move",
+    "body": "Hello,\n\nWe need roughly 4-6 boxes moved from Guwahati_Hub (Assam) (IND781018AAB) to Shillong (Meghalaya) (IND793001AAA), consignee Shillong Agencies. Total 4207.3 kg, FTL.\n\nBest regards,\nMeena Das\nLogistics desk, Guwahati Exports",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Guwahati Exports",
+      "origin_centre": "IND781018AAB",
+      "dest_centre": "IND793001AAA",
+      "route_type": "FTL",
+      "weight_kg": 4207.3
+    }
+  },
+  {
+    "seq": 5030,
+    "variant": "missing_two",
+    "subject": "Upcoming shipment",
+    "body": "Hi,\n\n1 pieces to go from Bhiwandi_Mankoli_HB (Maharashtra) (IND421302AAG) to Mumbai_Jogeshwri_L (Maharashtra) (IND400102AAB) for Mumbai Distribution Hub. We are still weighing the load and will decide on the vehicle once we know it.\n\nBest regards,\nArjun Patel\nLogistics desk, Bhiwandi Industries",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Bhiwandi Industries",
+      "origin_centre": "IND421302AAG",
+      "dest_centre": "IND400102AAB",
+      "pieces": 1
+    }
+  },
+  {
+    "seq": 5031,
+    "variant": "clean_table",
+    "subject": "Consignment request - IND560099AAB",
+    "body": "Dear team,\n\nKindly arrange the following consignment.\n\nOrigin hub code:       IND560099AAB (Bengaluru_Bomsndra_HB (Karnataka))\nDestination hub code:  IND560060AAB (Bengaluru_Kengeri_IP (Karnataka))\nNo. of packages:       18\nGross weight:          103.7 kg\nMode:                  Carting (part load)\nReceiver:              Bengaluru Stores\n\nBest regards,\nRavi Kumar\nLogistics desk, Bengaluru Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Bengaluru Logistics Pvt Ltd",
+      "origin_centre": "IND560099AAB",
+      "dest_centre": "IND560060AAB",
+      "route_type": "Carting",
+      "pieces": 18,
+      "weight_kg": 103.7
+    }
+  },
+  {
+    "seq": 5032,
+    "variant": "tonnes",
+    "subject": "Pallets ready for pickup",
+    "body": "Hello,\n\nWe have 2 pallets ready at Modasa_Central_D_1 (Gujarat) (code IND383315AAC) for Khedbrahma_Patelfli_D (Gujarat) (code IND383255AAB), consignee Khedbrahma Distribution Hub.\nTotal load is 1.925 tonnes. Full Truck Load please.\n\nBest regards,\nAnita Sharma\nLogistics desk, Modasa Industries",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Modasa Industries",
+      "origin_centre": "IND383315AAC",
+      "dest_centre": "IND383255AAB",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 1925.0
+    }
+  },
+  {
+    "seq": 5033,
+    "variant": "pieces_in_words",
+    "subject": "Carton collection",
+    "body": "Hi,\n\nPlease collect nine cartons from Gurgaon_Begumpur_CP (Haryana) (IND122004AAA) and deliver to Gurgaon Stores at Gurgaon_Bilaspur_P (Haryana) (IND122413AAE). Combined weight 15.0 kg. Service: Carting.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Gurgaon Traders",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Gurgaon Traders",
+      "origin_centre": "IND122004AAA",
+      "dest_centre": "IND122413AAE",
+      "route_type": "Carting",
+      "pieces": 9,
+      "weight_kg": 15.0
+    }
+  },
+  {
+    "seq": 5034,
+    "variant": "prose_reversed",
+    "subject": "Delivery to Ongole",
+    "body": "Good morning,\n\nThis needs to reach Ongole Stores at Ongole_SubhVRTL_I (Andhra Pradesh), hub IND523002AAA. It will be collected from our Hyderabad_Shamshbd_H (Telangana) premises, hub code IND501359AAE. 4 crates, 2798.8 kg altogether, on Full Truck Load.\n\nBest regards,\nMeena Das\nLogistics desk, Hyderabad Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Hyderabad Logistics Pvt Ltd",
+      "origin_centre": "IND501359AAE",
+      "dest_centre": "IND523002AAA",
+      "route_type": "FTL",
+      "pieces": 4,
+      "weight_kg": 2798.8
+    }
+  },
+  {
+    "seq": 5035,
+    "variant": "correction",
+    "subject": "Fwd: booking (weight corrected)",
+    "body": "Hi again,\n\nCorrection to my mail below: the weight is 320.0 kg, not 416.0 kg. Everything else stands.\n\n---------- Forwarded message ----------\nPlease book 13 pieces from Chennai_Hub (Tamil Nadu) (IND600032AAB) to Chennai_Madhavaram_DPC (Tamil Nadu) (IND600076AAB), consignee Chennai Warehousing. Weight 416.0 kg. Carting.\n\nBest regards,\nArjun Patel\nLogistics desk, Chennai Distributors",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Chennai Distributors",
+      "origin_centre": "IND600032AAB",
+      "dest_centre": "IND600076AAB",
+      "route_type": "Carting",
+      "pieces": 13,
+      "weight_kg": 320.0
+    }
+  },
+  {
+    "seq": 5036,
+    "variant": "weight_range",
+    "subject": "Booking request",
+    "body": "Hello,\n\nBooking needed from Bangalore_Nelmngla_H (Karnataka) (IND562132AAA) to Bengaluru_KHRoad_I (Karnataka) (IND560002AAA) for Bengaluru Distribution Hub. 1 pieces, Carting.\nTotal weight should be somewhere between 1 and 2 tonnes.\n\nBest regards,\nRavi Kumar\nLogistics desk, Bangalore Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Bangalore Freight Carriers",
+      "origin_centre": "IND562132AAA",
+      "dest_centre": "IND560002AAA",
+      "route_type": "Carting",
+      "pieces": 1
+    }
+  },
+  {
+    "seq": 5037,
+    "variant": "city_destination",
+    "subject": "Shipment to Bagalkot",
+    "body": "Hi,\n\nPlease move 1 pieces (7613.9 kg) from Ramdurg_GndhiNGR_D (Karnataka) (IND591123AAC) to our Bagalkot depot, attention Bagalkot Distribution Hub. Full Truck Load.\n\nBest regards,\nAnita Sharma\nLogistics desk, Ramdurg Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Ramdurg Enterprises",
+      "origin_centre": "IND591123AAC",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 7613.9
+    }
+  },
+  {
+    "seq": 5038,
+    "variant": "no_service",
+    "subject": "Pickup request",
+    "body": "Dear team,\n\nPickup from Haridwar (Uttarakhand) (IND249407AAA), drop at Rishikesh_DC (Uttarakhand) (IND249201AAA). Consignee Rishikesh Warehousing. 6 pieces, 1549.5 kg.\nPlease confirm the pickup time.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Haridwar Traders",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Haridwar Traders",
+      "origin_centre": "IND249407AAA",
+      "dest_centre": "IND249201AAA",
+      "pieces": 6,
+      "weight_kg": 1549.5
+    }
+  },
+  {
+    "seq": 5039,
+    "variant": "pieces_approx",
+    "subject": "Boxes to move",
+    "body": "Hello,\n\nWe need roughly 3-5 boxes moved from Phalodi_PalikDPP_D (Rajasthan) (IND342301AAA) to Jodhpur_Basni_I (Rajasthan) (IND342005AAD), consignee Jodhpur Mart. Total 1272.4 kg, FTL.\n\nBest regards,\nMeena Das\nLogistics desk, Phalodi Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Phalodi Freight Carriers",
+      "origin_centre": "IND342301AAA",
+      "dest_centre": "IND342005AAD",
+      "route_type": "FTL",
+      "weight_kg": 1272.4
+    }
+  },
+  {
+    "seq": 5040,
+    "variant": "missing_two",
+    "subject": "Upcoming shipment",
+    "body": "Hi,\n\n5 pieces to go from Etawah_MhraChng_D (Uttar Pradesh) (IND206001AAA) to Gurgaon_Bilaspur_HB (Haryana) (IND000000ACB) for Gurgaon Mart. We are still weighing the load and will decide on the vehicle once we know it.\n\nBest regards,\nArjun Patel\nLogistics desk, Etawah Exports",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Etawah Exports",
+      "origin_centre": "IND206001AAA",
+      "dest_centre": "IND000000ACB",
+      "pieces": 5
+    }
+  },
+  {
+    "seq": 5041,
+    "variant": "clean_table",
+    "subject": "Consignment request - IND246701AAA",
+    "body": "Dear team,\n\nKindly arrange the following consignment.\n\nOrigin hub code:       IND246701AAA (Bijnor_NaginaRd_D (Uttar Pradesh))\nDestination hub code:  IND246763AAA (Najibabad_KotdwrRD_D (Uttar Pradesh))\nNo. of packages:       4\nGross weight:          3400.3 kg\nMode:                  Full Truck Load\nReceiver:              Najibabad Retail Pvt Ltd\n\nBest regards,\nRavi Kumar\nLogistics desk, Bijnor Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Bijnor Logistics Pvt Ltd",
+      "origin_centre": "IND246701AAA",
+      "dest_centre": "IND246763AAA",
+      "route_type": "FTL",
+      "pieces": 4,
+      "weight_kg": 3400.3
+    }
+  },
+  {
+    "seq": 5042,
+    "variant": "tonnes",
+    "subject": "Pallets ready for pickup",
+    "body": "Hello,\n\nWe have 15 pallets ready at Pavagada_PnukndRD_D (Karnataka) (code IND561202AAB) for Puttaprthi_Gokulam_D (Andhra Pradesh) (code IND515134AAA), consignee Puttaprthi Warehousing.\nTotal load is 0.485 tonnes. Carting (part load) please.\n\nBest regards,\nAnita Sharma\nLogistics desk, Pavagada Freight Carriers",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Pavagada Freight Carriers",
+      "origin_centre": "IND561202AAB",
+      "dest_centre": "IND515134AAA",
+      "route_type": "Carting",
+      "pieces": 15,
+      "weight_kg": 485.0
+    }
+  },
+  {
+    "seq": 5043,
+    "variant": "pieces_in_words",
+    "subject": "Carton collection",
+    "body": "Hi,\n\nPlease collect six cartons from Rajsamand_kankroli_D (Rajasthan) (IND313324AAA) and deliver to Udaipur Agencies at Udaipur_Mangri_I (Rajasthan) (IND313001AAB). Combined weight 4696.0 kg. Service: FTL.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Rajsamand Exports",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Rajsamand Exports",
+      "origin_centre": "IND313324AAA",
+      "dest_centre": "IND313001AAB",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 4696.0
+    }
+  },
+  {
+    "seq": 5044,
+    "variant": "prose_reversed",
+    "subject": "Delivery to Rayachoti",
+    "body": "Good morning,\n\nThis needs to reach Rayachoti Retail Pvt Ltd at Rayachoti_Madnpali_D (Andhra Pradesh), hub IND516269AAA. It will be collected from our Kadiri_GVManu_D (Andhra Pradesh) premises, hub code IND515591AAA. 2 crates, 4711.9 kg altogether, on Full Truck Load.\n\nBest regards,\nMeena Das\nLogistics desk, Kadiri Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Kadiri Logistics Pvt Ltd",
+      "origin_centre": "IND515591AAA",
+      "dest_centre": "IND516269AAA",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 4711.9
+    }
+  },
+  {
+    "seq": 5045,
+    "variant": "correction",
+    "subject": "Fwd: booking (weight corrected)",
+    "body": "Hi again,\n\nCorrection to my mail below: the weight is 459.0 kg, not 596.7 kg. Everything else stands.\n\n---------- Forwarded message ----------\nPlease book 2 pieces from Mumbai Hub (Maharashtra) (IND400072AAB) to Bhiwandi_Mankoli_HB (Maharashtra) (IND421302AAG), consignee Bhiwandi Warehousing. Weight 596.7 kg. Carting.\n\nBest regards,\nArjun Patel\nLogistics desk, Mumbai Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Mumbai Logistics Pvt Ltd",
+      "origin_centre": "IND400072AAB",
+      "dest_centre": "IND421302AAG",
+      "route_type": "Carting",
+      "pieces": 2,
+      "weight_kg": 459.0
+    }
+  },
+  {
+    "seq": 5046,
+    "variant": "weight_range",
+    "subject": "Booking request",
+    "body": "Hello,\n\nBooking needed from Chennai_Chnglptu_DC (Tamil Nadu) (IND603001AAA) to Malemruvathur_Achipkam_D (Tamil Nadu) (IND603301AAA) for Malemruvathur Agencies. 17 pieces, Carting.\nTotal weight should be somewhere between 1 and 2 tonnes.\n\nBest regards,\nRavi Kumar\nLogistics desk, Chennai Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Chennai Enterprises",
+      "origin_centre": "IND603001AAA",
+      "dest_centre": "IND603301AAA",
+      "route_type": "Carting",
+      "pieces": 17
+    }
+  },
+  {
+    "seq": 5047,
+    "variant": "city_destination",
+    "subject": "Shipment to Delhi",
+    "body": "Hi,\n\nPlease move 16 pieces (204.7 kg) from Gurgaon_Bilaspur_HB (Haryana) (IND000000ACB) to our Delhi depot, attention Delhi Trading Co. Carting (part load).\n\nBest regards,\nAnita Sharma\nLogistics desk, Gurgaon Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Gurgaon Enterprises",
+      "origin_centre": "IND000000ACB",
+      "route_type": "Carting",
+      "pieces": 16,
+      "weight_kg": 204.7
+    }
+  },
+  {
+    "seq": 5048,
+    "variant": "no_service",
+    "subject": "Pickup request",
+    "body": "Dear team,\n\nPickup from Mumbai_Kalyan West _Dc (Maharashtra) (IND421301AAA), drop at Mumbai_East_I_21 (Maharashtra) (IND421302AAR). Consignee Mumbai Agencies. 13 pieces, 191.1 kg.\nPlease confirm the pickup time.\n\nBest regards,\nSuresh Iyer\nLogistics desk, Mumbai Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Mumbai Distributors",
+      "origin_centre": "IND421301AAA",
+      "dest_centre": "IND421302AAR",
+      "pieces": 13,
+      "weight_kg": 191.1
+    }
+  },
+  {
+    "seq": 5049,
+    "variant": "pieces_approx",
+    "subject": "Boxes to move",
+    "body": "Hello,\n\nWe need roughly 3-5 boxes moved from Hubli_Adargchi_IP (Karnataka) (IND580028AAA) to Sirsi_Vidygiri_D (Karnataka) (IND581402AAA), consignee Sirsi Stores. Total 7668.8 kg, FTL.\n\nBest regards,\nMeena Das\nLogistics desk, Hubli Exports",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Hubli Exports",
+      "origin_centre": "IND580028AAA",
+      "dest_centre": "IND581402AAA",
+      "route_type": "FTL",
+      "weight_kg": 7668.8
+    }
+  },
+  {
+    "seq": 5050,
+    "variant": "missing_two",
+    "subject": "Upcoming shipment",
+    "body": "Hi,\n\n9 pieces to go from Doddablpur_ChikaDPP_D (Karnataka) (IND561203AAB) to Chikblapur_ShntiSgr_D (Karnataka) (IND562101AAA) for Chikblapur Warehousing. We are still weighing the load and will decide on the vehicle once we know it.\n\nBest regards,\nArjun Patel\nLogistics desk, Doddablpur Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Doddablpur Logistics Pvt Ltd",
+      "origin_centre": "IND561203AAB",
+      "dest_centre": "IND562101AAA",
+      "pieces": 9
+    }
+  }
+]

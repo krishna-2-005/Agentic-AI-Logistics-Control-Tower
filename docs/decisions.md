@@ -1511,3 +1511,79 @@ directory.
 
 Evidence: `src/dashboard/alerts.py`, `src/agents/alert_bot.py`, the Live alerts page in
 `src/dashboard/app.py`, `tests/test_alerts_panel.py`, `docs/W5_krishna_order_entry.md`.
+
+---
+
+## D-040 · 2.00× stays, the alert flag should not come from the regressor, and the order agent is judged on a set its builder never saw — `DECIDED`
+**Week 5 · Lahari · D3-D4 and D5**
+
+Three conclusions from two measurements. The first two need to reach Week 6 before the
+Exception Agent is built on top of the alert stream.
+
+**1. D-003's threshold is right, and for a different reason than D-003 gave.** D-003 moved
+from 1.25× to 2.00× on the base rate alone, in Week 1, with no model to test it
+on. The sweep re-scored every classifier at 1.15, 1.25, 1.50 and 2.00 on the same test
+legs. **The best classifier's MCC barely moves: 0.507, 0.528, 0.540, 0.536.** So the
+threshold does not change how much signal a model can find; the data holds about the
+same amount of information about lateness wherever the line is drawn. What the threshold
+does change is **volume**: the best model flags 97.9% of legs at 1.15× and 49.3% at
+2.00×. A flag raised for nearly every leg carries no information for whoever
+receives it, which is D-003's operational argument, now backed by measurement instead of
+inference. The base rates also reproduce D-003's Week 1 table to the decimal (96.0, 93.6,
+83.6, 49.7%).
+
+**MCC, not F1, is the metric for any threshold question in this project.** At
+1.15× the majority class (the classifier that says "delayed" for every leg) scores
+F1 **0.977** and MCC **0.000**. F1 rewards the trivial classifier precisely when
+positives dominate, which is exactly the situation a threshold sweep creates. From here
+on every classifier table carries MCC beside F1, the same way D-003 rule 3 already makes
+every table carry the majority-class rate.
+
+**2. The stream's alert flag should not be the champion regressor's threshold crossing.**
+This is the result that matters for Week 6. The model the stream actually runs (D-037) is
+the champion GBT *regressor*, and it flags a leg when its predicted gap crosses the line.
+On the held-out test set, at the decided 2.00×:
+
+| | MCC | alert rate | precision | recall |
+|---|---|---|---|---|
+| champion, thresholded | 0.477 | **67.6%** | 0.654 | 0.904 |
+| logistic regression | **0.536** | 49.3% | — | — |
+| corridor mean, thresholded | 0.502 | — | — | — |
+| true rate | — | 48.9% | — | — |
+
+The champion was chosen for regression (D-029), where it is genuinely best, but as an
+alarm it is **beaten by logistic regression and even by the corridor-mean baseline**. It
+over-alerts by about a third, which matches the 65.7% alert rate Mounika's full replay
+showed and the 2-of-3 flood Krishna's bot had to shortlist (D-039). This is a
+held-out-test-set measurement, so it is a valid accuracy claim; the replay's numbers were
+not (D-037).
+
+**Decided: Week 6 flags alerts with a classifier, or with a recalibrated cut on the
+champion's gap, chosen by MCC on the validation split.** It must not keep the raw
+`gap > (T - 1) × planned` crossing. This changes what the stream flags, not what it
+predicts; the champion stays the regressor behind the "+N min" every alert shows. Not
+changed this week: the gate is about plumbing, and swapping the flag after the stream,
+panel and bot were measured would invalidate every figure they report.
+
+**3. The order agent is judged on an authored set, 20 cases a day, on its own model.**
+Fifty cases: ten templates, each testing something Krishna's corpus never does (tonnes,
+pieces in words, a forwarded correction, a city-only *destination*, two missing fields
+where rule 2 fixes which question comes first). Each template is instantiated on five
+real records drawn with a different seed from his. That is D-028's builder/judge split,
+applied to the second agent. The set runs **only on Gemini**, the model the agent was
+built on, at 20 calls a day. The harness resumes where it stopped and **never records a
+quota refusal as a result**, so a 429 cannot turn into a scored failure. Cases run
+`dry_run`: the judgement is on the decision and the fields, because `POST` was verified
+end to end at D1-D2.
+
+**First 20 of 50: 20 succeeded.** Every should-file case filed with every field right,
+including the tonnes conversions, the corrected weight and pieces written as words.
+Every should-ask case asked about exactly the right field, and neither `missing_two` case
+asked about service before weight. No order was filed on an invented value; no question
+was needless. **A perfect score on 20 templated cases is a ceiling, not a verdict.** It
+says these ten failure modes are handled. It cannot yet distinguish a good agent from an
+excellent one, and the remaining 30 cases run on the next two days' quota.
+
+Evidence: `src/ml/threshold_sensitivity.py`, `src/ml/order_eval.py`,
+`src.ml.baselines.delay_label`, `benchmarks/raw/w5_threshold_sensitivity.csv`,
+`benchmarks/raw/w5_order_eval_*.json*`, `docs/W5_lahari_stream_validation.md`.

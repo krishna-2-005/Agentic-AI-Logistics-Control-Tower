@@ -1,0 +1,21 @@
+seq,template,expected_action,action,expected_missing,missing_field,action_correct,right_field,mismatched_fields,invented_order,needless_question,extraction_failed,success,question,ran_on,model
+5001,clean_table,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5002,tonnes,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5003,pieces_in_words,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5004,prose_reversed,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5005,correction,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5006,weight_range,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,Could you please provide the exact weight of the shipment?,2026-09-11,gemini-3.6-flash
+5007,city_destination,clarify,clarify,dest_centre,dest_centre,True,True,,False,False,False,True,Could you please provide the centre code for your Lalru depot?,2026-09-11,gemini-3.6-flash
+5008,no_service,clarify,clarify,route_type,route_type,True,True,,False,False,False,True,Could you please specify whether this shipment should be booked as FTL or Carting?,2026-09-11,gemini-3.6-flash
+5009,pieces_approx,clarify,clarify,pieces,pieces,True,True,,False,False,False,True,Could you please confirm the exact number of boxes for this shipment?,2026-09-11,gemini-3.6-flash
+5010,missing_two,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,What is the total weight of the 6 pieces?,2026-09-11,gemini-3.6-flash
+5011,clean_table,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5012,tonnes,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5013,pieces_in_words,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5014,prose_reversed,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5015,correction,file,file,,,True,False,,False,False,False,True,,2026-09-11,gemini-3.6-flash
+5016,weight_range,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,Could you please confirm the exact total weight of the shipment?,2026-09-11,gemini-3.6-flash
+5017,city_destination,clarify,clarify,dest_centre,dest_centre,True,True,,False,False,False,True,Could you please provide the centre code for your Ratnagiri depot?,2026-09-11,gemini-3.6-flash
+5018,no_service,clarify,clarify,route_type,route_type,True,True,,False,False,False,True,Could you please specify whether this shipment should be booked as FTL or Carting?,2026-09-11,gemini-3.6-flash
+5019,pieces_approx,clarify,clarify,pieces,pieces,True,True,,False,False,False,True,Could you please confirm the exact number of boxes to be shipped?,2026-09-11,gemini-3.6-flash
+5020,missing_two,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,Could you please provide the total weight of the shipment in kilograms once weighing is completed?,2026-09-11,gemini-3.6-flash

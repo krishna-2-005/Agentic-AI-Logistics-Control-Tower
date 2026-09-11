@@ -689,6 +689,66 @@ checking a number, never by reading the file.
   `out_json.write_text` — those 3 results are unrecoverable, though the quota spend
   itself is the only real cost since nothing downstream ever read them).
 
+### P-38 · Mixed-precision timestamps broke the replay schedule — the same trap as P-09, two layers up
+**Week 5 · Mounika · resolved**
+
+- **Symptom.** The first real producer run died in `compress_schedule` with
+  `ValueError: time data "2018-09-12T00:23:34" doesn't match format
+  "%Y-%m-%dT%H:%M:%S.%f"`. Event *building* and schema *validation* had both already
+  passed on all 600 events; only the scheduling step threw.
+- **Cause.** `pd.to_datetime` on a list infers one format from the first element. A
+  **query** event's `event_time` is `trip_creation_time.isoformat()`, which keeps
+  microseconds; a **fact** event's is `od_start_time + timedelta(minutes=actual_time)`,
+  which lands on a whole second whenever the leg's duration is a whole number of
+  minutes — and on this data it very often is. First element had microseconds,
+  so every whole-second fact event failed to parse.
+- **Fix.** `pd.to_datetime(..., format="ISO8601")`, which accepts both shapes.
+  `tests/test_producer.py::test_schedule_handles_mixed_precision_timestamps` is the
+  regression guard, built from the two literal timestamps that actually collided.
+- **Cost.** ~10 minutes. **This is P-09 again** — Week 1's `cutoff_timestamp`
+  being second-precision on 141,438 rows and microsecond on 3,429 — and it
+  arrived by a completely different route: not from the publisher's file this time,
+  but from *our own* two event builders, one formatting a stored timestamp and the
+  other formatting a computed one. The carry from P-09 was "one explicit format,
+  never an inferred one"; that rule was applied to the Spark reader in Stage 1 and
+  never to a pandas parse, so the second half of the codebase relearned it. Worth
+  stating as a rule rather than a fix: **anywhere a timestamp is parsed from a
+  collection, name the format.**
+
+### P-39 · Spark counts days from Sunday, Python from Monday, and nothing raises
+**Week 5 · Lahari · resolved**
+
+- **Symptom.** The stream-equals-batch test's second check came back
+  **0 agreements out of 500**. Predictions were bit-identical, but the temporal
+  features a streaming job would recompute from `event_time` disagreed with the ones
+  the event carries on *every single row*.
+- **Cause.** Not a bug in either computation — two different, both-correct
+  conventions for the same idea. Stage 4 builds the feature with Spark's
+  `F.dayofweek`, which is **Sunday = 1** through Saturday = 7. A Python consumer
+  reaching for `datetime.weekday()` gets **Monday = 0** through Sunday = 6. For
+  2018-09-12, a Wednesday, that is **4 against 2**. The model was trained on the
+  Spark encoding, so a consumer using the Python one would feed it a number on a
+  different scale for every event.
+- **Fix.** One shared `src.streaming.schema.temporal_features()` that both sides
+  import, using `isoweekday() % 7 + 1` to reproduce Spark's encoding exactly. The
+  streaming job (D3-D4) imports it rather than re-deriving day-of-week, which is the
+  same "two lists holding one truth" trap P-23 already cost this project once
+  — and this time the shared helper exists *before* the second consumer is
+  written, not after it drifted. `tests/test_stream_validation.py` pins all four
+  weekday values against Spark's convention.
+- **Cost.** ~20 minutes, and it was free in the sense that mattered: **the test was
+  written before the streaming job, so the trap was found before anything could fall
+  into it.** Had the job been built first, this would have surfaced as a model
+  quietly scoring every streamed event on a wrong day-of-week — no exception, no
+  null, no row count out of place, and a per-corridor error small enough to look like
+  ordinary model noise. `created_is_weekend` is genuinely convention-independent
+  (both readings mean Saturday-or-Sunday), which is exactly why only one of the three
+  fields disagreed and why a spot-check of the other two would have concluded
+  everything was fine.
+- **Carry:** *any* feature the batch pipeline computes with a Spark builtin and a
+  consumer recomputes in Python needs one shared implementation, not two that agree
+  on a test date. `created_hour` happens to agree in both; that is luck, not design.
+
 ### P-40 · `src.tms.seed` cannot do the one thing its docstring promises
 **Week 5 · found by Krishna, owned by Mounika · open (worked around)**
 
@@ -740,32 +800,6 @@ checking a number, never by reading the file.
   exactly the size of whatever the code adds afterwards — and everything in that
   blind spot fails at the far end of a network call, where it looks like someone
   else's problem.
-
-### P-38 · Mixed-precision timestamps broke the replay schedule — the same trap as P-09, two layers up
-**Week 5 · Mounika · resolved**
-
-- **Symptom.** The first real producer run died in `compress_schedule` with
-  `ValueError: time data "2018-09-12T00:23:34" doesn't match format
-  "%Y-%m-%dT%H:%M:%S.%f"`. Event *building* and schema *validation* had both already
-  passed on all 600 events; only the scheduling step threw.
-- **Cause.** `pd.to_datetime` on a list infers one format from the first element. A
-  **query** event's `event_time` is `trip_creation_time.isoformat()`, which keeps
-  microseconds; a **fact** event's is `od_start_time + timedelta(minutes=actual_time)`,
-  which lands on a whole second whenever the leg's duration is a whole number of
-  minutes — and on this data it very often is. First element had microseconds,
-  so every whole-second fact event failed to parse.
-- **Fix.** `pd.to_datetime(..., format="ISO8601")`, which accepts both shapes.
-  `tests/test_producer.py::test_schedule_handles_mixed_precision_timestamps` is the
-  regression guard, built from the two literal timestamps that actually collided.
-- **Cost.** ~10 minutes. **This is P-09 again** — Week 1's `cutoff_timestamp`
-  being second-precision on 141,438 rows and microsecond on 3,429 — and it
-  arrived by a completely different route: not from the publisher's file this time,
-  but from *our own* two event builders, one formatting a stored timestamp and the
-  other formatting a computed one. The carry from P-09 was "one explicit format,
-  never an inferred one"; that rule was applied to the Spark reader in Stage 1 and
-  never to a pandas parse, so the second half of the codebase relearned it. Worth
-  stating as a rule rather than a fix: **anywhere a timestamp is parsed from a
-  collection, name the format.**
 
 ### P-42 · The stream was about to publish a label computed at the threshold the project rejected in Week 2
 **Week 5 · Mounika · resolved**
