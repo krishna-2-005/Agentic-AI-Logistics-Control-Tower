@@ -238,10 +238,13 @@ never agree on any day. A Wednesday is 2 on the page and 4 to the model. So ever
 what-if prediction since Week 4 has used a day-of-week value on a different scale from
 the one the model learned. No exception, no null, nothing visible.
 
-Fixed at the Week 5 merge rather than here. The right fix imports Lahari's shared
-`temporal_features` helper instead of writing the conversion a third time, and that
-helper lands with her branch. The size of the effect will be measured against the old
-encoding at that point, not guessed now.
+Fixed at the Week 5 merge, once Lahari's shared `temporal_features` helper had
+landed: the what-if row's temporal fields now come from it, and two tests pin the
+encoding. Measured on all 5,274 test legs, the effect was real but small. 35.9% of
+predictions moved, by 0.6 minutes on average (worst 62.9), and 13 delay calls flipped
+(0.2%); test MAE was 36.9 either way. The champion barely leans on day-of-week. That
+made the bug cheap, and it was luck: under a model that weighted the day heavily, every
+what-if answer would have been wrong and nothing would have said so.
 
 ## 9. Tests
 

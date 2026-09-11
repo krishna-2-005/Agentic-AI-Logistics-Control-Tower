@@ -1,3 +1,4 @@
+# ruff: noqa: DTZ001 -- a what-if departure is a bare local time, as the form gives it.
 """Tests for the Spark-free part of the what-if predictor (execution plan W4 D5).
 
     pytest tests/test_predict.py -q
@@ -10,7 +11,9 @@ exactly this reason.
 
 from __future__ import annotations
 
-from src.ml.predict import build_result
+from datetime import datetime
+
+from src.ml.predict import base_row, build_result
 
 
 def test_not_delayed_below_the_d003_threshold():
@@ -37,3 +40,17 @@ def test_cold_flags_pass_through_unchanged():
     flags = {"corr": True, "src": False, "dst": True}
     result = build_result(predicted_gap_min=10.0, planned_min=100.0, cold_flags=flags)
     assert result["cold_flags"] == flags
+
+
+# ── P-46: the what-if row speaks Spark's day-of-week ─────────────────────────
+def test_a_wednesday_is_four_as_the_model_learned_it():
+    # datetime.weekday() says 2 for a Wednesday; the champion was trained on Spark's 4.
+    row = base_row("FTL", 100.0, 120.0, datetime(2018, 9, 12, 14, 30))
+    assert row["created_dayofweek"] == 4
+    assert (row["created_hour"], row["created_is_weekend"], row["is_ftl"]) == (14, 0, 1)
+
+
+def test_saturday_is_seven_and_sunday_is_one():
+    assert base_row("Carting", 1.0, 1.0, datetime(2018, 9, 15))["created_dayofweek"] == 7
+    sunday = base_row("Carting", 1.0, 1.0, datetime(2018, 9, 16))
+    assert (sunday["created_dayofweek"], sunday["created_is_weekend"], sunday["is_ftl"]) == (1, 1, 0)

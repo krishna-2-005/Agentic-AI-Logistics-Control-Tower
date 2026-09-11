@@ -904,7 +904,7 @@ checking a number, never by reading the file.
   decided, including JSON Schemas, docstrings and test fixtures.
 
 ### P-46 · The what-if page has fed the model the wrong day of the week since Week 4
-**Week 5 · found by Krishna, owned by Krishna · open until the Week 5 merge**
+**Week 5 · found by Krishna, owned by Krishna · resolved at the Week 5 merge**
 
 - **Symptom.** None visible, which is the problem. Found by reading, not by a failure:
   after P-45 turned up the day-of-week convention in a JSON Schema, the carry from that
@@ -922,12 +922,22 @@ checking a number, never by reading the file.
   caught "before anything could fall into it". This had already fallen in, a week
   earlier, on a page a user can click. P-45's entry already corrects P-39's claim;
   this is the case it refers to.
-- **Why it is not fixed on this branch.** The right fix imports the one shared helper,
-  `src.streaming.schema.temporal_features`, rather than writing
-  `isoweekday() % 7 + 1` a third time — a third implementation of one convention is
-  how P-39, P-45 and this entry all happened. That helper is on Lahari's branch and
-  lands at the Week 5 merge, so the fix is made there, by the owner of this module, with
-  the size of the effect measured against the old encoding rather than guessed.
+- **Fixed at the Week 5 merge.** `src.ml.predict.base_row` builds the non-history half
+  of the row and takes its three temporal fields from
+  `src.streaming.schema.temporal_features` — the one shared helper, which landed with
+  Lahari's branch — rather than writing `isoweekday() % 7 + 1` a third time. A third
+  implementation of one convention is how P-39, P-45 and this entry all happened. Two
+  tests pin a Wednesday to 4 and Saturday and Sunday to 7 and 1.
+- **How much it mattered, measured rather than guessed.** All 5,274 test legs were scored
+  through the champion twice, once with the right encoding and once with what
+  `weekday()` would have supplied. The two encodings disagree on every leg:
+  - **35.9% of predictions move**, by **0.6 minutes** on average (median 0.0, 95th
+    percentile 2.9, worst 62.9);
+  - **13 delay calls flip (0.2%)**;
+  - test MAE is **36.9 minutes either way**.
+  The champion leans very little on day-of-week, so the damage was small. **That is luck,
+  not design.** Under a model that weighted the day heavily, the same bug would have
+  moved every what-if answer, and nothing would have raised.
 - **Carry.** Grep for the *values* a convention produces, not just the function that
   produces them. `weekday()` appears nowhere near the word "dayofweek" in a way a
   search for the schema field would find.
