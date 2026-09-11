@@ -1310,6 +1310,57 @@ Evidence: `src/streaming/producer.py`, `tests/test_producer.py`,
 
 ---
 
+## D-036 · An ambiguous order produces one question, and the agent never guesses a field the email did not state — `DECIDED`
+**Week 5 · Krishna · D1-D2**
+
+The `order_entry` prompt slot has carried the requirement since Week 3: *"an ambiguous
+order must produce a question, not a confident guess."* This entry records how that is
+actually built and, more usefully, how it is made *measurable*.
+
+**Decided: the model returns its own `file` / `clarify` decision, and a `clarify`
+names the single field it is blocked on.** Not a confidence score, not a list of
+everything imperfect — one `missing_field` and one sentence a customer can answer.
+A list of five questions is a form, and a customer who receives a form does the work
+the agent was supposed to do.
+
+**Why the corpus contains deliberately broken emails.** An agent judged only on clean
+input scores perfectly and tells you nothing: there is no way to distinguish "asks
+when it should" from "never asks at all". `src/agents/order_corpus.py` therefore
+generates five variants — `clean`, `missing_weight`, `missing_pieces`,
+`vague_origin`, `ambiguous_route` — and every non-clean one records
+`expected_missing`, the field a good question has to be about. That is what lets
+Lahari's D5 harness score *which* question was asked, not merely whether one was.
+Ground truth also **omits** whatever the variant removed from the email, so an agent
+is never marked wrong for declining to invent a value nobody wrote — the same
+"the label is what is printed, not what is true" principle D-021 fixed for the
+document corpus.
+
+**Validation is a separate stage from extraction, on purpose.** `validate_order()` is
+pure Python and re-checks what the TMS's `OrderCreate` will check anyway. That looks
+like duplication and is not: a model returning `pieces: 0` is a *prompt* problem, and
+catching it one function from where it happened says so, where the same failure
+arriving as a 422 from an HTTP call three layers away looks like an *environment*
+problem. The three stages fail differently because they are broken differently.
+
+**Result, six development emails:** 6 of 6 correct — three clean emails filed as
+real orders in the TMS (`ORD-000001` .. `ORD-000003`, `source=agent`), three ambiguous
+ones clarified, and each clarification named the right field. Extraction matched
+ground truth on every field the emails stated, with no mismatches. Re-posting a filed
+`external_ref` returns 200 and creates nothing, so a replayed email cannot double-file
+(D-017's key doing exactly what it was built for).
+
+**What this result is not.** Six emails, from the corpus the agent was developed
+against. The number that counts is Lahari's, on the 50-case set she authors at D5,
+which the agent has never seen — the same builder/judge separation D-028 applies
+to document extraction. This entry's 6-of-6 is a smoke test that the path works end to
+end, not an accuracy claim.
+
+Evidence: `src/agents/order_agent.py`, `src/agents/order_corpus.py`,
+`src/agents/prompts/order_entry/v1.md`, `tests/test_order_agent.py`,
+`benchmarks/raw/w5_order_agent_runs.json`, `docs/problems.md` P-40, P-41.
+
+---
+
 ## D-037 · The streaming job scores by handing each micro-batch to the batch code, and joins a history snapshot it does not update — `DECIDED`
 **Week 5 · Mounika · D3-D4**
 
@@ -1408,3 +1459,55 @@ human reads.
 
 Evidence: `src/streaming/throughput.py`, `benchmarks/raw/w5_stream_throughput*.json`,
 `tests/test_stream_job.py`, `docs/W5_mounika_kafka_streaming.md`.
+
+---
+
+## D-039 · The alert bot sends a shortlist, not the stream, and says which channel actually ran — `DECIDED`
+**Week 5 · Krishna · D3-D4 and D5**
+
+Mounika's full replay produced **17,317 alerts from 26,369 legs** (D-037, D-038). That
+number is the design input for everything downstream of it: a panel that lists them
+all is a log, and a bot that forwards them all is a firehose with a phone number. The
+dependable outcome of paging someone for two of every three shipments is that they stop
+reading, at which point the alerting system has negative value — it costs attention
+and trains people to ignore it.
+
+**Decided: the bot sends a shortlist, and every part of the shortlist is a stated rule.**
+1. **New only**, keyed on `alert_id` — the idempotency key `alert.schema.json`
+   defines for exactly this. Seen ids persist in a small state file, so a restart or a
+   re-emitted micro-batch does not page anybody twice. Verified by running it twice
+   against the real sink: 10 sent, then the *next* 10, 20 distinct ids, no repeats.
+2. **Worst first, by excess over the leg's own threshold**, not by raw predicted
+   minutes. A 400-minute haul running 30 minutes long is ordinary; a 40-minute run doing
+   the same is not. `excess_min` is the quantity D-003's rule already tests, so the
+   ranking and the flag are the same measurement.
+3. **A hard cap per run** (`--top`, default 10), with the held-back count logged
+   (`1344 held back by the cap`). A cap that truncates visibly is a policy; a bot that
+   silently drops is a bug nobody can see.
+
+**Decided: the message carries two things the plan did not ask for.** The plan says
+"shipment, corridor, predicted delay". A delay with no scale is unreadable — "+511
+min" means something different on a 132-minute leg than on a 900-minute one — so
+the planned time rides along. And a prediction made off a cold history says so, because
+D-023 already established that a zero-filled history is not the same claim as a
+corridor that runs on time.
+
+**Decided: the file channel is what runs, and the documentation says so.** Telegram
+and email are implemented, and the SMTP and Bot API calls are real code, but this
+project has no bot account and no SMTP credentials, so **neither has ever been run
+against a live service**. That is D-035's rule for the Kafka sink applied a second
+time: the choice is one flag, and the write-up says which flag was actually pulled
+rather than letting three channel classes imply three working integrations. A channel
+selected without its variables refuses at start-up naming what it needs (`telegram
+channel needs TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID`), rather than failing per message
+halfway through a send loop and leaving the state file half-written.
+
+**Decided: the panel and the bot read the sink through one module**,
+`src.dashboard.alerts`. Parsing two differently-natured clocks, deduplicating replayed
+batches and ranking by severity are each easy to get subtly wrong, and getting them
+wrong in two places is how the panel and the bot would come to disagree about which
+alert is worst. The page also stays inside D-009: no Spark on a page that only reads a
+directory.
+
+Evidence: `src/dashboard/alerts.py`, `src/agents/alert_bot.py`, the Live alerts page in
+`src/dashboard/app.py`, `tests/test_alerts_panel.py`, `docs/W5_krishna_order_entry.md`.

@@ -689,6 +689,58 @@ checking a number, never by reading the file.
   `out_json.write_text` — those 3 results are unrecoverable, though the quota spend
   itself is the only real cost since nothing downstream ever read them).
 
+### P-40 · `src.tms.seed` cannot do the one thing its docstring promises
+**Week 5 · found by Krishna, owned by Mounika · open (worked around)**
+
+- **Symptom.** `python -m src.tms.seed`, run to prepare the TMS for the Order Entry
+  Agent, died with `sqlalchemy.exc.IntegrityError: FOREIGN KEY constraint failed` on
+  `DELETE FROM facility`.
+- **Cause.** `seed()` promises in its own docstring that *"orders and shipments survive
+  unless `reset`"*, and then calls `session.exec(delete(Facility))` unconditionally.
+  `Order` holds a foreign key to `Facility`. So the moment the database contains a
+  single order, the non-reset path — the one the docstring describes as the safe
+  default — cannot run at all. It has never worked; it just was not exercised,
+  because until now nothing had filed an order before a re-seed.
+- **Worked around, not fixed.** `--reset` cleared one leftover Week 2 test order and
+  the seed completed. That is fine today: the row was throwaway. It will not be fine
+  in Week 6, when the agents have filed orders worth keeping and someone re-runs the
+  seed after a pipeline re-run — they will either hit this error or reach for
+  `--reset` and destroy real agent-filed data.
+- **The actual fix, for its owner.** Upsert the facilities rather than delete-then-
+  insert: the 1,657 codes are the same on both sides of a re-seed, so nothing needs
+  deleting for the reference data to be refreshed. Left to Mounika as the area owner
+  (GIT_RULES SS10) rather than patched from an agents branch — it is her module,
+  and the fix wants a test that files an order and then re-seeds, which belongs with
+  the TMS suite.
+- **Cost.** ~10 minutes to diagnose, none to work around. Logged rather than fixed in
+  passing because a silent `--reset` habit is exactly how the Week 6 version of this
+  becomes "where did the orders go?"
+
+### P-41 · The agent's own validator passed an order the TMS rejected
+**Week 5 · Krishna · resolved**
+
+- **Symptom.** Every clean email extracted perfectly, validated clean, and then came
+  back `HTTP 422` from `POST /orders`:
+  `source: Input should be 'api', 'agent' or 'seed'`. Three of six emails failed at the
+  last step, after everything the agent could check had passed.
+- **Cause.** `post_order` set `"source": "EMAIL"` — a value invented at the call
+  site because it read well, and not a member of the TMS's `OrderSource` enum. The
+  agent's `validate_order()` had nothing to say about it for a structural reason worth
+  naming: **it validates the fields the model extracted, and `source` is not one of
+  them.** It is set by the agent itself, in the payload builder, downstream of every
+  check.
+- **Fix.** Import the enum and use `OrderSource.AGENT.value`. Not "add `source` to the
+  validator" — that would catch the next wrong string, but this class of bug
+  disappears entirely when the value cannot be invented in the first place. Same
+  reasoning as D-031 reusing one event schema and P-23's two-lists-one-truth lesson:
+  where a contract already exists in code, import it rather than retype it.
+- **Cost.** ~10 minutes and three wasted LLM calls against a 20-a-day quota (D-032),
+  which is the part that stung. **The generalisable lesson:** a validation layer that
+  checks *the model's output* rather than *the payload actually sent* has a blind spot
+  exactly the size of whatever the code adds afterwards — and everything in that
+  blind spot fails at the far end of a network call, where it looks like someone
+  else's problem.
+
 ### P-38 · Mixed-precision timestamps broke the replay schedule — the same trap as P-09, two layers up
 **Week 5 · Mounika · resolved**
 
@@ -816,6 +868,35 @@ checking a number, never by reading the file.
 - **Carry.** When a convention mismatch is found, grep for the *values*, not just the
   code: every place the range 0-6 or 1-7 is written down is a place the convention was
   decided, including JSON Schemas, docstrings and test fixtures.
+
+### P-46 · The what-if page has fed the model the wrong day of the week since Week 4
+**Week 5 · found by Krishna, owned by Krishna · open until the Week 5 merge**
+
+- **Symptom.** None visible, which is the problem. Found by reading, not by a failure:
+  after P-45 turned up the day-of-week convention in a JSON Schema, the carry from that
+  entry said to grep for every place the convention is decided, and
+  `src/ml/predict.py` builds the what-if row with
+  `"created_dayofweek": departure.weekday()`.
+- **Cause.** `weekday()` is Monday = 0 through Sunday = 6. The champion was trained on
+  Spark's `F.dayofweek`, Sunday = 1 through Saturday = 7 (P-39). The two never agree on
+  any day — a Wednesday is 2 on the page and 4 to the model — so every what-if
+  prediction since Week 4 D5 has been made on a day-of-week value from a different scale
+  than the one the model learned. `created_is_weekend` is computed correctly on the same
+  line, because "Saturday or Sunday" means the same thing in both conventions; that is
+  exactly why the other two temporal fields looked fine at a glance.
+- **Why this is P-39's first victim, not a new trap.** P-39 says the convention was
+  caught "before anything could fall into it". This had already fallen in, a week
+  earlier, on a page a user can click. P-45's entry already corrects P-39's claim;
+  this is the case it refers to.
+- **Why it is not fixed on this branch.** The right fix imports the one shared helper,
+  `src.streaming.schema.temporal_features`, rather than writing
+  `isoweekday() % 7 + 1` a third time — a third implementation of one convention is
+  how P-39, P-45 and this entry all happened. That helper is on Lahari's branch and
+  lands at the Week 5 merge, so the fix is made there, by the owner of this module, with
+  the size of the effect measured against the old encoding rather than guessed.
+- **Carry.** Grep for the *values* a convention produces, not just the function that
+  produces them. `weekday()` appears nowhere near the word "dayofweek" in a way a
+  search for the schema field would find.
 
 ## Process and tooling
 
