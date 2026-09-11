@@ -27,6 +27,7 @@ from pathlib import Path
 SECTION_ORDER = [
     "data-dictionary", "eda", "corridor-audit", "hub-ranking", "baselines",
     "beat-osrm", "beat-osrm-ablations", "doc-eval", "stream-equals-batch",
+    "threshold-sensitivity", "order-eval",
 ]
 
 

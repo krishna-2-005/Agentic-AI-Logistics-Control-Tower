@@ -27,6 +27,7 @@ import pandas as pd
 from src.common import config
 from src.common.logging_setup import get_logger
 from src.common.spark import get_spark, stop_spark
+from src.ml.baselines import delay_label
 
 log = get_logger("streaming.schema")
 
@@ -130,10 +131,10 @@ def fact_event(row: pd.Series) -> dict:
     have been the first to publish it (P-42).
     """
     actual_time = row["gap_min"] + row["planned_min"]
-    # D-003's rule, in gap terms: actual > T x planned is gap > (T - 1) x planned.
-    # Same expression `add_delay_label` applies; Lahari's D3-D4 threshold sweep folds
-    # both call sites into one parameterised helper, which is where it belongs.
-    is_delayed = int(row["gap_min"] > (config.DELAY_THRESHOLD - 1) * row["planned_min"])
+    # D-003's rule, from the one helper every label in the project now comes from
+    # (`src.ml.baselines.delay_label`, Lahari's W5 D3-D4) -- the training label, the
+    # thresholded predictions and this event can no longer disagree about it.
+    is_delayed = int(delay_label(row["gap_min"], row["planned_min"]))
     od_end_time = _od_start_time(row["leg_id"]) + timedelta(minutes=float(actual_time))
     return {
         "event_id": f"fact-{row['leg_id']}",
