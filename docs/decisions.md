@@ -1459,3 +1459,55 @@ human reads.
 
 Evidence: `src/streaming/throughput.py`, `benchmarks/raw/w5_stream_throughput*.json`,
 `tests/test_stream_job.py`, `docs/W5_mounika_kafka_streaming.md`.
+
+---
+
+## D-039 · The alert bot sends a shortlist, not the stream, and says which channel actually ran — `DECIDED`
+**Week 5 · Krishna · D3-D4 and D5**
+
+Mounika's full replay produced **17,317 alerts from 26,369 legs** (D-037, D-038). That
+number is the design input for everything downstream of it: a panel that lists them
+all is a log, and a bot that forwards them all is a firehose with a phone number. The
+dependable outcome of paging someone for two of every three shipments is that they stop
+reading, at which point the alerting system has negative value — it costs attention
+and trains people to ignore it.
+
+**Decided: the bot sends a shortlist, and every part of the shortlist is a stated rule.**
+1. **New only**, keyed on `alert_id` — the idempotency key `alert.schema.json`
+   defines for exactly this. Seen ids persist in a small state file, so a restart or a
+   re-emitted micro-batch does not page anybody twice. Verified by running it twice
+   against the real sink: 10 sent, then the *next* 10, 20 distinct ids, no repeats.
+2. **Worst first, by excess over the leg's own threshold**, not by raw predicted
+   minutes. A 400-minute haul running 30 minutes long is ordinary; a 40-minute run doing
+   the same is not. `excess_min` is the quantity D-003's rule already tests, so the
+   ranking and the flag are the same measurement.
+3. **A hard cap per run** (`--top`, default 10), with the held-back count logged
+   (`1344 held back by the cap`). A cap that truncates visibly is a policy; a bot that
+   silently drops is a bug nobody can see.
+
+**Decided: the message carries two things the plan did not ask for.** The plan says
+"shipment, corridor, predicted delay". A delay with no scale is unreadable — "+511
+min" means something different on a 132-minute leg than on a 900-minute one — so
+the planned time rides along. And a prediction made off a cold history says so, because
+D-023 already established that a zero-filled history is not the same claim as a
+corridor that runs on time.
+
+**Decided: the file channel is what runs, and the documentation says so.** Telegram
+and email are implemented, and the SMTP and Bot API calls are real code, but this
+project has no bot account and no SMTP credentials, so **neither has ever been run
+against a live service**. That is D-035's rule for the Kafka sink applied a second
+time: the choice is one flag, and the write-up says which flag was actually pulled
+rather than letting three channel classes imply three working integrations. A channel
+selected without its variables refuses at start-up naming what it needs (`telegram
+channel needs TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID`), rather than failing per message
+halfway through a send loop and leaving the state file half-written.
+
+**Decided: the panel and the bot read the sink through one module**,
+`src.dashboard.alerts`. Parsing two differently-natured clocks, deduplicating replayed
+batches and ranking by severity are each easy to get subtly wrong, and getting them
+wrong in two places is how the panel and the bot would come to disagree about which
+alert is worst. The page also stays inside D-009: no Spark on a page that only reads a
+directory.
+
+Evidence: `src/dashboard/alerts.py`, `src/agents/alert_bot.py`, the Live alerts page in
+`src/dashboard/app.py`, `tests/test_alerts_panel.py`, `docs/W5_krishna_order_entry.md`.

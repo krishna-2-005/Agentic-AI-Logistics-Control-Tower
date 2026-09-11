@@ -869,6 +869,35 @@ checking a number, never by reading the file.
   code: every place the range 0-6 or 1-7 is written down is a place the convention was
   decided, including JSON Schemas, docstrings and test fixtures.
 
+### P-46 · The what-if page has fed the model the wrong day of the week since Week 4
+**Week 5 · found by Krishna, owned by Krishna · open until the Week 5 merge**
+
+- **Symptom.** None visible, which is the problem. Found by reading, not by a failure:
+  after P-45 turned up the day-of-week convention in a JSON Schema, the carry from that
+  entry said to grep for every place the convention is decided, and
+  `src/ml/predict.py` builds the what-if row with
+  `"created_dayofweek": departure.weekday()`.
+- **Cause.** `weekday()` is Monday = 0 through Sunday = 6. The champion was trained on
+  Spark's `F.dayofweek`, Sunday = 1 through Saturday = 7 (P-39). The two never agree on
+  any day — a Wednesday is 2 on the page and 4 to the model — so every what-if
+  prediction since Week 4 D5 has been made on a day-of-week value from a different scale
+  than the one the model learned. `created_is_weekend` is computed correctly on the same
+  line, because "Saturday or Sunday" means the same thing in both conventions; that is
+  exactly why the other two temporal fields looked fine at a glance.
+- **Why this is P-39's first victim, not a new trap.** P-39 says the convention was
+  caught "before anything could fall into it". This had already fallen in, a week
+  earlier, on a page a user can click. P-45's entry already corrects P-39's claim;
+  this is the case it refers to.
+- **Why it is not fixed on this branch.** The right fix imports the one shared helper,
+  `src.streaming.schema.temporal_features`, rather than writing
+  `isoweekday() % 7 + 1` a third time — a third implementation of one convention is
+  how P-39, P-45 and this entry all happened. That helper is on Lahari's branch and
+  lands at the Week 5 merge, so the fix is made there, by the owner of this module, with
+  the size of the effect measured against the old encoding rather than guessed.
+- **Carry.** Grep for the *values* a convention produces, not just the function that
+  produces them. `weekday()` appears nowhere near the word "dayofweek" in a way a
+  search for the schema field would find.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
