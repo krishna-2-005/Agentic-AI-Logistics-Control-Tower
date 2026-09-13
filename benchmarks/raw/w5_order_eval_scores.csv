@@ -19,3 +19,23 @@ seq,template,expected_action,action,expected_missing,missing_field,action_correc
 5018,no_service,clarify,clarify,route_type,route_type,True,True,,False,False,False,True,Could you please specify whether this shipment should be booked as FTL or Carting?,2026-09-11,gemini-3.6-flash
 5019,pieces_approx,clarify,clarify,pieces,pieces,True,True,,False,False,False,True,Could you please confirm the exact number of boxes to be shipped?,2026-09-11,gemini-3.6-flash
 5020,missing_two,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,Could you please provide the total weight of the shipment in kilograms once weighing is completed?,2026-09-11,gemini-3.6-flash
+5021,clean_table,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5022,tonnes,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5023,pieces_in_words,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5024,prose_reversed,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5025,correction,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5026,weight_range,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,Could you please provide the exact total weight for the 4 pieces?,2026-09-13,gemini-3.6-flash
+5027,city_destination,clarify,clarify,dest_centre,dest_centre,True,True,,False,False,False,True,Could you please provide the centre code for your Tenkasi depot?,2026-09-13,gemini-3.6-flash
+5028,no_service,clarify,clarify,route_type,route_type,True,True,,False,False,False,True,Could you please specify whether this shipment requires FTL or Carting?,2026-09-13,gemini-3.6-flash
+5029,pieces_approx,clarify,clarify,pieces,pieces,True,True,,False,False,False,True,Could you please confirm the exact number of boxes for this shipment?,2026-09-13,gemini-3.6-flash
+5030,missing_two,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,What is the total weight of the load in kilograms once weighed?,2026-09-13,gemini-3.6-flash
+5031,clean_table,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5032,tonnes,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5033,pieces_in_words,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5034,prose_reversed,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5035,correction,file,file,,,True,False,,False,False,False,True,,2026-09-13,gemini-3.6-flash
+5036,weight_range,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,Could you please provide the exact total weight of the shipment in kilograms?,2026-09-13,gemini-3.6-flash
+5037,city_destination,clarify,clarify,dest_centre,dest_centre,True,True,,False,False,False,True,Could you please provide the centre code for your Bagalkot depot?,2026-09-13,gemini-3.6-flash
+5038,no_service,clarify,clarify,route_type,route_type,True,True,,False,False,False,True,Could you please specify whether this shipment should be booked as FTL or Carting?,2026-09-13,gemini-3.6-flash
+5039,pieces_approx,clarify,clarify,pieces,pieces,True,True,,False,False,False,True,Could you please confirm the exact number of boxes to be moved?,2026-09-13,gemini-3.6-flash
+5040,missing_two,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,What is the total weight of the shipment in kilograms?,2026-09-13,gemini-3.6-flash
