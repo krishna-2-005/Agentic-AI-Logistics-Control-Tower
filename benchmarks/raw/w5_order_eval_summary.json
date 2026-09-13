@@ -1,5 +1,5 @@
 {
-  "n_run": 20,
+  "n_run": 40,
   "n_cases": 50,
   "success_rate": 1.0,
   "clarification_rate": 0.5,
@@ -12,6 +12,7 @@
   "needless_questions": 0,
   "extraction_failures": 0,
   "run_dates": [
-    "2026-09-11"
+    "2026-09-11",
+    "2026-09-13"
   ]
 }

@@ -1576,13 +1576,18 @@ quota refusal as a result**, so a 429 cannot turn into a scored failure. Cases r
 `dry_run`: the judgement is on the decision and the fields, because `POST` was verified
 end to end at D1-D2.
 
-**First 20 of 50: 20 succeeded.** Every should-file case filed with every field right,
+**40 of 50 run, 40 succeeded** (2026-09-11 and 2026-09-13, 20 a day). Four of four on
+every one of the ten templates. Every should-file case filed with every field right,
 including the tonnes conversions, the corrected weight and pieces written as words.
-Every should-ask case asked about exactly the right field, and neither `missing_two` case
+Every should-ask case asked about exactly the right field, and no `missing_two` case
 asked about service before weight. No order was filed on an invented value; no question
-was needless. **A perfect score on 20 templated cases is a ceiling, not a verdict.** It
-says these ten failure modes are handled. It cannot yet distinguish a good agent from an
-excellent one, and the remaining 30 cases run on the next two days' quota.
+was needless. **A perfect score on 40 templated cases is a ceiling, not a verdict.** It
+says these ten failure modes are handled. It cannot distinguish a good agent from an
+excellent one, and the next eval should be built from email the agent gets wrong.
+
+**Week 5 was closed at 40 of 50 rather than held open another day** for the last
+10 cases, which run as a follow-up commit. Every generated table says "40 of 50" where it
+quotes a rate, so the partial state is visible wherever the number is, not only here.
 
 Evidence: `src/ml/threshold_sensitivity.py`, `src/ml/order_eval.py`,
 `src.ml.baselines.delay_label`, `benchmarks/raw/w5_threshold_sensitivity.csv`,
