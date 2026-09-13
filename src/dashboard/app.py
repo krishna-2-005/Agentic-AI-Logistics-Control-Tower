@@ -739,12 +739,113 @@ elif page == "Delay predictor":
 
 elif page == "Live alerts":
     st.title("Live alerts")
-    pending(
-        "Week 5",
-        "Krishna / Mounika",
-        "Alerts from the Kafka → Structured Streaming pipeline, with the flagged "
-        "shipment, its corridor, and the predicted delay.",
-    )
+    from src.dashboard.alerts import corridor_rollup, excess_min, load_alerts, summary
+
+    feed = load_alerts()
+    stats = summary(feed)
+
+    if feed.empty:
+        pending(
+            "Week 5",
+            "Krishna / Mounika",
+            "No alerts in `data/stream/alerts/` yet. Produce some with:\n\n"
+            "```\npython -m src.streaming.producer --limit 2000 --duration 20 --clean\n"
+            "python -m src.streaming.job --once\n```",
+        )
+    else:
+        st.caption(
+            "Read straight from the streaming job\u2019s alert sink "
+            "(`data/stream/alerts/`, the shape `docs/schemas/alert.schema.json` fixes) "
+            "\u2014 no Spark on this page (D-009). Every row is a leg the champion model "
+            "predicts will take at least "
+            f"{config.DELAY_THRESHOLD:.2f}\u00d7 its planned time (D-003)."
+        )
+
+        age = stats["seconds_since_last_alert"]
+        m1, m2, m3, m4 = st.columns(4)
+        m1.metric("Alerts", f"{stats['alerts']:,}", help=f"across {stats['files']} micro-batch file(s)")
+        m2.metric("Corridors", f"{stats['corridors']:,}")
+        m3.metric(
+            "Worst overrun", f"{stats['worst_excess_min']:,.0f} min",
+            help="furthest past its own delay threshold, not the largest raw delay",
+        )
+        m4.metric(
+            "Newest alert",
+            "just now" if age is not None and age < 90 else (
+                f"{age / 60:,.0f} min ago" if age is not None and age < 86400 else
+                f"{age / 3600:,.0f} h ago" if age is not None else "\u2014"
+            ),
+            help="wall-clock age of the newest alert \u2014 a large number means the stream is not running",
+        )
+
+        if age is not None and age > 300:
+            st.warning(
+                f"The newest alert is {age / 60:,.0f} minutes old. This panel is showing a "
+                "finished replay, not a live stream. Start `python -m src.streaming.producer` "
+                "and `python -m src.streaming.job --duration 90` together to see it move."
+            )
+
+        st.info(
+            "**Two clocks, deliberately.** `created` is the leg\u2019s real 2018 timestamp being "
+            "replayed; `flagged` is when this pipeline scored it. A replay compresses ~26 days "
+            "into a minute, so they are far apart on purpose \u2014 the pipeline is not "
+            "time-travelling."
+            + (
+                f" **{stats['cold_alerts']:,} of these alerts** were predicted with no prior "
+                "history for at least one of the corridor, origin or destination (D-023): a "
+                "zero-filled history is not the same claim as a corridor that runs on time."
+                if stats["cold_alerts"] else ""
+            )
+        )
+
+        left, right = st.columns([2, 1])
+        with left:
+            st.subheader("Most severe")
+            worst = feed.alerts.assign(excess_min=excess_min(feed.alerts)).sort_values(
+                "excess_min", ascending=False
+            )
+            how_many = st.slider("Rows", 10, 200, 25, step=5)
+            st.dataframe(
+                worst.head(how_many).assign(
+                    created=lambda d: d["event_time"].dt.strftime("%Y-%m-%d %H:%M"),
+                    flagged=lambda d: d["alert_time"].dt.strftime("%H:%M:%S"),
+                )[[
+                    "corridor_id", "route_type", "planned_min", "predicted_total_min",
+                    "predicted_gap_min", "excess_min", "created", "flagged", "trip_uuid",
+                ]].rename(columns={
+                    "corridor_id": "Corridor", "route_type": "Type",
+                    "planned_min": "Planned (min)", "predicted_total_min": "Predicted (min)",
+                    "predicted_gap_min": "Gap (min)", "excess_min": "Past threshold (min)",
+                    "created": "Created (replayed)", "flagged": "Flagged (wall clock)",
+                    "trip_uuid": "Shipment",
+                }),
+                use_container_width=True, hide_index=True,
+            )
+        with right:
+            st.subheader("Worst corridors")
+            st.caption(
+                "A flat list of thousands of alerts is a log. What a dispatcher can act on "
+                "is which corridors keep producing them."
+            )
+            st.dataframe(
+                corridor_rollup(feed.alerts).rename(columns={
+                    "corridor_id": "Corridor", "alerts": "Alerts",
+                    "median_excess_min": "Median over (min)", "worst_excess_min": "Worst over (min)",
+                }),
+                use_container_width=True, hide_index=True,
+            )
+
+        if stats["median_latency_ms"] is not None:
+            st.caption(
+                f"Median event-to-alert latency on this batch: "
+                f"**{stats['median_latency_ms'] / 1000:,.1f}s** \u2014 tick file written to alert "
+                "written, including file-source discovery and the trigger interval. The full-replay "
+                "figures are in `docs/W5_mounika_kafka_streaming.md`."
+            )
+        st.caption(
+            f"Read at {feed.read_at:%H:%M:%S} from {stats['files']} file(s). "
+            "Streamlit re-runs this on any interaction \u2014 press **R** to refresh."
+        )
 
 elif page == "Agent console":
     st.title("Agent console")

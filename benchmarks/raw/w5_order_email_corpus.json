@@ -1,0 +1,188 @@
+[
+  {
+    "seq": 1,
+    "variant": "vague_origin",
+    "subject": "Booking request Farrukhbad to Shahabad",
+    "body": "Hi,\n\nPlease arrange a collection from our Farrukhbad warehouse for delivery to Shahabad_KDRoad_D (Uttar Pradesh) (IND241124AAB).\nConsignee: Shahabad Mart\n1 pieces, 6932.4 kg, FTL.\n\nRegards,\nFarrukhbad Industries\nConsignor",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Farrukhbad Industries",
+      "dest_centre": "IND241124AAB",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 6932.4
+    }
+  },
+  {
+    "seq": 2,
+    "variant": "clean",
+    "subject": "Booking request Bolpur to Nanoor",
+    "body": "Hello,\n\nPlease book a shipment for us.\n\nPickup: Bolpur_WebelDPP_D (West Bengal) (centre IND731204AAB)\nDelivery: Nanoor_Central_DPP_1 (West Bengal) (centre IND731301AAA)\nConsignee: Nanoor Warehousing\nLoad: 3 pieces, 1817.7 kg total\nService: FTL\n\nRegards,\nBolpur Distributors\nConsignor",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Bolpur Distributors",
+      "origin_centre": "IND731204AAB",
+      "dest_centre": "IND731301AAA",
+      "route_type": "FTL",
+      "pieces": 3,
+      "weight_kg": 1817.7
+    }
+  },
+  {
+    "seq": 3,
+    "variant": "ambiguous_route",
+    "subject": "Booking request Rampur to Sambhal",
+    "body": "Hello,\n\nNeed this moved from Rampur_RoshnBgh_I (Uttar Pradesh) (IND244901AAB) to Sambhal_Khwssrai_D (Uttar Pradesh) (IND244301AAA).\nConsignee Sambhal Retail Pvt Ltd, 6 pieces, 3135.8 kg.\nSend it whichever way works out best at your end.\n\nRegards,\nRampur Industries\nConsignor",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Rampur Industries",
+      "origin_centre": "IND244901AAB",
+      "dest_centre": "IND244301AAA",
+      "pieces": 6,
+      "weight_kg": 3135.8
+    }
+  },
+  {
+    "seq": 4,
+    "variant": "clean",
+    "subject": "Booking request Karaikal to Nagapttinm",
+    "body": "Hello,\n\nPlease book a shipment for us.\n\nPickup: Karaikal_Thalthru_DC (Pondicherry) (centre IND609602AAA)\nDelivery: Nagapttinm_Sttyapar_D (Tamil Nadu) (centre IND611001AAA)\nConsignee: Nagapttinm Distribution Hub\nLoad: 2 pieces, 2973.0 kg total\nService: FTL\n\nRegards,\nKaraikal Freight Carriers\nConsignor",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Karaikal Freight Carriers",
+      "origin_centre": "IND609602AAA",
+      "dest_centre": "IND611001AAA",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 2973.0
+    }
+  },
+  {
+    "seq": 5,
+    "variant": "vague_origin",
+    "subject": "Booking request Jalandhar to Nakodar",
+    "body": "Hi,\n\nPlease arrange a collection from our Jalandhar warehouse for delivery to Nakodar_ChowkDPP_D (Punjab) (IND144040AAA).\nConsignee: Nakodar Agencies\n4 pieces, 2265.3 kg, FTL.\n\nRegards,\nJalandhar Distributors\nConsignor",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Jalandhar Distributors",
+      "dest_centre": "IND144040AAA",
+      "route_type": "FTL",
+      "pieces": 4,
+      "weight_kg": 2265.3
+    }
+  },
+  {
+    "seq": 6,
+    "variant": "clean",
+    "subject": "Booking request Pali to Jaipur",
+    "body": "Hello,\n\nPlease book a shipment for us.\n\nPickup: Pali_Nayagaon_I (Rajasthan) (centre IND306401AAB)\nDelivery: Jaipur_Hub (Rajasthan) (centre IND302014AAA)\nConsignee: Jaipur Mart\nLoad: 4 pieces, 7528.2 kg total\nService: FTL\n\nRegards,\nPali Logistics Pvt Ltd\nConsignor",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Pali Logistics Pvt Ltd",
+      "origin_centre": "IND306401AAB",
+      "dest_centre": "IND302014AAA",
+      "route_type": "FTL",
+      "pieces": 4,
+      "weight_kg": 7528.2
+    }
+  },
+  {
+    "seq": 7,
+    "variant": "clean",
+    "subject": "Booking request ChandroknaRD to Kharagpur",
+    "body": "Hello,\n\nPlease book a shipment for us.\n\nPickup: ChandroknaRD_Central_DPP_3 (West Bengal) (centre IND721253AAC)\nDelivery: Kharagpur_DC (West Bengal) (centre IND721306AAA)\nConsignee: Kharagpur Warehousing\nLoad: 1 pieces, 1567.9 kg total\nService: FTL\n\nRegards,\nChandroknard Exports\nConsignor",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Chandroknard Exports",
+      "origin_centre": "IND721253AAC",
+      "dest_centre": "IND721306AAA",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 1567.9
+    }
+  },
+  {
+    "seq": 8,
+    "variant": "clean",
+    "subject": "Booking request RoopNagar to AnandprShb",
+    "body": "Hello,\n\nPlease book a shipment for us.\n\nPickup: RoopNagar_ChotiHvl_DC (Punjab) (centre IND140001AAA)\nDelivery: AnandprShb_PnjPiara_D (Punjab) (centre IND140118AAA)\nConsignee: Anandprshb Stores\nLoad: 6 pieces, 3714.4 kg total\nService: FTL\n\nRegards,\nRoopnagar Distributors\nConsignor",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Roopnagar Distributors",
+      "origin_centre": "IND140001AAA",
+      "dest_centre": "IND140118AAA",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 3714.4
+    }
+  },
+  {
+    "seq": 9,
+    "variant": "clean",
+    "subject": "Booking request Bengaluru to Bengaluru",
+    "body": "Hello,\n\nPlease book a shipment for us.\n\nPickup: Bengaluru_Bomsndra_HB (Karnataka) (centre IND560099AAB)\nDelivery: Bengaluru_KHRoad_I (Karnataka) (centre IND560002AAA)\nConsignee: Bengaluru Stores\nLoad: 15 pieces, 146.2 kg total\nService: Carting\n\nRegards,\nBengaluru Industries\nConsignor",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Bengaluru Industries",
+      "origin_centre": "IND560099AAB",
+      "dest_centre": "IND560002AAA",
+      "route_type": "Carting",
+      "pieces": 15,
+      "weight_kg": 146.2
+    }
+  },
+  {
+    "seq": 10,
+    "variant": "ambiguous_route",
+    "subject": "Booking request Aurangabad to Jalna",
+    "body": "Hello,\n\nNeed this moved from Aurangabad_Central_H_1 (Maharashtra) (IND431136AAC) to Jalna_BhgyaNgr_D (Maharashtra) (IND431203AAA).\nConsignee Jalna Warehousing, 14 pieces, 330.4 kg.\nSend it whichever way works out best at your end.\n\nRegards,\nAurangabad Industries\nConsignor",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Aurangabad Industries",
+      "origin_centre": "IND431136AAC",
+      "dest_centre": "IND431203AAA",
+      "pieces": 14,
+      "weight_kg": 330.4
+    }
+  },
+  {
+    "seq": 11,
+    "variant": "missing_weight",
+    "subject": "Booking request Kadiri to Rayachoti",
+    "body": "Hi team,\n\nWe need a pickup from Kadiri_GVManu_D (Andhra Pradesh) (IND515591AAA) going to Rayachoti_Madnpali_D (Andhra Pradesh) (IND516269AAA).\nConsignee is Rayachoti Retail Pvt Ltd. 6 pieces. FTL please.\n\nThe pallets are still being made up so I do not have the final weight yet.\n\nRegards,\nKadiri Traders\nConsignor",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Kadiri Traders",
+      "origin_centre": "IND515591AAA",
+      "dest_centre": "IND516269AAA",
+      "route_type": "FTL",
+      "pieces": 6
+    }
+  },
+  {
+    "seq": 12,
+    "variant": "missing_pieces",
+    "subject": "Booking request Trivandrum to Neyatinkra",
+    "body": "Hello,\n\nBooking request: Trivandrum_Pettah_D (Kerala) (IND000000AFJ) to Neyatinkra_Arlumodu_D (Kerala) (IND695121AAA).\nConsignee Neyatinkra Distribution Hub, total weight 278.1 kg, Carting service.\n\nRegards,\nTrivandrum Logistics Pvt Ltd\nConsignor",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Trivandrum Logistics Pvt Ltd",
+      "origin_centre": "IND000000AFJ",
+      "dest_centre": "IND695121AAA",
+      "route_type": "Carting",
+      "weight_kg": 278.1
+    }
+  }
+]

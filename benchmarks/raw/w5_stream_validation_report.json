@@ -1,0 +1,19 @@
+{
+  "legs": 500,
+  "identical_predictions": 500,
+  "identical_rate": 1.0,
+  "max_abs_difference": 0.0,
+  "event_carried_features": [
+    "planned_min",
+    "planned_km",
+    "created_hour",
+    "created_dayofweek",
+    "created_is_weekend",
+    "is_ftl"
+  ],
+  "history_features_assumed": 21,
+  "temporal_fields_agree": 500,
+  "temporal_fields_checked": 500,
+  "naive_python_dayofweek_would_break": 500,
+  "generated_at": "2026-09-08T14:36:35+05:30"
+}

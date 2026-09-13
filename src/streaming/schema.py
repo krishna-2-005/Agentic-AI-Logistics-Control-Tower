@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import timedelta
+from datetime import datetime, timedelta
 
 import jsonschema
 import pandas as pd
@@ -27,6 +27,7 @@ import pandas as pd
 from src.common import config
 from src.common.logging_setup import get_logger
 from src.common.spark import get_spark, stop_spark
+from src.ml.baselines import delay_label
 
 log = get_logger("streaming.schema")
 
@@ -43,8 +44,43 @@ EXAMPLE_COLUMNS = [
     "leg_id", "trip_uuid", "corridor_id", "source_center", "destination_center",
     "trip_creation_time", "route_type", "planned_min", "planned_km",
     "created_hour", "created_dayofweek", "created_is_weekend",
-    "gap_min", "log_gap_ratio", "is_delayed",
+    "gap_min", "log_gap_ratio",
 ]
+#: `is_delayed` is deliberately absent from that list. The column exists in
+#: `features_v1` and is stale (P-42); not loading it is what stops it being used by
+#: accident, which is a stronger guarantee than remembering not to.
+
+
+def temporal_features(when: datetime) -> dict:
+    """`created_hour` / `created_dayofweek` / `created_is_weekend` for a timestamp,
+    in **Spark's** encoding -- the one the model was actually trained on.
+
+    This exists because the two obvious ways to compute day-of-week disagree, and
+    nothing raises when they do:
+
+    * Stage 4 builds the feature with Spark's `F.dayofweek`, which is **Sunday = 1**
+      through Saturday = 7.
+    * A Python consumer reaching for `datetime.weekday()` gets **Monday = 0** through
+      Sunday = 6.
+
+    On a Wednesday that is 4 against 2. A streaming job that recomputed the feature
+    the Python way would hand the champion model a number on a different scale for
+    every event, and the model would answer confidently and wrongly -- no exception,
+    no null, nothing downstream that could notice. `isoweekday() % 7 + 1` reproduces
+    Spark's encoding exactly; this function is the one place that conversion lives, so
+    the streaming job and the batch pipeline cannot drift apart on it (P-39, and the
+    same "two lists holding one truth" trap P-23 already cost this project once).
+
+    `created_is_weekend` is genuinely convention-independent -- Spark's `isin(1, 7)`
+    and Python's `weekday() >= 5` both mean Saturday-or-Sunday -- but it is computed
+    here anyway so a caller never has to remember which of the three is safe.
+    """
+    spark_dayofweek = when.isoweekday() % 7 + 1
+    return {
+        "created_hour": when.hour,
+        "created_dayofweek": spark_dayofweek,
+        "created_is_weekend": int(spark_dayofweek in (1, 7)),
+    }
 
 
 def load_schema() -> dict:
@@ -81,7 +117,24 @@ def query_event(row: pd.Series) -> dict:
 
 
 def fact_event(row: pd.Series) -> dict:
+    """The outcome half of a leg. `is_delayed` is **recomputed**, not carried.
+
+    `features_v1` has an `is_delayed` column and it is stale: it was written by
+    `src.pipeline.reconstruct` when `config.DELAY_THRESHOLD` was still the blueprint's
+    1.25, and D-003 moved the project to 2.00 at the Week 2 sync without the frozen
+    parquet caches (D-016) being rebuilt. 24,687 of 26,369 legs carry `True` there --
+    93.6%, which is precisely D-003's rejected-threshold row -- against 13,104 (49.7%)
+    at the threshold the project actually decided on. Every model in Weeks 3 and 4 is
+    unaffected because `src.ml.baselines.add_delay_label` recomputes the label before
+    every fit, which is also why nobody had noticed: the stale column is overwritten on
+    the only path that had ever read it. The stream is the second reader, and it would
+    have been the first to publish it (P-42).
+    """
     actual_time = row["gap_min"] + row["planned_min"]
+    # D-003's rule, from the one helper every label in the project now comes from
+    # (`src.ml.baselines.delay_label`, Lahari's W5 D3-D4) -- the training label, the
+    # thresholded predictions and this event can no longer disagree about it.
+    is_delayed = int(delay_label(row["gap_min"], row["planned_min"]))
     od_end_time = _od_start_time(row["leg_id"]) + timedelta(minutes=float(actual_time))
     return {
         "event_id": f"fact-{row['leg_id']}",
@@ -94,7 +147,7 @@ def fact_event(row: pd.Series) -> dict:
         "leg_id": row["leg_id"],
         "gap_min": float(row["gap_min"]),
         "log_gap_ratio": float(row["log_gap_ratio"]),
-        "is_delayed": int(row["is_delayed"]),
+        "is_delayed": is_delayed,
     }
 
 

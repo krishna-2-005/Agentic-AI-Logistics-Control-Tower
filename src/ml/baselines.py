@@ -129,7 +129,25 @@ def load_features(spark: SparkSession, path: Path) -> pd.DataFrame:
     return pdf.sort_values("trip_creation_time").reset_index(drop=True)
 
 
-def add_delay_label(pdf: pd.DataFrame) -> pd.DataFrame:
+def delay_label(gap_min, planned_min, threshold: float | None = None) -> np.ndarray:
+    """D-003's delay label, in one place: `actual > T x planned`, as `gap > (T - 1) x planned`.
+
+    Every label in the project comes from here -- the batch training label
+    (`add_delay_label`), every "classification for free" from a regressor
+    (`threshold_to_label`), and the stream's fact events (`src.streaming.schema`).
+    Before Week 5 the same one-line expression was written out in three places, and a
+    fourth copy -- baked into a parquet column when the constant was still 1.25 -- went
+    stale without anyone seeing it (P-42). `threshold` defaults to
+    `config.DELAY_THRESHOLD`; the sensitivity sweep (W5 D3-D4) passes others.
+
+    Accepts scalars, numpy arrays or pandas Series; returns an int array (0-d for a
+    scalar, so `int(delay_label(...))` works on a single row).
+    """
+    t = config.DELAY_THRESHOLD if threshold is None else threshold
+    return (np.asarray(gap_min, dtype=float) > (t - 1) * np.asarray(planned_min, dtype=float)).astype(int)
+
+
+def add_delay_label(pdf: pd.DataFrame, threshold: float | None = None) -> pd.DataFrame:
     """D-003's classification label, computed once before the split so both halves of
     `time_split` carry it like any other column.
 
@@ -138,7 +156,7 @@ def add_delay_label(pdf: pd.DataFrame) -> pd.DataFrame:
     2.00x threshold, a leg is "delayed" when its gap alone exceeds what was planned.
     """
     out = pdf.copy()
-    out[CLASSIFIER_TARGET] = (out[TARGET] > (config.DELAY_THRESHOLD - 1) * out["planned_min"]).astype(int)
+    out[CLASSIFIER_TARGET] = delay_label(out[TARGET], out["planned_min"], threshold)
     return out
 
 
@@ -228,7 +246,9 @@ def fit_linear_regression(train: pd.DataFrame) -> LinearRegression:
     return model
 
 
-def threshold_to_label(gap_pred: np.ndarray, planned_min: np.ndarray) -> np.ndarray:
+def threshold_to_label(
+    gap_pred: np.ndarray, planned_min: np.ndarray, threshold: float | None = None
+) -> np.ndarray:
     """Turn any model's continuous `gap_min` prediction into D-003's binary label,
     using the exact rule `add_delay_label` builds the true label from.
 
@@ -237,7 +257,7 @@ def threshold_to_label(gap_pred: np.ndarray, planned_min: np.ndarray) -> np.ndar
     already predict, rather than fitting a second, differently-calibrated model under
     each baseline's name.
     """
-    return (gap_pred > (config.DELAY_THRESHOLD - 1) * planned_min).astype(int)
+    return delay_label(gap_pred, planned_min, threshold)
 
 
 def majority_class_predictions(train_labels: pd.Series, n: int) -> np.ndarray:

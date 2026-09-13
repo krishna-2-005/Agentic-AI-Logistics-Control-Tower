@@ -1,0 +1,18 @@
+{
+  "n_run": 40,
+  "n_cases": 50,
+  "success_rate": 1.0,
+  "clarification_rate": 0.5,
+  "expected_clarification_rate": 0.5,
+  "file_success_rate": 1.0,
+  "clarify_success_rate": 1.0,
+  "clarify_recall": 1.0,
+  "clarify_precision": 1.0,
+  "invented_orders": 0,
+  "needless_questions": 0,
+  "extraction_failures": 0,
+  "run_dates": [
+    "2026-09-11",
+    "2026-09-13"
+  ]
+}

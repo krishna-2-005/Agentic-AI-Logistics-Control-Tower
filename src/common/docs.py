@@ -26,7 +26,8 @@ from pathlib import Path
 #: the same regardless of which script happened to run first.
 SECTION_ORDER = [
     "data-dictionary", "eda", "corridor-audit", "hub-ranking", "baselines",
-    "beat-osrm", "beat-osrm-ablations", "doc-eval",
+    "beat-osrm", "beat-osrm-ablations", "doc-eval", "stream-equals-batch",
+    "threshold-sensitivity", "order-eval",
 ]
 
 

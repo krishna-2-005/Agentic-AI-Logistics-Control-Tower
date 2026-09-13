@@ -11,6 +11,7 @@ from __future__ import annotations
 import pandas as pd
 import pytest
 
+from src.common import config
 from src.streaming import schema
 
 
@@ -41,7 +42,11 @@ def _row(**overrides) -> pd.Series:
         "created_is_weekend": 0,
         "gap_min": 101.0,
         "log_gap_ratio": 1.1617911902896414,
-        "is_delayed": 1,
+        # Deliberately the WRONG value: `features_v1` carries a stale `is_delayed`
+        # computed at the 1.25x threshold D-003 rejected (P-42), and `fact_event` must
+        # ignore whatever is in the column and recompute. A fixture holding the right
+        # answer could not tell the two behaviours apart.
+        "is_delayed": 0,
     }
     base.update(overrides)
     return pd.Series(base)
@@ -79,3 +84,30 @@ def test_an_unknown_field_fails_validation(json_schema):
     event["not_a_real_field"] = 1
     with pytest.raises(Exception, match="not_a_real_field|[Aa]dditional"):
         schema.validate_event(event, json_schema)
+
+
+def test_fact_event_recomputes_the_delay_label_and_ignores_the_stale_column():
+    # gap_min 101 against planned_min 46: the leg took 147 of a planned 46 minutes,
+    # 3.2x plan, delayed at any threshold the project has ever considered. The row says
+    # 0 because that is what the stale parquet column says.
+    assert schema.fact_event(_row())["is_delayed"] == 1
+
+
+def test_a_leg_just_under_the_threshold_is_not_delayed():
+    # 2.00x means gap > planned. 45 against 46 is 1.98x -- late, not "delayed" by
+    # D-003's rule, and the boundary is where a re-derivation of the label goes wrong.
+    assert schema.fact_event(_row(gap_min=45.0, is_delayed=1))["is_delayed"] == 0
+    assert schema.fact_event(_row(gap_min=47.0, is_delayed=0))["is_delayed"] == 1
+
+
+def test_the_delay_label_follows_config_rather_than_a_hardcoded_two():
+    # If DELAY_THRESHOLD moves -- Lahari's D3-D4 sweeps it -- the event must move with
+    # it, not keep a 2.00 baked in at the moment this was written.
+    threshold_gap = (config.DELAY_THRESHOLD - 1) * 46.0
+    assert schema.fact_event(_row(gap_min=threshold_gap + 1))["is_delayed"] == 1
+    assert schema.fact_event(_row(gap_min=threshold_gap - 1))["is_delayed"] == 0
+
+
+def test_the_stale_column_is_not_even_loaded():
+    # Not reading it is what stops it being used by accident.
+    assert "is_delayed" not in schema.EXAMPLE_COLUMNS

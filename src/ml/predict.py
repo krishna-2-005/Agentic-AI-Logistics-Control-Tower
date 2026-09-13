@@ -42,6 +42,7 @@ from src.ml.baselines import (
     HISTORY_PREFIXES,
     HISTORY_STATS,
 )
+from src.streaming.schema import temporal_features
 
 log = get_logger("ml.predict")
 
@@ -82,6 +83,24 @@ def _latest_history(spark: SparkSession, prefix: str, key_value: str) -> dict:
     return r
 
 
+def base_row(route_type: str, planned_min: float, planned_km: float, departure: datetime) -> dict:
+    """The half of a what-if row that has nothing to do with history.
+
+    The three temporal fields come from `src.streaming.schema.temporal_features` -- the
+    one place Spark's day-of-week convention (Sunday = 1) is reproduced. Until Week 5
+    this built `created_dayofweek` from `departure.weekday()` (Monday = 0), so every
+    what-if prediction since Week 4 was made on a day-of-week from a different scale
+    than the one the champion learned (P-46). Split out so it can be tested without a
+    SparkSession, like `build_result` below.
+    """
+    return {
+        "planned_min": float(planned_min),
+        "planned_km": float(planned_km),
+        **temporal_features(departure),
+        "is_ftl": int(route_type == "FTL"),
+    }
+
+
 def predict_delay(
     corridor_id: str,
     source_center: str,
@@ -104,14 +123,7 @@ def predict_delay(
 
     spark = get_spark("what-if-predict")
     try:
-        row: dict = {
-            "planned_min": float(planned_min),
-            "planned_km": float(planned_km),
-            "created_hour": departure.hour,
-            "created_dayofweek": departure.weekday(),
-            "created_is_weekend": int(departure.weekday() >= 5),
-            "is_ftl": int(route_type == "FTL"),
-        }
+        row: dict = base_row(route_type, planned_min, planned_km, departure)
         key_values = {"corr": corridor_id, "src": source_center, "dst": destination_center}
         cold_flags = {}
         for prefix in HISTORY_PREFIXES:
