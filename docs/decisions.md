@@ -1773,3 +1773,86 @@ table for "worst", or it will confidently answer with whatever sounded closest.
 
 Evidence: `src/common/vectordb.py`, `tests/test_vectordb.py`, the `search_knowledge`
 tool in `src/agents/mcp_server.py`.
+
+---
+
+## D-046 · The results freeze detects drift; it does not make anything immutable — `DECIDED`
+**Week 6 · Lahari · D1-D2**
+
+Layer 1 is finished, and the paper will quote it. The risk is not that someone edits a
+number in the report — it is that someone re-runs a stage, the artefact changes by
+0.2, and the report keeps saying what it said. Six weeks of regenerating tables is
+exactly how a figure quietly stops matching its source.
+
+**Decided: freeze the *values and their sources*, and provide `--verify`.** Each of the
+31 Layer 1 numbers is recorded with the file it came from and a hash of that file's
+contents. `--verify` recomputes every value, re-hashes every source, and reports what
+moved. Nothing is made read-only: re-running a stage overwrites its artefact exactly as
+before. **Detection is the property a paper needs; immutability is a property a project
+cannot have while it is still running.**
+
+**Decided: a file rewritten with identical numbers is reported, and is not a failure.**
+The two lists are separate — `changed` (a value moved) and `files_rewritten` (the
+bytes moved, the numbers did not). Collapsing them would cry wolf every time a table was
+regenerated, and a check people learn to ignore is worse than no check.
+
+**Decided: an entry whose source is missing is a *problem*, not a skipped row.** A Layer
+1 number that can no longer be traced to a file is a finding. Silently dropping it would
+make the freeze shrink quietly, which is the failure mode it exists to prevent.
+
+**Decided: this is mine, not each author's.** Same reason as D-028: the person who
+produced a number is the worst-placed to notice it no longer matches its file, because
+they remember what it said.
+
+Evidence: `src/ml/results_freeze.py`, `benchmarks/results_freeze_v1.json`,
+`docs/RESULTS_SUMMARY.md`, `tests/test_agent_eval.py`.
+
+---
+
+## D-047 · Severity earns its place as a filter; the invoice tolerance has a measured cost — `DECIDED`
+**Week 6 · Lahari · D3-D4 and D5**
+
+Two evaluations, two numbers that should change what Week 7 builds.
+
+**1. The Exception Agent's severity grades track real lateness, so they should be used
+as a filter.** Scored against the replay's own fact events — 2,000 legs, 1,082
+genuinely delayed — the agent's notification precision is **72.1%** overall, which
+is the stream's precision, because the agent notifies on everything it is handed. But
+precision by grade is **monotone**:
+
+| grade | notified | precision |
+|---|---|---|
+| low | 434 | 53.2% |
+| medium | 344 | 68.6% |
+| high | 275 | 85.1% |
+| critical | 294 | 91.8% |
+
+**Decided: a severity floor is a real policy lever and should be one.** Notifying at
+`high` or above sends 42% of the volume at **88.6%** precision, reaching 46.6% of all
+delayed legs; at `critical` only, 22% of the volume at **91.8%**. The arithmetic severity
+rule (D-041) is not just reproducible, it is *informative* — which is the thing a
+model-assigned severity could never have demonstrated, because there would have been no
+stable grade to measure.
+
+Not decided here: **where** the floor goes. That is an operations question about how many
+notifications a desk can act on, and nobody on this team is the customer. The table is
+the deliverable; the threshold is theirs.
+
+**2. The Invoice Auditor's 15% tolerance hides overcharges up to 15%, and now that is a
+number.** On a 60-invoice set the auditor's author never saw: **86.7% accuracy, zero
+false disputes, 8 misses — and all 8 are the same kind**, `overcharge_hidden`, an
+invoice 10% above the corpus's rate band and therefore inside the auditor's tolerance.
+
+**Decided: the tolerance stays for v1, and the miss is published beside the accuracy.**
+Zero false disputes is the right direction to be wrong in (D-043's argument), and
+tightening the band would trade that away. But "86.7% accurate" alone would be a
+misleading headline: the auditor is perfect on eight of ten kinds and blind on one, and
+the blindness is a design choice with a price tag. A v2 fitted from billed history can
+narrow the band on evidence rather than on a guessed 15%.
+
+**Both evaluations cost nothing to re-run** — no model, no TMS, no quota —
+because both agents compute their verdicts (D-041). That is the return on that decision,
+and it is why these numbers exist at all in a week with 20 API calls a day.
+
+Evidence: `src/ml/exception_eval.py`, `src/ml/invoice_eval.py`,
+`benchmarks/raw/w6_exception_eval.json`, `benchmarks/raw/w6_invoice_eval.json`.

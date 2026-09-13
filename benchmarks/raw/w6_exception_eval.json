@@ -1,0 +1,75 @@
+{
+  "alerts_scored": 1347,
+  "alerts_without_truth": 0,
+  "legs_in_replay": 2000,
+  "legs_truly_delayed": 1082,
+  "notification_precision": 0.7209,
+  "recall_of_all_delayed": 0.8974,
+  "by_severity": [
+    {
+      "severity": "low",
+      "notified": 434,
+      "truly_delayed": 231,
+      "precision": 0.5323,
+      "median_predicted_gap_min": 68.7
+    },
+    {
+      "severity": "medium",
+      "notified": 344,
+      "truly_delayed": 236,
+      "precision": 0.686,
+      "median_predicted_gap_min": 51.2
+    },
+    {
+      "severity": "high",
+      "notified": 275,
+      "truly_delayed": 234,
+      "precision": 0.8509,
+      "median_predicted_gap_min": 58.8
+    },
+    {
+      "severity": "critical",
+      "notified": 294,
+      "truly_delayed": 270,
+      "precision": 0.9184,
+      "median_predicted_gap_min": 60.1
+    }
+  ],
+  "policies": [
+    {
+      "notify_at_or_above": "low",
+      "notified": 1347,
+      "share_of_alerts": 1.0,
+      "precision": 0.7209,
+      "recall_of_all_delayed": 0.8974
+    },
+    {
+      "notify_at_or_above": "medium",
+      "notified": 913,
+      "share_of_alerts": 0.6778,
+      "precision": 0.8105,
+      "recall_of_all_delayed": 0.6839
+    },
+    {
+      "notify_at_or_above": "high",
+      "notified": 569,
+      "share_of_alerts": 0.4224,
+      "precision": 0.8858,
+      "recall_of_all_delayed": 0.4658
+    },
+    {
+      "notify_at_or_above": "critical",
+      "notified": 294,
+      "share_of_alerts": 0.2183,
+      "precision": 0.9184,
+      "recall_of_all_delayed": 0.2495
+    }
+  ],
+  "time_to_notification_s": {
+    "stream_p50": 60.32,
+    "stream_p95": 63.33,
+    "agent_decision_p50_ms": 0.04,
+    "agent_decision_p95_ms": 0.04
+  },
+  "generated_at": "2026-09-13T10:35:07.763581+00:00"
+}

@@ -1,0 +1,269 @@
+{
+  "frozen_at": "2026-09-13T10:29:30.443204+00:00",
+  "layer": 1,
+  "n_values": 31,
+  "values": [
+    {
+      "id": "legs_total",
+      "week": 1,
+      "label": "Legs in the cleaned feature table",
+      "value": 26369,
+      "unit": "legs",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "corridors_total",
+      "week": 1,
+      "label": "Distinct corridors",
+      "value": 2783,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "median_gap_ratio",
+      "week": 1,
+      "label": "Median leg runs this many times its OSRM plan",
+      "value": 2.0,
+      "unit": "x",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "corridors_tested",
+      "week": 2,
+      "label": "Corridors above the 10-leg floor (D-018)",
+      "value": 1130,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "bottlenecks",
+      "week": 2,
+      "label": "Significantly slower corridors (FDR 0.05)",
+      "value": 273,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "faster_corridors",
+      "week": 2,
+      "label": "Significantly faster corridors",
+      "value": 512,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "legs_covered",
+      "week": 2,
+      "label": "Legs covered by tested corridors",
+      "value": 20739,
+      "unit": "legs",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "robustness_bottlenecks",
+      "week": 2,
+      "label": "Bottlenecks at the old 30-leg floor",
+      "value": 34,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "split_train",
+      "week": 3,
+      "label": "Training legs (chronological, D-022)",
+      "value": 21095,
+      "unit": "legs",
+      "source": "w3_baseline_report.json"
+    },
+    {
+      "id": "split_test",
+      "week": 3,
+      "label": "Held-out legs",
+      "value": 5274,
+      "unit": "legs",
+      "source": "w3_baseline_report.json"
+    },
+    {
+      "id": "pct_delayed",
+      "week": 3,
+      "label": "Legs delayed at the decided 2.00x threshold (D-003)",
+      "value": 49.69,
+      "unit": "%",
+      "source": "w3_baseline_report.json"
+    },
+    {
+      "id": "mae_osrm",
+      "week": 3,
+      "label": "OSRM test MAE",
+      "value": 107.09,
+      "unit": "min",
+      "source": "w3_baseline_metrics.csv"
+    },
+    {
+      "id": "mae_corridor_mean",
+      "week": 3,
+      "label": "Corridor-mean baseline test MAE",
+      "value": 36.13,
+      "unit": "min",
+      "source": "w3_baseline_metrics.csv"
+    },
+    {
+      "id": "champion_model",
+      "week": 4,
+      "label": "Champion model",
+      "value": "random_forest",
+      "unit": "",
+      "source": "w4_model_report.json"
+    },
+    {
+      "id": "mae_champion",
+      "week": 4,
+      "label": "Champion test MAE",
+      "value": 36.89,
+      "unit": "min",
+      "source": "w4_model_metrics.csv"
+    },
+    {
+      "id": "corridors_improved",
+      "week": 4,
+      "label": "Test corridors the champion beats OSRM on",
+      "value": 1369,
+      "unit": "corridors",
+      "source": "w4_model_report.json"
+    },
+    {
+      "id": "doc_agent_f1_v1",
+      "week": 4,
+      "label": "Document agent field F1, prompt v1",
+      "value": 0.853,
+      "unit": "",
+      "source": "w4_doc_eval_summary.json"
+    },
+    {
+      "id": "doc_agent_f1_v2",
+      "week": 4,
+      "label": "Document agent field F1, prompt v2",
+      "value": 0.929,
+      "unit": "",
+      "source": "w4_doc_eval_summary.json"
+    },
+    {
+      "id": "stream_identical",
+      "week": 5,
+      "label": "Legs scoring identically in batch and stream",
+      "value": 500,
+      "unit": "of 500",
+      "source": "w5_stream_validation_report.json"
+    },
+    {
+      "id": "stream_events",
+      "week": 5,
+      "label": "Events replayed end to end",
+      "value": 52738,
+      "unit": "events",
+      "source": "w5_stream_throughput_full.json"
+    },
+    {
+      "id": "stream_produced_eps",
+      "week": 5,
+      "label": "Producer rate sustained",
+      "value": 886.4,
+      "unit": "events/sec",
+      "source": "w5_stream_throughput_full.json"
+    },
+    {
+      "id": "stream_scoring_eps",
+      "week": 5,
+      "label": "Saturated scoring rate",
+      "value": 739.9,
+      "unit": "events/sec",
+      "source": "w5_stream_throughput_full.json"
+    },
+    {
+      "id": "stream_latency_p50_s",
+      "week": 5,
+      "label": "Event-to-alert latency, median",
+      "value": 28.9,
+      "unit": "s",
+      "source": "w5_stream_throughput_full.json"
+    },
+    {
+      "id": "order_eval_run",
+      "week": 5,
+      "label": "Order Entry eval cases run",
+      "value": 40,
+      "unit": "of 50",
+      "source": "w5_order_eval_summary.json"
+    },
+    {
+      "id": "order_eval_success",
+      "week": 5,
+      "label": "Order Entry eval success rate",
+      "value": 1.0,
+      "unit": "",
+      "source": "w5_order_eval_summary.json"
+    },
+    {
+      "id": "order_eval_invented",
+      "week": 5,
+      "label": "Orders filed on invented values",
+      "value": 0,
+      "unit": "orders",
+      "source": "w5_order_eval_summary.json"
+    },
+    {
+      "id": "lifecycle_cases",
+      "week": 6,
+      "label": "Emails through the full lifecycle",
+      "value": 10,
+      "unit": "cases",
+      "source": "w6_orchestrator_runs.json"
+    },
+    {
+      "id": "lifecycle_booked",
+      "week": 6,
+      "label": "Lifecycle cases booked into the TMS",
+      "value": 5,
+      "unit": "cases",
+      "source": "w6_orchestrator_runs.json"
+    },
+    {
+      "id": "lifecycle_ticketed",
+      "week": 6,
+      "label": "Lifecycle cases reaching an exception ticket",
+      "value": 2,
+      "unit": "cases",
+      "source": "w6_orchestrator_runs.json"
+    },
+    {
+      "id": "invoice_cases",
+      "week": 6,
+      "label": "Invoices audited on the development corpus",
+      "value": 20,
+      "unit": "invoices",
+      "source": "w6_invoice_audit_runs.json"
+    },
+    {
+      "id": "invoice_correct",
+      "week": 6,
+      "label": "Invoice verdicts matching the seeded truth",
+      "value": 20,
+      "unit": "invoices",
+      "source": "w6_invoice_audit_runs.json"
+    }
+  ],
+  "source_hashes": {
+    "w2_audit_report.json": "d135dd09d55c0363",
+    "w3_baseline_metrics.csv": "a0743f1674fe677f",
+    "w3_baseline_report.json": "31e16d969fb0854d",
+    "w4_doc_eval_summary.json": "2813e9313c008191",
+    "w4_model_metrics.csv": "19de559bc1bc9bc3",
+    "w4_model_report.json": "e98bd02e0b07820e",
+    "w5_order_eval_summary.json": "0c93240f69e79434",
+    "w5_stream_throughput_full.json": "0b960377324cb83e",
+    "w5_stream_validation_report.json": "c5e126ea5a7f26b1",
+    "w6_invoice_audit_runs.json": "c702a9f014208e30",
+    "w6_orchestrator_runs.json": "dd7aec8d6f908b9c"
+  },
+  "problems": []
+}
