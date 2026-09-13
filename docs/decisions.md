@@ -1704,3 +1704,72 @@ that counts, on a set this auditor's author did not write (D-028).
 
 Evidence: `src/agents/invoice_auditor.py`, `tests/test_invoice_auditor.py`,
 `benchmarks/raw/w6_invoice_audit_runs.json`.
+
+---
+
+## D-044 · Boot checks everything before it starts anything, and repairs schema drift instead of re-seeding — `DECIDED`
+**Week 6 · Mounika · D1-D2**
+
+**Decided: preflight reports every problem at once, and blocks on none of them
+silently.** Six weeks of this project have produced one recurring failure shape: a run
+dies twenty minutes in because an artefact three stages back was never built. `boot`
+checks the cleaned parquet, the feature table, the champion model, the corridor audit,
+the TMS schema, Java and the LLM key *before* the first process starts, prints each with
+the exact command that fixes it, and stops if an artefact is genuinely missing. A
+missing LLM key is reported and **not** blocking, because every agent runs without one.
+
+**Decided: drift is repaired with `ADD COLUMN`, never by re-seeding.** `create_all`
+makes missing tables and never alters an existing one, so a model that gains a field
+disagrees with the database file from that moment until something writes the column
+(P-47). The obvious fix — re-seed — would have destroyed three real
+agent-filed orders, which is exactly what P-40 predicted in Week 5. So `boot` diffs
+`SQLModel.metadata` against `PRAGMA table_info` and adds what is missing, in place.
+
+**A column whose *type* changed is reported and never rewritten.** That is a migration,
+and a migration is a decision with data loss attached. Guessing at one silently is how a
+database quietly stops meaning what it says. `ADD COLUMN` is the only DDL this module
+will ever emit; anything else is a person's call.
+
+**Decided: `boot` pins `--sink file` rather than inheriting `STREAM_SOURCE`.** The
+configured default is `kafka` and there has never been a broker on this machine (D-035),
+so the bare producer command times out and exits 1. A script whose whole promise is "one
+command that works" cannot inherit a default that works nowhere (P-50).
+
+Evidence: `src/common/boot.py`, `tests/test_boot.py`, `docs/W6_mounika_vectordb.md`.
+
+---
+
+## D-045 · The vector store indexes a document per corridor, and is never a source of truth — `DECIDED`
+**Week 6 · Mounika · D3-D4**
+
+**Decided: one document per corridor, per hub, and per documentation *section* —
+not per table, and not per fixed-size chunk.** A retrieval answer is only as good as the
+unit it retrieves. "Here is the corridor audit CSV" answers nothing; "IND203390AAA>
+IND201301AAF averages 299 minutes against a 97-minute plan over 20 legs, confirmed
+slower than the network, bottleneck rank 15" is an answer on its own. Documentation is
+split at its own headings for the same reason: a decision entry is a unit of meaning, and
+a fixed 500-character window cuts it mid-argument and retrieves the half without the
+decision. 1,434 documents: 1,130 corridors, 20 hubs, 284 doc sections.
+
+**Decided: the audit's vocabulary is translated on the way in.** The table says `worse`;
+the indexed sentence says "statistically confirmed slower than the network". A retrieval
+system hands text to a reader or a model, and P-48 is what that word costs when it
+travels raw.
+
+**Decided: Chroma's default ONNX embedding, not `sentence-transformers`.** The latter
+pulls ~2.5 GB of torch onto a machine with about 5.6 GB of usable RAM for an embedding of
+the same family. The ONNX model is ~80 MB, downloaded once, and runs on CPU: 1,434
+documents in about 90 seconds.
+
+**Decided: nothing reads from the index to compute a number.** Every document is
+generated from a table or a file that remains the authority, so the index is always safe
+to delete and rebuild. It is a way of *finding* things the project already knows.
+
+**Stated limitation: semantic search does not rank by magnitude.** Asked "which hub has
+the longest dwell time", it returns rank 11 above rank 1 — both are relevant, and
+nothing in an embedding knows 350 > 257. Superlatives belong to the tables; retrieval is
+for finding the right document, not for ordering it. Week 7's assistant must consult the
+table for "worst", or it will confidently answer with whatever sounded closest.
+
+Evidence: `src/common/vectordb.py`, `tests/test_vectordb.py`, the `search_knowledge`
+tool in `src/agents/mcp_server.py`.

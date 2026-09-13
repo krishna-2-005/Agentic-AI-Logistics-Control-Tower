@@ -45,6 +45,7 @@ from __future__ import annotations
 import argparse
 import json
 from datetime import datetime
+from pathlib import Path
 from typing import Literal, TypedDict
 
 import pandas as pd
@@ -305,7 +306,8 @@ def run_case(case: OrderEmail, use_llm: bool = True, dry_run: bool = False) -> d
     return {k: v for k, v in final.items() if k not in ("email_body", "expected_fields")}
 
 
-def run(cases: int = 1, start: int = 0, use_llm: bool = True, dry_run: bool = False) -> dict:
+def run(cases: int = 1, start: int = 0, use_llm: bool = True, dry_run: bool = False,
+        out_path: Path = RUNS_JSON) -> dict:
     eval_set = load_eval_set()
     selected = eval_set[start:start + cases]
     results = [run_case(case, use_llm, dry_run) for case in selected]
@@ -323,12 +325,12 @@ def run(cases: int = 1, start: int = 0, use_llm: bool = True, dry_run: bool = Fa
         "generated_at": datetime.now().astimezone().isoformat(),
         "runs": results,
     }
-    RUNS_JSON.parent.mkdir(parents=True, exist_ok=True)
-    RUNS_JSON.write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
     log.info(
         "%d case(s): %d booked, %d alerted, %d ticketed, %d stopped at a question -> %s",
         summary["cases"], summary["booked"], summary["alerted"], summary["ticketed"],
-        summary["reached_clarify"], RUNS_JSON,
+        summary["reached_clarify"], out_path,
     )
     return summary
 
@@ -339,9 +341,12 @@ def main() -> int:
     parser.add_argument("--start", type=int, default=0, help="index into the eval set")
     parser.add_argument("--no-llm", action="store_true", help="demonstration mode: no model call anywhere")
     parser.add_argument("--dry-run", action="store_true", help="decide everything, post nothing")
+    # See P-51: boot writes its demonstration runs to logs/, not over the cited artefact.
+    parser.add_argument("--out", type=Path, default=RUNS_JSON)
     args = parser.parse_args()
 
-    summary = run(cases=args.cases, start=args.start, use_llm=not args.no_llm, dry_run=args.dry_run)
+    summary = run(cases=args.cases, start=args.start, use_llm=not args.no_llm,
+                  dry_run=args.dry_run, out_path=args.out)
     for result, path in zip(summary["runs"], summary["paths"], strict=True):
         print(f"\ncase {result['case_seq']}: {path}")
         for label, key in (("order", "order_ref"), ("shipment", "shipment_ref"),

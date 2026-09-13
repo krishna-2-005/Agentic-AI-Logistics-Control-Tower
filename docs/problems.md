@@ -1019,6 +1019,54 @@ checking a number, never by reading the file.
   state added later, and the states added later are usually the interesting ones. Filter
   on what is finished, not on what is fine.
 
+### P-50 · The documented producer command fails on every machine that follows the README
+**Week 6 · Mounika · resolved for boot, open in `.env.example`**
+
+- **Symptom.** `boot`'s first end-to-end run reported `FAIL producer`. Its log:
+  `could not open the kafka sink: KafkaTimeoutError: Unable to bootstrap from
+  localhost:9092`, after a 30-second stall.
+- **Cause.** `STREAM_SOURCE` defaults to `kafka` in `config.py` and `.env.example`, and
+  the producer honours it. D-035 recorded in Week 5 that this machine has no broker and
+  that every reported number comes from the file sink — but every Week 5 run passed
+  `--sink file` explicitly or called `FileSink` directly through the throughput harness,
+  so nothing ever exercised the default. **The default has been wrong since Week 5 and
+  only a script with no flags could find it.**
+- **Fix.** `boot` passes `--sink file` explicitly and says why in a comment. The README
+  now carries the same warning beside the bare command.
+- **Not fixed: the default itself.** Flipping `STREAM_SOURCE` to `file` would make the
+  documented Kafka path the one that needs a flag, which is a decision about what this
+  project claims to be (D-035 deliberately ships the Kafka path unexercised rather than
+  unwritten). Left for the Week 7 sync.
+- **Carry.** A default that every caller overrides is not a default, it is a trap with a
+  long fuse. The way to find one is to run the documented command with no flags, which is
+  exactly what a boot script does and what six weeks of careful invocations never did.
+
+### P-51 · The boot script quietly overwrote the evidence the write-ups cite
+**Week 6 · Mounika · resolved**
+
+- **Symptom.** After `boot` ran, `git diff` showed
+  `benchmarks/raw/w6_orchestrator_runs.json` down by 178 lines and
+  `w6_exception_runs.json` down by 119. Nothing had failed; the files had simply been
+  replaced.
+- **Cause.** Each agent writes its run to a fixed path in `benchmarks/raw/`. That is
+  right when the run *is* the evidence, and wrong the moment a demonstration reruns the
+  same agent with different arguments. `boot` runs the orchestrator over 5 cases;
+  Krishna's write-up cites a 10-case run with three distinct paths. **Boot's smaller run
+  silently became the artefact his document points at.**
+- **Why it matters more than it looks.** Every number in this project is supposed to
+  trace to a file in `benchmarks/`. A demonstration that rewrites those files breaks the
+  trace without touching the prose, so the document and its evidence drift apart while
+  both look fine. It would have been found at the worst possible moment: someone opening
+  the JSON to check a figure in the report.
+- **Fix.** `--out` on the Exception Agent and the orchestrator, defaulting to the
+  benchmarks path they already used. `boot` passes `logs/boot/...` instead, so a
+  demonstration leaves the cited evidence alone. The overwritten files were restored
+  from git.
+- **Carry.** A module that writes to a fixed artefact path has an implicit claim on it:
+  *this run is the one that counts*. As soon as two callers exist, the path needs to be
+  an argument — and the default should belong to whichever caller produces the
+  evidence, not whichever was written first.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
