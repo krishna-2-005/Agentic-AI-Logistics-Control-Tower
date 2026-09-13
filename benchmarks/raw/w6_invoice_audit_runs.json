@@ -1,0 +1,361 @@
+{
+  "cases": 20,
+  "disputed": 10,
+  "approved": 10,
+  "correct_verdicts": 20,
+  "drafted_by_llm": 0,
+  "seed": 7,
+  "generated_at": "2026-09-13T15:04:59.328016+05:30",
+  "outcomes": [
+    {
+      "seq": 1,
+      "kind": "clean",
+      "corridor_id": "IND712311AAA>IND700088AAA",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 2,
+      "kind": "clean",
+      "corridor_id": "IND136118AAA>IND136128AAA",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 3,
+      "kind": "overcharge",
+      "corridor_id": "IND321001AAA>IND321401AAB",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "rate_above_band",
+          "detail": "freight 2,353.57 is above the audited band for this corridor (992.68-2,158.44 for FTL over 41.7 km)"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "rate_above_band",
+      "note": "Invoice INV-000003 on IND321001AAA>IND321401AAB is disputed: freight 2,353.57 is above the audited band for this corridor (992.68-2,158.44 for FTL over 41.7 km). Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 4,
+      "kind": "total_mismatch",
+      "corridor_id": "IND562132AAA>IND560043AAC",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "total_mismatch",
+          "detail": "freight 1,817.09 + other 174.82 = 1,991.91, but the invoice totals 2,370.50 (a difference of 378.59)"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "total_mismatch",
+      "note": "Invoice INV-000004 on IND562132AAA>IND560043AAC is disputed: freight 1,817.09 + other 174.82 = 1,991.91, but the invoice totals 2,370.50 (a difference of 378.59). Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 5,
+      "kind": "overcharge",
+      "corridor_id": "IND591102AAA>IND591307AAC",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "rate_above_band",
+          "detail": "freight 4,159.94 is above the audited band for this corridor (1,095.31-2,381.61 for FTL over 46.0 km)"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "rate_above_band",
+      "note": "Invoice INV-000005 on IND591102AAA>IND591307AAC is disputed: freight 4,159.94 is above the audited band for this corridor (1,095.31-2,381.61 for FTL over 46.0 km). Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 6,
+      "kind": "clean",
+      "corridor_id": "IND144001AAB>IND000000ACA",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 7,
+      "kind": "excessive_other",
+      "corridor_id": "IND110037AAM>IND202001AAB",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "other_charges_out_of_band",
+          "detail": "other charges are 47.1% of freight, outside the 5%-18% this network bills"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "other_charges_out_of_band",
+      "note": "Invoice INV-000007 on IND110037AAM>IND202001AAB is disputed: other charges are 47.1% of freight, outside the 5%-18% this network bills. Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 8,
+      "kind": "clean",
+      "corridor_id": "IND345021AAA>IND342301AAA",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 9,
+      "kind": "clean",
+      "corridor_id": "IND691001AAB>IND691506AAA",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 10,
+      "kind": "excessive_other",
+      "corridor_id": "IND783348AAA>IND783129AAA",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "other_charges_out_of_band",
+          "detail": "other charges are 35.6% of freight, outside the 5%-18% this network bills"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "other_charges_out_of_band",
+      "note": "Invoice INV-000010 on IND783348AAA>IND783129AAA is disputed: other charges are 35.6% of freight, outside the 5%-18% this network bills. Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 11,
+      "kind": "total_mismatch",
+      "corridor_id": "IND140301AAA>IND140001AAA",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "total_mismatch",
+          "detail": "freight 792.13 + other 97.30 = 889.43, but the invoice totals 723.16 (a difference of -166.27)"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "total_mismatch",
+      "note": "Invoice INV-000011 on IND140301AAA>IND140001AAA is disputed: freight 792.13 + other 97.30 = 889.43, but the invoice totals 723.16 (a difference of -166.27). Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 12,
+      "kind": "clean",
+      "corridor_id": "IND757037AAA>IND756100AAC",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 13,
+      "kind": "clean",
+      "corridor_id": "IND413002AAA>IND413304AAA",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 14,
+      "kind": "clean",
+      "corridor_id": "IND395023AAD>IND395006AAA",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 15,
+      "kind": "excessive_other",
+      "corridor_id": "IND411033AAA>IND411036AAA",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "other_charges_out_of_band",
+          "detail": "other charges are 31.9% of freight, outside the 5%-18% this network bills"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "other_charges_out_of_band",
+      "note": "Invoice INV-000015 on IND411033AAA>IND411036AAA is disputed: other charges are 31.9% of freight, outside the 5%-18% this network bills. Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 16,
+      "kind": "clean",
+      "corridor_id": "IND400705AAA>IND421302AAH",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 17,
+      "kind": "total_mismatch",
+      "corridor_id": "IND245304AAA>IND201007AAA",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "total_mismatch",
+          "detail": "freight 129.69 + other 16.38 = 146.07, but the invoice totals 116.16 (a difference of -29.91)"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "total_mismatch",
+      "note": "Invoice INV-000017 on IND245304AAA>IND201007AAA is disputed: freight 129.69 + other 16.38 = 146.07, but the invoice totals 116.16 (a difference of -29.91). Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 18,
+      "kind": "overcharge",
+      "corridor_id": "IND302020AAA>IND302014AAB",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "rate_above_band",
+          "detail": "freight 3,212.67 is above the audited band for this corridor (705.24-1,896.92 for Carting over 12.4 km)"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "rate_above_band",
+      "note": "Invoice INV-000018 on IND302020AAA>IND302014AAB is disputed: freight 3,212.67 is above the audited band for this corridor (705.24-1,896.92 for Carting over 12.4 km). Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 19,
+      "kind": "clean",
+      "corridor_id": "IND506143AAA>IND506167AAB",
+      "verdict": "approve",
+      "findings": [],
+      "expected_verdict": "approve",
+      "expected_finding": null,
+      "note": null,
+      "draft_source": null,
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    },
+    {
+      "seq": 20,
+      "kind": "total_mismatch",
+      "corridor_id": "IND400102AAB>IND421302AAG",
+      "verdict": "dispute",
+      "findings": [
+        {
+          "code": "total_mismatch",
+          "detail": "freight 1,127.00 + other 168.75 = 1,295.75, but the invoice totals 1,511.36 (a difference of 215.61)"
+        }
+      ],
+      "expected_verdict": "dispute",
+      "expected_finding": "total_mismatch",
+      "note": "Invoice INV-000020 on IND400102AAB>IND421302AAG is disputed: freight 1,127.00 + other 168.75 = 1,295.75, but the invoice totals 1,511.36 (a difference of 215.61). Please issue a corrected invoice.",
+      "draft_source": "template",
+      "prompt_version": null,
+      "invoice_ref": null,
+      "posted": false,
+      "error": null
+    }
+  ]
+}

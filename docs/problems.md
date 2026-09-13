@@ -942,6 +942,83 @@ checking a number, never by reading the file.
   produces them. `weekday()` appears nowhere near the word "dayofweek" in a way a
   search for the schema field would find.
 
+### P-47 · The TMS database had drifted from its own models, and it blocked the entire Week 6 lifecycle
+**Week 6 · found by Krishna, owned by Mounika · worked around**
+
+- **Symptom.** `POST /shipments` returned **HTTP 500** for every order. Under it:
+  `sqlite3.OperationalError: no such column: shipment.notes`.
+- **Cause.** `Shipment` gained a `notes` field in the model. `SQLModel.metadata.create_all`
+  creates missing *tables*; it never alters an existing one. `data/tms.sqlite` was
+  created before that field existed, so the file and the models had silently disagreed
+  ever since — harmless until the first code path actually wrote the column, which
+  was Week 6's first shipment.
+- **This is P-40's prediction coming true, almost word for word.** P-40 said: *"It will
+  not be fine in Week 6, when the agents have filed orders worth keeping and someone
+  re-runs the seed... they will either hit this error or reach for `--reset` and destroy
+  real agent-filed data."* The database held three real agent-filed orders from Week 5.
+  `--reset` would have destroyed them, and it was the obvious move.
+- **Worked around without losing data.** A schema diff between
+  `SQLModel.metadata.tables` and `PRAGMA table_info` found exactly one drifted column,
+  added by `ALTER TABLE ... ADD COLUMN`. The three Week 5 orders survived; shipments
+  booked immediately afterwards.
+- **The actual fix, for its owner.** That diff is ten lines and belongs in Mounika's
+  end-to-end boot script (W6 D1-D2), which is the one place that already knows it is
+  about to start every service: check the schema against the models, add what is
+  missing, and refuse to start if a column has *changed type* rather than merely being
+  absent.
+- **Carry.** An ORM that creates tables but never alters them is a migration system that
+  works exactly once. Every model change after the first run is invisible until
+  something writes the new column, and the error surfaces in whichever feature happens
+  to touch it first — three weeks and two members away from the change that caused it.
+
+### P-48 · The agent guessed the audit's vocabulary, so its escalation rule never fired and it told customers the opposite of the truth
+**Week 6 · Krishna · resolved**
+
+- **Symptom.** Two of the first three exception notifications said *"This corridor is a
+  confirmed slow route in our own audit."* One of them was on a corridor the Week 2
+  audit had confirmed **faster** than the network. Separately, a corridor that genuinely
+  was a confirmed bottleneck was graded `high` when the rule said it should escalate to
+  `critical`.
+- **Cause.** One root, two symptoms. The severity rule tested
+  `direction == "slower"`. The audit writes `"worse"` and `"better"`
+  (`src/ml/audit.py` line 248). The comparison therefore never matched: **the escalation
+  was dead code from the moment it was written**. The customer-facing template made the
+  opposite mistake — it tested `is_significant` alone, which is true of corridors
+  confirmed *faster* as well, and 512 of the network's corridors are exactly that.
+- **Fix.** One predicate, `Investigation.confirmed_slow` (`is_significant` **and**
+  `direction == SLOWER_THAN_NETWORK`), used by the severity rule, the evidence list and
+  the template. The constant names the audit's word and cites the line that writes it,
+  and `load_audit` now **validates the vocabulary on the way in**: an unknown direction
+  value raises instead of silently disabling the rule. Verified on the same three alerts:
+  the confirmed-slow corridor escalated `high -> critical`, and the confirmed-*fast* one
+  stayed `low` and stopped claiming to be slow.
+- **Cost.** Three tickets were filed with the wrong severity before it was caught, and
+  two customers would have been told something false about their route.
+- **Carry.** **A string comparison against another module's vocabulary is an untested
+  assumption until something validates it.** Neither symptom raised: a comparison that
+  never matches looks exactly like a condition that is never true, and the wrong
+  sentence was fluent, plausible and confidently wrong. The rule now is: when comparing
+  against a value another module produces, either import the constant or validate the
+  domain — never retype the literal.
+
+### P-49 · A shipment became invisible to the agent the moment it had one ticket
+**Week 6 · Krishna · resolved**
+
+- **Symptom.** The Exception Agent processed three alerts and filed three tickets. Run
+  again, it reported that **all 1,347 alerts were on corridors we are not carrying**,
+  including the three it had just ticketed.
+- **Cause.** The agent treated `{created, in_transit}` as "in flight". Filing a ticket
+  flags the shipment `exception` — the TMS does that deliberately, so that a
+  consignment with an open ticket does not still read `in_transit`. So every shipment
+  dropped out of the agent's view as soon as it had one ticket: **the second problem on
+  an already-troubled consignment was precisely the one it could no longer see.**
+- **Fix.** `IN_FLIGHT_STATUSES = {created, in_transit, exception}`. `delivered` is the
+  only status that means "not ours any more"; the filter now names the terminal state
+  rather than enumerating the healthy ones.
+- **Carry.** A status filter written as a list of good states silently excludes every
+  state added later, and the states added later are usually the interesting ones. Filter
+  on what is finished, not on what is fine.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
