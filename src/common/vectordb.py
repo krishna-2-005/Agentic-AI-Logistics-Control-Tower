@@ -113,13 +113,19 @@ def hub_documents(path: Path = FRICTION_CSV) -> list[Document]:
     frame = pd.read_csv(path)
     documents = []
     for row in frame.itertuples():
+        # A NaN rendered into the text would be indexed and retrieved as the literal
+        # string "nan%", which is worse than silence: it reads as a measurement.
+        chain_break = (
+            f" Its chain-break rate is {row.chain_break_rate:.1%}."
+            if pd.notna(row.chain_break_rate) else ""
+        )
         text = (
             f"Hub {row.centre_code} in {row.city}, {row.state} is rank {int(row.friction_rank)} "
             f"in the network's hub-friction table. Shipments leaving it sit a median of "
             f"{row.median_dwell_min_out:.0f} minutes ({row.median_dwell_share_out:.0%} of leg time), "
             f"and {row.p90_dwell_min_out:.0f} minutes at the 90th percentile. It serves "
-            f"{int(row.n_corridors_out)} outbound corridors over {int(row.n_legs_out)} legs, "
-            f"with a chain-break rate of {row.chain_break_rate:.1%}."
+            f"{int(row.n_corridors_out)} outbound corridors over {int(row.n_legs_out)} legs."
+            f"{chain_break}"
         )
         documents.append(Document(
             id=f"hub::{row.centre_code}",

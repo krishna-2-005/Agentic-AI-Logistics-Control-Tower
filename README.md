@@ -201,14 +201,48 @@ python -m src.tms.seed        # 1,657 real centre codes from hubs_v1
 python -m src.tms             # http://localhost:8000/docs
 ```
 
-### 7. Explore
+### 7. Run the whole thing with one command
 
 ```bash
+python -m src.common.boot --check          # what is ready, what is missing, and the fix for each
+python -m src.common.boot                  # TMS → replay → streaming → agents, then tear down
+python -m src.common.boot --dashboard      # ...and leave Streamlit running
+```
+
+`boot` checks every prerequisite **before** starting anything and reports all problems at
+once, repairs TMS schema drift in place (P-47, without destroying agent-filed rows), and
+stops every child process on the way out. It runs the agents with template wording by
+default; add `--llm` to let them draft.
+
+### 8. Or run the pieces
+
+```bash
+# streaming: replay trips, score them, alert on the ones predicted late
+python -m src.streaming.producer --sink file --limit 2000 --duration 20 --clean
+python -m src.streaming.job --once
+python -m src.streaming.throughput --legs 2000 --durations 20,5,2   # the D5 measurements
+
+# agents (every one takes --no-llm or --no-draft and then costs zero API calls)
+python -m src.agents.order_agent --count 6          # email → validated order → TMS
+python -m src.agents.exception_agent --limit 5      # alert → severity → notification → ticket
+python -m src.agents.orchestrator --cases 10        # the whole lifecycle, as a graph
+python -m src.agents.invoice_auditor --count 20     # invoice vs order vs corridor rate band
+python -m src.agents.alert_bot --dry-run --top 5
+
+# retrieval and tools
+python -m src.common.vectordb --build               # index corridors, hubs and docs
+python -m src.common.vectordb --query "which corridors are worst for delays"
+python -m src.agents.mcp_server --list              # the MCP tools, or run it for stdio
+
+# exploration
 python -m src.pipeline.data_dictionary          # column-by-column profile → docs/
 python -m src.ml.eda                            # distributions, corridor counts → benchmarks/raw/
-streamlit run src/dashboard/app.py              # control tower skeleton
-python -m src.agents.hello_agent                # LangGraph smoke test (needs an LLM key)
+streamlit run src/dashboard/app.py              # the dashboard on its own
 ```
+
+> **The producer needs `--sink file` on a machine with no Kafka broker.** `STREAM_SOURCE`
+> defaults to `kafka`, so the bare command spends 30 seconds timing out against
+> `localhost:9092` and exits 1 (D-035, P-50). `boot` passes the flag for you.
 
 ---
 
@@ -220,10 +254,10 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | `src/ml/` | Lahari | training, evaluation, ablations |
 | `src/streaming/` | Mounika | Kafka producer, Structured Streaming job |
 | `src/tms/` | Mounika | mock TMS (FastAPI + SQLite) |
-| `src/agents/` | Krishna | five agents, orchestrator, MCP server, versioned prompts |
+| `src/agents/` | Krishna | order entry, document, exception and invoice agents, alert bot, orchestrator, MCP server, TMS client, versioned prompts |
 | `src/dashboard/` | Krishna | Streamlit control tower |
-| `src/automation/` | Mounika | auto-retraining loop, alert bot |
-| `src/common/` | shared | config, Spark session, logging, env check |
+| `src/automation/` | Mounika | auto-retraining loop |
+| `src/common/` | shared | config, Spark session, logging, env check, **boot script**, **vector store** |
 | `docs/` | all | one weekly writeup per member + `decisions.md` + `problems.md` + `results.md` |
 | `benchmarks/` | all | every number in the report traces to a file here |
 | `demo/` | Krishna | demo script, screenshots, sample events/documents |
@@ -241,7 +275,7 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | 2 | Bottleneck corridor audit + India map exist | `week2-complete` (`audit-v1`) — **met** |
 | 3 | Feature table frozen; baselines on the board; 100+ labelled synthetic documents | `week3-complete` |
 | 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) |
-| 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` |
+| 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` — **met** |
 | 6 | Full lifecycle runs agent-to-agent with no human in the loop | `week6-complete` |
 | 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` |
 | 8 | Demo rehearsed twice; paper outline + figure set complete | `v1.0` |
@@ -259,7 +293,12 @@ python -m src.agents.hello_agent                # LangGraph smoke test (needs an
 | Hub friction — ranked hubs (≥30 outbound legs) | 121 of 1,657; median leg dwell 49 min (34.6% of wall clock) | [`benchmarks/raw/w2_hub_dwell.csv`](benchmarks/raw/w2_hub_dwell.csv) |
 | India map — audited corridors placed | 1,130 of 1,130; the 273 bottlenecks sit in 169 cities and 70 of them are intra-city | [`benchmarks/raw/w2_corridor_audit.csv`](benchmarks/raw/w2_corridor_audit.csv) |
 | Best model MAE vs OSRM MAE | Random Forest (MLlib) 36.9 min vs OSRM 107.1 min — 65.5% lower; still 0.8 min behind the past-only corridor-mean baseline (36.1 min), reported as such per D-024 | [`benchmarks/raw/w4_model_metrics.csv`](benchmarks/raw/w4_model_metrics.csv) |
-| Sustained streaming throughput | _pending W5_ | `benchmarks/streaming_throughput.md` |
+| Sustained streaming throughput | all 52,738 replayed events scored, nothing dropped: **886 events/sec** produced, **740 events/sec** of saturated scoring, event-to-alert **p50 28.9 s** | [`benchmarks/raw/w5_stream_throughput_full.json`](benchmarks/raw/w5_stream_throughput_full.json) |
+| Stream equals batch | **500 of 500** predictions bit-identical across the batch and event paths | [`benchmarks/raw/w5_stream_validation_report.json`](benchmarks/raw/w5_stream_validation_report.json) |
+| Delay-threshold sensitivity | 2.00× holds: the best classifier's MCC barely moves across thresholds (0.507→0.536) while the alert volume falls from 98% of legs to 49%. The stream's own flag is the weakest real classifier (MCC 0.477) | [`benchmarks/raw/w5_threshold_sensitivity.csv`](benchmarks/raw/w5_threshold_sensitivity.csv) |
+| Order Entry Agent evaluation | **40 of 50** authored cases run, **40 correct**; 0 orders filed on invented values, 0 needless questions. Last 10 pending quota | [`benchmarks/raw/w5_order_eval_summary.json`](benchmarks/raw/w5_order_eval_summary.json) |
+| Lifecycle, end to end (Gate 6) | 10 emails, 3 distinct paths, no human in the middle: 5 stopped at a question, 3 booked and unflagged, 2 booked → flagged → notified → ticketed | [`benchmarks/raw/w6_orchestrator_runs.json`](benchmarks/raw/w6_orchestrator_runs.json) |
+| Freight Invoice Auditor v1 | **20 of 20** verdicts matched the seeded ground truth; no clean invoice disputed. Band is the corpus's own rate model — exact here, circular as a pricing claim (D-043) | [`benchmarks/raw/w6_invoice_audit_runs.json`](benchmarks/raw/w6_invoice_audit_runs.json) |
 | Agent evaluation summary | _pending W7_ | `benchmarks/agent_evaluation.md` |
 | Scale appendix (50M+ rows) | _pending W7_ | `benchmarks/scale_appendix.md` |
 
@@ -276,13 +315,30 @@ re-runs the identical corridor-aggregation code on 50M+ NYC taxi rows with a run
 Agents operate on synthetic documents and a mock TMS, declared as scaffolding. The network data
 underneath is real.
 
+**What the agents decide, and what a model decides.** Severity, invoice verdicts and routing are
+computed, not generated; a language model writes only the customer-facing sentence, and every agent
+runs with `--no-llm` or `--no-draft` and no API call at all (D-041). That is a deliberate trade: the
+agents are less "agentic" than the word suggests, and in exchange every verdict is reproducible and
+therefore measurable.
+
+**What has never run here, stated plainly.** The Kafka sink is written and import-checked but has
+never reached a live broker — there is no Docker on the development machine, so the file-streaming
+fallback is what every reported number comes from (D-035). The alert bot's Telegram and email
+channels are implemented and unconfigured, so only the file channel has sent anything (D-039). The
+MCP server's tools have been called directly but not yet driven by an MCP client over stdio.
+
 ---
 
 ## Contributing
 
 Read [`GIT_RULES.md`](GIT_RULES.md) before your first commit. In short: branch
-`week<N>-<name>-<topic>` off `dev`, commit `[W<N>][AREA] imperative description` daily, push the same
-day, write your weekly doc, then PR → `dev`. Nobody commits to `main`.
+`week<N>-<name>-<topic>` off `dev`; commit a **short lowercase imperative with no bracketed prefix**
+(§7 — `add the streaming scoring job`, not `[W5][STREAM] add job`); push the same day; write your
+weekly doc; then PR → `dev`. Nobody commits to `main`.
+
+> This section told you to write `[W<N>][AREA] ...` until Week 6. GIT_RULES §7 has banned bracketed
+> prefixes since Week 1 and no commit in the history uses one, so the README was the thing that was
+> wrong. Fixed rather than left as a trap for the next person who reads it first.
 
 ---
 

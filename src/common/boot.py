@@ -283,13 +283,18 @@ def boot(legs: int = 500, duration: float = 15.0, use_llm: bool = False,
         ok, path = run_step("streaming", ["-m", "src.streaming.job", "--once", "--clean"], log_dir)
         summary["steps"]["streaming"] = {"ok": ok, "log": path}
 
-        agent_argv = ["-m", "src.agents.exception_agent", "--limit", "5"]
+        # Demonstration output goes to logs/, never over the benchmarks artefact a
+        # write-up cites: boot's five-case run is not the ten-case run Krishna reports
+        # and must not silently replace it (P-51).
+        agent_argv = ["-m", "src.agents.exception_agent", "--limit", "5",
+                      "--out", str(log_dir / "w6_exception_runs.json")]
         if not use_llm:
             agent_argv.append("--no-draft")
         ok, path = run_step("exception_agent", agent_argv, log_dir)
         summary["steps"]["exception_agent"] = {"ok": ok, "log": path}
 
-        orchestrator_argv = ["-m", "src.agents.orchestrator", "--cases", "5"]
+        orchestrator_argv = ["-m", "src.agents.orchestrator", "--cases", "5",
+                             "--out", str(log_dir / "w6_orchestrator_runs.json")]
         if not use_llm:
             orchestrator_argv.append("--no-llm")
         ok, path = run_step("orchestrator", orchestrator_argv, log_dir)

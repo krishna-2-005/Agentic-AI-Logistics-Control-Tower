@@ -409,7 +409,8 @@ def live_shipment_corridors(client: TMSClient | None) -> set[str]:
 
 def run(limit: int = 10, dry_run: bool = False, draft: bool = True,
         alerts_dir: Path | None = None, state_path: Path = STATE_PATH,
-        channel_name: str = "file", any_corridor: bool = False) -> dict:
+        channel_name: str = "file", any_corridor: bool = False,
+        out_path: Path = RUNS_JSON) -> dict:
     """Process the worst `limit` unhandled alerts. Returns a summary dict."""
     feed = load_alerts(alerts_dir)
     if feed.empty:
@@ -479,11 +480,11 @@ def run(limit: int = 10, dry_run: bool = False, draft: bool = True,
         "generated_at": datetime.now().astimezone().isoformat(),
         "outcomes": [asdict(o) for o in outcomes],
     }
-    RUNS_JSON.parent.mkdir(parents=True, exist_ok=True)
-    RUNS_JSON.write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     log.info(
         "%d processed, %d ticket(s) filed, %d notified (%d drafted by the model) -> %s",
-        summary["processed"], summary["filed"], summary["notified"], summary["drafted_by_llm"], RUNS_JSON,
+        summary["processed"], summary["filed"], summary["notified"], summary["drafted_by_llm"], out_path,
     )
     return summary
 
@@ -496,6 +497,9 @@ def main() -> int:
     parser.add_argument("--alerts", type=Path, default=None)
     parser.add_argument("--state", type=Path, default=STATE_PATH)
     parser.add_argument("--channel", type=str, default="file")
+    # A demonstration run must not overwrite a recorded one: `boot` points this at
+    # logs/ so the committed benchmarks artefact stays the run the write-up cites (P-51).
+    parser.add_argument("--out", type=Path, default=RUNS_JSON)
     parser.add_argument("--reset", action="store_true", help="forget which alerts have been ticketed")
     args = parser.parse_args()
 
@@ -506,6 +510,7 @@ def main() -> int:
     summary = run(
         limit=args.limit, dry_run=args.dry_run, draft=not args.no_draft,
         alerts_dir=args.alerts, state_path=args.state, channel_name=args.channel,
+        out_path=args.out,
     )
     if not summary.get("processed"):
         return 0
