@@ -1,0 +1,315 @@
+{
+  "cases": 10,
+  "used_llm": false,
+  "dry_run": false,
+  "reached_clarify": 5,
+  "booked": 5,
+  "alerted": 2,
+  "ticketed": 2,
+  "errors": 0,
+  "paths": [
+    "intake -> book -> monitor -> triage -> done",
+    "intake -> book -> monitor -> done",
+    "intake -> book -> monitor -> done",
+    "intake -> book -> monitor -> done",
+    "intake -> book -> monitor -> triage -> done",
+    "intake -> clarify",
+    "intake -> clarify",
+    "intake -> clarify",
+    "intake -> clarify",
+    "intake -> clarify"
+  ],
+  "generated_at": "2026-09-13T14:58:13.371099+05:30",
+  "runs": [
+    {
+      "case_seq": 5001,
+      "email_subject": "Consignment request - IND834002AAB",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "file",
+      "order": {
+        "customer_name": "Ranchi Distributors",
+        "origin_centre": "IND834002AAB",
+        "dest_centre": "IND826004AAA",
+        "route_type": "Carting",
+        "pieces": 17,
+        "weight_kg": 475.9
+      },
+      "question": null,
+      "missing_field": null,
+      "order_ref": "ORD-000004",
+      "shipment_ref": "SHP-000004",
+      "corridor_id": "IND834002AAB>IND826004AAA",
+      "alert": {
+        "alert_id": "query-trip-153674565728050217|20180912094737|IND834002AAB>IND826004AAA",
+        "leg_id": "trip-153674565728050217|20180912094737|IND834002AAB>IND826004AAA",
+        "trip_uuid": "trip-153674565728050217",
+        "corridor_id": "IND834002AAB>IND826004AAA",
+        "source_center": "IND834002AAB",
+        "destination_center": "IND826004AAA",
+        "event_time": 1536745657280,
+        "route_type": "Carting",
+        "planned_min": 126.0,
+        "planned_km": 168.0585,
+        "predicted_gap_min": 190.5,
+        "predicted_total_min": 316.5,
+        "threshold_gap_min": 126.0,
+        "delay_threshold": 2.0,
+        "corr_is_cold": 0,
+        "src_is_cold": 0,
+        "dst_is_cold": 0,
+        "emit_time": 1789088632671,
+        "alert_time": 1789088662320,
+        "latency_ms": 29649.5,
+        "batch_id": 1,
+        "excess": 64.5
+      },
+      "severity": "high",
+      "notification": "Shipment SHP-000004 on IND834002AAB>IND826004AAA is predicted to run about 3.2 hours over its planned 2.1 hours (high severity). This corridor is a confirmed slow route in our own audit. The control tower is tracking it and will update you if the estimate changes.",
+      "draft_source": "template",
+      "ticket_ref": "EXC-000004",
+      "steps": [
+        "intake",
+        "book",
+        "monitor",
+        "triage",
+        "done"
+      ]
+    },
+    {
+      "case_seq": 5002,
+      "email_subject": "Pallets ready for pickup",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "file",
+      "order": {
+        "customer_name": "Rampur Logistics Pvt Ltd",
+        "origin_centre": "IND244901AAB",
+        "dest_centre": "IND244221AAA",
+        "route_type": "FTL",
+        "pieces": 6,
+        "weight_kg": 3723.0
+      },
+      "question": null,
+      "missing_field": null,
+      "order_ref": "ORD-000005",
+      "shipment_ref": "SHP-000005",
+      "corridor_id": "IND244901AAB>IND244221AAA",
+      "alert": null,
+      "steps": [
+        "intake",
+        "book",
+        "monitor",
+        "done"
+      ]
+    },
+    {
+      "case_seq": 5003,
+      "email_subject": "Carton collection",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "file",
+      "order": {
+        "customer_name": "Rajam Freight Carriers",
+        "origin_centre": "IND532127AAA",
+        "dest_centre": "IND535591AAA",
+        "route_type": "FTL",
+        "pieces": 1,
+        "weight_kg": 8701.8
+      },
+      "question": null,
+      "missing_field": null,
+      "order_ref": "ORD-000006",
+      "shipment_ref": "SHP-000006",
+      "corridor_id": "IND532127AAA>IND535591AAA",
+      "alert": null,
+      "steps": [
+        "intake",
+        "book",
+        "monitor",
+        "done"
+      ]
+    },
+    {
+      "case_seq": 5004,
+      "email_subject": "Delivery to Hanumangarh",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "file",
+      "order": {
+        "customer_name": "Raisingngr Exports",
+        "origin_centre": "IND335051AAA",
+        "dest_centre": "IND335513AAA",
+        "route_type": "Carting",
+        "pieces": 16,
+        "weight_kg": 183.2
+      },
+      "question": null,
+      "missing_field": null,
+      "order_ref": "ORD-000007",
+      "shipment_ref": "SHP-000007",
+      "corridor_id": "IND335051AAA>IND335513AAA",
+      "alert": null,
+      "steps": [
+        "intake",
+        "book",
+        "monitor",
+        "done"
+      ]
+    },
+    {
+      "case_seq": 5005,
+      "email_subject": "Fwd: booking (weight corrected)",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "file",
+      "order": {
+        "customer_name": "Karanjia Traders",
+        "origin_centre": "IND757037AAA",
+        "dest_centre": "IND756100AAC",
+        "route_type": "FTL",
+        "pieces": 5,
+        "weight_kg": 8457.4
+      },
+      "question": null,
+      "missing_field": null,
+      "order_ref": "ORD-000008",
+      "shipment_ref": "SHP-000008",
+      "corridor_id": "IND757037AAA>IND756100AAC",
+      "alert": {
+        "alert_id": "query-trip-153677439480087696|20180913074223|IND757037AAA>IND756100AAC",
+        "leg_id": "trip-153677439480087696|20180913074223|IND757037AAA>IND756100AAC",
+        "trip_uuid": "trip-153677439480087696",
+        "corridor_id": "IND757037AAA>IND756100AAC",
+        "source_center": "IND757037AAA",
+        "destination_center": "IND756100AAC",
+        "event_time": 1536774394801,
+        "route_type": "FTL",
+        "planned_min": 117.0,
+        "planned_km": 165.3055,
+        "predicted_gap_min": 174.7,
+        "predicted_total_min": 291.7,
+        "threshold_gap_min": 117.0,
+        "delay_threshold": 2.0,
+        "corr_is_cold": 0,
+        "src_is_cold": 0,
+        "dst_is_cold": 0,
+        "emit_time": 1789088634166,
+        "alert_time": 1789088662320,
+        "latency_ms": 28154.5,
+        "batch_id": 1,
+        "excess": 57.7
+      },
+      "severity": "high",
+      "notification": "Shipment SHP-000008 on IND757037AAA>IND756100AAC is predicted to run about 2.9 hours over its planned 1.9 hours (high severity). This corridor is a confirmed slow route in our own audit. The control tower is tracking it and will update you if the estimate changes.",
+      "draft_source": "template",
+      "ticket_ref": "EXC-000005",
+      "steps": [
+        "intake",
+        "book",
+        "monitor",
+        "triage",
+        "done"
+      ]
+    },
+    {
+      "case_seq": 5006,
+      "email_subject": "Booking request",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "clarify",
+      "order": {
+        "customer_name": "Vapi Traders",
+        "origin_centre": "IND396191AAC",
+        "dest_centre": "IND396232AAA",
+        "route_type": "Carting",
+        "pieces": 5
+      },
+      "question": "weight_kg is missing",
+      "missing_field": "weight_kg",
+      "steps": [
+        "intake",
+        "clarify"
+      ]
+    },
+    {
+      "case_seq": 5007,
+      "email_subject": "Shipment to Lalru",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "clarify",
+      "order": {
+        "customer_name": "Naraingarh Distributors",
+        "origin_centre": "IND134203AAA",
+        "route_type": "Carting",
+        "pieces": 3,
+        "weight_kg": 275.9
+      },
+      "question": "dest_centre is missing",
+      "missing_field": "dest_centre",
+      "steps": [
+        "intake",
+        "clarify"
+      ]
+    },
+    {
+      "case_seq": 5008,
+      "email_subject": "Pickup request",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "clarify",
+      "order": {
+        "customer_name": "Ccu Exports",
+        "origin_centre": "IND700028AAB",
+        "dest_centre": "IND712311AAA",
+        "pieces": 14,
+        "weight_kg": 147.4
+      },
+      "question": "route_type is missing",
+      "missing_field": "route_type",
+      "steps": [
+        "intake",
+        "clarify"
+      ]
+    },
+    {
+      "case_seq": 5009,
+      "email_subject": "Boxes to move",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "clarify",
+      "order": {
+        "customer_name": "Nakodar Traders",
+        "origin_centre": "IND144040AAA",
+        "dest_centre": "IND144001AAB",
+        "route_type": "FTL",
+        "weight_kg": 3144.8
+      },
+      "question": "pieces is missing",
+      "missing_field": "pieces",
+      "steps": [
+        "intake",
+        "clarify"
+      ]
+    },
+    {
+      "case_seq": 5010,
+      "email_subject": "Upcoming shipment",
+      "use_llm": false,
+      "dry_run": false,
+      "action": "clarify",
+      "order": {
+        "customer_name": "Bangalore Exports",
+        "origin_centre": "IND562132AAA",
+        "dest_centre": "IND000000ACB",
+        "pieces": 6
+      },
+      "question": "route_type is missing; weight_kg is missing",
+      "missing_field": "route_type",
+      "steps": [
+        "intake",
+        "clarify"
+      ]
+    }
+  ]
+}

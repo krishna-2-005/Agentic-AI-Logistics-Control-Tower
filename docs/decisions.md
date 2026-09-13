@@ -1592,3 +1592,267 @@ quotes a rate, so the partial state is visible wherever the number is, not only 
 Evidence: `src/ml/threshold_sensitivity.py`, `src/ml/order_eval.py`,
 `src.ml.baselines.delay_label`, `benchmarks/raw/w5_threshold_sensitivity.csv`,
 `benchmarks/raw/w5_order_eval_*.json*`, `docs/W5_lahari_stream_validation.md`.
+
+---
+
+## D-041 · The agents decide with arithmetic; the model only writes the sentence — `DECIDED`
+**Week 6 · Krishna · D1-D2 and D5**
+
+Both Week 6 agents — the Tracking & Exception Agent and the Invoice Auditor —
+are built the same way, and the split is the week's main design decision.
+
+**Deterministic: every judgement that has a right answer.** Exception severity is a rule
+over the excess past each leg's own delay threshold. The invoice verdict is four
+comparisons: the invoice's own sum, the corridor's audited rate band, the share taken by
+other charges, and whether the invoice number has been seen before. None of these is an
+opinion.
+
+**Generated: the customer-facing sentence, and nothing else.** Both agents render a
+versioned prompt (`exception_triage/v1`, `invoice_audit/v1`) that is handed the findings
+and forbidden to add to them, and both fall back to a template on any model failure
+without changing the verdict.
+
+**Three reasons, in order of how much they mattered.**
+1. **A model's severity is not reproducible.** Lahari's D3-D4 evaluation scores this
+   agent against what the replay actually did. That score means nothing if re-running
+   the agent on the same alert can produce a different grade. The same argument killed
+   the idea of asking a model whether an invoice is overpriced: the project knows the
+   corridor's rate band exactly.
+2. **Arithmetic has a right answer, and a model would approximate it.** "How far past
+   its own threshold is this leg" is a division.
+3. **It fits a 20-call-a-day free tier** (D-032). This is the *least* important reason
+   and the one that would have been easiest to lead with. `--no-draft` and `--no-llm`
+   run the entire lifecycle with zero calls, which is how Gate 6 was demonstrated on a
+   day the quota was already spent on Lahari's evaluation.
+
+**What this costs.** The agents are less "agentic" than the blueprint's framing
+suggests: they do not reason their way to a severity, they compute one. That is a real
+trade, and the honest defence is that everything a model would have decided here is
+something the project can already calculate, and everything it could not calculate
+(the wording) is exactly what was left to the model.
+
+Evidence: `src/agents/exception_agent.py`, `src/agents/invoice_auditor.py`,
+`src/agents/prompts/exception_triage/v1.md`, `src/agents/prompts/invoice_audit/v1.md`.
+
+---
+
+## D-042 · The lifecycle is a graph because two of its edges are decided by agents, and the MCP tools wrap capabilities rather than reimplement them — `DECIDED`
+**Week 6 · Krishna · D3-D4**
+
+**Decided: a LangGraph `StateGraph`, not four function calls.** The composition
+`order email -> TMS -> monitoring -> exception` looks linear and is not. Two edges are
+conditional, and neither is decided by the orchestrator:
+
+* out of `intake`, the **Order Entry Agent** decides: an ambiguous email routes to
+  `clarify` and **never reaches the TMS**;
+* out of `monitor`, the **streaming job** decides: a shipment it has not flagged routes
+  to `done` and never becomes an exception.
+
+Written as straight-line code those become `if` statements tangled with the work. As
+edges they are the structure, and every run records the path it took — which is
+what makes "why did this email never reach the TMS" answerable from the artefact rather
+than from a log. Ten cases took three distinct paths on the first real run: five
+`intake -> clarify`, three `intake -> book -> monitor -> done`, two
+`intake -> book -> monitor -> triage -> done`.
+
+**Decided: the orchestrator never re-scores anything.** `monitor` reads the alert sink
+the Week 5 job writes. It would have been easy to call the champion model directly and
+get a fresher answer; that would put a second scoring path in the project, and D-037
+went to some trouble to ensure there is exactly one.
+
+**Decided: every MCP tool is a thin wrapper over a module that already exists.** The
+server exposes corridor stats, alerts, predictions and TMS operations, and computes
+none of them. A tool that reimplements the capability behind it is two implementations
+of one thing waiting to disagree, which is P-23, P-42 and P-48 in three different
+costumes. The one expensive tool, `what_if_delay`, says in its own docstring that it
+starts Spark and points callers at the instant alternative.
+
+Evidence: `src/agents/orchestrator.py`, `src/agents/mcp_server.py`,
+`tests/test_orchestrator.py`, `benchmarks/raw/w6_orchestrator_runs.json`.
+
+---
+
+## D-043 · The invoice rate band is the corpus's own generator model, which makes v1 exact and circular at the same time — `DECIDED`
+**Week 6 · Krishna · D5**
+
+The auditor needs to answer "is this freight charge too high for this corridor". It
+does so with a band: the corridor's audited `mean_osrm_km` (Week 2) times the rate model
+`src/agents/doc_corpus/records.py` uses to generate invoices — FTL at 28-45 per km,
+Carting at 6-10 per km-tonne plus 2-4 per kg — widened by 15%.
+
+**This is exact for these invoices and worthless as a claim about real freight
+pricing**, because the generator and the auditor share one model. It measures whether
+the auditor catches an invoice that departs from the network's own observed rates. It
+does not show those rates are right. Stating that plainly is the decision: the
+alternative was to quietly present 20-of-20 as though it were evidence about pricing.
+
+**Decided anyway, for v1**, because the auditor's job this week is to be *wired and
+measurable*, and a band fitted from billed history is a Week 7+ piece of work that needs
+billed history the project does not have. The 15% tolerance is set so that no clean
+invoice in the corpus is disputed: a false dispute costs a supplier relationship, which
+is worth more than the few hundred rupees a missed marginal overcharge represents.
+
+**Decided: a corridor with no audited distance produces no finding at all.** Not a
+dispute, not a warning-that-becomes-a-dispute. "We cannot check this" and "this is
+wrong" are different statements, and the TMS has only `approved`/`disputed` to say them
+in. Disputing an invoice because the network lacks history on its corridor would bill a
+supplier for our own data gap.
+
+Result on the development corpus: **20 of 20 verdicts matched the seeded ground truth**
+(10 disputed, 10 approved, no clean invoice disputed). Lahari's D5 evaluation is the one
+that counts, on a set this auditor's author did not write (D-028).
+
+Evidence: `src/agents/invoice_auditor.py`, `tests/test_invoice_auditor.py`,
+`benchmarks/raw/w6_invoice_audit_runs.json`.
+
+---
+
+## D-044 · Boot checks everything before it starts anything, and repairs schema drift instead of re-seeding — `DECIDED`
+**Week 6 · Mounika · D1-D2**
+
+**Decided: preflight reports every problem at once, and blocks on none of them
+silently.** Six weeks of this project have produced one recurring failure shape: a run
+dies twenty minutes in because an artefact three stages back was never built. `boot`
+checks the cleaned parquet, the feature table, the champion model, the corridor audit,
+the TMS schema, Java and the LLM key *before* the first process starts, prints each with
+the exact command that fixes it, and stops if an artefact is genuinely missing. A
+missing LLM key is reported and **not** blocking, because every agent runs without one.
+
+**Decided: drift is repaired with `ADD COLUMN`, never by re-seeding.** `create_all`
+makes missing tables and never alters an existing one, so a model that gains a field
+disagrees with the database file from that moment until something writes the column
+(P-47). The obvious fix — re-seed — would have destroyed three real
+agent-filed orders, which is exactly what P-40 predicted in Week 5. So `boot` diffs
+`SQLModel.metadata` against `PRAGMA table_info` and adds what is missing, in place.
+
+**A column whose *type* changed is reported and never rewritten.** That is a migration,
+and a migration is a decision with data loss attached. Guessing at one silently is how a
+database quietly stops meaning what it says. `ADD COLUMN` is the only DDL this module
+will ever emit; anything else is a person's call.
+
+**Decided: `boot` pins `--sink file` rather than inheriting `STREAM_SOURCE`.** The
+configured default is `kafka` and there has never been a broker on this machine (D-035),
+so the bare producer command times out and exits 1. A script whose whole promise is "one
+command that works" cannot inherit a default that works nowhere (P-50).
+
+Evidence: `src/common/boot.py`, `tests/test_boot.py`, `docs/W6_mounika_vectordb.md`.
+
+---
+
+## D-045 · The vector store indexes a document per corridor, and is never a source of truth — `DECIDED`
+**Week 6 · Mounika · D3-D4**
+
+**Decided: one document per corridor, per hub, and per documentation *section* —
+not per table, and not per fixed-size chunk.** A retrieval answer is only as good as the
+unit it retrieves. "Here is the corridor audit CSV" answers nothing; "IND203390AAA>
+IND201301AAF averages 299 minutes against a 97-minute plan over 20 legs, confirmed
+slower than the network, bottleneck rank 15" is an answer on its own. Documentation is
+split at its own headings for the same reason: a decision entry is a unit of meaning, and
+a fixed 500-character window cuts it mid-argument and retrieves the half without the
+decision. 1,434 documents: 1,130 corridors, 20 hubs, 284 doc sections.
+
+**Decided: the audit's vocabulary is translated on the way in.** The table says `worse`;
+the indexed sentence says "statistically confirmed slower than the network". A retrieval
+system hands text to a reader or a model, and P-48 is what that word costs when it
+travels raw.
+
+**Decided: Chroma's default ONNX embedding, not `sentence-transformers`.** The latter
+pulls ~2.5 GB of torch onto a machine with about 5.6 GB of usable RAM for an embedding of
+the same family. The ONNX model is ~80 MB, downloaded once, and runs on CPU: 1,434
+documents in about 90 seconds.
+
+**Decided: nothing reads from the index to compute a number.** Every document is
+generated from a table or a file that remains the authority, so the index is always safe
+to delete and rebuild. It is a way of *finding* things the project already knows.
+
+**Stated limitation: semantic search does not rank by magnitude.** Asked "which hub has
+the longest dwell time", it returns rank 11 above rank 1 — both are relevant, and
+nothing in an embedding knows 350 > 257. Superlatives belong to the tables; retrieval is
+for finding the right document, not for ordering it. Week 7's assistant must consult the
+table for "worst", or it will confidently answer with whatever sounded closest.
+
+Evidence: `src/common/vectordb.py`, `tests/test_vectordb.py`, the `search_knowledge`
+tool in `src/agents/mcp_server.py`.
+
+---
+
+## D-046 · The results freeze detects drift; it does not make anything immutable — `DECIDED`
+**Week 6 · Lahari · D1-D2**
+
+Layer 1 is finished, and the paper will quote it. The risk is not that someone edits a
+number in the report — it is that someone re-runs a stage, the artefact changes by
+0.2, and the report keeps saying what it said. Six weeks of regenerating tables is
+exactly how a figure quietly stops matching its source.
+
+**Decided: freeze the *values and their sources*, and provide `--verify`.** Each of the
+31 Layer 1 numbers is recorded with the file it came from and a hash of that file's
+contents. `--verify` recomputes every value, re-hashes every source, and reports what
+moved. Nothing is made read-only: re-running a stage overwrites its artefact exactly as
+before. **Detection is the property a paper needs; immutability is a property a project
+cannot have while it is still running.**
+
+**Decided: a file rewritten with identical numbers is reported, and is not a failure.**
+The two lists are separate — `changed` (a value moved) and `files_rewritten` (the
+bytes moved, the numbers did not). Collapsing them would cry wolf every time a table was
+regenerated, and a check people learn to ignore is worse than no check.
+
+**Decided: an entry whose source is missing is a *problem*, not a skipped row.** A Layer
+1 number that can no longer be traced to a file is a finding. Silently dropping it would
+make the freeze shrink quietly, which is the failure mode it exists to prevent.
+
+**Decided: this is mine, not each author's.** Same reason as D-028: the person who
+produced a number is the worst-placed to notice it no longer matches its file, because
+they remember what it said.
+
+Evidence: `src/ml/results_freeze.py`, `benchmarks/results_freeze_v1.json`,
+`docs/RESULTS_SUMMARY.md`, `tests/test_agent_eval.py`.
+
+---
+
+## D-047 · Severity earns its place as a filter; the invoice tolerance has a measured cost — `DECIDED`
+**Week 6 · Lahari · D3-D4 and D5**
+
+Two evaluations, two numbers that should change what Week 7 builds.
+
+**1. The Exception Agent's severity grades track real lateness, so they should be used
+as a filter.** Scored against the replay's own fact events — 2,000 legs, 1,082
+genuinely delayed — the agent's notification precision is **72.1%** overall, which
+is the stream's precision, because the agent notifies on everything it is handed. But
+precision by grade is **monotone**:
+
+| grade | notified | precision |
+|---|---|---|
+| low | 434 | 53.2% |
+| medium | 344 | 68.6% |
+| high | 275 | 85.1% |
+| critical | 294 | 91.8% |
+
+**Decided: a severity floor is a real policy lever and should be one.** Notifying at
+`high` or above sends 42% of the volume at **88.6%** precision, reaching 46.6% of all
+delayed legs; at `critical` only, 22% of the volume at **91.8%**. The arithmetic severity
+rule (D-041) is not just reproducible, it is *informative* — which is the thing a
+model-assigned severity could never have demonstrated, because there would have been no
+stable grade to measure.
+
+Not decided here: **where** the floor goes. That is an operations question about how many
+notifications a desk can act on, and nobody on this team is the customer. The table is
+the deliverable; the threshold is theirs.
+
+**2. The Invoice Auditor's 15% tolerance hides overcharges up to 15%, and now that is a
+number.** On a 60-invoice set the auditor's author never saw: **86.7% accuracy, zero
+false disputes, 8 misses — and all 8 are the same kind**, `overcharge_hidden`, an
+invoice 10% above the corpus's rate band and therefore inside the auditor's tolerance.
+
+**Decided: the tolerance stays for v1, and the miss is published beside the accuracy.**
+Zero false disputes is the right direction to be wrong in (D-043's argument), and
+tightening the band would trade that away. But "86.7% accurate" alone would be a
+misleading headline: the auditor is perfect on eight of ten kinds and blind on one, and
+the blindness is a design choice with a price tag. A v2 fitted from billed history can
+narrow the band on evidence rather than on a guessed 15%.
+
+**Both evaluations cost nothing to re-run** — no model, no TMS, no quota —
+because both agents compute their verdicts (D-041). That is the return on that decision,
+and it is why these numbers exist at all in a week with 20 API calls a day.
+
+Evidence: `src/ml/exception_eval.py`, `src/ml/invoice_eval.py`,
+`benchmarks/raw/w6_exception_eval.json`, `benchmarks/raw/w6_invoice_eval.json`.

@@ -1,0 +1,74 @@
+{
+  "cases": 60,
+  "accuracy": 0.8667,
+  "precision": 1.0,
+  "recall": 0.8222,
+  "false_disputes": 0,
+  "missed_problems": 8,
+  "right_reason": 0.8222,
+  "unbenchmarked_corridors": 0,
+  "by_kind": [
+    {
+      "kind": "clean",
+      "n": 4,
+      "correct": 4,
+      "expected": "approve"
+    },
+    {
+      "kind": "duplicate_number",
+      "n": 8,
+      "correct": 8,
+      "expected": "dispute"
+    },
+    {
+      "kind": "excessive_other",
+      "n": 7,
+      "correct": 7,
+      "expected": "dispute"
+    },
+    {
+      "kind": "foreign_currency",
+      "n": 7,
+      "correct": 7,
+      "expected": "dispute"
+    },
+    {
+      "kind": "other_at_edge",
+      "n": 2,
+      "correct": 2,
+      "expected": "approve"
+    },
+    {
+      "kind": "overcharge_gross",
+      "n": 6,
+      "correct": 6,
+      "expected": "dispute"
+    },
+    {
+      "kind": "overcharge_hidden",
+      "n": 8,
+      "correct": 0,
+      "expected": "dispute"
+    },
+    {
+      "kind": "rounding_total",
+      "n": 9,
+      "correct": 9,
+      "expected": "approve"
+    },
+    {
+      "kind": "total_mismatch",
+      "n": 4,
+      "correct": 4,
+      "expected": "dispute"
+    },
+    {
+      "kind": "undercharge",
+      "n": 5,
+      "correct": 5,
+      "expected": "dispute"
+    }
+  ],
+  "seed": 2026,
+  "generated_at": "2026-09-13T10:32:48.921755+00:00"
+}
