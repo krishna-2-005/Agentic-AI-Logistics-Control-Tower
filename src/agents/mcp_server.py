@@ -207,6 +207,27 @@ def list_invoices(limit: int = 20) -> str:
     return _ok(_tms().list_invoices(limit=limit))
 
 
+# ── retrieval (Mounika, W6 D3-D4) ────────────────────────────────────────────
+@server.tool()
+def search_knowledge(query: str, k: int = 5, kind: str = "") -> str:
+    """Search the project's own knowledge in sentences: every audited corridor, every
+    congested hub, and the documentation split at its headings.
+
+    `kind` narrows to `corridor`, `hub` or `doc`; empty searches all three. Distances
+    are cosine (0 is identical) and are returned raw rather than as a similarity
+    percentage, which would invite a confidence reading they do not support.
+
+    Requires the index: `python -m src.common.vectordb --build`.
+    """
+    from src.common.vectordb import search
+
+    try:
+        return _ok({"query": query, "hits": search(query, k=k, kind=kind or None)})
+    except Exception as exc:  # noqa: BLE001 -- an unbuilt index is a message, not a traceback
+        return _ok({"query": query, "hits": [], "error": str(exc),
+                    "fix": "python -m src.common.vectordb --build"})
+
+
 TOOL_NAMES = [
     "corridor_stats", "hub_friction", "worst_corridors",
     "alerts_for_corridor", "alert_summary", "what_if_delay",
