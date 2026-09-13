@@ -1592,3 +1592,115 @@ quotes a rate, so the partial state is visible wherever the number is, not only 
 Evidence: `src/ml/threshold_sensitivity.py`, `src/ml/order_eval.py`,
 `src.ml.baselines.delay_label`, `benchmarks/raw/w5_threshold_sensitivity.csv`,
 `benchmarks/raw/w5_order_eval_*.json*`, `docs/W5_lahari_stream_validation.md`.
+
+---
+
+## D-041 · The agents decide with arithmetic; the model only writes the sentence — `DECIDED`
+**Week 6 · Krishna · D1-D2 and D5**
+
+Both Week 6 agents — the Tracking & Exception Agent and the Invoice Auditor —
+are built the same way, and the split is the week's main design decision.
+
+**Deterministic: every judgement that has a right answer.** Exception severity is a rule
+over the excess past each leg's own delay threshold. The invoice verdict is four
+comparisons: the invoice's own sum, the corridor's audited rate band, the share taken by
+other charges, and whether the invoice number has been seen before. None of these is an
+opinion.
+
+**Generated: the customer-facing sentence, and nothing else.** Both agents render a
+versioned prompt (`exception_triage/v1`, `invoice_audit/v1`) that is handed the findings
+and forbidden to add to them, and both fall back to a template on any model failure
+without changing the verdict.
+
+**Three reasons, in order of how much they mattered.**
+1. **A model's severity is not reproducible.** Lahari's D3-D4 evaluation scores this
+   agent against what the replay actually did. That score means nothing if re-running
+   the agent on the same alert can produce a different grade. The same argument killed
+   the idea of asking a model whether an invoice is overpriced: the project knows the
+   corridor's rate band exactly.
+2. **Arithmetic has a right answer, and a model would approximate it.** "How far past
+   its own threshold is this leg" is a division.
+3. **It fits a 20-call-a-day free tier** (D-032). This is the *least* important reason
+   and the one that would have been easiest to lead with. `--no-draft` and `--no-llm`
+   run the entire lifecycle with zero calls, which is how Gate 6 was demonstrated on a
+   day the quota was already spent on Lahari's evaluation.
+
+**What this costs.** The agents are less "agentic" than the blueprint's framing
+suggests: they do not reason their way to a severity, they compute one. That is a real
+trade, and the honest defence is that everything a model would have decided here is
+something the project can already calculate, and everything it could not calculate
+(the wording) is exactly what was left to the model.
+
+Evidence: `src/agents/exception_agent.py`, `src/agents/invoice_auditor.py`,
+`src/agents/prompts/exception_triage/v1.md`, `src/agents/prompts/invoice_audit/v1.md`.
+
+---
+
+## D-042 · The lifecycle is a graph because two of its edges are decided by agents, and the MCP tools wrap capabilities rather than reimplement them — `DECIDED`
+**Week 6 · Krishna · D3-D4**
+
+**Decided: a LangGraph `StateGraph`, not four function calls.** The composition
+`order email -> TMS -> monitoring -> exception` looks linear and is not. Two edges are
+conditional, and neither is decided by the orchestrator:
+
+* out of `intake`, the **Order Entry Agent** decides: an ambiguous email routes to
+  `clarify` and **never reaches the TMS**;
+* out of `monitor`, the **streaming job** decides: a shipment it has not flagged routes
+  to `done` and never becomes an exception.
+
+Written as straight-line code those become `if` statements tangled with the work. As
+edges they are the structure, and every run records the path it took — which is
+what makes "why did this email never reach the TMS" answerable from the artefact rather
+than from a log. Ten cases took three distinct paths on the first real run: five
+`intake -> clarify`, three `intake -> book -> monitor -> done`, two
+`intake -> book -> monitor -> triage -> done`.
+
+**Decided: the orchestrator never re-scores anything.** `monitor` reads the alert sink
+the Week 5 job writes. It would have been easy to call the champion model directly and
+get a fresher answer; that would put a second scoring path in the project, and D-037
+went to some trouble to ensure there is exactly one.
+
+**Decided: every MCP tool is a thin wrapper over a module that already exists.** The
+server exposes corridor stats, alerts, predictions and TMS operations, and computes
+none of them. A tool that reimplements the capability behind it is two implementations
+of one thing waiting to disagree, which is P-23, P-42 and P-48 in three different
+costumes. The one expensive tool, `what_if_delay`, says in its own docstring that it
+starts Spark and points callers at the instant alternative.
+
+Evidence: `src/agents/orchestrator.py`, `src/agents/mcp_server.py`,
+`tests/test_orchestrator.py`, `benchmarks/raw/w6_orchestrator_runs.json`.
+
+---
+
+## D-043 · The invoice rate band is the corpus's own generator model, which makes v1 exact and circular at the same time — `DECIDED`
+**Week 6 · Krishna · D5**
+
+The auditor needs to answer "is this freight charge too high for this corridor". It
+does so with a band: the corridor's audited `mean_osrm_km` (Week 2) times the rate model
+`src/agents/doc_corpus/records.py` uses to generate invoices — FTL at 28-45 per km,
+Carting at 6-10 per km-tonne plus 2-4 per kg — widened by 15%.
+
+**This is exact for these invoices and worthless as a claim about real freight
+pricing**, because the generator and the auditor share one model. It measures whether
+the auditor catches an invoice that departs from the network's own observed rates. It
+does not show those rates are right. Stating that plainly is the decision: the
+alternative was to quietly present 20-of-20 as though it were evidence about pricing.
+
+**Decided anyway, for v1**, because the auditor's job this week is to be *wired and
+measurable*, and a band fitted from billed history is a Week 7+ piece of work that needs
+billed history the project does not have. The 15% tolerance is set so that no clean
+invoice in the corpus is disputed: a false dispute costs a supplier relationship, which
+is worth more than the few hundred rupees a missed marginal overcharge represents.
+
+**Decided: a corridor with no audited distance produces no finding at all.** Not a
+dispute, not a warning-that-becomes-a-dispute. "We cannot check this" and "this is
+wrong" are different statements, and the TMS has only `approved`/`disputed` to say them
+in. Disputing an invoice because the network lacks history on its corridor would bill a
+supplier for our own data gap.
+
+Result on the development corpus: **20 of 20 verdicts matched the seeded ground truth**
+(10 disputed, 10 approved, no clean invoice disputed). Lahari's D5 evaluation is the one
+that counts, on a set this auditor's author did not write (D-028).
+
+Evidence: `src/agents/invoice_auditor.py`, `tests/test_invoice_auditor.py`,
+`benchmarks/raw/w6_invoice_audit_runs.json`.
