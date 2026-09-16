@@ -1,9 +1,9 @@
 {
-  "n_run": 40,
+  "n_run": 47,
   "n_cases": 50,
   "success_rate": 1.0,
-  "clarification_rate": 0.5,
-  "expected_clarification_rate": 0.5,
+  "clarification_rate": 0.4681,
+  "expected_clarification_rate": 0.4681,
   "file_success_rate": 1.0,
   "clarify_success_rate": 1.0,
   "clarify_recall": 1.0,
@@ -13,6 +13,7 @@
   "extraction_failures": 0,
   "run_dates": [
     "2026-09-11",
-    "2026-09-13"
+    "2026-09-13",
+    "2026-09-16"
   ]
 }
