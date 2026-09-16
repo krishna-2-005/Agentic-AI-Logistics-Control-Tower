@@ -1856,3 +1856,72 @@ and it is why these numbers exist at all in a week with 20 API calls a day.
 
 Evidence: `src/ml/exception_eval.py`, `src/ml/invoice_eval.py`,
 `benchmarks/raw/w6_exception_eval.json`, `benchmarks/raw/w6_invoice_eval.json`.
+
+---
+
+## D-048 · The Layer 1 freeze reopens for three days, and the diagnostics say the defect is the objective, not the features — `DECIDED`
+**Week 7 · Lahari · D1 · execution plan v3.1 §1, §2.1 Step 1, G-04, G-11**
+
+*Numbering note: v3.1 lists this as D-044. D-044 to D-047 were already taken in Week 6,
+so every v3.1 decision shifts by four: its D-044 to D-049 are D-048 to D-053 here.*
+
+**Decided: the results freeze (D-046) reopens for W7 D1-D3 only, for the ML correction
+sprint.** `w4_model_metrics.csv` stays untouched as the v1 result; the sprint writes
+`w7_model_metrics_v2.csv`; whichever is adopted at the D3 sync (D-049) becomes the
+paper's number and the other becomes an ablation row. Logged before any model code
+changes, as v3.1 requires.
+
+**The four diagnostics, in the order v3.1 names them.**
+
+1. **Categorical-as-numeric: not present.** `fit_mllib_model` assembles `FEATURES` with a
+   bare `VectorAssembler`. There is no `StringIndexer` and no corridor key in the vector at
+   all — corridors enter only through their numeric history — so MLlib cannot be
+   splitting an index alphabetically, and `maxBins` does not apply. The plan's most likely
+   explanation is ruled out by reading the code.
+2. **The corridor statistic is in the vector.** `corr_mean_gap_min` is one of the 27
+   features. The Random Forest has the baseline's own answer as an input and still trails
+   it.
+3. **The fair baseline is the median, and it is much stronger: 33.04 min, not 36.13.**
+   MAE is minimised by the median. Computed with Stage 4's exact as-of semantics —
+   only legs finished before the query leg was created — and verified first: the
+   as-of *mean* built the same way matches `features_v1.corr_mean_gap_min` on **100%** of
+   warm legs.
+4. **The single-node reference says the gap is the loss function.** sklearn
+   `HistGradientBoostingRegressor`, same features, same split: **34.70 min on squared
+   loss, 29.59 min on absolute loss** — a 5.1-minute swing from the objective alone,
+   and the absolute-loss model beats the median baseline by 3.45 minutes.
+
+| test MAE, min | |
+|---|---|
+| OSRM | 107.09 |
+| MLlib GBT (W4) | 38.28 |
+| MLlib Random Forest (W4, the reported model) | 36.89 |
+| corridor mean (the W4 bar) | 36.13 |
+| HistGBR, squared loss | 34.70 |
+| **corridor median (the real bar)** | **33.04** |
+| HistGBR, absolute loss | **29.59** |
+
+**Reading.** v3.1 framed the outcome as "if MLlib loses and a single-node model wins, the
+problem is MLlib configuration". It is more specific than that: the problem is **what the
+model is asked to minimise**. MLlib's Random Forest is squared-loss only, and the table
+grades absolute error. The features carry real signal — an absolute-loss model on the
+same 27 columns clears the strongest statistical baseline by 10% — so the sprint's
+Step 3 (GBT with `lossType="absolute"`, on the residual) is aimed at the actual defect.
+
+**Two consequences for the sprint, decided now.**
+- **The bar the paper reports against is 33.04, not 36.13.** A v2 that beats the mean but
+  not the median has not beaten the baseline, and reporting the weaker one would be
+  choosing the comparison after seeing the result.
+- **The residual target in Step 3 uses the median as `corridor_baseline`**, not the mean,
+  for the same reason: a model that learns nothing then reproduces the strongest baseline
+  rather than a weaker one.
+
+**G-11, closed without a feature.** The data spans **11 September to 3 October 2018** (21
+days). Navratri 2018 began 10 October and Dussehra fell on 19 October, both after the last
+leg, so there is no festival window to encode. Ganesh Chaturthi (13 September) is inside
+the window but on one day in the training period only; the chronological test split starts
+around 28 September, so the flag would be constant in test and could never be validated.
+No `is_festival_window` in features_v2.
+
+Evidence: `src/ml/ml_diagnostics.py`, `benchmarks/raw/w7_ml_diagnostics.json`,
+`src/ml/models.py` (`fit_mllib_model`), `docs/problems.md` P-52.
