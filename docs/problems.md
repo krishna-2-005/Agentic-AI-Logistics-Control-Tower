@@ -1067,6 +1067,65 @@ checking a number, never by reading the file.
   an argument — and the default should belong to whichever caller produces the
   evidence, not whichever was written first.
 
+### P-53 · A model call with no timeout hung the extraction evaluation for twenty minutes
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** The G-01 smoke run of `src.ml.eval_extraction` cached three extractions
+  and then printed nothing for twenty minutes. No error, no quota message, CPU idle.
+- **Cause.** `get_llm()` built `ChatGoogleGenerativeAI` with the library defaults: no
+  request timeout, and retries on transient errors. One request stalled on the
+  provider side and the client waited on it indefinitely. Worse, a retried request is
+  a request against the 20-per-day free tier (P-36), so a hang is not only lost time —
+  it can quietly spend quota that the cache never records.
+- **Fix.** `src/agents/llm.py` passes `timeout=REQUEST_TIMEOUT_S` (120 s) and
+  `max_retries=MAX_RETRIES` (2) to both providers. A stalled call now fails inside two
+  minutes, the evaluation's quota and error handling sees it, and the run resumes from
+  its cache next time.
+- **Carry.** Every network call needs a timeout chosen on purpose. A library default of
+  "wait forever" is not a neutral choice; it turns a provider hiccup into a stuck
+  process nobody is watching.
+
+### P-54 · The MCP server's health tool crashed when the TMS was down — the one moment it exists for
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** Driving the MCP server over real stdio (G-06) with the TMS stopped,
+  `tms_health` returned a protocol error instead of reporting the TMS as down.
+- **Cause.** `TMSClient` callers caught `(TMSError, OSError)`, on the assumption that a
+  refused connection surfaces as `OSError`. With `httpx` it does not: `ConnectError` and
+  its siblings derive from `httpx.HTTPError`, not `OSError`. The in-process tests had
+  always run against a live TMS, so the down path was never exercised.
+- **Fix.** `TMSClient._request` translates every `httpx.HTTPError` into
+  `TMSError(0, "transport failure: ...")`, so callers handle one exception type for
+  "the TMS did not answer" whichever layer failed. `tests/test_mcp_stdio.py` now points
+  a client at a dead port and asserts the health tool reports the TMS down.
+- **Carry.** An error path that no test forces is an error path that has never run.
+  Catch what the library actually raises, and check by pointing at something that is off.
+
+### P-56 · The refusal gate was calibrated on questions too easy to refuse
+**Week 7 · Krishna · open — second layer to be measured**
+
+- **Symptom.** The Analytics assistant's refusal threshold (0.63 cosine distance) split
+  twenty calibration probes perfectly: in-scope at most 0.588, out-of-scope at least
+  0.681. On the fixed 30-question set it refused only 3 of 6 out-of-scope questions.
+  "How many trucks does Delhivery own?" sat at 0.502 and "What is the GST rate on road
+  freight?" at 0.539 — nearer the index than in-scope questions at 0.510, 0.531 and
+  0.598.
+- **Cause.** The out-of-scope calibration probes were general knowledge (capitals,
+  bread, football). Distance to the nearest document measures *topic*, not whether the
+  document *answers* the question, and a freight question about a freight company is
+  on topic. The two distributions overlap, so no threshold separates them.
+- **What was not done.** Tuning the threshold on the 30-question set until the misses
+  go away. That is fitting the gate to the test, and the next domain-adjacent question
+  would sail through the same way.
+- **Fix, partly measured.** Two layers. The distance gate stays for precision — it
+  refused nothing in scope (precision 100%) and costs zero quota. The second layer is
+  the prompt's own rule to answer only from the context and otherwise return the
+  refusal sentence. Its recall is measured by the model-phrased run of the same set
+  (`benchmarks/raw/w7_assistant_run_llm.json`), which waits on quota.
+- **Carry.** Calibrate a gate on the cases that are hard to separate, not the cases that
+  are easy to name. The fixed evaluation set found this because it was written with
+  domain-adjacent traps; the calibration set was not.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
@@ -1133,6 +1192,21 @@ checking a number, never by reading the file.
   and one document per member per week.**
 - **Cost.** ~1 hour of tidying, and it stays fixed rather than needing re-tidying every
   week.
+
+### P-57 · A commit went up with two failing tests because a pipe hid the exit code
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** Commit `0d77ad0` on `week7-krishna-rag-assistant` was pushed while two
+  tests failed: the MCP server's hand-typed `TOOL_NAMES` missed `search_knowledge`, so
+  the server advertised 13 tools while `--list` printed 12.
+- **Cause.** The check was `pytest ... | tail -3`. A pipeline's exit status is the last
+  command's, so `tail` succeeded and the red summary line scrolled past unread.
+- **Fix.** The next commit, `1f4b23e`, fixed the cause rather than the list: tool names
+  are recorded by the `@tool` decorator that registers them, so they cannot go stale.
+  Its message says the previous commit went up red. Test runs before a commit now read
+  `${PIPESTATUS[0]}` explicitly.
+- **Carry.** A hand-kept list of things that also exist in code will drift. And a check
+  whose result you did not read is not a check.
 
 ---
 
