@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-09-17T00:39:58.145292+00:00",
+  "dataset": "features_v2",
+  "extends": "features_v1 (unchanged, D-016)",
+  "new_columns": [
+    "corr_median_gap_min",
+    "corr_p90_gap_min",
+    "corr_iqr_gap_min",
+    "corr_std_gap_min",
+    "corr_mean_gap_7d",
+    "corr_n_prior_7d",
+    "src_dwell_by_hour_min",
+    "dst_dwell_by_hour_min"
+  ],
+  "not_added": {
+    "segment_count": "banned: produced by the journey (BANNED_FEATURES), leakage by construction",
+    "trailing_30d_corridor_mean": "data spans 21 days; identical to v1 corr_mean_gap_min",
+    "corridor_actual_osrm_ratio": "already in v1 as corr_mean_log_ratio",
+    "is_festival_window": "window ends before Navratri 2018 (G-11, D-048)"
+  },
+  "hour_buckets": {
+    "night": [
+      0,
+      5
+    ],
+    "morning": [
+      6,
+      11
+    ],
+    "afternoon": [
+      12,
+      17
+    ],
+    "evening": [
+      18,
+      23
+    ]
+  },
+  "trailing_days": 7,
+  "rows": 26369,
+  "banned_columns_present": 0,
+  "null_share": {
+    "corr_median_gap_min": 0.1109,
+    "corr_p90_gap_min": 0.1109,
+    "corr_iqr_gap_min": 0.1109,
+    "corr_std_gap_min": 0.1944,
+    "corr_mean_gap_7d": 0.1226,
+    "corr_n_prior_7d": 0.0,
+    "src_dwell_by_hour_min": 0.111,
+    "dst_dwell_by_hour_min": 0.1091
+  }
+}
