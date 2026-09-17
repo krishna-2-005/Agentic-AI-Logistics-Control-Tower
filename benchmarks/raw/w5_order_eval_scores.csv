@@ -46,3 +46,4 @@ seq,template,expected_action,action,expected_missing,missing_field,action_correc
 5045,correction,file,file,,,True,False,,False,False,False,True,,2026-09-16,gemini-3.6-flash
 5046,weight_range,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,Could you please provide the exact weight of the shipment in kilograms or tonnes?,2026-09-16,gemini-3.6-flash
 5047,city_destination,clarify,clarify,dest_centre,dest_centre,True,True,,False,False,False,True,Could you please provide the destination centre code for your Delhi depot?,2026-09-16,gemini-3.6-flash
+5048,no_service,clarify,clarify,route_type,route_type,True,True,,False,False,False,True,Would you like this shipment sent via FTL or Carting?,2026-09-17,gemini-3.6-flash
