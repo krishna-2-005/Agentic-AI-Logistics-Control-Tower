@@ -41,6 +41,9 @@ CLEAN_V1 = PROCESSED_DIR / "clean_v1"
 TRIPS_V1 = PROCESSED_DIR / "trips_v1"
 HUBS_V1 = PROCESSED_DIR / "hubs_v1"
 FEATURES_V1 = PROCESSED_DIR / "features_v1"
+# Week 7 (G-04): v1 plus dispersion, trailing-window and dwell-by-hour history. A new
+# cache, never a repoint of v1 (D-016).
+FEATURES_V2 = PROCESSED_DIR / "features_v2"
 
 # ── Raw dataset facts (asserted by src.common.check_env) ─────────────────────
 RAW_SHA256 = "ca654e6233912172cfde4c11fa5f194fa0b635961c0816b46b13dd71c06e78ed"
