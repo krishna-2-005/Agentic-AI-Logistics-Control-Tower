@@ -1925,3 +1925,53 @@ No `is_festival_window` in features_v2.
 
 Evidence: `src/ml/ml_diagnostics.py`, `benchmarks/raw/w7_ml_diagnostics.json`,
 `src/ml/models.py` (`fit_mllib_model`), `docs/problems.md` P-52.
+
+## D-049 · The sprint's GBT clears the bar on paper and loses on every corridor with history; the fix is chosen on validation before the test set sees it — `DECIDED`
+**Week 7 · Lahari · D3 · execution plan v3.1 §2.1 Step 5 (its D-045), G-04**
+
+**What the first v2 run says.** `python -m src.ml.models_v2`, test split, MAE in minutes:
+
+| slice (corridor support in train) | n | corridor median | v2 GBT, absolute loss | v2 RF | sklearn absolute-loss reference |
+|---|---|---|---|---|---|
+| unseen | 294 | 111.18 | **80.18** | 77.80 | 67.05 |
+| 1-9 | 1,548 | **31.79** | 32.78 | 33.29 | 31.22 |
+| 10-29 | 2,723 | **26.26** | 27.49 | 28.10 | 25.06 |
+| >=30 | 709 | **29.45** | 31.46 | 31.75 | 27.35 |
+| **overall** | 5,274 | 33.04 | **32.52** | 32.88 | 29.52 |
+
+The adoption rule returns **outcome 1**: 32.52 is more than 1% under 33.04. It is true and
+it is not the result it looks like. The whole margin comes from the 294 legs on corridors
+the training set never saw, where the "baseline" is the OSRM plan (gap 0). On the 94% of
+legs with any history, the GBT is 1.0 to 2.0 minutes *worse* than looking up the median.
+The rule as written in v3.1 never asks about well-observed corridors for outcome 1 — only
+for outcome 2 — so it cannot see this. That gap in the rule is recorded here rather than
+patched after the result.
+
+**Why the GBT underperforms, read from the saved model.** MLlib's absolute-loss GBT fits
+its first tree to the raw target with weight 1 (leaf values −1,382 to +2,605 min — a
+squared-loss tree, pulled by outliers) and every later tree to the *sign* of the error,
+with leaf values in [−1, 1] scaled by `stepSize`. At `stepSize=0.05`, the 199 corrective
+trees can move a prediction by **at most 9.95 minutes in total**. The objective D-048
+pointed at is barely switched on. sklearn's `HistGradientBoostingRegressor` updates leaves
+to the median of the residuals instead, which is why the same features and target reach
+29.52 there and beat the median on every slice. Features are not the limit; the MLlib
+optimiser settings are.
+
+**Decided, before any further run touches the test split:**
+
+1. **`stepSize` is chosen on validation, not test.** The training split is cut
+   chronologically again at the same 80% fraction (`time_split`), and GBT with
+   `lossType="absolute"`, `maxIter=200`, `maxDepth=6` is fitted at `stepSize` ∈
+   {0.05, 0.3, 1.0} on the earlier part and scored on the later. Nothing else in the grid.
+2. **Whichever step size wins on validation is refitted on the full training split and
+   scored once on test. It replaces the candidate whatever that score is** — including if
+   it is worse than 32.52. Picking between two test scores would be the selection D-048
+   warned against.
+3. **The rule is applied to it unchanged**, and the paper's model table reports the
+   support slices next to the overall MAE for whichever model is adopted, so the reader
+   sees where it wins and where a lookup is better.
+4. **The sklearn model stays a reference, not a candidate.** The plan's model layer is
+   MLlib; it is reported as the ceiling the MLlib model is measured against.
+
+Evidence: `benchmarks/raw/w7_model_metrics_v2.csv`, `benchmarks/raw/w7_model_v2_report.json`,
+`data/models/v2_gbt_residual`, `src/ml/models_v2.py`.

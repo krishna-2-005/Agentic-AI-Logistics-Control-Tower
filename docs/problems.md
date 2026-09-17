@@ -1095,6 +1095,27 @@ checking a number, never by reading the file.
   a timestamp exists in the data, join it; do not reconstruct it from parts that happen to
   have the right units.
 
+### P-55 · The residual sprint died twice in the JVM: once on lineage depth, once on heap
+**Week 7 · Lahari · resolved**
+
+- **Symptom.** The first `python -m src.ml.models_v2` run failed with
+  `java.lang.StackOverflowError` at stage 2,046, deep into GBT training. The second got
+  past GBT and failed in the Random Forest with `java.lang.OutOfMemoryError: Java heap
+  space` while broadcasting 10 MB task binaries. The background wrapper reported the
+  first failure as exit 0, because `stop_spark` raised on a dead JVM and masked the real
+  error.
+- **Cause.** Each boosting iteration extends the RDD lineage, and 200 of them nest deep
+  enough to overflow the stack when the plan is deserialised; Week 4's shorter grids never
+  reached that depth. The forest was 300 trees at depth 8, twice the largest Week 4 fitted
+  on the 4 g driver, and a test suite was running a second Spark session at the same time.
+- **Fix.** `setCheckpointDir` plus `checkpointInterval=10` on both estimators, which cuts
+  the lineage instead of raising `-Xss` and moving the cliff. The forest went down to 150
+  trees, Week 4's largest, and the run was repeated with nothing else using Spark. It
+  finished in 10 minutes.
+- **Carry.** Read the log, not the exit code, for a JVM job driven from Python. And a model
+  bigger than anything fitted before on the same machine is a capacity test, so run it on
+  its own.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
