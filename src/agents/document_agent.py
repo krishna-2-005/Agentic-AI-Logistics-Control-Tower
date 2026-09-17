@@ -38,6 +38,7 @@ from PIL import Image
 
 from src.agents.llm import get_llm
 from src.agents.prompts.registry import Prompt, load_prompt
+from src.agents.tracing import traced
 from src.common import config
 from src.common.logging_setup import get_logger
 
@@ -88,15 +89,19 @@ def _response_text(response: object) -> str:
 
 
 def extract_fields(document_text: str, doc_type: str, prompt: Prompt | None = None) -> dict:
-    """One LLM call -> the fifteen-field dict `doc_extraction/vN.md` specifies."""
+    """One LLM call -> the fifteen-field dict `doc_extraction/vN.md` specifies. Traced."""
     prompt = prompt or load_prompt("doc_extraction")
-    rendered = prompt.render(doc_type=doc_type, document_text=document_text)
-    response = get_llm().invoke(rendered)
-    raw = _response_text(response)
-    try:
-        return _parse_json_response(raw)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"{prompt.label} returned non-JSON: {raw[:300]!r}") from e
+    with traced("document_extraction", inputs={"doc_type": doc_type, "prompt": prompt.label,
+                                               "document_text": document_text}) as span:
+        rendered = prompt.render(doc_type=doc_type, document_text=document_text)
+        response = get_llm().invoke(rendered)
+        raw = _response_text(response)
+        span.outputs = {"raw": raw}
+        try:
+            span.outputs = _parse_json_response(raw)
+        except json.JSONDecodeError as e:
+            raise ValueError(f"{prompt.label} returned non-JSON: {raw[:300]!r}") from e
+        return span.outputs
 
 
 def process_document(image_path: Path, doc_type: str, prompt: Prompt | None = None) -> dict:

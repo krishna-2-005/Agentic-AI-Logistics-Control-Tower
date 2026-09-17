@@ -135,6 +135,28 @@ def test_long_fields_are_truncated_not_dropped(tmp_path):
     assert stored.startswith("x" * 100) and "more" not in stored and "+3000 chars" in stored
 
 
+def test_the_order_entry_agent_traces_a_failed_extraction(monkeypatch):
+    from src.agents import order_agent
+    from src.agents.order_corpus import OrderEmail
+    from src.agents.prompts.registry import load_prompt
+
+    def boom(*_args, **_kwargs):
+        raise RuntimeError("model unavailable")
+
+    monkeypatch.setattr(order_agent, "extract_order", boom)
+    email = OrderEmail(seq=7, variant="clean", subject="Booking", body="Please collect 3 pieces.",
+                       expected_action="file", expected_missing=None, expected_fields={})
+    outcome = order_agent.process_email(email, load_prompt("order_entry"), dry_run=True)
+    record = tracing.read_traces(agent="order_entry")[0]
+    assert record["inputs"]["seq"] == 7 and record["inputs"]["dry_run"] is True
+    # The agent swallows the failure into its outcome, so the trace shows it there.
+    assert record["outputs"]["error"] == outcome.error == "model unavailable"
+
+
+def test_the_conftest_keeps_test_traces_out_of_the_real_log():
+    assert tracing.TRACE_PATH != tracing.config.DATA_DIR / "traces" / "agent_calls.jsonl"
+
+
 def test_traces_read_newest_first_and_skip_bad_lines(tmp_path):
     path = tmp_path / "t.jsonl"
     for name in ("first", "second"):

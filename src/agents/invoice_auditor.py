@@ -53,6 +53,7 @@ from src.agents.exception_agent import load_audit
 from src.agents.llm import get_llm
 from src.agents.prompts.registry import Prompt, load_prompt
 from src.agents.tms_client import TMSClient
+from src.agents.tracing import traced
 from src.common import config
 from src.common.logging_setup import get_logger
 
@@ -321,17 +322,19 @@ def run(count: int = 20, seed: int = 7, draft: bool = True, post: bool = False,
     seen: set[str] = set()
     outcomes: list[AuditOutcome] = []
     for case in cases:
-        findings = audit_invoice(case, km.get(case.corridor_id), seen)
-        seen.add(case.external_invoice_number)
-        decision = verdict_for(findings)
-        outcome = AuditOutcome(
-            seq=case.seq, kind=case.kind, corridor_id=case.corridor_id, verdict=decision,
-            findings=[asdict(f) for f in findings],
-            expected_verdict=case.expected_verdict, expected_finding=case.expected_finding,
-            prompt_version=prompt.label if prompt else None,
-        )
-        if decision == "dispute":
-            outcome.note, outcome.draft_source = draft_note(case, findings, prompt)
+        with traced("invoice_auditor", inputs=asdict(case)) as span:
+            findings = audit_invoice(case, km.get(case.corridor_id), seen)
+            seen.add(case.external_invoice_number)
+            decision = verdict_for(findings)
+            outcome = AuditOutcome(
+                seq=case.seq, kind=case.kind, corridor_id=case.corridor_id, verdict=decision,
+                findings=[asdict(f) for f in findings],
+                expected_verdict=case.expected_verdict, expected_finding=case.expected_finding,
+                prompt_version=prompt.label if prompt else None,
+            )
+            if decision == "dispute":
+                outcome.note, outcome.draft_source = draft_note(case, findings, prompt)
+            span.outputs = asdict(outcome)
         outcomes.append(outcome)
 
     summary = {
