@@ -84,12 +84,20 @@ I did not tune the threshold on the 30 questions until the misses disappeared. T
 fit the gate to the test. The gate stays for its precision, and the second layer is the
 prompt's rule to answer only from context. The model-phrased run measures that layer.
 
-**The two source misses have different causes.** D08 expects D-048, which was written
-after the vector index was last built, so no retrieval could have found it. The index is
-rebuilt after the Week 7 merge, and the no-model run is repeated then. D02 ("why does the
-streaming job drop fact events?") is a real miss. D-037 is in the index, but the three
-nearest documents were the Week 5 streaming write-ups, which discuss the same job without
-the decision.
+**Both source misses are real, and I predicted one of them wrong.** I expected D08 to be
+an artefact of a stale index — it asks for D-048, which was written this week. After the
+Week 7 merge I rebuilt the index (1,492 documents, D-048 through D-050 included) and reran
+the set: **the scores did not move, and D08 still misses.** It retrieves D-024 ("Week 4 is
+judged on MAE, not RMSE or R²"), which shares the question's vocabulary — *MAE*, *judged*,
+*baseline* — while D-048, which actually answers it, talks about medians and 33.04. D02
+("why does the streaming job drop fact events?") fails the same way: D-037 is indexed, but
+the three nearest documents are the Week 5 streaming write-ups, which discuss the same job
+without the decision.
+
+Both are the same weakness as the refusal misses: embedding distance measures topical
+similarity, not whether a passage answers the question. A decision log is the hardest thing
+in this repository to retrieve, because every entry in it shares a vocabulary with every
+other entry.
 
 ## 4. Every agent call is traced
 
