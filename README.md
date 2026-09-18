@@ -322,11 +322,16 @@ runs with `--no-llm` or `--no-draft` and no API call at all (D-041). That is a d
 agents are less "agentic" than the word suggests, and in exchange every verdict is reproducible and
 therefore measurable.
 
-**What has never run here, stated plainly.** The Kafka sink is written and import-checked but has
-never reached a live broker — there is no Docker on the development machine, so the file-streaming
-fallback is what every reported number comes from (D-035). The alert bot's Telegram and email
-channels are implemented and unconfigured, so only the file channel has sent anything (D-039). The
-MCP server's tools have been called directly but not yet driven by an MCP client over stdio.
+**What has never run here, stated plainly.** The Kafka path — producer sink, broker-backed
+`readStream`, and `scripts/kafka_live.sh` with its compose file — is written and import-checked but
+has still never reached a live broker, because there is no Docker on the development machine. Every
+streaming number reported anywhere in this repository comes from the file source (D-035). On any
+machine that has Docker, `docker compose -f docker-compose.kafka.yml up -d && bash
+scripts/kafka_live.sh` is the whole of what is missing. The alert bot's Telegram and email channels
+are implemented and unconfigured, so only the file channel has sent anything (D-039); the steps to
+configure one are in `docs/W7_krishna_rag_assistant.md`. The MCP server **has** now been driven by a
+real client over stdio — 13 tools, 8 calls, 0 errors
+(`benchmarks/raw/w7_mcp_stdio_transcript.json`).
 
 ---
 
