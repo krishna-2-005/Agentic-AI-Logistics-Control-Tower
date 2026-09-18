@@ -48,7 +48,13 @@ from src.common.logging_setup import get_logger
 log = get_logger("ml.results_freeze")
 
 RAW = config.BENCHMARKS_RAW_DIR
-FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v1.json"
+#: v1 froze Week 1-6 at the Week 6 sync. Week 7 reopened the results for the model
+#: correction sprint (D-048) and closed it with a different reported model (D-050), so the
+#: current freeze is v2 and v1 stays exactly as it was -- the same rule D-016 applies to
+#: data versions. `--path` still points anywhere, and `--verify` compares against whichever
+#: file it is given, so "what moved since Week 6" remains answerable.
+FREEZE_JSON_V1 = config.BENCHMARKS_DIR / "results_freeze_v1.json"
+FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v2.json"
 SUMMARY_MD = config.DOCS_DIR / "RESULTS_SUMMARY.md"
 
 
@@ -148,6 +154,24 @@ ENTRIES: list[tuple[str, int, str, str, str, Callable[[], Any]]] = [
      "w6_invoice_audit_runs.json", lambda: _json("w6_invoice_audit_runs.json")["cases"]),
     ("invoice_correct", 6, "Invoice verdicts matching the seeded truth", "invoices",
      "w6_invoice_audit_runs.json", lambda: _json("w6_invoice_audit_runs.json")["correct_verdicts"]),
+
+    # Week 7 reopened the freeze for the model correction sprint (D-048) and closed it with
+    # a different reported model (D-050). These are the numbers that replaced Week 4's.
+    ("median_bar_mae", 7, "The fair baseline: per-corridor as-of median", "min",
+     "w7_model_v2_stepsize_report.json",
+     lambda: _json("w7_model_v2_stepsize_report.json")["adoption"]["median_bar_min"]),
+    ("model_v2_mae", 7, "Reported model: v2 GBT on the median residual", "min",
+     "w7_model_v2_stepsize_report.json",
+     lambda: _json("w7_model_v2_stepsize_report.json")["adoption"]["overall_mae_min"]),
+    ("doc_extraction_accuracy", 7, "Document extraction, per-field accuracy", "share",
+     "w7_doc_extraction_eval.json", lambda: _json("w7_doc_extraction_eval.json")["overall"]["accuracy"]),
+    ("doc_extraction_rows", 7, "Document rows scored (of 40 planned)", "rows",
+     "w7_doc_extraction_eval.json", lambda: _json("w7_doc_extraction_eval.json")["documents_evaluated"]),
+    ("assistant_route_accuracy", 7, "Analytics assistant, correct route on the fixed set", "share",
+     "w7_assistant_run_no_llm.json", lambda: _json("w7_assistant_run_no_llm.json")["route_accuracy"]),
+    ("scale_rows", 7, "Rows the Week 2 aggregation was run on at scale", "rows",
+     "w7_scale_benchmark.json",
+     lambda: max(r["rows"] for r in _json("w7_scale_benchmark.json")["runs"])),
 ]
 
 
