@@ -1,0 +1,50 @@
+{
+  "generated_at": "2026-09-18T12:35:51+05:30",
+  "mode": "llm",
+  "answered": 18,
+  "questions": 30,
+  "route_accuracy": 1.0,
+  "source_accuracy": 0.9444,
+  "refusal_recall": null,
+  "refusal_precision": null,
+  "by_category": {
+    "ranking": {
+      "n": 6,
+      "route_correct": 6,
+      "source_correct": 6
+    },
+    "corridor fact": {
+      "n": 3,
+      "route_correct": 3,
+      "source_correct": 3
+    },
+    "hub fact": {
+      "n": 1,
+      "route_correct": 1,
+      "source_correct": 1
+    },
+    "audit method": {
+      "n": 2,
+      "route_correct": 2,
+      "source_correct": 2
+    },
+    "decision": {
+      "n": 6,
+      "route_correct": 6,
+      "source_correct": 5
+    }
+  },
+  "groundedness": "not scored by this script -- judged by hand on the saved answers (Lahari, W7 D5)",
+  "misses": [
+    {
+      "id": "D02",
+      "expected": "retrieval",
+      "got": "retrieval",
+      "sources": [
+        "W5_lahari_stream_validation.md -- The day-of-week trap this test caught",
+        "W5_mounika_kafka_streaming.md -- Nothing here re-invents the event",
+        "W5_mounika_kafka_streaming.md -- First real run"
+      ]
+    }
+  ]
+}
