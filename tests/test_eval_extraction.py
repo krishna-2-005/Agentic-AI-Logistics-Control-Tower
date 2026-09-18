@@ -14,10 +14,13 @@ from pathlib import Path
 
 import pytest
 
+from src.common import config
 from src.ml import eval_extraction as ev
 
-DOCS = Path("data/documents")
-needs_corpus = pytest.mark.skipif(not DOCS.exists(), reason="document corpus not generated")
+DOCS = config.DOCUMENTS_DIR
+needs_corpus = pytest.mark.skipif(
+    not any(DOCS.glob("*.json")), reason="document corpus not generated"
+)
 
 
 # ── the field spec matches the real labels ──────────────────────────────────

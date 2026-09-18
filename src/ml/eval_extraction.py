@@ -51,6 +51,8 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+from src.common import config
+
 try:
     from rapidfuzz import fuzz
 except ImportError:  # keep the script runnable without the optional dep
@@ -296,7 +298,7 @@ def score_document(doc_type: str, truth: dict, pred: dict) -> tuple[Tally, list[
 # 4. Corpus loading and extraction — wired to the real corpus and agent
 # --------------------------------------------------------------------------
 
-RAW_DIR = Path("benchmarks/raw")
+RAW_DIR = config.BENCHMARKS_RAW_DIR
 MANIFEST = RAW_DIR / "w3_doc_corpus_manifest.csv"
 CACHE = RAW_DIR / "w7_doc_extraction_cache.jsonl"
 DOC_COLUMNS = {
@@ -306,6 +308,21 @@ DOC_COLUMNS = {
 #: The text source for each split. `clean` never touches OCR, so the engine label only
 #: describes the `noisy` half; it is recorded per row rather than assumed.
 SPLIT_ENGINE = {"clean": "pdf-text"}
+
+
+#: Failures of this machine, not of the agent: no API key, no network, a stalled request,
+#: a provider outage. A row that fails this way is left unscored, like a quota refusal.
+#: Anything else -- unparseable JSON, a missing field, a broken PDF -- is the agent's
+#: answer and is scored as a miss.
+_ENVIRONMENTAL = re.compile(
+    r"api[_ ]?key|credential|not set|unauthorized|permission denied|timeout|timed out|deadline|"
+    r"connect|network|unavailable|503|502|500|internal server error",
+    re.IGNORECASE,
+)
+
+
+def is_environmental(exc: Exception) -> bool:
+    return bool(_ENVIRONMENTAL.search(f"{type(exc).__name__}: {exc}"))
 
 
 class QuotaExhausted(RuntimeError):
@@ -445,7 +462,10 @@ def run_extraction(doc: dict, engine: str, prompt, cache: dict[str, dict],
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--docs", type=Path, default=Path("data/documents"))
+    # Absolute, not "data/documents": the corpus lives in the checkout's own data
+    # directory, and a relative default silently finds nothing when the run starts from a
+    # git worktree or any other directory, reporting it as "no label for ...".
+    ap.add_argument("--docs", type=Path, default=config.DOCUMENTS_DIR)
     ap.add_argument("--manifest", type=Path, default=MANIFEST)
     ap.add_argument("--out", type=Path, default=RAW_DIR)
     ap.add_argument("--engine", default="tesseract",
@@ -494,14 +514,25 @@ def main() -> None:
             not_run = [f"{d['doc_id']}/{d['split']}" for d in corpus[i - 1:]]
             print(f"  [{i}/{len(corpus)}] {label}: QUOTA — stopping; {len(not_run)} row(s) left unscored")
             break
-        except Exception as exc:  # noqa: BLE001 -- a real extraction failure is a total miss, not a skipped row
-            print(f"  [{i}/{len(corpus)}] {label}: EXTRACTION FAILED — {exc}")
+        except Exception as exc:  # noqa: BLE001 -- see the two kinds below
+            environmental = is_environmental(exc)
+            kind = "ENVIRONMENT" if environmental else "EXTRACTION FAILED"
+            print(f"  [{i}/{len(corpus)}] {label}: {kind} — {exc}")
+            failures.append({"doc_id": doc["doc_id"], "split": doc["split"], "error": str(exc),
+                             "scored": not environmental})
+            if environmental:
+                # No key, no network, a timeout: the agent never answered, so there is
+                # nothing to score. Counting these as missed fields publishes the state of
+                # this machine as the agent's accuracy -- a first run with no `.env`
+                # produced "7.0% accuracy" from 37 such rows, which is the same mistake
+                # the quota branch above exists to prevent.
+                not_run.append(label)
+                continue
             spec = FIELD_SPEC.get(doc["doc_type"], {})
             n_fields = sum(1 for f in spec if not is_empty(doc["truth"].get(f)))
             overall.missed += n_fields
             by_type[doc["doc_type"]].missed += n_fields
             by_split[doc["split"]].missed += n_fields
-            failures.append({"doc_id": doc["doc_id"], "split": doc["split"], "error": str(exc)})
             continue
 
         if pred is None:  # --cache-only and nothing cached yet
@@ -542,7 +573,8 @@ def main() -> None:
               + (f", {tally.hallucinated} hallucinated" if tally.hallucinated else ""))
 
     args.out.mkdir(parents=True, exist_ok=True)
-    evaluated = len(per_doc) + len(failures)
+    scored_failures = [f for f in failures if f["scored"]]
+    evaluated = len(per_doc) + len(scored_failures)
 
     report = {
         "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
@@ -584,8 +616,8 @@ def main() -> None:
 
     m = overall.metrics()
     print("\n" + "=" * 62)
-    print(f"  Rows evaluated {evaluated} of {len(corpus)}   (failures: {len(failures)}, "
-          f"not run: {len(not_run)})")
+    print(f"  Rows evaluated {evaluated} of {len(corpus)}   (scored failures: {len(scored_failures)}, "
+          f"not run: {len(not_run)}, of which environmental: {len(failures) - len(scored_failures)})")
     print(f"  Accuracy       {m['accuracy']:.1%}   ({m['correct']}/{m['fields_in_truth']})")
     print(f"  Precision      {m['precision']:.1%}")
     print(f"  Recall         {m['recall']:.1%}")
