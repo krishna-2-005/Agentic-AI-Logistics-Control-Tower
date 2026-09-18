@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 
 import jsonschema
 import pandas as pd
@@ -34,12 +34,16 @@ log = get_logger("streaming.schema")
 SCHEMA_PATH = config.REPO_ROOT / "docs" / "schemas" / "stream_event.schema.json"
 SAMPLE_EVENTS_DIR = config.DEMO_DIR / "sample_events"
 
-#: The columns `--examples` needs from `features_v1` -- everything the schema's two
+#: The columns the event builders need from `features_v1` -- everything the schema's two
 #: event kinds carry except `od_end_time`, which is not a features_v1 column and is
-#: instead derived below from `leg_id` (carries od_start_time) and `gap_min`
-#: (`actual_time = gap_min + planned_min`, `src.ml.baselines`'s own TARGET
-#: definition) -- exact, not an approximation, since od_start_time plus the leg's
-#: actual elapsed minutes is what od_end_time already means (Stage 2, D-002).
+#: joined from `trips_v1` by `with_od_end_time`.
+#:
+#: It used to be derived as `od_start_time + actual_time`, with a comment calling that
+#: exact. It is not: `actual_time` is moving time and excludes dwell (`reconstruct.py`:
+#: dwell = start_scan_to_end_scan - actual_time), so every fact event landed before the
+#: leg had finished, and a consumer building live history would have counted legs still
+#: on the road as known history -- 1,128 legs, found by Lahari's as-of reconstruction
+#: (P-52). Stage 4 uses the real `od_end_time`; the stream now does too.
 EXAMPLE_COLUMNS = [
     "leg_id", "trip_uuid", "corridor_id", "source_center", "destination_center",
     "trip_creation_time", "route_type", "planned_min", "planned_km",
@@ -91,10 +95,28 @@ def validate_event(event: dict, schema: dict) -> None:
     jsonschema.validate(instance=event, schema=schema)
 
 
-def _od_start_time(leg_id: str) -> pd.Timestamp:
-    """`leg_id` is `trip_uuid|od_start_time (yyyyMMddHHmmss)|corridor_id` (D-020)."""
-    _, ts, _ = leg_id.split("|")
-    return pd.to_datetime(ts, format="%Y%m%d%H%M%S")
+def with_od_end_time(spark, legs, trips_path=config.TRIPS_V1):
+    """Join each leg's real finish time from `trips_v1`, on the same `leg_id` Stage 4 builds
+    (`trip_uuid|date_format(od_start_time)|corridor_id`, in the session time zone)."""
+    from pyspark.sql import functions as F
+
+    ends = (
+        spark.read.parquet(str(trips_path))
+        .select(
+            F.concat_ws("|", "trip_uuid", F.date_format("od_start_time", "yyyyMMddHHmmss"), "corridor_id").alias("leg_id"),
+            "od_end_time",
+        )
+        .dropDuplicates(["leg_id"])
+    )
+    return legs.join(ends, "leg_id", "left")
+
+
+def require_od_end_time(pdf: pd.DataFrame) -> pd.DataFrame:
+    """Refuse a replay in which any leg lost its finish time in the join."""
+    missing = int(pdf["od_end_time"].isna().sum())
+    if missing:
+        raise ValueError(f"{missing} legs have no od_end_time in trips_v1 -- the leg_id join key drifted (P-52)")
+    return pdf
 
 
 def query_event(row: pd.Series) -> dict:
@@ -130,16 +152,17 @@ def fact_event(row: pd.Series) -> dict:
     the only path that had ever read it. The stream is the second reader, and it would
     have been the first to publish it (P-42).
     """
-    actual_time = row["gap_min"] + row["planned_min"]
+    od_end_time = row.get("od_end_time")
+    if od_end_time is None or pd.isna(od_end_time):
+        raise ValueError(f"{row['leg_id']}: no od_end_time -- load legs through with_od_end_time (P-52)")
     # D-003's rule, from the one helper every label in the project now comes from
     # (`src.ml.baselines.delay_label`, Lahari's W5 D3-D4) -- the training label, the
     # thresholded predictions and this event can no longer disagree about it.
     is_delayed = int(delay_label(row["gap_min"], row["planned_min"]))
-    od_end_time = _od_start_time(row["leg_id"]) + timedelta(minutes=float(actual_time))
     return {
         "event_id": f"fact-{row['leg_id']}",
         "kind": "fact",
-        "event_time": od_end_time.isoformat(),
+        "event_time": pd.Timestamp(od_end_time).isoformat(),
         "corridor_id": row["corridor_id"],
         "source_center": row["source_center"],
         "destination_center": row["destination_center"],
@@ -160,7 +183,7 @@ def generate_examples(n: int) -> list[dict]:
     spark = get_spark("stream-schema-examples")
     try:
         sdf = spark.read.parquet(str(config.FEATURES_V1)).select(*EXAMPLE_COLUMNS).limit(n)
-        pdf = sdf.toPandas()
+        pdf = require_od_end_time(with_od_end_time(spark, sdf).toPandas())
     finally:
         stop_spark(spark)
 

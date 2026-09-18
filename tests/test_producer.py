@@ -37,6 +37,7 @@ def _leg(leg_id: str, created: str, planned_min: float = 60.0, gap_min: float = 
             "created_is_weekend": int(pd.Timestamp(created).weekday() >= 5),
             "gap_min": gap_min,
             "log_gap_ratio": 0.4,
+            "od_end_time": pd.Timestamp(created) + pd.Timedelta(minutes=planned_min + gap_min + 20),
             "is_delayed": 1,
         }
     )
