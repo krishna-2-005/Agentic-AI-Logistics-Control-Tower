@@ -1126,6 +1126,33 @@ checking a number, never by reading the file.
   are easy to name. The fixed evaluation set found this because it was written with
   domain-adjacent traps; the calibration set was not.
 
+### P-58 · The extraction evaluation published "7.0% accuracy" from 37 documents it never sent
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** The first real G-01 run wrote `w7_doc_extraction_eval.json` with
+  **7.0% accuracy, 95.1% precision, 7.0% recall**. Nothing had crashed. Thirty-seven of
+  40 rows had failed with `GEMINI_API_KEY is not set`, and every one of them had been
+  counted as a document where the agent returned nothing.
+- **Two causes, one theme.**
+  1. The run started from a git worktree, whose `data/` is its own empty directory. The
+     corpus path defaulted to the relative `data/documents`, so it found nothing. Same for
+     `benchmarks/raw`. Both are now `config.DOCUMENTS_DIR` and `config.BENCHMARKS_RAW_DIR`,
+     which are absolute.
+  2. The row handler treated every exception as a total miss. That is right for a bad
+     answer and wrong for a failure to ask: the quota branch beside it existed precisely
+     to avoid publishing the free-tier limit as an accuracy number, and a missing key is
+     the same kind of event.
+- **Why it matters more than a wrong number in a scratch file.** Nothing in the output
+  said "this machine was misconfigured". It said the agent scored 7%. A file like that is
+  cited, and the citation survives long after the run is forgotten.
+- **Fix.** `is_environmental()` classifies the failure: missing credentials, no network, a
+  timeout, a provider 5xx. Those rows are left unscored like a quota refusal and counted
+  separately in the report; an unparseable answer or a missing field is still the agent's
+  miss. The rerun proved it immediately — a **503 UNAVAILABLE** arrived on row 12 and was
+  excluded rather than scored as a zero.
+- **Carry.** An evaluation harness needs to distinguish *the agent was wrong* from *the
+  agent never ran*. If it cannot, its worst numbers are reports about the machine.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
