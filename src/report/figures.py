@@ -261,31 +261,49 @@ def fig6_mae_by_support() -> dict:
 
 # ── 4 · the alerting policy ──────────────────────────────────────────────────
 def fig7_threshold() -> dict:
-    """Two measures on different scales: two panels, never two y-axes."""
-    ts = pd.read_csv(RAW / "w5_threshold_sensitivity.csv")
-    champion = ts[ts["model"] == "champion_threshold"].sort_values("threshold")
-    fig, axes = plt.subplots(1, 2, figsize=(6.4, 3.0), sharex=True)
-    axes[0].plot(champion["threshold"], champion["mcc"], marker="o", color=BLUE, lw=2, ms=6)
-    for _, row in champion.iterrows():
-        axes[0].annotate(f"{row['mcc']:.3f}", (row["threshold"], row["mcc"]),
-                         textcoords="offset points", xytext=(0, 7), ha="center", fontsize=8)
-    axes[0].set_title("classifier quality (MCC)", fontsize=9)
-    axes[0].set_ylim(0, max(champion["mcc"]) * 1.35)
+    """Two measures on different scales: two panels, never two y-axes.
 
-    axes[1].plot(champion["threshold"], champion["alert_rate"] * 100, marker="o", color=ORANGE, lw=2, ms=6)
-    for _, row in champion.iterrows():
-        axes[1].annotate(f"{row['alert_rate'] * 100:.0f}%", (row["threshold"], row["alert_rate"] * 100),
-                         textcoords="offset points", xytext=(0, 7), ha="center", fontsize=8)
+    Two series, not one. The claim ("quality barely moves, workload halves") belongs to the
+    **logistic delay classifier**, the best real classifier in the sweep. The first version
+    of this figure plotted `champion_threshold` — the stream's own flag — under that title,
+    where MCC climbs 0.315 → 0.477 and the alert rate falls only 99% → 68%: a chart that
+    argued against its own caption. Both series are now drawn, which is also how the
+    second finding (the stream's flag is the weakest of the two) becomes visible.
+    """
+    ts = pd.read_csv(RAW / "w5_threshold_sensitivity.csv")
+    series = [
+        ("logistic classifier", ts[ts["model"] == "logistic_regression"].sort_values("threshold"), BLUE, "o"),
+        ("the stream's own flag", ts[ts["model"] == "champion_threshold"].sort_values("threshold"), ORANGE, "s"),
+    ]
+    fig, axes = plt.subplots(1, 2, figsize=(6.6, 3.2), sharex=True)
+    for label, frame, colour, marker in series:
+        axes[0].plot(frame["threshold"], frame["mcc"], marker=marker, color=colour, lw=2, ms=6, label=label)
+        axes[1].plot(frame["threshold"], frame["alert_rate"] * 100, marker=marker, color=colour, lw=2, ms=6,
+                     label=label)
+    best = series[0][1]
+    for position, (_, row) in enumerate(best.iterrows()):
+        axes[0].annotate(f"{row['mcc']:.3f}", (row["threshold"], row["mcc"]),
+                         textcoords="offset points", xytext=(0, 8), ha="center", fontsize=8)
+        # Only the endpoints on the right panel: the claim is "98% to 49%", and labelling
+        # the two middle points crowds them into each other at this width.
+        if position in (0, len(best) - 1):
+            axes[1].annotate(f"{row['alert_rate'] * 100:.0f}%", (row["threshold"], row["alert_rate"] * 100),
+                             textcoords="offset points", xytext=(0, -16), ha="center", fontsize=8)
+    axes[0].set_title("classifier quality (MCC)", fontsize=9)
+    axes[0].set_ylim(0, 0.75)
+    axes[0].legend(frameon=False, fontsize=8, loc="lower right")
     axes[1].set_title("share of legs alerted", fontsize=9)
-    axes[1].set_ylim(0, 115)
+    axes[1].set_ylim(0, 118)
     for ax in axes:
         ax.set_xlabel("delay threshold (× planned)")
         ax.grid(axis="y")
         ax.set_axisbelow(True)
-    fig.suptitle("Raising the threshold barely changes quality and halves the workload",
-                 fontsize=10, fontweight="bold")
+    fig.suptitle("For the best classifier, quality barely moves while the workload halves",
+                 fontsize=10, fontweight="bold", y=1.02)
     return _finish(fig, "fig7_threshold_sensitivity",
-                   "Champion-model alerting across delay thresholds. Source: w5_threshold_sensitivity.csv")
+                   "Alerting across delay thresholds. The logistic classifier holds MCC 0.507-0.540 while "
+                   "the share of legs alerted falls 98% to 49%; the stream's own flag is weaker at every "
+                   "threshold. Source: w5_threshold_sensitivity.csv")
 
 
 # ── 5 · the architecture claim ───────────────────────────────────────────────
