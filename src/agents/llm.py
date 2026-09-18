@@ -33,6 +33,15 @@ DEFAULT_MODELS = {
     "ollama": "llama3.1:8b",
 }
 
+#: Every provider call gets a wall-clock ceiling and a bounded retry count. Without them
+#: a single stalled request hangs its caller indefinitely: in Week 7 one document
+#: extraction sat for twenty minutes with no error, while the client's own retry loop
+#: quietly spent the rest of the day's 20-call free tier (P-53). A call that cannot
+#: finish in two minutes should fail loudly, so a resumable evaluation can stop and pick
+#: up tomorrow instead of burning quota on a request nobody is waiting for.
+REQUEST_TIMEOUT_S = 120
+MAX_RETRIES = 2
+
 #: Which env var must be set for each provider. Ollama needs a running host, not a key.
 REQUIRED_KEY = {
     "gemini": "GEMINI_API_KEY",
@@ -63,7 +72,10 @@ def _build(provider: str, model: str, temperature: float) -> BaseChatModel:
         key = os.environ.get("GEMINI_API_KEY")
         if not key:
             raise LLMNotConfigured("GEMINI_API_KEY is not set — copy .env.example to .env")
-        return ChatGoogleGenerativeAI(model=model, temperature=temperature, google_api_key=key)
+        return ChatGoogleGenerativeAI(
+            model=model, temperature=temperature, google_api_key=key,
+            timeout=REQUEST_TIMEOUT_S, max_retries=MAX_RETRIES,
+        )
 
     if provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
@@ -71,7 +83,10 @@ def _build(provider: str, model: str, temperature: float) -> BaseChatModel:
         key = os.environ.get("ANTHROPIC_API_KEY")
         if not key:
             raise LLMNotConfigured("ANTHROPIC_API_KEY is not set — copy .env.example to .env")
-        return ChatAnthropic(model=model, temperature=temperature, api_key=key)
+        return ChatAnthropic(
+            model=model, temperature=temperature, api_key=key,
+            timeout=REQUEST_TIMEOUT_S, max_retries=MAX_RETRIES,
+        )
 
     if provider == "ollama":
         from langchain_ollama import ChatOllama

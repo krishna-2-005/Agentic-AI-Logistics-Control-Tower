@@ -55,6 +55,19 @@ server = MCPServer(
 )
 
 
+#: Every tool the server exposes, in registration order. Filled in by `tool()` below, never
+#: typed by hand: the hand-typed version went stale the day `search_knowledge` was added,
+#: so the server advertised 13 tools while `--list` printed 12, and nothing noticed until
+#: a real MCP client counted them (G-06).
+TOOL_NAMES: list[str] = []
+
+
+def tool(fn):
+    """Register an MCP tool and record its name in one step."""
+    TOOL_NAMES.append(fn.__name__)
+    return server.tool()(fn)
+
+
 def _ok(payload: Any) -> str:
     """Tools return JSON text: an MCP client reads strings, and a dict rendered by
     `str()` is not JSON (single quotes), which is a silent parse failure at the far end."""
@@ -62,7 +75,7 @@ def _ok(payload: Any) -> str:
 
 
 # ── corridor statistics ──────────────────────────────────────────────────────
-@server.tool()
+@tool
 def corridor_stats(corridor_id: str) -> str:
     """Week 2's audit verdict for one corridor: how far over plan it runs, whether that
     is statistically significant, and its bottleneck rank if it has one.
@@ -93,7 +106,7 @@ def corridor_stats(corridor_id: str) -> str:
     })
 
 
-@server.tool()
+@tool
 def hub_friction(centre_code: str) -> str:
     """Where a centre sits in the network's hub-friction ranking, if it is in the top 20."""
     friction = load_friction()
@@ -102,7 +115,7 @@ def hub_friction(centre_code: str) -> str:
                 "in_top_20": rank is not None})
 
 
-@server.tool()
+@tool
 def worst_corridors(limit: int = 10) -> str:
     """The corridors currently producing the most delay alerts, worst first."""
     feed = load_alerts()
@@ -113,7 +126,7 @@ def worst_corridors(limit: int = 10) -> str:
 
 
 # ── predictions ──────────────────────────────────────────────────────────────
-@server.tool()
+@tool
 def alerts_for_corridor(corridor_id: str, limit: int = 5) -> str:
     """Delay alerts the streaming job has already raised for one corridor, worst first.
 
@@ -132,13 +145,13 @@ def alerts_for_corridor(corridor_id: str, limit: int = 5) -> str:
     return _ok({"corridor_id": corridor_id, "alerts": rows[keep].to_dict(orient="records")})
 
 
-@server.tool()
+@tool
 def alert_summary() -> str:
     """How many alerts are in the sink, over how many corridors, and how fresh they are."""
     return _ok(summary(load_alerts()))
 
 
-@server.tool()
+@tool
 def what_if_delay(corridor_id: str, source_center: str, destination_center: str,
                   route_type: str, planned_min: float, planned_km: float,
                   departure: str) -> str:
@@ -164,7 +177,7 @@ def _tms() -> TMSClient:
     return TMSClient()
 
 
-@server.tool()
+@tool
 def tms_health() -> str:
     """Whether the mock TMS is up, and what it holds."""
     try:
@@ -173,25 +186,25 @@ def tms_health() -> str:
         return _ok({"status": "down", "error": str(exc), "base_url": config.TMS_BASE_URL})
 
 
-@server.tool()
+@tool
 def list_orders(limit: int = 20) -> str:
     """Recent orders in the TMS."""
     return _ok(_tms().list_orders(limit=limit))
 
 
-@server.tool()
+@tool
 def list_shipments(limit: int = 20) -> str:
     """Recent shipments, with their corridor and status."""
     return _ok(_tms().list_shipments(limit=limit))
 
 
-@server.tool()
+@tool
 def list_exceptions(limit: int = 20) -> str:
     """Exception tickets, newest first."""
     return _ok(_tms().list_exceptions(limit=limit))
 
 
-@server.tool()
+@tool
 def file_exception(shipment_ref: str, severity: str, reason: str, notes: str = "") -> str:
     """File an exception ticket against a shipment.
 
@@ -201,14 +214,14 @@ def file_exception(shipment_ref: str, severity: str, reason: str, notes: str = "
     return _ok(_tms().create_exception(shipment_ref, severity, reason, notes or None))
 
 
-@server.tool()
+@tool
 def list_invoices(limit: int = 20) -> str:
     """Invoices submitted against shipments, with their audit status."""
     return _ok(_tms().list_invoices(limit=limit))
 
 
 # ── retrieval (Mounika, W6 D3-D4) ────────────────────────────────────────────
-@server.tool()
+@tool
 def search_knowledge(query: str, k: int = 5, kind: str = "") -> str:
     """Search the project's own knowledge in sentences: every audited corridor, every
     congested hub, and the documentation split at its headings.
@@ -228,12 +241,6 @@ def search_knowledge(query: str, k: int = 5, kind: str = "") -> str:
                     "fix": "python -m src.common.vectordb --build"})
 
 
-TOOL_NAMES = [
-    "corridor_stats", "hub_friction", "worst_corridors",
-    "alerts_for_corridor", "alert_summary", "what_if_delay",
-    "tms_health", "list_orders", "list_shipments", "list_exceptions",
-    "file_exception", "list_invoices",
-]
 
 
 def main() -> int:
