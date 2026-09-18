@@ -131,6 +131,37 @@ retries. The full run spans quota days (20 calls a day, resetting at 12:30 IST).
 | G-01 full run, then one prompt iteration on the weakest three fields | daily Gemini quota |
 | Model-phrased run of the 30 questions (second refusal layer, answers for Lahari's groundedness judging) | daily Gemini quota |
 | Vector index rebuild and no-model rerun after the Week 7 merge | merge to `dev` |
-| G-07 real alert channel (email or Telegram) | credentials from the team, never committed |
+| G-07 real alert channel (email or Telegram) | credentials from the team, never committed (steps below) |
 
 Problems logged this week: P-53, P-54, P-56, P-57.
+
+## G-07, when someone has five minutes and a credential
+
+Both channels are written and tested against a fake transport; neither has ever sent to a
+real one, which is why the honest-scope note still says so. Nothing in the code is
+missing — only secrets, which is why this is a runbook and not a commit.
+
+**Email (simplest).** In `.env`, which is gitignored and must stay that way:
+
+```
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=<the sending account>
+SMTP_PASSWORD=<a Google app password, not the account password>
+ALERT_EMAIL_TO=<where the alert should land>
+```
+
+**Telegram.** Message `@BotFather`, `/newbot`, then put `TELEGRAM_BOT_TOKEN` and
+`TELEGRAM_CHAT_ID` in `.env`. The chat id comes from
+`https://api.telegram.org/bot<token>/getUpdates` after messaging the bot once.
+
+Then, from the repo root:
+
+```bash
+python -m src.agents.alert_bot --channel email --top 1     # or --channel telegram
+```
+
+`EmailChannel.check()` names any missing variable before a send is attempted, so a
+half-filled `.env` fails immediately rather than silently. Record the run in
+`benchmarks/raw/w7_alert_channel_live.json` and delete the "unconfigured" sentence from
+the README's honest scope — not before.
