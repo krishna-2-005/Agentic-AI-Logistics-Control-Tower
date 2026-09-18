@@ -14,9 +14,9 @@ owed, the row says what it waits on instead of carrying an old number forward.
 | Document Intelligence | field-level F1 (micro) | **0.929** | predict nothing: 0.000 | 16 of 20 scanned documents (W4, quota cap) | `doc_extraction/v2` | `gemini-3.6-flash` |
 | Document Intelligence | field-level F1 (micro), v1 | 0.853 | predict nothing: 0.000 | 22 of 40 scanned documents | `doc_extraction/v1` | `gemini-3.6-flash` |
 | Document Intelligence | per-field exact match, clean PDF vs noisy scan | _owed — G-01_ | | 20 consignments, stratified by seeded error type | `doc_extraction/v2` | `gemini-3.6-flash` |
-| Order Entry | end-to-end success rate | **100%** (48 of 48) | always file: 52.1% | 48 of 50 cases run; 25 file, 23 clarify | `order_entry/v1` | `gemini-3.6-flash` |
-| Order Entry | clarification recall / precision | **100% / 100%** | always file: 0% recall | the 23 clarify cases run | `order_entry/v1` | `gemini-3.6-flash` |
-| Order Entry | invented orders · needless questions | **0 · 0** | | 48 cases | `order_entry/v1` | `gemini-3.6-flash` |
+| Order Entry | end-to-end success rate | **100%** (50 of 50) | always file: 50.0% | all 50 cases; 25 file, 25 clarify | `order_entry/v1` | `gemini-3.6-flash` |
+| Order Entry | clarification recall / precision | **100% / 100%** | always file: 0% recall | the 25 clarify cases | `order_entry/v1` | `gemini-3.6-flash` |
+| Order Entry | invented orders · needless questions | **0 · 0** | | 50 cases | `order_entry/v1` | `gemini-3.6-flash` |
 | Tracking & Exception | notification precision, notify every alert | **72.1%** | notify every leg in the replay: 54.1% | 1,347 alerts over a 2,000-leg replay | verdict computed, no prompt | none (D-041) |
 | Tracking & Exception | recall of all truly delayed legs | **89.7%** | notify every leg: 100% | 1,082 delayed legs | — | none |
 | Tracking & Exception | precision at critical only | **91.8%**, recall 25.0% | | 294 alerts | — | none |
@@ -30,9 +30,11 @@ owed, the row says what it waits on instead of carrying an old number forward.
 
 ## What the numbers do and do not show
 
-**Order Entry is at 48 of 50, not 50.** The last two cases wait on the daily Gemini quota
-(D-032). The case set is balanced (25 file, 25 clarify), so "always file" is the honest
-floor, not zero. The run spans four days; every case records the day it ran on.
+**Order Entry is complete at 50 of 50** (G-02 closed 2026-09-18). The case set is
+balanced (25 file, 25 clarify), so "always file" is the honest floor at 50%, not zero. The
+run spans five quota days (20 calls a day, D-032) and every case records the day it ran
+on. A perfect score on templated email is a ceiling, not a verdict: D-040's reading, that
+the next evaluation should be built from email the agent gets wrong, is unchanged.
 
 **The Exception Agent's precision comes from the model, and its severity from the audit.**
 It makes no LLM decision (D-041); the notification text is the only generated part. Across

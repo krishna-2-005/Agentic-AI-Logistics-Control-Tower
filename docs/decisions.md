@@ -1586,8 +1586,15 @@ says these ten failure modes are handled. It cannot distinguish a good agent fro
 excellent one, and the next eval should be built from email the agent gets wrong.
 
 **Week 5 was closed at 40 of 50 rather than held open another day** for the last
-10 cases, which run as a follow-up commit. Every generated table says "40 of 50" where it
-quotes a rate, so the partial state is visible wherever the number is, not only here.
+10 cases, which ran as follow-up commits. Every generated table says how many had actually
+run where it quotes a rate, so the partial state was visible wherever the number was, not
+only here.
+
+**Closed 2026-09-18 (G-02): 50 of 50 run, 50 succeeded**, over five quota days
+(2026-09-11, 09-13, 09-16, 09-17, 09-18). Five of five on every template; clarification
+recall and precision both 1.00; still no invented order and no needless question. The last
+10 cases changed nothing about the reading above — which is itself the useful part, since
+a perfect score that survives a 25% larger sample is less likely to be luck.
 
 Evidence: `src/ml/threshold_sensitivity.py`, `src/ml/order_eval.py`,
 `src.ml.baselines.delay_label`, `benchmarks/raw/w5_threshold_sensitivity.csv`,
