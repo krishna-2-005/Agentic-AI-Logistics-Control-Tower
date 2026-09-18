@@ -1982,3 +1982,68 @@ optimiser settings are.
 
 Evidence: `benchmarks/raw/w7_model_metrics_v2.csv`, `benchmarks/raw/w7_model_v2_report.json`,
 `data/models/v2_gbt_residual`, `src/ml/models_v2.py`.
+
+## D-050 · Step size was the defect; the v2 residual GBT is adopted as the reported model, and the serving champion does not move with it — `DECIDED`
+**Week 7 · Lahari · D3 · execution plan v3.1 §2.1 Step 5 (its D-045), G-04**
+
+D-049 fixed the procedure before it ran: pick `stepSize` on a chronological validation cut
+of the training split, refit the winner on the full training split, score it **once** on
+test, and adopt it whatever that score says. This records what happened.
+
+**Validation (16,876 legs fit, 4,219 scored; the test split untouched).**
+
+| stepSize | most the corrective trees can move a prediction | validation MAE |
+|---|---|---|
+| — (corridor median) | — | **29.89** |
+| 0.05 (the D-049 candidate) | 9.95 min | 31.55 |
+| 0.3 | 59.7 min | 30.51 |
+| **1.0 (chosen)** | 199 min | **30.17** |
+
+The ordering confirms the mechanism D-049 read out of the saved model: MLlib's
+absolute-loss GBT fits one squared-loss tree and then moves each prediction by at most
+`stepSize` per tree, so at 0.05 the objective the sprint was built around was barely
+switched on. Nothing else in the grid varied.
+
+**Note what validation says: every step size loses to the median there** (30.17 against
+29.89). Adopting on that evidence alone would have been wrong, and scoring a second
+candidate on test to find a winner is the selection D-048 warned against. The rule was
+applied as written.
+
+**Test, scored once (5,274 legs).**
+
+| model | test MAE | vs the 33.04 bar |
+|---|---|---|
+| OSRM plan | 107.09 | — |
+| v1 Random Forest (W4, reported) | 36.89 | +3.85 |
+| corridor median (the bar, D-048) | 33.04 | — |
+| v2 GBT residual, stepSize 0.05 | 32.52 | −0.52 |
+| **v2 GBT residual, stepSize 1.0** | **30.90** | **−2.14 (−6.5%)** |
+| sklearn HistGBR reference (not a candidate) | 29.52 | −3.52 |
+
+**It wins on all fourteen slices**, which the 0.05 model did not: by support in training
+(unseen −35.26, 1-9 −0.02, 10-29 −0.19, ≥30 −0.51), by route type, distance band and
+departure hour. The adoption rule returns outcome 1 with `no_loss_on_well_observed` true,
+so this time the headline is not carried by one slice — though it is worth stating plainly
+that **most of the margin still comes from the 294 legs on corridors with no history**
+(−35 min there is −1.97 of the −2.14 overall). On corridors the training set has seen, the
+model is better than a median lookup by a fifth of a minute. That is a real gain and a
+small one, and the paper should say so in the same sentence as the 6.5%.
+
+**Decided:**
+
+1. **`v2_gbt_residual_absolute_step1` is the paper's reported model**, and Week 4's Random
+   Forest becomes an ablation row (D-048's unfreeze terms).
+2. **The serving champion at `data/models/champion` does not change.** A residual model is
+   `baseline + correction`, and the baseline is a per-corridor as-of median that the
+   streaming job does not compute today — it carries the corridor *mean* in its history
+   snapshots. Repointing the champion without that lookup would serve the correction alone,
+   which is not a prediction of anything. Wiring the median into the serving path and
+   moving the champion is Week 8 work, tracked against the retraining loop's
+   champion/challenger promotion.
+3. **The sklearn reference stays a reference.** It is still 1.38 min better than the
+   adopted model, which is the honest ceiling statement for the MLlib configuration, not a
+   result to report as the project's.
+
+Evidence: `benchmarks/raw/w7_model_v2_stepsize_report.json`,
+`benchmarks/raw/w7_model_metrics_v2_stepsize.csv`, `data/models/v2_gbt_residual_stepsize`,
+`src/ml/models_v2_stepsize.py`.
