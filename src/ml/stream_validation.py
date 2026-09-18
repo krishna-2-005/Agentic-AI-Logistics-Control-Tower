@@ -248,7 +248,11 @@ def run_adopted(limit: int | None = None) -> dict:
     try:
         pdf = pd.read_parquet(config.FEATURES_V2).sort_values("trip_creation_time").reset_index(drop=True)
         if limit:
-            pdf = pdf.head(limit)
+            # Spread across the timeline, not the first N. The earliest legs are almost all
+            # on corridors with no history yet, so `head(limit)` scores a sample whose
+            # baseline is zero on 97% of rows — which would test the correction alone and
+            # report it as if both halves of `baseline + correction` had been exercised.
+            pdf = pdf.iloc[:: max(1, len(pdf) // limit)].head(limit).reset_index(drop=True)
         prepared = prepare(pdf)
 
         events = [json.loads(json.dumps(query_event(row))) for _, row in prepared.iterrows()]

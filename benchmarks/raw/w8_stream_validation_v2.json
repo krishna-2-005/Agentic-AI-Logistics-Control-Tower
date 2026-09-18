@@ -14,8 +14,8 @@
     "is_ftl"
   ],
   "history_features_assumed": 32,
-  "cold_corridors_in_sample": 484,
+  "cold_corridors_in_sample": 57,
   "served_by_the_streaming_job": false,
   "not_served_because": "the job's history snapshots carry corr_mean_gap_min, not corr_median_gap_min; serving the residual model needs that lookup (D-050)",
-  "generated_at": "2026-09-18T11:27:08+05:30"
+  "generated_at": "2026-09-18T11:28:38+05:30"
 }
