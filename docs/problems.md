@@ -1213,6 +1213,29 @@ checking a number, never by reading the file.
   agent never ran*. If it cannot, its worst numbers are reports about the machine.
 
 
+### P-59 · The preflight check sent a fresh clone to a command that cannot run yet
+**Week 8 · Mounika · resolved**
+
+- **Symptom.** The Week 8 reproducibility pass — clone the repository somewhere it has
+  never been, follow the README — ran `python -m src.common.boot --check` and got a tidy
+  list: cleaned parquet missing, run `python -m src.pipeline.clean`. Following that advice
+  fails, because there is no raw dataset to clean.
+- **Cause.** `preflight()` checked four generated artefacts and never checked the input
+  they are generated *from*. On the machines where it was written the 55 MB CSV had been
+  there since Week 1, so the first link of the chain was invisible to everyone who already
+  had it.
+- **Why a check that is 90% right is the problem.** A missing check is discovered at the
+  first failure. A *confident and incomplete* check sends someone down a path that cannot
+  work, and they debug `clean.py` instead of downloading a file. The whole point of
+  `boot --check` is that it reports every problem before anything starts (D-044).
+- **Fix.** The raw dataset is now the first preflight line, verified by size against
+  `config.RAW_BYTES`, with `data/README.md` as its fix. A fresh clone now reads
+  `[MISS] raw dataset: missing ...\dataaw\delhivery_data.csv -> download it — see
+  data/README.md` above everything else.
+- **Carry.** A preflight list is only as good as its first entry. When adding a check for
+  a generated artefact, check what generates it, or the report is a well-formatted way of
+  pointing at the wrong problem.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
