@@ -1,0 +1,38 @@
+{
+  "generated_at": "2026-09-17T01:19:25.662810+00:00",
+  "features": {
+    "v1": 27,
+    "v2": 38
+  },
+  "n_train": 21095,
+  "n_test": 5274,
+  "split_cutoff": "2018-09-28 17:42:35.939821056",
+  "judge_median_check": {
+    "warm_legs_compared": 23444,
+    "agreement": 1.0
+  },
+  "baseline": "per-corridor as-of median of gap_min; cold corridors fall back to zero gap (the OSRM plan), as in D-048",
+  "overall_test_mae_min": {
+    "OSRM": 107.09,
+    "corridor_mean": 36.13,
+    "corridor_median": 33.04,
+    "histgbr_residual_reference": 29.52,
+    "v1_rf_raw_target": 36.89,
+    "v2_gbt_residual_absolute": 32.52,
+    "v2_rf_residual_squared": 32.88
+  },
+  "adoption": {
+    "candidate": "v2_gbt_residual_absolute",
+    "overall_mae_min": 32.52,
+    "median_bar_min": 33.04,
+    "tie_tolerance": 0.01,
+    "wins_sparse_slice": true,
+    "no_loss_on_well_observed": false,
+    "outcome": 1,
+    "action": "adopt v2: beats the median baseline overall"
+  },
+  "models_saved": [
+    "data/models/v2_gbt_residual",
+    "data/models/v2_rf_residual"
+  ]
+}

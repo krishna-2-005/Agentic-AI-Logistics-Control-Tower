@@ -1067,6 +1067,35 @@ checking a number, never by reading the file.
   an argument — and the default should belong to whichever caller produces the
   evidence, not whichever was written first.
 
+### P-52 · A leg's finish time was computed as departure plus moving time, which is not when it finished
+**Week 7 · found by Lahari, owned by Mounika · open in `src/streaming/schema.py`, fixed in the diagnostics**
+
+- **Symptom.** The as-of corridor history rebuilt for D-048's median baseline agreed with
+  Stage 4's `corr_n_prior` on only **95.2%** of warm legs. Every disagreement ran the same
+  way: 1,128 legs saw *more* prior history than Stage 4 gave them, never less.
+- **Cause.** The first version derived a leg's finish time as
+  `od_start + (gap_min + planned_min)`, i.e. departure plus `actual_time`. But
+  `actual_time` is **moving** time: `reconstruct.py` defines dwell as
+  `start_scan_to_end_scan - actual_time`. So every fact landed before the leg really
+  finished, and legs still on the road were counted as known history — which is
+  leakage, in the direction that flatters a baseline.
+- **Fix in the diagnostics.** Join the real `od_end_time` from `trips_v1`, the column
+  Stage 4's as-of join uses. Agreement: **100%** on both count and mean. The median
+  baseline moved only from 33.06 to 33.04 min, so this changed no conclusion — but a
+  baseline whose history is *provably identical* to the features' is worth the join.
+- **Not fixed: the same proxy is in the streaming schema.**
+  `src/streaming/schema.py::fact_event` stamps every fact event at
+  `od_start + actual_time`, and its docstring calls that "exact, not an approximation".
+  It is not. Today it costs nothing, because the streaming job counts and drops fact
+  events (D-037). The moment fact-driven live history is built, it becomes a leak exactly
+  like this one — a query scored against legs that have not finished. For Mounika,
+  as the owner: carry the real `od_end_time` into the event rather than re-deriving it.
+- **Carry.** A duration column is not a clock. `actual_time` answers "how long was the
+  truck moving", and adding it to a departure time answers a question nobody asked. When
+  a timestamp exists in the data, join it; do not reconstruct it from parts that happen to
+  have the right units.
+
+
 ### P-53 · A model call with no timeout hung the extraction evaluation for twenty minutes
 **Week 7 · Krishna · resolved**
 
@@ -1085,6 +1114,7 @@ checking a number, never by reading the file.
   "wait forever" is not a neutral choice; it turns a provider hiccup into a stuck
   process nobody is watching.
 
+
 ### P-54 · The MCP server's health tool crashed when the TMS was down — the one moment it exists for
 **Week 7 · Krishna · resolved**
 
@@ -1100,6 +1130,29 @@ checking a number, never by reading the file.
   a client at a dead port and asserts the health tool reports the TMS down.
 - **Carry.** An error path that no test forces is an error path that has never run.
   Catch what the library actually raises, and check by pointing at something that is off.
+
+
+### P-55 · The residual sprint died twice in the JVM: once on lineage depth, once on heap
+**Week 7 · Lahari · resolved**
+
+- **Symptom.** The first `python -m src.ml.models_v2` run failed with
+  `java.lang.StackOverflowError` at stage 2,046, deep into GBT training. The second got
+  past GBT and failed in the Random Forest with `java.lang.OutOfMemoryError: Java heap
+  space` while broadcasting 10 MB task binaries. The background wrapper reported the
+  first failure as exit 0, because `stop_spark` raised on a dead JVM and masked the real
+  error.
+- **Cause.** Each boosting iteration extends the RDD lineage, and 200 of them nest deep
+  enough to overflow the stack when the plan is deserialised; Week 4's shorter grids never
+  reached that depth. The forest was 300 trees at depth 8, twice the largest Week 4 fitted
+  on the 4 g driver, and a test suite was running a second Spark session at the same time.
+- **Fix.** `setCheckpointDir` plus `checkpointInterval=10` on both estimators, which cuts
+  the lineage instead of raising `-Xss` and moving the cliff. The forest went down to 150
+  trees, Week 4's largest, and the run was repeated with nothing else using Spark. It
+  finished in 10 minutes.
+- **Carry.** Read the log, not the exit code, for a JVM job driven from Python. And a model
+  bigger than anything fitted before on the same machine is a capacity test, so run it on
+  its own.
+
 
 ### P-56 · The refusal gate was calibrated on questions too easy to refuse
 **Week 7 · Krishna · open — second layer to be measured**
@@ -1125,6 +1178,7 @@ checking a number, never by reading the file.
 - **Carry.** Calibrate a gate on the cases that are hard to separate, not the cases that
   are easy to name. The fixed evaluation set found this because it was written with
   domain-adjacent traps; the calibration set was not.
+
 
 ### P-58 · The extraction evaluation published "7.0% accuracy" from 37 documents it never sent
 **Week 7 · Krishna · resolved**
@@ -1152,6 +1206,7 @@ checking a number, never by reading the file.
   excluded rather than scored as a zero.
 - **Carry.** An evaluation harness needs to distinguish *the agent was wrong* from *the
   agent never ran*. If it cannot, its worst numbers are reports about the machine.
+
 
 ## Process and tooling
 

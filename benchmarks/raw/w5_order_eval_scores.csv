@@ -39,3 +39,13 @@ seq,template,expected_action,action,expected_missing,missing_field,action_correc
 5038,no_service,clarify,clarify,route_type,route_type,True,True,,False,False,False,True,Could you please specify whether this shipment should be booked as FTL or Carting?,2026-09-13,gemini-3.6-flash
 5039,pieces_approx,clarify,clarify,pieces,pieces,True,True,,False,False,False,True,Could you please confirm the exact number of boxes to be moved?,2026-09-13,gemini-3.6-flash
 5040,missing_two,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,What is the total weight of the shipment in kilograms?,2026-09-13,gemini-3.6-flash
+5041,clean_table,file,file,,,True,False,,False,False,False,True,,2026-09-16,gemini-3.6-flash
+5042,tonnes,file,file,,,True,False,,False,False,False,True,,2026-09-16,gemini-3.6-flash
+5043,pieces_in_words,file,file,,,True,False,,False,False,False,True,,2026-09-16,gemini-3.6-flash
+5044,prose_reversed,file,file,,,True,False,,False,False,False,True,,2026-09-16,gemini-3.6-flash
+5045,correction,file,file,,,True,False,,False,False,False,True,,2026-09-16,gemini-3.6-flash
+5046,weight_range,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,Could you please provide the exact weight of the shipment in kilograms or tonnes?,2026-09-16,gemini-3.6-flash
+5047,city_destination,clarify,clarify,dest_centre,dest_centre,True,True,,False,False,False,True,Could you please provide the destination centre code for your Delhi depot?,2026-09-16,gemini-3.6-flash
+5048,no_service,clarify,clarify,route_type,route_type,True,True,,False,False,False,True,Would you like this shipment sent via FTL or Carting?,2026-09-17,gemini-3.6-flash
+5049,pieces_approx,clarify,clarify,pieces,pieces,True,True,,False,False,False,True,Could you please confirm the exact number of boxes to be shipped?,2026-09-18,gemini-3.6-flash
+5050,missing_two,clarify,clarify,weight_kg,weight_kg,True,True,,False,False,False,True,Could you please provide the total weight of the shipment in kilograms once it has been weighed?,2026-09-18,gemini-3.6-flash

@@ -1,0 +1,57 @@
+{
+  "generated_at": "2026-09-18T04:46:20.754384+00:00",
+  "decision": "D-049",
+  "grid": {
+    "stepSize": [
+      0.05,
+      0.3,
+      1.0
+    ],
+    "maxIter": 200,
+    "maxDepth": 6,
+    "lossType": "absolute"
+  },
+  "validation": {
+    "n_fit": 16876,
+    "n_scored": 4219,
+    "cutoff": "2018-09-25 07:19:01.957622016",
+    "corridor_median_mae_min": 29.89,
+    "mae_min_by_step_size": {
+      "0.05": 31.55,
+      "0.3": 30.51,
+      "1": 30.17
+    },
+    "correction_cap_min_by_step_size": {
+      "0.05": 9.95,
+      "0.3": 59.7,
+      "1": 199.0
+    },
+    "chosen_step_size": 1.0
+  },
+  "test": {
+    "n": 5274,
+    "cutoff": "2018-09-28 17:42:35.939821056",
+    "overall_mae_min": {
+      "corridor_median": 33.04,
+      "v2_gbt_residual_absolute": 32.52,
+      "v2_gbt_residual_absolute_step1": 30.9
+    },
+    "candidate_delta_vs_median_by_support": {
+      "unseen": -35.26,
+      "1-9": -0.02,
+      "10-29": -0.19,
+      ">=30": -0.51
+    }
+  },
+  "adoption": {
+    "candidate": "v2_gbt_residual_absolute_step1",
+    "overall_mae_min": 30.9,
+    "median_bar_min": 33.04,
+    "tie_tolerance": 0.01,
+    "wins_sparse_slice": true,
+    "no_loss_on_well_observed": true,
+    "outcome": 1,
+    "action": "adopt v2: beats the median baseline overall"
+  },
+  "model_saved": "data/models/v2_gbt_residual_stepsize"
+}

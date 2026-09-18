@@ -1586,8 +1586,15 @@ says these ten failure modes are handled. It cannot distinguish a good agent fro
 excellent one, and the next eval should be built from email the agent gets wrong.
 
 **Week 5 was closed at 40 of 50 rather than held open another day** for the last
-10 cases, which run as a follow-up commit. Every generated table says "40 of 50" where it
-quotes a rate, so the partial state is visible wherever the number is, not only here.
+10 cases, which ran as follow-up commits. Every generated table says how many had actually
+run where it quotes a rate, so the partial state was visible wherever the number was, not
+only here.
+
+**Closed 2026-09-18 (G-02): 50 of 50 run, 50 succeeded**, over five quota days
+(2026-09-11, 09-13, 09-16, 09-17, 09-18). Five of five on every template; clarification
+recall and precision both 1.00; still no invented order and no needless question. The last
+10 cases changed nothing about the reading above — which is itself the useful part, since
+a perfect score that survives a 25% larger sample is less likely to be luck.
 
 Evidence: `src/ml/threshold_sensitivity.py`, `src/ml/order_eval.py`,
 `src.ml.baselines.delay_label`, `benchmarks/raw/w5_threshold_sensitivity.csv`,
@@ -1856,3 +1863,187 @@ and it is why these numbers exist at all in a week with 20 API calls a day.
 
 Evidence: `src/ml/exception_eval.py`, `src/ml/invoice_eval.py`,
 `benchmarks/raw/w6_exception_eval.json`, `benchmarks/raw/w6_invoice_eval.json`.
+
+---
+
+## D-048 · The Layer 1 freeze reopens for three days, and the diagnostics say the defect is the objective, not the features — `DECIDED`
+**Week 7 · Lahari · D1 · execution plan v3.1 §1, §2.1 Step 1, G-04, G-11**
+
+*Numbering note: v3.1 lists this as D-044. D-044 to D-047 were already taken in Week 6,
+so every v3.1 decision shifts by four: its D-044 to D-049 are D-048 to D-053 here.*
+
+**Decided: the results freeze (D-046) reopens for W7 D1-D3 only, for the ML correction
+sprint.** `w4_model_metrics.csv` stays untouched as the v1 result; the sprint writes
+`w7_model_metrics_v2.csv`; whichever is adopted at the D3 sync (D-049) becomes the
+paper's number and the other becomes an ablation row. Logged before any model code
+changes, as v3.1 requires.
+
+**The four diagnostics, in the order v3.1 names them.**
+
+1. **Categorical-as-numeric: not present.** `fit_mllib_model` assembles `FEATURES` with a
+   bare `VectorAssembler`. There is no `StringIndexer` and no corridor key in the vector at
+   all — corridors enter only through their numeric history — so MLlib cannot be
+   splitting an index alphabetically, and `maxBins` does not apply. The plan's most likely
+   explanation is ruled out by reading the code.
+2. **The corridor statistic is in the vector.** `corr_mean_gap_min` is one of the 27
+   features. The Random Forest has the baseline's own answer as an input and still trails
+   it.
+3. **The fair baseline is the median, and it is much stronger: 33.04 min, not 36.13.**
+   MAE is minimised by the median. Computed with Stage 4's exact as-of semantics —
+   only legs finished before the query leg was created — and verified first: the
+   as-of *mean* built the same way matches `features_v1.corr_mean_gap_min` on **100%** of
+   warm legs.
+4. **The single-node reference says the gap is the loss function.** sklearn
+   `HistGradientBoostingRegressor`, same features, same split: **34.70 min on squared
+   loss, 29.59 min on absolute loss** — a 5.1-minute swing from the objective alone,
+   and the absolute-loss model beats the median baseline by 3.45 minutes.
+
+| test MAE, min | |
+|---|---|
+| OSRM | 107.09 |
+| MLlib GBT (W4) | 38.28 |
+| MLlib Random Forest (W4, the reported model) | 36.89 |
+| corridor mean (the W4 bar) | 36.13 |
+| HistGBR, squared loss | 34.70 |
+| **corridor median (the real bar)** | **33.04** |
+| HistGBR, absolute loss | **29.59** |
+
+**Reading.** v3.1 framed the outcome as "if MLlib loses and a single-node model wins, the
+problem is MLlib configuration". It is more specific than that: the problem is **what the
+model is asked to minimise**. MLlib's Random Forest is squared-loss only, and the table
+grades absolute error. The features carry real signal — an absolute-loss model on the
+same 27 columns clears the strongest statistical baseline by 10% — so the sprint's
+Step 3 (GBT with `lossType="absolute"`, on the residual) is aimed at the actual defect.
+
+**Two consequences for the sprint, decided now.**
+- **The bar the paper reports against is 33.04, not 36.13.** A v2 that beats the mean but
+  not the median has not beaten the baseline, and reporting the weaker one would be
+  choosing the comparison after seeing the result.
+- **The residual target in Step 3 uses the median as `corridor_baseline`**, not the mean,
+  for the same reason: a model that learns nothing then reproduces the strongest baseline
+  rather than a weaker one.
+
+**G-11, closed without a feature.** The data spans **11 September to 3 October 2018** (21
+days). Navratri 2018 began 10 October and Dussehra fell on 19 October, both after the last
+leg, so there is no festival window to encode. Ganesh Chaturthi (13 September) is inside
+the window but on one day in the training period only; the chronological test split starts
+around 28 September, so the flag would be constant in test and could never be validated.
+No `is_festival_window` in features_v2.
+
+Evidence: `src/ml/ml_diagnostics.py`, `benchmarks/raw/w7_ml_diagnostics.json`,
+`src/ml/models.py` (`fit_mllib_model`), `docs/problems.md` P-52.
+
+## D-049 · The sprint's GBT clears the bar on paper and loses on every corridor with history; the fix is chosen on validation before the test set sees it — `DECIDED`
+**Week 7 · Lahari · D3 · execution plan v3.1 §2.1 Step 5 (its D-045), G-04**
+
+**What the first v2 run says.** `python -m src.ml.models_v2`, test split, MAE in minutes:
+
+| slice (corridor support in train) | n | corridor median | v2 GBT, absolute loss | v2 RF | sklearn absolute-loss reference |
+|---|---|---|---|---|---|
+| unseen | 294 | 111.18 | **80.18** | 77.80 | 67.05 |
+| 1-9 | 1,548 | **31.79** | 32.78 | 33.29 | 31.22 |
+| 10-29 | 2,723 | **26.26** | 27.49 | 28.10 | 25.06 |
+| >=30 | 709 | **29.45** | 31.46 | 31.75 | 27.35 |
+| **overall** | 5,274 | 33.04 | **32.52** | 32.88 | 29.52 |
+
+The adoption rule returns **outcome 1**: 32.52 is more than 1% under 33.04. It is true and
+it is not the result it looks like. The whole margin comes from the 294 legs on corridors
+the training set never saw, where the "baseline" is the OSRM plan (gap 0). On the 94% of
+legs with any history, the GBT is 1.0 to 2.0 minutes *worse* than looking up the median.
+The rule as written in v3.1 never asks about well-observed corridors for outcome 1 — only
+for outcome 2 — so it cannot see this. That gap in the rule is recorded here rather than
+patched after the result.
+
+**Why the GBT underperforms, read from the saved model.** MLlib's absolute-loss GBT fits
+its first tree to the raw target with weight 1 (leaf values −1,382 to +2,605 min — a
+squared-loss tree, pulled by outliers) and every later tree to the *sign* of the error,
+with leaf values in [−1, 1] scaled by `stepSize`. At `stepSize=0.05`, the 199 corrective
+trees can move a prediction by **at most 9.95 minutes in total**. The objective D-048
+pointed at is barely switched on. sklearn's `HistGradientBoostingRegressor` updates leaves
+to the median of the residuals instead, which is why the same features and target reach
+29.52 there and beat the median on every slice. Features are not the limit; the MLlib
+optimiser settings are.
+
+**Decided, before any further run touches the test split:**
+
+1. **`stepSize` is chosen on validation, not test.** The training split is cut
+   chronologically again at the same 80% fraction (`time_split`), and GBT with
+   `lossType="absolute"`, `maxIter=200`, `maxDepth=6` is fitted at `stepSize` ∈
+   {0.05, 0.3, 1.0} on the earlier part and scored on the later. Nothing else in the grid.
+2. **Whichever step size wins on validation is refitted on the full training split and
+   scored once on test. It replaces the candidate whatever that score is** — including if
+   it is worse than 32.52. Picking between two test scores would be the selection D-048
+   warned against.
+3. **The rule is applied to it unchanged**, and the paper's model table reports the
+   support slices next to the overall MAE for whichever model is adopted, so the reader
+   sees where it wins and where a lookup is better.
+4. **The sklearn model stays a reference, not a candidate.** The plan's model layer is
+   MLlib; it is reported as the ceiling the MLlib model is measured against.
+
+Evidence: `benchmarks/raw/w7_model_metrics_v2.csv`, `benchmarks/raw/w7_model_v2_report.json`,
+`data/models/v2_gbt_residual`, `src/ml/models_v2.py`.
+
+## D-050 · Step size was the defect; the v2 residual GBT is adopted as the reported model, and the serving champion does not move with it — `DECIDED`
+**Week 7 · Lahari · D3 · execution plan v3.1 §2.1 Step 5 (its D-045), G-04**
+
+D-049 fixed the procedure before it ran: pick `stepSize` on a chronological validation cut
+of the training split, refit the winner on the full training split, score it **once** on
+test, and adopt it whatever that score says. This records what happened.
+
+**Validation (16,876 legs fit, 4,219 scored; the test split untouched).**
+
+| stepSize | most the corrective trees can move a prediction | validation MAE |
+|---|---|---|
+| — (corridor median) | — | **29.89** |
+| 0.05 (the D-049 candidate) | 9.95 min | 31.55 |
+| 0.3 | 59.7 min | 30.51 |
+| **1.0 (chosen)** | 199 min | **30.17** |
+
+The ordering confirms the mechanism D-049 read out of the saved model: MLlib's
+absolute-loss GBT fits one squared-loss tree and then moves each prediction by at most
+`stepSize` per tree, so at 0.05 the objective the sprint was built around was barely
+switched on. Nothing else in the grid varied.
+
+**Note what validation says: every step size loses to the median there** (30.17 against
+29.89). Adopting on that evidence alone would have been wrong, and scoring a second
+candidate on test to find a winner is the selection D-048 warned against. The rule was
+applied as written.
+
+**Test, scored once (5,274 legs).**
+
+| model | test MAE | vs the 33.04 bar |
+|---|---|---|
+| OSRM plan | 107.09 | — |
+| v1 Random Forest (W4, reported) | 36.89 | +3.85 |
+| corridor median (the bar, D-048) | 33.04 | — |
+| v2 GBT residual, stepSize 0.05 | 32.52 | −0.52 |
+| **v2 GBT residual, stepSize 1.0** | **30.90** | **−2.14 (−6.5%)** |
+| sklearn HistGBR reference (not a candidate) | 29.52 | −3.52 |
+
+**It wins on all fourteen slices**, which the 0.05 model did not: by support in training
+(unseen −35.26, 1-9 −0.02, 10-29 −0.19, ≥30 −0.51), by route type, distance band and
+departure hour. The adoption rule returns outcome 1 with `no_loss_on_well_observed` true,
+so this time the headline is not carried by one slice — though it is worth stating plainly
+that **most of the margin still comes from the 294 legs on corridors with no history**
+(−35 min there is −1.97 of the −2.14 overall). On corridors the training set has seen, the
+model is better than a median lookup by a fifth of a minute. That is a real gain and a
+small one, and the paper should say so in the same sentence as the 6.5%.
+
+**Decided:**
+
+1. **`v2_gbt_residual_absolute_step1` is the paper's reported model**, and Week 4's Random
+   Forest becomes an ablation row (D-048's unfreeze terms).
+2. **The serving champion at `data/models/champion` does not change.** A residual model is
+   `baseline + correction`, and the baseline is a per-corridor as-of median that the
+   streaming job does not compute today — it carries the corridor *mean* in its history
+   snapshots. Repointing the champion without that lookup would serve the correction alone,
+   which is not a prediction of anything. Wiring the median into the serving path and
+   moving the champion is Week 8 work, tracked against the retraining loop's
+   champion/challenger promotion.
+3. **The sklearn reference stays a reference.** It is still 1.38 min better than the
+   adopted model, which is the honest ceiling statement for the MLlib configuration, not a
+   result to report as the project's.
+
+Evidence: `benchmarks/raw/w7_model_v2_stepsize_report.json`,
+`benchmarks/raw/w7_model_metrics_v2_stepsize.csv`, `data/models/v2_gbt_residual_stepsize`,
+`src/ml/models_v2_stepsize.py`.

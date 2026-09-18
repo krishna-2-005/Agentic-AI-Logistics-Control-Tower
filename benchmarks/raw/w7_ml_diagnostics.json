@@ -1,0 +1,34 @@
+{
+  "generated_at": "2026-09-16T17:34:55.087126+00:00",
+  "legs": 26369,
+  "n_train": 21095,
+  "n_test": 5274,
+  "split_cutoff": "2018-09-28 17:42:35.939821056",
+  "test_cold_corridor_share": 0.0387,
+  "asof_reconstruction": {
+    "n_prior_agreement": 1.0,
+    "mean_agreement": 1.0
+  },
+  "code_reads": {
+    "categorical_as_numeric": "not present: bare VectorAssembler over numeric FEATURES, no StringIndexer, no corridor key in the vector; maxBins does not apply",
+    "corridor_statistic_in_vector": "yes: corr_mean_gap_min is one of the 27 FEATURES",
+    "training_objective": "MLlib RandomForestRegressor is squared-loss only; the table grades MAE"
+  },
+  "test_mae_min": {
+    "OSRM": 107.09,
+    "corridor_mean": 36.13,
+    "corridor_median": 33.04,
+    "hist_gbr_squared_error": 34.7,
+    "hist_gbr_absolute_error": 29.59,
+    "mllib_random_forest_w4": 36.89,
+    "mllib_gbt_w4": 38.28
+  },
+  "best_statistical_baseline": {
+    "name": "corridor_median",
+    "mae": 33.04
+  },
+  "reading": {
+    "objective_gap_min": 5.11,
+    "absolute_loss_reference_vs_best_baseline_min": -3.45
+  }
+}
