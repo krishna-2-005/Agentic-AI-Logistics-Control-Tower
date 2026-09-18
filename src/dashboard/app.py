@@ -917,10 +917,23 @@ elif page == "Analytics assistant":
         "questions are answered from the ranked tables; everything else by retrieval; "
         "questions the data does not cover are refused."
     )
+    # The index lives under data/, which the deployed app does not carry (G-08). Asking
+    # without it raises inside Chroma; saying so up front is the difference between a page
+    # that is partial and a page that looks broken.
+    index_ready = config.CHROMA_PERSIST_DIR.exists() and any(config.CHROMA_PERSIST_DIR.iterdir())
+    if not index_ready:
+        st.info(
+            "**Live questions need the local vector index**, which is a generated artefact "
+            "under `data/` and is not deployed. Build it with `python -m src.common.vectordb "
+            "--build` (about 90 seconds) to enable the box below. The scorecard underneath is "
+            "committed and reads the same either way."
+        )
     with st.form("ask"):
-        question = st.text_input("Question", placeholder="Which hub has the longest dwell time?")
-        use_llm = st.checkbox("Phrase the answer with the model (one call from the daily quota)", value=False)
-        asked = st.form_submit_button("Ask")
+        question = st.text_input("Question", placeholder="Which hub has the longest dwell time?",
+                                 disabled=not index_ready)
+        use_llm = st.checkbox("Phrase the answer with the model (one call from the daily quota)",
+                              value=False, disabled=not index_ready)
+        asked = st.form_submit_button("Ask", disabled=not index_ready)
     if asked and question.strip():
         from src.agents.analytics_assistant import answer
 
