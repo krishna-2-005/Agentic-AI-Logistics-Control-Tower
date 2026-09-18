@@ -2047,3 +2047,31 @@ small one, and the paper should say so in the same sentence as the 6.5%.
 Evidence: `benchmarks/raw/w7_model_v2_stepsize_report.json`,
 `benchmarks/raw/w7_model_metrics_v2_stepsize.csv`, `data/models/v2_gbt_residual_stepsize`,
 `src/ml/models_v2_stepsize.py`.
+
+## D-051 · The Layer 1 freeze closes again as v2; v1 stays as Week 6 left it — `DECIDED`
+**Week 7 · Lahari · D5 · execution plan v3.1 §1 (controlled unfreeze), D-046, D-048**
+
+D-048 reopened the results freeze for three days so the model could be corrected. This
+closes it.
+
+**Decided: the Week 7 freeze is `benchmarks/results_freeze_v2.json`, and
+`results_freeze_v1.json` is not rewritten.** The first attempt did rewrite it, which would
+have destroyed the thing the freeze is for: v1 is the record of what Week 6 reported, and
+`--verify --path benchmarks/results_freeze_v1.json` is how anyone asks "what has moved
+since the Week 6 sync" — today it answers that order-entry evaluation went from 40 cases to
+50. A freeze that is silently updated in place answers nothing. This is D-016's versioning
+rule applied to results rather than to data.
+
+**Six Week 7 numbers join the freeze**: the median bar (33.04), the adopted model's MAE
+(30.90), document-extraction per-field accuracy (0.9804) and the rows it was measured on
+(11 of 40), the assistant's route accuracy (0.90), and the row count of the scale run
+(56,353,613).
+
+Two of those are deliberately unstable and belong in the freeze anyway: the extraction
+accuracy will move when the remaining 29 rows run, and the assistant's route accuracy will
+move if the question set grows. The freeze's job is to notice, not to prevent. Recording
+the rows-scored number beside the accuracy is what makes the movement readable rather than
+alarming.
+
+Evidence: `src/ml/results_freeze.py`, `benchmarks/results_freeze_v2.json`,
+`docs/RESULTS_SUMMARY.md`.
