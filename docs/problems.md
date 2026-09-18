@@ -1068,7 +1068,7 @@ checking a number, never by reading the file.
   evidence, not whichever was written first.
 
 ### P-52 · A leg's finish time was computed as departure plus moving time, which is not when it finished
-**Week 7 · found by Lahari, owned by Mounika · open in `src/streaming/schema.py`, fixed in the diagnostics**
+**Week 7 · found by Lahari, fixed by Mounika · resolved in both places**
 
 - **Symptom.** The as-of corridor history rebuilt for D-048's median baseline agreed with
   Stage 4's `corr_n_prior` on only **95.2%** of warm legs. Every disagreement ran the same
@@ -1083,13 +1083,18 @@ checking a number, never by reading the file.
   Stage 4's as-of join uses. Agreement: **100%** on both count and mean. The median
   baseline moved only from 33.06 to 33.04 min, so this changed no conclusion — but a
   baseline whose history is *provably identical* to the features' is worth the join.
-- **Not fixed: the same proxy is in the streaming schema.**
-  `src/streaming/schema.py::fact_event` stamps every fact event at
-  `od_start + actual_time`, and its docstring calls that "exact, not an approximation".
-  It is not. Today it costs nothing, because the streaming job counts and drops fact
-  events (D-037). The moment fact-driven live history is built, it becomes a leak exactly
-  like this one — a query scored against legs that have not finished. For Mounika,
-  as the owner: carry the real `od_end_time` into the event rather than re-deriving it.
+- **The same proxy was in the streaming schema, and is now gone.**
+  `src/streaming/schema.py::fact_event` stamped every fact event at
+  `od_start + actual_time`, with a docstring calling it "exact, not an approximation".
+  Measured against the real `od_end_time`, it was **early on 26,298 of 26,369 legs, by a
+  median of 49.6 minutes** (mean 98.1, p95 345.2) — which is the median hub dwell Week 2
+  reported, arriving as a bug. It cost nothing published, because the streaming job counts
+  and drops fact events (D-037); the moment fact-driven live history is built it would have
+  been the same leak as above, a query scored against legs that had not finished.
+  `fact_event` now refuses a row with no finish time rather than deriving one, and the
+  producer and sample-event writer join `od_end_time` from `trips_v1` — exact on all 26,369
+  legs. The merge of the two branches then caught a third caller: a threshold test that
+  built a fact row by hand.
 - **Carry.** A duration column is not a clock. `actual_time` answers "how long was the
   truck moving", and adding it to a departure time answers a question nobody asked. When
   a timestamp exists in the data, join it; do not reconstruct it from parts that happen to
