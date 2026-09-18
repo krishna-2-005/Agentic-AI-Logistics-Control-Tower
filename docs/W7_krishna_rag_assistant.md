@@ -127,21 +127,38 @@ stratified by seeded error type. Each document is scored as a clean PDF (text la
 a noisy scan (Tesseract OCR), so the gap between the two is the cost of OCR. Results are
 cached per document, so a run that hits the quota resumes where it stopped.
 
-**Status: 3 extractions cached, the rest owed.** The first smoke run hung for twenty
-minutes after the third call. The model client had no request timeout, and retries can
-spend quota the cache never sees (P-53). `get_llm()` now sets a 120 s timeout and 2
-retries. The full run spans quota days (20 calls a day, resetting at 12:30 IST).
+**First result: 98.0% of fields correct on 11 of 40 rows** (150 of 153 fields), before the
+day's quota ran out. Clean 97.6%, noisy 98.6% — on this sample OCR costs nothing, which is
+a real finding and a fragile one at 11 rows. **Zero hallucinated fields**: nothing was
+returned for a field the document leaves blank. The weakest are the invoice's
+`origin_facility` and `destination_facility` at 80%, where the model sometimes returns the
+centre code printed beside the name.
+
+Three things went wrong before that number existed, and two of them were mine:
+
+- **P-53.** The first smoke run hung for twenty minutes after three calls. The model client
+  had no request timeout, and a retried request spends quota the cache never records.
+  `get_llm()` now sets a 120 s timeout and 2 retries.
+- **P-58, the one that matters.** The first full run published
+  **"7.0% accuracy"** — computed from 37 rows that never reached the model, because the
+  worktree had no `.env` and every failure was scored as a document the agent got wrong.
+  Environmental failures (no key, no network, a timeout, a provider 5xx) are now left
+  unscored like a quota refusal; an unparseable answer is still the agent's miss. The rerun
+  proved the fix within a minute: a **503 UNAVAILABLE** arrived on row 12 and was excluded
+  rather than counted as a zero.
+- **Relative paths.** `data/documents` and `benchmarks/raw` were relative, so a run started
+  anywhere but the repo root found nothing and said "no label for …". Both come from
+  `config` now.
 
 ## Owed
 
 | item | waits on |
 |---|---|
-| G-01 full run, then one prompt iteration on the weakest three fields | daily Gemini quota |
+| G-01 rows 12-40, then one prompt iteration on the invoice facility fields | daily Gemini quota |
 | Model-phrased run of the 30 questions (second refusal layer, answers for Lahari's groundedness judging) | daily Gemini quota |
-| Vector index rebuild and no-model rerun after the Week 7 merge | merge to `dev` |
 | G-07 real alert channel (email or Telegram) | credentials from the team, never committed (steps below) |
 
-Problems logged this week: P-53, P-54, P-56, P-57.
+Problems logged this week: P-53, P-54, P-56, P-57, P-58.
 
 ## G-07, when someone has five minutes and a credential
 
