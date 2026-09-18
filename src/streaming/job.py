@@ -449,6 +449,32 @@ def read_stream(spark: SparkSession, source_dir: Path, max_files_per_trigger: in
     )
 
 
+def read_kafka_stream(spark: SparkSession, servers: str, topic: str, max_per_trigger: int | None):
+    """The same events off a Kafka topic (G-05). One `readStream` swap, nothing else.
+
+    `timestamp` is the broker's append time, which plays the part
+    `file_modification_time` plays for the file source: the earliest instant a consumer
+    could have seen the event. Both feed the same `emit_epoch_ms`, so the event-to-alert
+    latency means the same thing whichever source produced the number.
+
+    `startingOffsets=earliest` because a replay is a finite recording: a run that joined
+    at the live end would silently measure a shorter stream than the producer sent.
+    """
+    reader = (
+        spark.readStream.format("kafka")
+        .option("kafka.bootstrap.servers", servers)
+        .option("subscribe", topic)
+        .option("startingOffsets", "earliest")
+    )
+    if max_per_trigger:
+        reader = reader.option("maxOffsetsPerTrigger", max_per_trigger)
+    raw = reader.load()
+    return raw.select(
+        F.from_json(F.col("value").cast("string"), EVENT_SCHEMA).alias("event"),
+        (F.col("timestamp").cast("double") * 1000).alias("emit_epoch_ms"),
+    ).select("event.*", "emit_epoch_ms")
+
+
 def run(
     source_dir: Path = config.STREAM_TRIPS_DIR,
     alerts_dir: Path = config.STREAM_ALERTS_DIR,
@@ -457,6 +483,9 @@ def run(
     duration_seconds: float = 60.0,
     max_files_per_trigger: int | None = None,
     spark: SparkSession | None = None,
+    kafka: bool = False,
+    kafka_servers: str = config.KAFKA_BOOTSTRAP_SERVERS,
+    kafka_topic: str = config.KAFKA_TOPIC_TRIPS,
 ) -> JobStats:
     """Run the scoring stream and return what it did."""
     champion_path = config.MODELS_DIR / "champion"
@@ -474,7 +503,11 @@ def run(
         history = load_history(spark)
         writer = AlertWriter(alerts_dir)
 
-        stream = read_stream(spark, source_dir, max_files_per_trigger)
+        if kafka:
+            log.info("reading from kafka %s topic %s", kafka_servers, kafka_topic)
+            stream = read_kafka_stream(spark, kafka_servers, kafka_topic, max_files_per_trigger)
+        else:
+            stream = read_stream(spark, source_dir, max_files_per_trigger)
         writer_builder = (
             stream.writeStream
             .foreachBatch(lambda df, bid: process_batch(df, bid, model, history, writer, stats))
@@ -515,6 +548,13 @@ def main() -> int:
                         help="cap the files in one micro-batch; smaller means more, smaller batches")
     parser.add_argument("--clean", action="store_true",
                         help="delete the checkpoint and existing alerts before starting")
+    parser.add_argument("--kafka", action="store_true",
+                        help="read from the Kafka topic instead of the file source (G-05); needs a broker "
+                             "and the spark-sql-kafka package on the classpath")
+    parser.add_argument("--kafka-servers", default=config.KAFKA_BOOTSTRAP_SERVERS)
+    parser.add_argument("--kafka-topic", default=config.KAFKA_TOPIC_TRIPS)
+    parser.add_argument("--stats-out", type=Path, default=None,
+                        help="write the run summary as JSON, e.g. benchmarks/raw/w7_kafka_live.json")
     args = parser.parse_args()
 
     if args.clean:
@@ -534,6 +574,9 @@ def main() -> int:
         once=args.once,
         duration_seconds=args.duration,
         max_files_per_trigger=args.max_files_per_trigger,
+        kafka=args.kafka,
+        kafka_servers=args.kafka_servers,
+        kafka_topic=args.kafka_topic,
     )
     summary = stats.summary()
     log.info(
@@ -548,6 +591,19 @@ def main() -> int:
         )
     else:
         log.info("no alerts, so no event-to-alert latency to report")
+
+    if args.stats_out:
+        args.stats_out.parent.mkdir(parents=True, exist_ok=True)
+        record = {
+            "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "source": "kafka" if args.kafka else "file",
+            "kafka_servers": args.kafka_servers if args.kafka else None,
+            "kafka_topic": args.kafka_topic if args.kafka else None,
+            "duration_requested_s": args.duration,
+            **summary,
+        }
+        args.stats_out.write_text(json.dumps(record, indent=2), encoding="utf-8")
+        log.info("wrote %s", args.stats_out)
     return 0
 
 

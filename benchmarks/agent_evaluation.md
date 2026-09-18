@@ -13,7 +13,9 @@ owed, the row says what it waits on instead of carrying an old number forward.
 |---|---|---|---|---|---|---|
 | Document Intelligence | field-level F1 (micro) | **0.929** | predict nothing: 0.000 | 16 of 20 scanned documents (W4, quota cap) | `doc_extraction/v2` | `gemini-3.6-flash` |
 | Document Intelligence | field-level F1 (micro), v1 | 0.853 | predict nothing: 0.000 | 22 of 40 scanned documents | `doc_extraction/v1` | `gemini-3.6-flash` |
-| Document Intelligence | per-field exact match, clean PDF vs noisy scan | _owed — G-01_ | | 20 consignments, stratified by seeded error type | `doc_extraction/v2` | `gemini-3.6-flash` |
+| Document Intelligence | per-field accuracy, clean PDF | **97.6%** | predict nothing: 0.0% | 11 of 40 rows so far (quota), 10 consignments stratified by seeded error type | `doc_extraction/v2` | `gemini-3.6-flash` |
+| Document Intelligence | per-field accuracy, noisy scan (Tesseract OCR) | **98.6%** | predict nothing: 0.0% | the same rows | `doc_extraction/v2` | `gemini-3.6-flash` |
+| Document Intelligence | hallucinated fields (value returned where the document is blank) | **0.0%** (0 of 153) | | the same rows | `doc_extraction/v2` | `gemini-3.6-flash` |
 | Order Entry | end-to-end success rate | **100%** (50 of 50) | always file: 50.0% | all 50 cases; 25 file, 25 clarify | `order_entry/v1` | `gemini-3.6-flash` |
 | Order Entry | clarification recall / precision | **100% / 100%** | always file: 0% recall | the 25 clarify cases | `order_entry/v1` | `gemini-3.6-flash` |
 | Order Entry | invented orders · needless questions | **0 · 0** | | 50 cases | `order_entry/v1` | `gemini-3.6-flash` |
@@ -35,6 +37,12 @@ balanced (25 file, 25 clarify), so "always file" is the honest floor at 50%, not
 run spans five quota days (20 calls a day, D-032) and every case records the day it ran
 on. A perfect score on templated email is a ceiling, not a verdict: D-040's reading, that
 the next evaluation should be built from email the agent gets wrong, is unchanged.
+
+**The extraction rows are 11 of 40 and OCR looks free, which is the part to distrust.**
+Noisy scans scoring *above* clean PDFs (98.6% against 97.6%) is a sample-size artefact, not
+a finding: one field's difference across 11 rows moves it either way. The number worth
+carrying is the zero hallucination rate and the two facility fields at 80%. The remaining 29
+rows run on later quota days.
 
 **The Exception Agent's precision comes from the model, and its severity from the audit.**
 It makes no LLM decision (D-041); the notification text is the only generated part. Across

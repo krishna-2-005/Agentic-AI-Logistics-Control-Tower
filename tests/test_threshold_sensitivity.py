@@ -72,6 +72,8 @@ def test_the_stream_fact_event_uses_the_same_label():
         "leg_id": "trip-a|20180912000209|INDA>INDB", "trip_uuid": "trip-a",
         "corridor_id": "INDA>INDB", "source_center": "INDA", "destination_center": "INDB",
         "gap_min": 60.0, "planned_min": 50.0, "log_gap_ratio": 0.8,
+        # A fact event carries the leg's real finish time and no longer derives one (P-52).
+        "od_end_time": pd.Timestamp("2018-09-12T03:11:40"),
     })
     assert fact_event(row)["is_delayed"] == int(delay_label(60.0, 50.0))
 

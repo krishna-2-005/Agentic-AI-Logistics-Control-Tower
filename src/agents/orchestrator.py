@@ -63,6 +63,7 @@ from src.agents.order_agent import process_email, validate_order
 from src.agents.order_corpus import OrderEmail
 from src.agents.prompts.registry import load_prompt
 from src.agents.tms_client import TMSClient, TMSError
+from src.agents.tracing import traced
 from src.common import config
 from src.common.logging_setup import get_logger
 from src.dashboard.alerts import excess_min, load_alerts
@@ -291,7 +292,8 @@ def build_graph():
 
 
 def run_case(case: OrderEmail, use_llm: bool = True, dry_run: bool = False) -> dict:
-    """One email through the whole lifecycle. Returns the final state."""
+    """One email through the whole lifecycle. Returns the final state. Traced; the agents
+    it calls write their own traces, so one lifecycle shows as the parent and its steps."""
     app = build_graph()
     initial: LifecycleState = {
         "case_seq": case.seq,
@@ -302,8 +304,12 @@ def run_case(case: OrderEmail, use_llm: bool = True, dry_run: bool = False) -> d
         "dry_run": dry_run,
         "steps": [],
     }
-    final = app.invoke(initial, config={"configurable": {"thread_id": f"case-{case.seq}"}})
-    return {k: v for k, v in final.items() if k not in ("email_body", "expected_fields")}
+    with traced("orchestrator", inputs={"case_seq": case.seq, "subject": case.subject,
+                                        "use_llm": use_llm, "dry_run": dry_run}) as span:
+        final = app.invoke(initial, config={"configurable": {"thread_id": f"case-{case.seq}"}})
+        result = {k: v for k, v in final.items() if k not in ("email_body", "expected_fields")}
+        span.outputs = result
+        return result
 
 
 def run(cases: int = 1, start: int = 0, use_llm: bool = True, dry_run: bool = False,

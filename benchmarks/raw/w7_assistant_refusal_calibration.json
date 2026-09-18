@@ -1,0 +1,35 @@
+{
+  "purpose": "calibrate REFUSAL_DISTANCE for src/agents/analytics_assistant.py (v3.1 W7 D3-D4)",
+  "measured_on": "2026-09-17",
+  "metric": "cosine distance from the question to its nearest indexed document (Chroma, ONNX MiniLM)",
+  "in_scope": [
+    {"question": "why was the delay threshold set to 2x", "distance": 0.5250},
+    {"question": "how many corridors are statistically slower than the network", "distance": 0.3797},
+    {"question": "what does the corridor audit say about IND283104AAA>IND209304AAA", "distance": 0.4669},
+    {"question": "why did the stream publish a stale delay label", "distance": 0.4256},
+    {"question": "how fast is the streaming pipeline in events per second", "distance": 0.3493},
+    {"question": "which hub in Aluva has high dwell", "distance": 0.4680},
+    {"question": "what is the order entry agent success rate", "distance": 0.5020},
+    {"question": "how was the champion model chosen", "distance": 0.5881},
+    {"question": "what leakage checks does the feature table run", "distance": 0.5018},
+    {"question": "why does the alert bot send only a shortlist", "distance": 0.3689}
+  ],
+  "out_of_scope": [
+    {"question": "what is the capital of France", "distance": 0.8758},
+    {"question": "how do I bake sourdough bread", "distance": 0.7972},
+    {"question": "who won the 2018 football world cup", "distance": 0.8835},
+    {"question": "what is the price of bitcoin today", "distance": 0.8491},
+    {"question": "write me a poem about the sea", "distance": 0.8524},
+    {"question": "how does photosynthesis work", "distance": 0.9414},
+    {"question": "what is the weather in Mumbai tomorrow", "distance": 0.6809},
+    {"question": "explain quantum entanglement", "distance": 0.8537},
+    {"question": "recommend a good laptop", "distance": 0.7863},
+    {"question": "what is the population of Japan", "distance": 0.7708}
+  ],
+  "in_scope_max": 0.5881,
+  "out_of_scope_min": 0.6809,
+  "chosen_threshold": 0.63,
+  "first_draft_threshold": 0.55,
+  "first_draft_would_have_refused": "how was the champion model chosen (0.5881)",
+  "limitation_found_by_the_fixed_set": "these out-of-scope probes are general-knowledge questions and easy to separate. The fixed 30-question set's domain-adjacent traps land inside the in-scope range: 'How many trucks does Delhivery own?' at 0.5018 and 'What is the GST rate on road freight?' at 0.5394, closer than in-scope questions at 0.5097, 0.5310 and 0.5984. No distance threshold separates them; see P-56 and benchmarks/raw/w7_assistant_run_no_llm.json."
+}
