@@ -81,7 +81,10 @@ def download(year: int, month: int) -> Path:
 def as_legs(spark: SparkSession, paths: list[Path]) -> DataFrame:
     """Taxi trips in `trips_v1`'s leg shape, so the audit's own functions accept them."""
     raw = spark.read.parquet(*[str(p) for p in paths])
-    minutes = (F.col("tpep_dropoff_datetime").cast("long") - F.col("tpep_pickup_datetime").cast("long")) / 60.0
+    # TLC writes these as TIMESTAMP_NTZ, which Spark refuses to cast straight to a number;
+    # the hop through `timestamp` is what makes the subtraction legal.
+    epoch = {c: F.col(c).cast("timestamp").cast("long") for c in ("tpep_pickup_datetime", "tpep_dropoff_datetime")}
+    minutes = (epoch["tpep_dropoff_datetime"] - epoch["tpep_pickup_datetime"]) / 60.0
     km = F.col("trip_distance") * F.lit(KM_PER_MILE)
     legs = (
         raw.select(
@@ -110,20 +113,26 @@ def as_legs(spark: SparkSession, paths: list[Path]) -> DataFrame:
 
 
 def measure(spark: SparkSession, legs: DataFrame, label: str, cores: int) -> dict:
-    """Time the two audit functions on a cached input, so IO is not counted as compute."""
-    legs = legs.cache()
-    rows = legs.count()  # materialises the cache; the timer starts after it
+    """Time the two audit functions straight off parquet, scan included.
+
+    An earlier version cached the input so the timer measured compute alone. At 56M rows
+    that is not a choice this machine has: caching the frame exhausted the 4 g driver and
+    the run died in the aggregation. Measuring from parquet is both what fits and what a
+    real job does, so the wall time below includes each measurement's own scan, and the
+    number is comparable across sizes because every row of the table is measured that way.
+    """
+    rows = legs.count()
     started = time.perf_counter()
     baseline = network_baseline(legs)
     agg = corridor_aggregate(legs)
     corridors = agg.count()
     elapsed = time.perf_counter() - started
-    legs.unpersist()
     log.info("%s: %s rows, %s corridors, %.1f s on %d core(s)", label, f"{rows:,}", f"{corridors:,}", elapsed, cores)
     return {
         "dataset": label, "rows": rows, "corridors": corridors, "cores": cores,
         "driver_memory": config.SPARK_DRIVER_MEMORY,
         "wall_seconds": round(elapsed, 2),
+        "includes_parquet_scan": True,
         "rows_per_second": round(rows / elapsed),
         "network_mean_gap_min": round(baseline["mean_gap_min"], 2),
     }

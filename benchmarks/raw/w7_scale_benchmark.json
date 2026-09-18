@@ -1,0 +1,72 @@
+{
+  "generated_at": "2026-09-18T04:59:20+00:00",
+  "code_under_test": [
+    "src.ml.audit.network_baseline",
+    "src.ml.audit.corridor_aggregate"
+  ],
+  "identical_code": true,
+  "parameters_changed": {
+    "spark.sql.shuffle.partitions": "max(8, cores*2) instead of the usual 8, so a 4-core run is not bottlenecked on 8 tasks"
+  },
+  "planned_time_stand_in": {
+    "speed_kmph": 24.0,
+    "note": "taxi records carry no routing-engine plan; runtimes are unaffected"
+  },
+  "runs": [
+    {
+      "dataset": "Delhivery trips_v1",
+      "rows": 26369,
+      "corridors": 2783,
+      "cores": 20,
+      "driver_memory": "4g",
+      "wall_seconds": 2.37,
+      "includes_parquet_scan": true,
+      "rows_per_second": 11112,
+      "network_mean_gap_min": 110.0
+    },
+    {
+      "dataset": "NYC TLC yellow, 1 month(s)",
+      "rows": 2904141,
+      "corridors": 25479,
+      "cores": 20,
+      "driver_memory": "4g",
+      "wall_seconds": 2.38,
+      "includes_parquet_scan": true,
+      "rows_per_second": 1219346,
+      "network_mean_gap_min": 0.73
+    },
+    {
+      "dataset": "NYC TLC yellow, 6 month(s)",
+      "rows": 19967144,
+      "corridors": 44209,
+      "cores": 20,
+      "driver_memory": "4g",
+      "wall_seconds": 7.45,
+      "includes_parquet_scan": true,
+      "rows_per_second": 2680847,
+      "network_mean_gap_min": -2.27
+    },
+    {
+      "dataset": "NYC TLC yellow, 17 month(s)",
+      "rows": 56353613,
+      "corridors": 51515,
+      "cores": 20,
+      "driver_memory": "4g",
+      "wall_seconds": 14.32,
+      "includes_parquet_scan": true,
+      "rows_per_second": 3936022,
+      "network_mean_gap_min": -1.87
+    },
+    {
+      "dataset": "NYC TLC yellow, 17 month(s)",
+      "rows": 56353613,
+      "corridors": 51515,
+      "cores": 4,
+      "driver_memory": "4g",
+      "wall_seconds": 17.75,
+      "includes_parquet_scan": true,
+      "rows_per_second": 3175407,
+      "network_mean_gap_min": -1.87
+    }
+  ]
+}
