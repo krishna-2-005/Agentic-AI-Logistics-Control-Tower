@@ -30,11 +30,33 @@ def test_ranking_questions_about_corridors_take_the_table_route(question):
     assert routed is not None and routed[1] == ["w2_top20_bottlenecks.csv"]
 
 
-def test_the_hub_ranking_question_d045_broke_goes_to_the_table():
-    # Pure retrieval ranked Aluva (rank 1) below rank 11 for this exact question.
+def test_longest_dwell_is_ranked_by_minutes_not_friction():
+    # P-61: this test used to assert Aluva, friction rank 1. The question asks for the
+    # longest dwell *time*, and Hubli's 373-minute median beats Aluva's 350 across all 121
+    # ranked hubs. The model got this right from the numbers before the router did.
     context, sources = aa.table_route("Which hub has the longest dwell time?")
+    assert sources == ["w2_hub_dwell.csv"]
+    assert "hub IND580028AAA" in context.splitlines()[0]
+
+
+def test_friction_questions_still_rank_by_friction():
+    context, sources = aa.table_route("List the 5 most congested hubs by friction.")
     assert sources == ["w2_hub_friction_top20.csv"]
-    assert context.splitlines()[0].startswith("rank 1: hub IND683511AAA")
+    assert "hub IND683511AAA" in context.splitlines()[0]
+    assert len(context.splitlines()) == 5
+
+
+def test_a_fallback_in_model_mode_is_not_recorded(monkeypatch, tmp_path):
+    # P-60: provider errors were recorded as extractive "answers" and graded as the model's.
+    monkeypatch.setattr(ae, "QUESTIONS", QUESTION_SET)
+    monkeypatch.setattr(ae, "out_paths", lambda use_llm: (tmp_path / "run.json", tmp_path / "answers.jsonl"))
+
+    def failing(question, use_llm=True, k=5):
+        return aa.AssistantAnswer(question, "retrieval", "extract", ["x"], 0.3, "extractive")
+
+    monkeypatch.setattr(ae, "answer", failing)
+    summary = ae.run(use_llm=True)
+    assert summary["answered"] == 0  # two failures in a row stop the run; nothing recorded
 
 
 def test_a_hub_question_without_a_ranking_word_is_not_routed_to_the_table():

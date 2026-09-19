@@ -1213,6 +1213,75 @@ checking a number, never by reading the file.
   agent never ran*. If it cannot, its worst numbers are reports about the machine.
 
 
+### P-59 · The preflight check sent a fresh clone to a command that cannot run yet
+**Week 8 · Mounika · resolved**
+
+- **Symptom.** The Week 8 reproducibility pass — clone the repository somewhere it has
+  never been, follow the README — ran `python -m src.common.boot --check` and got a tidy
+  list: cleaned parquet missing, run `python -m src.pipeline.clean`. Following that advice
+  fails, because there is no raw dataset to clean.
+- **Cause.** `preflight()` checked four generated artefacts and never checked the input
+  they are generated *from*. On the machines where it was written the 55 MB CSV had been
+  there since Week 1, so the first link of the chain was invisible to everyone who already
+  had it.
+- **Why a check that is 90% right is the problem.** A missing check is discovered at the
+  first failure. A *confident and incomplete* check sends someone down a path that cannot
+  work, and they debug `clean.py` instead of downloading a file. The whole point of
+  `boot --check` is that it reports every problem before anything starts (D-044).
+- **Fix.** The raw dataset is now the first preflight line, verified by size against
+  `config.RAW_BYTES`, with `data/README.md` as its fix. A fresh clone now reads
+  `[MISS] raw dataset: missing ...\data
+aw\delhivery_data.csv -> download it — see
+  data/README.md` above everything else.
+- **Carry.** A preflight list is only as good as its first entry. When adding a check for
+  a generated artefact, check what generates it, or the report is a well-formatted way of
+  pointing at the wrong problem.
+
+### P-60 · The assistant evaluation recorded six provider errors as the model's answers
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** The model-phrased run of the 30-question set finished with 30 answers, six
+  of them marked `draft_source: extractive` — verbatim passages, not model text. They were
+  in the answers file, scored for route and source, and headed for groundedness judging as
+  if the model had written them.
+- **Cause.** The runner was meant to stop on a quota refusal and not record it. It looked for
+  the error in the latest trace — but the assistant catches the model exception and falls
+  back *before* the trace is written, so the trace never contains it. The quota branch could
+  not fire, and any failure became an "answer". Two of the six were 503 UNAVAILABLE, the
+  rest `Error calling model`.
+- **Same shape as P-58.** An evaluation that cannot tell *the model was wrong* from *the
+  model never answered* reports the provider's uptime as the model's quality.
+- **Fix.** In model mode, any fallback is skipped and left for the next run; two in a row
+  stop the run (quota or outage), because every further attempt spends a call to learn
+  nothing. `--retry-fallbacks` drops recorded fallbacks so they are asked again. The
+  groundedness summary reports **model-written** answers as its headline (17 of 18 grounded)
+  and counts the six fallbacks separately rather than crediting them.
+- **Carry.** A fallback is the right behaviour for a user and the wrong record for an
+  evaluation. Code that does both has to know which one it is doing.
+
+### P-61 · The assistant ranked hubs by the wrong measure, and the model caught it
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** Asked "which hub has the longest dwell time?", the table route returned the
+  friction ranking with Aluva first (350 min). The model-phrased answer said **Hubli, 373
+  min**, citing rank 2 — contradicting the table's order and, on a first read, looking like
+  a grounding failure.
+- **Cause.** Friction ranks hubs by dwell as a *share of leg time* (Aluva 82%, Hubli 76%).
+  Dwell *time* ranks by minutes, and across all 121 ranked hubs Hubli's 373 is the longest.
+  The router sent every hub-dwell question to the friction table. **The model was handed
+  both numbers, read them, and answered the question actually asked.** The question set's
+  expected answer, the router's test and the demo script all said Aluva, and all three were
+  wrong in the same way.
+- **What it says about groundedness judging.** A mechanical check would have flagged the
+  answer as disagreeing with its context's ranking. Reading it against the context is what
+  showed the model was right and the scaffolding was not.
+- **Fix.** Questions about dwell *time* sort `w2_hub_dwell.csv` by median minutes; questions
+  about friction or congestion keep the friction table. Each context line now carries both
+  measures. The v1 question set is left as it was (versioned sets are not edited in place);
+  its T03 note is wrong and a v2 set should expect `w2_hub_dwell.csv`.
+- **Carry.** A "longest" question needs the sort key the question names. Two rankings in one
+  table is one ranking too many to guess between.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27

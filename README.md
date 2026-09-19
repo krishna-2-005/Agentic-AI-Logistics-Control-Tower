@@ -274,10 +274,10 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | 1 | Cleaned Parquet v1 exists; every member loads it in Spark; LLM API responds | `week1-complete` — **met** |
 | 2 | Bottleneck corridor audit + India map exist | `week2-complete` (`audit-v1`) — **met** |
 | 3 | Feature table frozen; baselines on the board; 100+ labelled synthetic documents | `week3-complete` — **met** |
-| 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) — batch ML met; document-extraction accuracy pending G-01 (plan v3.1) |
+| 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) — **met**. The Week 4 model was superseded in Week 7 (D-050) and extraction accuracy recorded at 98.0% on the first 11 of 40 rows (G-01) |
 | 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` — **met** |
 | 6 | Full lifecycle runs agent-to-agent with no human in the loop | `week6-complete` — **met** |
-| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` |
+| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` — **met with G-05 and G-07 carried**: no Docker for a live broker, no credential for a real alert channel. Both are one command away and neither is faked |
 | 8 | Demo rehearsed twice; paper outline + figure set complete | `v1.0` |
 
 ---

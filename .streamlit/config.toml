@@ -1,0 +1,16 @@
+# Streamlit settings for the deployed dashboard (G-08).
+#
+# Kept minimal on purpose: anything that changes how a page *reads* belongs in the page,
+# where a reviewer can see it, not in a config file nobody opens.
+
+[server]
+# The deployed app is read-only: it renders cached CSV and JSON from benchmarks/raw and
+# never writes. No uploads, so no upload limit worth raising.
+maxUploadSize = 5
+
+[browser]
+gatherUsageStats = false
+
+[theme]
+base = "light"
+primaryColor = "#1f6feb"

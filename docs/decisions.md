@@ -2075,3 +2075,42 @@ alarming.
 
 Evidence: `src/ml/results_freeze.py`, `benchmarks/results_freeze_v2.json`,
 `docs/RESULTS_SUMMARY.md`.
+
+## D-052 · The paper targets ICCCI 2027 (20 February 2027), with an arXiv preprint that does not wait for it — `DECIDED`
+**Week 8 · Krishna · D1 · execution plan v3.1 §3 (its D-046)**
+
+*Numbering note: v3.1 calls this D-046; D-044 to D-047 were taken in Week 6, so its Week 8
+decision lands here as D-052.*
+
+v3.1 §3 puts this first because every Phase 2 date keys off it. Three venues were checked
+on 18 September 2026:
+
+| venue | status on 2026-09-18 | source |
+|---|---|---|
+| **ICCCI 2027** (9th Int. Conf. on Computer Communication and the Internet) | **submission 20 Feb 2027**, notification 20 Mar, camera-ready 25 May. 4-10 pages, double-blind | `iccci.org/sub.html` |
+| ICCCNT 2027 | **not announced.** The most recent edition found was the 16th, July 2025 at IIT Indore | conference site and search |
+| ICACCS 2027 | site (`icaccs.sece.ac.in`) serves a **self-signed certificate** and could not be read | — |
+
+**Decided: ICCCI 2027 is the target, deadline 20 February 2027.** It is the only one of the
+three with a published 2027 deadline, it is five months out — enough for the two-week draft
+Phase 2 plans plus revision — and double-blind review suits a paper whose headline is a
+method, not a system.
+
+**Decided: the arXiv preprint is posted when the draft is done, not when the venue
+answers.** v3.1 already says "arXiv preprint posted regardless of venue". Writing it down as
+a decision makes the ordering explicit: the preprint is the deadline that actually binds,
+and ICCCI is a submission the preprint does not wait for.
+
+**Decided: the deadline is re-checked in the first week of January 2027**, and again before
+submission. Conference sites move dates without notice, and a date copied into a plan in
+September is not evidence in February. If ICCCNT 2027 announces before then with a
+comparable deadline, it is reconsidered at that check — IIT-hosted ICCCNT has the stronger
+reputation of the three, and the only reason it is not the target today is that it has no
+published date.
+
+**What this decision does not settle:** whether the work is one paper or two. The corridor
+audit (claim 1) and the agent-architecture position (claim 6) are different contributions
+to different audiences, and v3.1's claims map assumes one paper. That stays open until the
+outline exists (G-09, this week).
+
+Evidence: `https://iccci.org/sub.html` (read 2026-09-18).

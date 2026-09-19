@@ -77,6 +77,8 @@ _DWELL = re.compile(r"\b(dwell|congest\w*|friction|longest wait|wait(?:ing)? tim
 #: "tell me about dwell at the Hubli hub" mentions dwell and a hub and wants that one hub,
 #: not the top five -- routing it to the table answers a different question.
 _RANK = re.compile(r"\b(worst|slowest|longest|highest|most|biggest|top|ranked|least reliable)\b", re.IGNORECASE)
+#: Asks for the friction ranking (dwell as a share of leg time) rather than dwell minutes.
+_FRICTION = re.compile(r"\b(friction|congest\w*|share of (?:leg|wall) time)\b", re.IGNORECASE)
 
 
 @dataclass
@@ -102,13 +104,26 @@ def table_route(question: str) -> tuple[str, list[str]] | None:
     """A ranked answer for a superlative question, from the table that ranks it."""
     n = _top_n(question)
     if _HUB.search(question) and _DWELL.search(question) and _RANK.search(question):
-        frame = pd.read_csv(RAW / "w2_hub_friction_top20.csv").sort_values("friction_rank").head(n)
+        # Two different rankings live in the hub tables, and the question decides which.
+        # *Friction* ranks by dwell as a share of leg time; *dwell time* ranks by minutes.
+        # They disagree at the top: Aluva is friction rank 1 (82% of leg time, 350 min),
+        # Hubli has the longest dwell (373 min, 76%). The first version sorted every hub
+        # question by friction, so "which hub has the longest dwell time" was answered with
+        # Aluva — and the model, handed both numbers, answered Hubli and was right (P-61).
+        if _FRICTION.search(question):
+            frame = pd.read_csv(RAW / "w2_hub_friction_top20.csv").sort_values("friction_rank").head(n)
+            source, basis = "w2_hub_friction_top20.csv", "friction rank"
+        else:
+            frame = (pd.read_csv(RAW / "w2_hub_dwell.csv")
+                     .sort_values("median_dwell_min_out", ascending=False).head(n))
+            source, basis = "w2_hub_dwell.csv", "longest median outbound dwell"
         lines = [
-            f"rank {int(r.friction_rank)}: hub {r.centre_code} ({r.city}, {r.state}) -- median outbound dwell "
-            f"{r.median_dwell_min_out:.0f} min, p90 {r.p90_dwell_min_out:.0f} min, over {int(r.n_legs_out)} legs"
-            for r in frame.itertuples()
+            f"{basis} #{i}: hub {r.centre_code} ({r.city}, {r.state}) -- median outbound dwell "
+            f"{r.median_dwell_min_out:.0f} min ({r.median_dwell_share_out:.0%} of leg time), "
+            f"p90 {r.p90_dwell_min_out:.0f} min, over {int(r.n_legs_out)} legs, friction rank {int(r.friction_rank)}"
+            for i, r in enumerate(frame.itertuples(), 1)
         ]
-        return "\n".join(lines), ["w2_hub_friction_top20.csv"]
+        return "\n".join(lines), [source]
     if _CORRIDOR.search(question) and _WORST.search(question):
         frame = pd.read_csv(RAW / "w2_top20_bottlenecks.csv").sort_values("bottleneck_rank").head(n)
         lines = [

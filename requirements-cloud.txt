@@ -1,0 +1,31 @@
+# Dependencies for the public dashboard only (G-08, execution plan v3.1 W8 D3-D4).
+#
+#   Streamlit Community Cloud: point the app at `src/dashboard/app.py` and this file.
+#
+# This is not requirements.txt minus a few lines. It is the set the dashboard actually
+# imports, and it deliberately leaves out the four heaviest things in the project:
+#
+#   pyspark        the deployed dashboard reads cached CSV/JSON from benchmarks/raw and
+#                  never starts a SparkSession. The Delay predictor page detects the
+#                  missing model and says so instead of failing.
+#   chromadb       the Analytics assistant's vector index is a local artefact under
+#                  data/. The page shows its scorecard and explains what is missing.
+#   langchain-*    no model is called from the deployed app; nothing would authorise it.
+#                  There is no API key on the host and there must not be one.
+#   pytesseract    OCR runs where documents are generated, not where results are read.
+#
+# Anything that needs those four is a page that degrades to a message. That was verified
+# by rendering all nine pages from a fresh clone with no `data/` directory at all.
+#
+# Versions are the ones the project develops against, floors rather than pins, so the
+# host can take security patches.
+
+streamlit>=1.62.0
+pandas>=2.3.3
+numpy>=2.5.2
+pyarrow>=25.0.1
+plotly>=6.9.0
+folium>=0.20.0
+streamlit-folium>=0.27.4
+python-dotenv>=1.2.2
+rich>=15.0.0
