@@ -126,10 +126,20 @@ time.
 
 Type: **"Which hub has the longest dwell time?"**
 
-> "That question is answered from the ranked table, not from the vector store. Semantic
-> search on this question returns the 11th hub above the 1st, because an embedding does not
-> know 350 is larger than 257. Ranking questions go to the table; the model only phrases
-> what it was handed."
+Expect **Hubli, 373 minutes median dwell**.
+
+> "That question is answered from a sorted table, not from the vector store — an embedding
+> does not know that 373 is larger than 350, so nearest-neighbour search cannot answer 'which
+> is longest'. Ranking questions go to the table, and the model only phrases what it was
+> handed."
+
+**If there is time, the story behind it** — it is the best one in the evaluation:
+
+> "When we first ran this, the table was sorted by *friction*, dwell as a share of leg time,
+> which puts Aluva first. The model was handed both hubs' numbers, noticed Hubli's dwell
+> was longer, and answered Hubli. It was right and our router was wrong. Our own question
+> set had the wrong expected answer too. We fixed the router; the model's answer is in the
+> evaluation as it was given."
 
 Then type: **"What is the GST rate on road freight?"**
 
