@@ -63,8 +63,8 @@ Each row names the set it was scored on and the trivial policy on that same set.
 | Order entry | end-to-end success | **100.0%** | always file: 50.0% | 50 of 50 cases |
 | Order entry | clarification recall / precision | **100.0% / 100.0%** | always file: 0% recall | the clarify cases |
 | Order entry | invented orders · needless questions | **0 · 0** | — | 50 cases |
-| Tracking & exception | notification precision | **72.1%** | alert every leg: 54.1% | 1,347 alerts |
-| Tracking & exception | precision at critical | **91.8%** | alert every leg: 54.1% | 294 alerts |
+| Tracking & exception | notification precision (as-of) | **58.6%** (first published 72.1%, D-054) | alert every leg: 54.1% | 1,720 alerts |
+| Tracking & exception | precision at critical (as-of) | **85.3%** | alert every leg: 54.1% | 292 alerts |
 | Tracking & exception | event-to-alert p50 / p95 | **60.3 s / 63.3 s** | — | replay |
 | Invoice auditor | dispute precision / recall | **100.0% / 82.2%** | dispute everything: 75.0% / 100% | 60 invoices |
 | Invoice auditor | right reason on disputes | **82.2%** | — | 45 invoices that should be disputed |

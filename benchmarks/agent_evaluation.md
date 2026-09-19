@@ -19,9 +19,9 @@ owed, the row says what it waits on instead of carrying an old number forward.
 | Order Entry | end-to-end success rate | **100%** (50 of 50) | always file: 50.0% | all 50 cases; 25 file, 25 clarify | `order_entry/v1` | `gemini-3.6-flash` |
 | Order Entry | clarification recall / precision | **100% / 100%** | always file: 0% recall | the 25 clarify cases | `order_entry/v1` | `gemini-3.6-flash` |
 | Order Entry | invented orders · needless questions | **0 · 0** | | 50 cases | `order_entry/v1` | `gemini-3.6-flash` |
-| Tracking & Exception | notification precision, notify every alert | **72.1%** | notify every leg in the replay: 54.1% | 1,347 alerts over a 2,000-leg replay | verdict computed, no prompt | none (D-041) |
-| Tracking & Exception | recall of all truly delayed legs | **89.7%** | notify every leg: 100% | 1,082 delayed legs | — | none |
-| Tracking & Exception | precision at critical only | **91.8%**, recall 25.0% | | 294 alerts | — | none |
+| Tracking & Exception | notification precision, notify every alert | **58.6%** as-of (72.1% as first published — replay leak, D-054) | notify every leg in the replay: 54.1% | 1,720 alerts over the earliest 2,000 legs | verdict computed, no prompt | none (D-041) |
+| Tracking & Exception | recall of all truly delayed legs | **93.1%** as-of | notify every leg: 100% | 1,082 delayed legs | — | none |
+| Tracking & Exception | precision at critical only | **85.3%** as-of (91.8% published) | | 292 alerts | — | none |
 | Tracking & Exception | time to notification, p50 / p95 | **60.3 s / 63.3 s** stream; agent decision 0.04 ms | | replay | — | none |
 | Invoice Auditor | dispute precision / recall | **100% / 82.2%** | dispute everything: 75.0% / 100%; approve everything: 25% accuracy | 60 seeded invoices, 10 kinds | verdict computed, no prompt | none (D-041) |
 | Invoice Auditor | right reason on disputes | **82.2%** | | 45 invoices that should be disputed | — | none |
@@ -44,11 +44,14 @@ sample-size artefact at the time. At 20 rows it reversed: clean 98.7%, noisy 96.
 field in 280 was hallucinated — a value returned where the document is blank. The remaining
 20 rows run on later quota days.
 
-**The Exception Agent's precision comes from the model, and its severity from the audit.**
-It makes no LLM decision (D-041); the notification text is the only generated part. Across
-severity grades, precision rises monotonically: low 53.2%, medium 68.6%, high 85.1%,
-critical 91.8%. That is D-047's evidence that severity works as a filter, and the policy
-table in `w6_exception_eval.json` gives the precision/recall trade for each cut-off.
+**The Exception Agent's numbers were inflated by the replay, and are re-stated as-of (D-054,
+P-62).** The replay joined early legs to end-of-data history; scored with only what a live
+system would have known, precision is **58.6%** against a 54.1% trivial policy — a gain of
+4.5 points, not the 18 first reported. The agent makes no LLM decision (D-041), so this is a
+correction to the *model's* input, not the agent's logic. **D-047's conclusion survives:**
+precision still rises monotonically with severity — low 39.7%, medium 51.3%, high 76.6%,
+critical 85.3% — so severity still works as a filter. `low` is now below the trivial policy,
+which makes the case for notifying at `medium` and above stronger, not weaker.
 
 **The Invoice Auditor misses one kind of problem completely.** All 8 `overcharge_hidden`
 invoices were approved: freight 10% above the rate band, which sits inside the auditor's
@@ -104,7 +107,7 @@ For each model-phrased answer in `benchmarks/raw/w7_assistant_answers_llm.jsonl`
 |---|---|
 | Document Intelligence | `benchmarks/raw/w4_doc_eval_summary.json`, `w4_doc_eval_field_accuracy.csv`; D-028 |
 | Order Entry | `benchmarks/raw/w5_order_eval_summary.json`, `w5_order_eval_runs.jsonl`, `w5_order_eval_set.json` |
-| Tracking & Exception | `benchmarks/raw/w6_exception_eval.json`, `w6_exception_eval_cases.csv`; D-041, D-047 |
+| Tracking & Exception | `benchmarks/raw/w8_replay_leakage.json` (as-of, reported); `w6_exception_eval.json` (superseded); D-041, D-047, D-054, P-62 |
 | Invoice Auditor | `benchmarks/raw/w6_invoice_eval.json`, `w6_invoice_eval_cases.csv`; D-043 |
 | Orchestrator | `benchmarks/raw/w6_orchestrator_runs.json` |
 | Analytics Assistant | `benchmarks/raw/w7_assistant_run_llm.json`, `w7_assistant_run_no_llm.json`, `w7_groundedness_verdicts.csv`, `w7_groundedness_summary.json`; P-56, P-60, P-61 |

@@ -1866,6 +1866,8 @@ Evidence: `src/ml/exception_eval.py`, `src/ml/invoice_eval.py`,
 
 ---
 
+> **Correction, Week 8 (D-054):** the precision figures in D-047 were measured on a replay that joined each alert to end-of-data history. As-of, overall precision is 58.6% (not 72.1%) and by grade 39.7 / 51.3 / 76.6 / 85.3%. The ordering this decision rests on holds; the levels do not.
+
 ## D-048 · The Layer 1 freeze reopens for three days, and the diagnostics say the defect is the objective, not the features — `DECIDED`
 **Week 7 · Lahari · D1 · execution plan v3.1 §1, §2.1 Step 1, G-04, G-11**
 
@@ -2114,3 +2116,54 @@ to different audiences, and v3.1's claims map assumes one paper. That stays open
 outline exists (G-09, this week).
 
 Evidence: `https://iccci.org/sub.html` (read 2026-09-18).
+
+## D-054 · Alert quality is re-stated from as-of history; D-047 survives at lower levels — `DECIDED`
+**Week 8 · Lahari · execution plan v3.1 §3 (claims map, claim 6), D-047, D-053**
+
+D-053 noted in passing that a replay joins every query to the history snapshot at the *end*
+of the data. `src/ml/replay_leakage.py` measured what that did to the numbers the agent
+layer reports, by scoring the same 2,000 replayed legs twice with the same served model:
+once with the history each leg actually had at its own creation time (as-of, D-020), and
+once with the end-of-data snapshot the replay used.
+
+**The snapshot run reproduces `w6_exception_eval.json` exactly** — 1,347 alerts, precision
+72.09%, and 434 / 344 / 275 / 294 alerts by severity at 53.2 / 68.6 / 85.1 / 91.8% — so the
+measurement is of the thing that was published, not an approximation of it.
+
+| | published (replay snapshot) | as-of |
+|---|---|---|
+| model MAE on the replayed legs | 32.81 min | **47.29 min** |
+| alerts | 1,347 | 1,720 |
+| notification precision | 72.1% | **58.6%** |
+| recall of truly delayed legs | 89.7% | 93.1% |
+| precision — low / medium / high / critical | 53.2 / 68.6 / 85.1 / 91.8% | **39.7 / 51.3 / 76.6 / 85.3%** |
+| trivial policy: alert every leg | 54.1% | 54.1% |
+
+**Why so large.** The producer replays the *earliest* legs. At their own creation time,
+**1,290 of the 2,000 had no corridor history at all** (median prior legs: 0); the snapshot
+gave them fourteen. The replay was the worst case for this leak, and it was the one
+evaluated.
+
+**Decided:**
+
+1. **The agent layer's alert numbers are reported as-of from now on**, from
+   `benchmarks/raw/w8_replay_leakage.json`. `w6_exception_eval.json` is kept as the record
+   of what was measured and why it was wrong; it is not deleted and not quoted as a result.
+2. **D-047 survives, at lower levels.** Its claim was that severity earns its place as a
+   filter because precision rises with grade. As-of, it still rises monotonically
+   (39.7 → 51.3 → 76.6 → 85.3%) — so the arithmetic severity rule ranks alerts by how
+   likely they are to be real, which is the claim. What does not survive is the size: the
+   overall gain over alerting every leg is **+4.5 points, not +18**, and the `low` grade is
+   now *below* the trivial policy — notifying on `low` alone is worse than not filtering.
+3. **The paper states both numbers and the reason**, in the agent-layer section. A replay
+   leak that inflated a headline by 13.5 points is a finding about evaluating streaming
+   systems, and it is better found by us than by a reviewer.
+
+**What this does not touch.** Every Layer 1 number — the audit, the model's 30.90 MAE, the
+threshold sweep — is computed on the batch path, which is strictly as-of. The stream-equals-
+batch tests (500 of 500) are unaffected too: both of their paths read the same feature row.
+The leak is specific to *replayed* alerts, which is why it survived until someone compared
+a replayed prediction with the same leg's as-of prediction.
+
+Evidence: `src/ml/replay_leakage.py`, `benchmarks/raw/w8_replay_leakage.json`,
+`benchmarks/raw/w6_exception_eval.json` (the superseded measurement), P-62.

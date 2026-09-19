@@ -57,6 +57,9 @@ PRODUCERS: dict[str, tuple[str, str]] = {
     "w6_exception_eval.json": ("python -m src.ml.exception_eval", "Lahari"),
     "w6_invoice_eval.json": ("python -m src.ml.invoice_eval", "Lahari"),
     "w7_scale_benchmark.json": ("python -m src.pipeline.scale_benchmark --months 17", "Mounika"),
+    "w8_replay_leakage.json": ("python -m src.ml.replay_leakage --legs 2000", "Lahari"),
+    "w8_stream_validation_v2.json": ("python -m src.ml.stream_validation --adopted", "Lahari"),
+    "w7_groundedness_summary.json": ("python -m src.ml.groundedness --precheck --report", "Lahari"),
 }
 
 #: Numbers that are reported but are not in the freeze, with where they come from. Kept

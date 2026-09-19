@@ -133,16 +133,21 @@ def layer2() -> list[str]:
         f"{order['needless_questions']}** | — | {order['n_run']} cases |"),
     ]
 
+    # As-of, not the replay's first measurement: the replay scored early legs with
+    # end-of-data history and inflated precision by 13.5 points (D-054, P-62). Latency is
+    # unaffected by that, so it still comes from the original evaluation.
     exc = _json("w6_exception_eval.json")
+    leak = _json("w8_replay_leakage.json")["exception_agent_as_of"]
     base = exc["legs_truly_delayed"] / exc["legs_in_replay"]
-    critical = next(r for r in exc["by_severity"] if r["severity"] == "critical")
+    critical = next(r for r in leak["by_severity"] if r["severity"] == "critical")
     lines += [
-        (f"| Tracking & exception | notification precision | **{_pct(exc['notification_precision'])}** "
-        f"| alert every leg: {_pct(base)} | {exc['alerts_scored']:,} alerts |"),
-        (f"| Tracking & exception | precision at critical | **{_pct(critical['precision'])}** "
-        f"| alert every leg: {_pct(base)} | {critical['notified']:,} alerts |"),
+        (f"| Tracking & exception | notification precision (as-of) | **{_pct(leak['notification_precision'])}** "
+         f"(first published {_pct(exc['notification_precision'])}, D-054) "
+         f"| alert every leg: {_pct(base)} | {leak['alerts_scored']:,} alerts |"),
+        (f"| Tracking & exception | precision at critical (as-of) | **{_pct(critical['precision'])}** "
+         f"| alert every leg: {_pct(base)} | {critical['notified']:,} alerts |"),
         (f"| Tracking & exception | event-to-alert p50 / p95 | **{exc['time_to_notification_s']['stream_p50']:.1f} s / "
-        f"{exc['time_to_notification_s']['stream_p95']:.1f} s** | — | replay |"),
+         f"{exc['time_to_notification_s']['stream_p95']:.1f} s** | — | replay |"),
     ]
 
     inv = _json("w6_invoice_eval.json")
