@@ -2114,3 +2114,51 @@ to different audiences, and v3.1's claims map assumes one paper. That stays open
 outline exists (G-09, this week).
 
 Evidence: `https://iccci.org/sub.html` (read 2026-09-18).
+
+## D-053 · Serving the adopted model needs rolling state, not a lookup; it moves to Phase 3 — `DECIDED`
+**Week 8 · Mounika · execution plan v3.1 §3, following D-050**
+
+D-050 left the serving champion on the Week 4 model and called wiring the adopted model
+"Week 8 engineering", on the understanding that the stream only lacked the per-corridor
+median. Reading `src/pipeline/features_v2.py` against `src/streaming/job.py` says that
+understanding was too small.
+
+**What the stream can serve today.** `job.latest_history` takes, per key, the newest leg's
+as-of history from the feature table and broadcast-joins it onto each query. That works for
+any statistic defined over *all* prior legs of a key — which covers five of the eight v2
+features: `corr_median_gap_min`, `corr_p90_gap_min`, `corr_iqr_gap_min`,
+`corr_std_gap_min`, and the median the residual is added to.
+
+**What it cannot, and why a lookup will not do.**
+
+| feature | defined as | why a latest-value snapshot is wrong |
+|---|---|---|
+| `corr_mean_gap_7d`, `corr_n_prior_7d` | mean and count over the trailing **7 days of event time** (`rangeBetween(-7 days, 0)`) | the window moves with each query. A snapshot taken at the end of the data gives every replayed query the *last* week's history — future legs, for most of them |
+| `src_dwell_by_hour_min`, `dst_dwell_by_hour_min` | median dwell keyed by **hub and departure-hour bucket** (`hub|bucket`) | keyed by two columns, one of them derived from the query's own time. A per-hub snapshot has the wrong key; a per-(hub, bucket) snapshot is buildable but is a different join from any the job does now |
+
+**Decided:**
+
+1. **The adopted model is not served in v1.0.** The paper reports it (D-050), the stream
+   serves the Week 4 champion, and both facts are stated wherever either number appears.
+   Stream-equals-batch for the adopted model (`w8_stream_validation_v2.json`, 500 of 500)
+   tests the event format, not a running pipeline, and says so.
+2. **Serving it is Phase 3 work, scoped as two pieces:** a `hub|bucket` history snapshot
+   (a join the job does not do yet, but a snapshot all the same), and **stateful windowed
+   aggregation** for the 7-day pair — Structured Streaming's event-time windows with a
+   watermark, which is a different kind of job from the stateless broadcast join Week 5 built.
+3. **A cheaper option was considered and rejected:** retrain the residual model without the
+   two 7-day features so a snapshot join suffices. That would serve *a* v2 model, not *the*
+   adopted one, and the reported and served numbers would still disagree — only less
+   visibly, which is worse.
+
+**A note on the existing stream, found while reading this.** The Week 5 job's all-history
+snapshot is the newest leg's history *as of the end of the data*. On a live stream that is
+exactly right: history up to now. On a **replay**, every replayed query is joined to history
+that includes legs finishing after it. The stream-equals-batch test does not catch this,
+because both of its paths read the same row. It does not affect any reported number — the
+model's test MAE comes from the batch path, which is strictly as-of — but it means replay
+alerts are scored with slightly more history than the moment they claim to be, and the
+throughput page should say "replay" where it does.
+
+Evidence: `src/pipeline/features_v2.py` (`rangeBetween`, `dwell_by_hour`),
+`src/streaming/job.py` (`latest_history`, `enrich`).
