@@ -1311,6 +1311,24 @@ aw\delhivery_data.csv -> download it — see
   production had at that moment", and a pipeline can be bit-identical to itself while being
   wrong about time.
 
+### P-63 · The README's run order could not rebuild what the README's own dashboard reads
+**Week 8 · Mounika · resolved**
+
+- **Symptom.** Preparing the full fresh-clone rebuild, the README's steps ran out at Stage 3
+  and the corridor audit. The feature table (Stage 4), the champion model, the Week 7 model
+  sprint, the document corpus and the vector index were never in the numbered steps — they
+  appeared only as fix hints printed by `boot --check`.
+- **Cause.** Each week added its stage to its own write-up and its own module docstring; none
+  of them owned the README's run order, so it stopped growing in Week 2. Everyone who worked
+  on the project already had the artefacts, which is exactly the population that cannot see
+  this gap.
+- **Fix.** `scripts/rebuild_all.sh` runs every module's own documented command in dependency
+  order and ends with `results_freeze --verify`, so a rebuild is also a check that the
+  reported numbers come back. The README's status table points to it. It was run on a clone
+  that had never been built, with only the raw CSV added.
+- **Carry.** A run order is a dependency graph written as prose, and prose does not fail when
+  a node is missing. A script does.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
