@@ -39,8 +39,8 @@ Every value below is read from a file in `benchmarks/raw/`, and every file has a
 | W6 | Lifecycle cases reaching an exception ticket | **2** | cases | `benchmarks/raw/w6_orchestrator_runs.json` | `python -m src.agents.orchestrator --cases 10 --no-llm` | Krishna |
 | W6 | Invoices audited on the development corpus | **20** | invoices | `benchmarks/raw/w6_invoice_audit_runs.json` | `python -m src.agents.invoice_auditor --count 20` | Krishna |
 | W6 | Invoice verdicts matching the seeded truth | **20** | invoices | `benchmarks/raw/w6_invoice_audit_runs.json` | `python -m src.agents.invoice_auditor --count 20` | Krishna |
-| W7 | The fair baseline: per-corridor as-of median | **33.04** | min | `benchmarks/raw/w7_model_v2_stepsize_report.json` | _not recorded_ |  |
-| W7 | Reported model: v2 GBT on the median residual | **30.9** | min | `benchmarks/raw/w7_model_v2_stepsize_report.json` | _not recorded_ |  |
+| W7 | The fair baseline: per-corridor as-of median | **33.04** | min | `benchmarks/raw/w7_model_v2_stepsize_report.json` | `python -m src.ml.models_v2_stepsize` | Lahari |
+| W7 | Reported model: v2 GBT on the median residual | **30.9** | min | `benchmarks/raw/w7_model_v2_stepsize_report.json` | `python -m src.ml.models_v2_stepsize` | Lahari |
 | W7 | Document extraction, per-field accuracy | **0.9786** | share | `benchmarks/raw/w7_doc_extraction_eval.json` | `python -m src.ml.eval_extraction --consignments 10` | Krishna |
 | W7 | Document rows scored (of 40 planned) | **20** | rows | `benchmarks/raw/w7_doc_extraction_eval.json` | `python -m src.ml.eval_extraction --consignments 10` | Krishna |
 | W7 | Analytics assistant, correct route on the fixed set | **0.9** | share | `benchmarks/raw/w7_assistant_run_no_llm.json` | `python -m src.agents.assistant_eval --no-llm` | Krishna |
@@ -61,10 +61,7 @@ Every value below is read from a file in `benchmarks/raw/`, and every file has a
 
 ## Gaps
 
-| Entry | Cache | Problem |
-|---|---|---|
-| median_bar_mae | `w7_model_v2_stepsize_report.json` | no producing command recorded |
-| model_v2_mae | `w7_model_v2_stepsize_report.json` | no producing command recorded |
+None: every frozen number has a cache file and a command that writes it.
 
 ## What this table does not prove
 

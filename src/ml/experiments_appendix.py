@@ -50,6 +50,7 @@ PRODUCERS: dict[str, tuple[str, str]] = {
     "w7_ml_diagnostics.json": ("python -m src.ml.ml_diagnostics", "Lahari"),
     "w7_model_metrics_v2.csv": ("python -m src.ml.models_v2", "Lahari"),
     "w7_model_metrics_v2_stepsize.csv": ("python -m src.ml.models_v2_stepsize", "Lahari"),
+    "w7_model_v2_stepsize_report.json": ("python -m src.ml.models_v2_stepsize", "Lahari"),
     "w7_features_v2_report.json": ("python -m src.pipeline.features_v2", "Mounika"),
     "w7_doc_extraction_eval.json": ("python -m src.ml.eval_extraction --consignments 10", "Krishna"),
     "w7_mcp_stdio_transcript.json": ("python -m src.agents.mcp_stdio_client", "Krishna"),
