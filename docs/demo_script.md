@@ -98,7 +98,9 @@ Then the point that matters:
 > is why every agent decision is reproducible and can be scored at all."
 
 Numbers to have ready: **50 of 50** order-entry cases correct, clarification precision and
-recall **100%**; exception notification precision **72%** overall and **92%** at critical;
+recall **100%**; exception notification precision **59%** overall and **85%** at critical,
+against 54% for alerting every leg — and if asked, the 72% first published came from a
+replay that scored early legs with the future (D-054). Say it before anyone else does;
 invoice verdicts **100% precision, 82% recall**, with the one blind spot published.
 
 **Say what is not live:** the notification goes to a file channel. Email and Telegram are

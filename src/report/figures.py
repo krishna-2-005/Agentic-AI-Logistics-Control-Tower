@@ -362,7 +362,7 @@ def fig9_severity_precision() -> dict:
     for bar, r in zip(bars, rows):
         ax.text(bar.get_x() + bar.get_width() / 2, r["precision"] * 100 / 2,
                 f"{r['precision'] * 100:.1f}%\n({r['notified']:,})", ha="center", va="center",
-                fontsize=8, color=INK)
+                fontsize=8, color="white" if r["severity"] == "critical" else INK)
     ax.axhline(base * 100, color=MUTED, ls="--", lw=1.2)
     ax.annotate(f"alert every leg: {base * 100:.1f}%", xy=(-0.45, base * 100 + 2),
                 ha="left", va="bottom", color=MUTED, fontsize=8)
