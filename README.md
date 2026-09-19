@@ -277,7 +277,7 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) — **met**. The Week 4 model was superseded in Week 7 (D-050) and extraction accuracy recorded at 98.0% on the first 11 of 40 rows (G-01) |
 | 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` — **met** |
 | 6 | Full lifecycle runs agent-to-agent with no human in the loop | `week6-complete` — **met** |
-| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` — **met with G-05 and G-07 carried**: no Docker for a live broker, no credential for a real alert channel. Both are one command away and neither is faked |
+| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` — **met**; G-05 (live broker) closed in Week 8 without Docker, G-07 (a real alert channel) still carried: it needs a credential, and none is faked |
 | 8 | Demo rehearsed twice; paper outline + figure set complete | `v1.0` |
 
 ---
@@ -322,16 +322,14 @@ runs with `--no-llm` or `--no-draft` and no API call at all (D-041). That is a d
 agents are less "agentic" than the word suggests, and in exchange every verdict is reproducible and
 therefore measurable.
 
-**What has never run here, stated plainly.** The Kafka path — producer sink, broker-backed
-`readStream`, and `scripts/kafka_live.sh` with its compose file — is written and import-checked but
-has still never reached a live broker, because there is no Docker on the development machine. Every
-streaming number reported anywhere in this repository comes from the file source (D-035). On any
-machine that has Docker, `docker compose -f docker-compose.kafka.yml up -d && bash
-scripts/kafka_live.sh` is the whole of what is missing. The alert bot's Telegram and email channels
-are implemented and unconfigured, so only the file channel has sent anything (D-039); the steps to
-configure one are in `docs/W7_krishna_rag_assistant.md`. The MCP server **has** now been driven by a
-real client over stdio — 13 tools, 8 calls, 0 errors
-(`benchmarks/raw/w7_mcp_stdio_transcript.json`).
+**What has never run here, stated plainly.** The alert bot's Telegram and email channels are
+implemented and unconfigured, so only the file channel has sent anything (D-039); the steps to
+configure one are in `docs/W7_krishna_rag_assistant.md`. **Kafka has now run against a live
+broker** — Apache Kafka 4.1.2, natively on the JVM, no Docker (`scripts/kafka_native.ps1`) —
+and alerted on exactly the same 1,347 legs as the file source (`benchmarks/raw/
+w7_kafka_source_equivalence.json`). The MCP server has been driven by a real client over
+stdio — 13 tools, 8 calls, 0 errors (`benchmarks/raw/w7_mcp_stdio_transcript.json`). The
+adopted Week 7 model is reported but not yet served by the stream (D-053).
 
 ---
 

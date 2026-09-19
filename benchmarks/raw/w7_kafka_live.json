@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-09-19T21:48:29+05:30",
+  "source": "kafka",
+  "kafka_servers": "localhost:9092",
+  "kafka_topic": "delhivery.trips",
+  "duration_requested_s": 240.0,
+  "batches": 11,
+  "events": 4000,
+  "queries": 2000,
+  "facts_dropped": 2000,
+  "alerts": 1347,
+  "wall_seconds": 240.34,
+  "events_per_second": 16.6,
+  "scoring_seconds": 46.16,
+  "scoring_rate_eps": 86.7,
+  "latency_p50_ms": 20174.143798828125,
+  "latency_p95_ms": 27975.903076171875,
+  "latency_max_ms": 28471.903076171875,
+  "stage_seconds": {
+    "count": 5.92,
+    "join_and_collect": 1.95,
+    "prepare_features": 0.02,
+    "score": 38.44,
+    "write": 0.01
+  }
+}
