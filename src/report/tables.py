@@ -158,14 +158,17 @@ def layer2() -> list[str]:
     lines.append(f"| Orchestrator | lifecycles with no human step | **{orch['cases'] - orch['errors']} of "
                  f"{orch['cases']}** | — | {orch['booked']} booked, {orch['ticketed']} ticketed |")
 
-    assistant = _json("w7_assistant_run_no_llm.json")
+    assistant = _json("w7_assistant_run_llm.json")
+    grounded = _json("w7_groundedness_summary.json")
     lines += [
-        (f"| Analytics assistant | correct route | **{_pct(assistant['route_accuracy'])}** | — | "
-        f"{assistant['answered']} fixed questions |"),
-        f"| Analytics assistant | correct source | **{_pct(assistant['source_accuracy'])}** | — | the same set |",
-        (f"| Analytics assistant | refusal precision / recall | **{_pct(assistant['refusal_precision'])} / "
-        f"{_pct(assistant['refusal_recall'])}** | refuse nothing: 0% recall | 6 out-of-scope questions |"),
-        "| Analytics assistant | groundedness | _owed — hand-judged on the model-phrased run_ | — | the same set |",
+        (f"| Analytics assistant | correct route / source | **{_pct(assistant['route_accuracy'])} / "
+         f"{_pct(assistant['source_accuracy'])}** | — | {assistant['answered']} fixed questions |"),
+        (f"| Analytics assistant | refusal recall, both layers | "
+         f"**{_pct(assistant['refusal_recall_both_layers'])}** (gate alone {_pct(assistant['refusal_recall'])}) "
+         f"| refuse nothing: 0% | 6 out-of-scope questions |"),
+        (f"| Analytics assistant | groundedness, model-written | **{_pct(grounded['groundedness_rate_model_written'])}** "
+         f"({grounded['model_written_in_scope'] - grounded['not_grounded']} of {grounded['model_written_in_scope']}), "
+         f"hand-judged | — | {grounded['extractive_fallbacks']} provider-error fallbacks excluded |"),
     ]
     lines.append("")
     return lines

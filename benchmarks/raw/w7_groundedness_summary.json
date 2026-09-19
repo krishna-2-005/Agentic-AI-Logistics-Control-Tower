@@ -1,0 +1,15 @@
+{
+  "generated_at": "2026-09-19T18:43:55+05:30",
+  "judged": 30,
+  "answers": 30,
+  "grounded": 29,
+  "partly_grounded": 0,
+  "not_grounded": 1,
+  "groundedness_rate_in_scope": 0.9583,
+  "model_written_in_scope": 18,
+  "groundedness_rate_model_written": 0.9444,
+  "out_of_scope_refused": 6,
+  "out_of_scope_total": 6,
+  "extractive_fallbacks": 6,
+  "method": "mechanical pre-check of every number against a rebuilt context, then a hand verdict per answer; the builder's own scorer does not grade this (D-028)"
+}
