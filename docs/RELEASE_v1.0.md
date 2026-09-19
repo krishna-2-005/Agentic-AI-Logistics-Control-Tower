@@ -27,6 +27,19 @@ python -m src.common.boot             # TMS -> replay -> streaming -> agents
 streamlit run src/dashboard/app.py    # the control tower
 ```
 
+## Verified at release
+
+- **Fresh-clone rebuild:** `scripts/rebuild_all.sh` on a clone that had never been built, with
+  only the raw CSV: 71 minutes, and 35 of 37 frozen numbers came back exactly — the two that
+  moved are extraction values the rebuild does not re-run (`w8_fresh_clone_rebuild.json`).
+- **End to end in one command:** `python -m src.common.boot` — every preflight check green,
+  then TMS, replay (1,000 events), streaming (354 alerts), exception agent and orchestrator
+  (5 orders booked), clean teardown, exit 0.
+- **Live Kafka:** the same 2,000 legs through a native Kafka broker and through files alert
+  on the same 1,347 legs with the same predicted gaps (D-055).
+- **Tests:** the full suite passes on the release commit.
+- **Results freeze v3** verifies clean (D-056).
+
 ## Numbers that changed during Phase 1, and why
 
 Reported here because a release that silently carried corrected numbers would be worse than
@@ -51,6 +64,9 @@ one that shows its corrections.
   unconfigured, because no credential has been committed to this repository.
 - **The public dashboard is packaged, not published** (G-08): the bundle is verified in a clean
   environment and needs a Hugging Face write token.
+- **The demo has not been rehearsed by people.** The script's every command was run and
+  checked (three errors found and fixed), and the system runs end to end; rehearsing it twice
+  in front of someone is the one Gate 8 item no amount of automation replaces.
 - **Document extraction is measured on 20 of 40 planned rows**, with the rest running on the
   daily LLM quota.
 - **The agent evaluations use synthetic and templated corpora** the team generated; they
