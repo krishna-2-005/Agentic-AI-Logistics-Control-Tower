@@ -21,7 +21,7 @@ Source: `python -m src.streaming.producer --sink file` then `python -m src.strea
 | Alerts emitted | **17,317** | |
 | Trigger interval | 0.5 s tick files, `availableNow` drain | `maxFilesPerTrigger` 1000 |
 | Cores / driver memory | 20 cores / 4 g | local[*] on the development laptop, nothing else running |
-| Source | **file source**, not Kafka | no Docker on this machine (D-035) |
+| Source | **file source** | the Week 5 run; the same pipeline on a live Kafka broker is measured below (D-055) |
 
 **The two latency numbers that matter are different.** 28.9 s p50 is dominated by the
 replay's own compression — 52,738 events are offered in 60 seconds, so a queue forms at
