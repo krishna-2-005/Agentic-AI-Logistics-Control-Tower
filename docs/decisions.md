@@ -2242,3 +2242,18 @@ history, so both carry it identically — which is also why it cannot affect the
 
 Evidence: `benchmarks/raw/w7_kafka_live.json`, `benchmarks/raw/w7_kafka_source_equivalence.json`,
 `src/streaming/compare_sources.py`, `scripts/kafka_native.ps1`.
+
+## D-056 · v1.0 ships with results freeze v3 — `DECIDED`
+**Week 8 · Lahari · D-046, D-051**
+
+`results_freeze_v3.json` is the freeze v1.0 ships with: the 37 values of v2, re-read now that
+document extraction carries 20 of 40 rows rather than 11, plus five Week 8 values — as-of
+exception precision (D-054), assistant groundedness, Kafka-to-file alert equivalence (D-055),
+stream-equals-batch for the reported model, and the fresh-clone rebuild time. `--verify`
+against v3 is clean at release.
+
+v1 (Week 6) and v2 (Week 7) are unchanged, so `--verify --path` against either still answers
+what moved since that point. Extraction accuracy will move again when rows 21-40 run; that is
+the freeze working, and the row count beside it says why.
+
+Evidence: `benchmarks/results_freeze_v3.json`, `docs/RESULTS_SUMMARY.md`.

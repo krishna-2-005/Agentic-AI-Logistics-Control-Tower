@@ -60,6 +60,9 @@ PRODUCERS: dict[str, tuple[str, str]] = {
     "w8_replay_leakage.json": ("python -m src.ml.replay_leakage --legs 2000", "Lahari"),
     "w8_stream_validation_v2.json": ("python -m src.ml.stream_validation --adopted", "Lahari"),
     "w7_groundedness_summary.json": ("python -m src.ml.groundedness --precheck --report", "Lahari"),
+    "w7_kafka_source_equivalence.json": (
+        "scripts/kafka_native.ps1, then python -m src.streaming.compare_sources", "Mounika"),
+    "w8_fresh_clone_rebuild.json": ("bash scripts/rebuild_all.sh on a fresh clone", "Mounika"),
 }
 
 #: Numbers that are reported but are not in the freeze, with where they come from. Kept

@@ -54,7 +54,10 @@ RAW = config.BENCHMARKS_RAW_DIR
 #: data versions. `--path` still points anywhere, and `--verify` compares against whichever
 #: file it is given, so "what moved since Week 6" remains answerable.
 FREEZE_JSON_V1 = config.BENCHMARKS_DIR / "results_freeze_v1.json"
-FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v2.json"
+FREEZE_JSON_V2 = config.BENCHMARKS_DIR / "results_freeze_v2.json"
+#: v3 is the freeze v1.0 ships with (D-056): v2's numbers plus Week 8's, with extraction at
+#: the row count the release actually carries. v1 and v2 stay as they were.
+FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v3.json"
 SUMMARY_MD = config.DOCS_DIR / "RESULTS_SUMMARY.md"
 
 
@@ -172,6 +175,23 @@ ENTRIES: list[tuple[str, int, str, str, str, Callable[[], Any]]] = [
     ("scale_rows", 7, "Rows the Week 2 aggregation was run on at scale", "rows",
      "w7_scale_benchmark.json",
      lambda: max(r["rows"] for r in _json("w7_scale_benchmark.json")["runs"])),
+
+    # Week 8: the numbers v1.0 ships with that did not exist at the Week 7 freeze.
+    ("exception_precision_as_of", 8, "Exception alert precision, as-of history (D-054)", "share",
+     "w8_replay_leakage.json",
+     lambda: _json("w8_replay_leakage.json")["exception_agent_as_of"]["notification_precision"]),
+    ("assistant_groundedness", 8, "Assistant groundedness, model-written answers", "share",
+     "w7_groundedness_summary.json",
+     lambda: _json("w7_groundedness_summary.json")["groundedness_rate_model_written"]),
+    ("kafka_file_alerts_identical", 8, "Kafka and file-source alerts identical (same legs, same gaps)", "bool",
+     "w7_kafka_source_equivalence.json",
+     lambda: _json("w7_kafka_source_equivalence.json")["identical_leg_sets"]),
+    ("adopted_stream_equals_batch", 8, "Reported model, stream equals batch", "legs",
+     "w8_stream_validation_v2.json",
+     lambda: _json("w8_stream_validation_v2.json")["identical_predictions"]),
+    ("fresh_clone_rebuild_s", 8, "Full rebuild from the raw CSV on a fresh clone", "seconds",
+     "w8_fresh_clone_rebuild.json",
+     lambda: _json("w8_fresh_clone_rebuild.json")["total_seconds"]),
 ]
 
 
