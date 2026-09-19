@@ -74,17 +74,17 @@ rebuild, and version-locked to the library that wrote it).
 
 **$0.00**, written out in `docs/cost.md` with what the zero bought. The short version: the
 20-calls-a-day LLM cap is why agent verdicts are computed rather than generated, one laptop
-with one disk is why the scale curve flattens past four cores, and no Docker is why Kafka
-has never met a broker. Those three constraints did more to shape the architecture than any
-design meeting, and Phase 3's $40 credit should be spent on removing them in that order.
+with one disk is why the scale curve flattens past four cores, and no Docker kept Kafka off
+a broker for two weeks — until it turned out Kafka runs natively on the JDK the machine
+already had (D-055). Those constraints shaped the architecture more than any design meeting.
 
-## 4. Carried into Phase 3
+## 4. Closed this week, and carried into Phase 3
 
-- **G-05**, a live broker: the compose file and `scripts/kafka_live.sh` are one command on
-  any machine with Docker; this one has none.
-- **Serving the adopted model**: the streaming job carries the corridor *mean* in its
-  history snapshots and the adopted model is a residual over the *median* (D-050). Until
-  that lookup exists, the reported model and the served model are different models, and
-  both the decision log and the paper outline say so.
+- **G-05 closed** (D-055): Apache Kafka 4.1.2 run natively, no Docker; the same 2,000 legs
+  through Kafka and through files alert on the same 1,347 legs with the same predicted gaps.
+- **Carried — serving the reported model** (D-053): two of its features are seven-day
+  event-time windows and two are keyed by hub and hour bucket, which the stream's stateless
+  history join cannot supply. Until then the reported model and the served model differ, and
+  the decision log, the paper and the release notes all say so.
 
-Problems logged this week: P-59.
+Problems logged this week: P-59, P-63. Decisions: D-053, D-055.
