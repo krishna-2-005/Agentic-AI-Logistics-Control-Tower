@@ -50,6 +50,7 @@ PRODUCERS: dict[str, tuple[str, str]] = {
     "w7_ml_diagnostics.json": ("python -m src.ml.ml_diagnostics", "Lahari"),
     "w7_model_metrics_v2.csv": ("python -m src.ml.models_v2", "Lahari"),
     "w7_model_metrics_v2_stepsize.csv": ("python -m src.ml.models_v2_stepsize", "Lahari"),
+    "w7_model_v2_stepsize_report.json": ("python -m src.ml.models_v2_stepsize", "Lahari"),
     "w7_features_v2_report.json": ("python -m src.pipeline.features_v2", "Mounika"),
     "w7_doc_extraction_eval.json": ("python -m src.ml.eval_extraction --consignments 10", "Krishna"),
     "w7_mcp_stdio_transcript.json": ("python -m src.agents.mcp_stdio_client", "Krishna"),
@@ -60,6 +61,9 @@ PRODUCERS: dict[str, tuple[str, str]] = {
     "w8_replay_leakage.json": ("python -m src.ml.replay_leakage --legs 2000", "Lahari"),
     "w8_stream_validation_v2.json": ("python -m src.ml.stream_validation --adopted", "Lahari"),
     "w7_groundedness_summary.json": ("python -m src.ml.groundedness --precheck --report", "Lahari"),
+    "w7_kafka_source_equivalence.json": (
+        "scripts/kafka_native.ps1, then python -m src.streaming.compare_sources", "Mounika"),
+    "w8_fresh_clone_rebuild.json": ("bash scripts/rebuild_all.sh on a fresh clone", "Mounika"),
 }
 
 #: Numbers that are reported but are not in the freeze, with where they come from. Kept
