@@ -170,8 +170,11 @@ rather than reopened once the test score was known.
 
 - Order entry: **50 of 50**, clarification precision and recall **100%**, zero invented
   orders `[w5_order_eval_summary.json]`; trivial policy "always file" scores 50%.
-- Exception triage: precision **72.1%** overall, **91.8%** at critical, against **54.1%**
-  for alerting every leg `[w6_exception_eval.json]`. **Figure 9.**
+- Exception triage, **as-of**: precision **58.6%** overall, **85.3%** at critical, against
+  **54.1%** for alerting every leg `[w8_replay_leakage.json]`. **Figure 9.** First published
+  as 72.1% / 91.8% from a replay that scored early legs with end-of-data history; the paper
+  reports both and the reason (D-054, P-62) — it is a finding about evaluating streaming
+  systems in its own right.
 - Invoice audit: **100% precision, 82.2% recall**; all eight misses are one seeded kind, an
   overcharge inside the auditor's own 15% tolerance `[w6_invoice_eval.json]`.
 - Document extraction: **98.0%** of fields correct, clean 97.6% vs noisy 98.6%, **zero

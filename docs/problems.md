@@ -1282,6 +1282,35 @@ aw\delhivery_data.csv -> download it — see
 - **Carry.** A "longest" question needs the sort key the question names. Two rankings in one
   table is one ranking too many to guess between.
 
+### P-62 · A replay scored early legs with the future, and inflated the agent layer's headline by 13.5 points
+**Week 8 · found by Lahari from Mounika's D-053 · resolved in the reporting**
+
+- **Symptom.** None, which is the problem. The Exception agent's evaluation reported 72.1%
+  notification precision against a 54.1% trivial policy, severity precision rising from 53.2%
+  to 91.8%, and all of it reproduced cleanly every time it was re-run.
+- **Cause.** The streaming job joins each query to the *latest* history snapshot per key.
+  Live, that is history up to now. On a replay it is history up to the **end of the data**,
+  and the producer replays the **earliest** legs first — so 1,290 of the 2,000 replayed legs,
+  which had no corridor history at their own creation time, were scored as if they had
+  fourteen prior legs, some of them finishing after the leg itself.
+- **How it was found.** Not by a test. D-053 was scoping whether the stream could serve the
+  adopted model, and reading `latest_history` for that purpose raised the question of what it
+  returns on a replay. Scoring the same legs as-of and via the snapshot answered it: MAE
+  47.29 against 32.81 min, precision 58.6% against 72.1%. The snapshot run reproduced the
+  published numbers *exactly*, which is what made the finding certain.
+- **Why the equality test missed it.** Stream-equals-batch compares a leg scored in batch
+  with the same leg scored through the event path — and both paths took the history from the
+  same `features_v1` row. It proved the event format was lossless. It never compared against
+  what the *running job* joins, which is where the leak was.
+- **Fix.** Reported numbers now come from the as-of run (D-054). D-047's conclusion survives
+  — precision still rises monotonically with severity — at lower levels, and the `low` grade
+  is now below the trivial policy. The superseded page and decision carry a note pointing
+  forward instead of being rewritten.
+- **Carry.** A replay is only an evaluation if every join inside it is as-of the event being
+  replayed. "The same code as production" is not the same as "the same information as
+  production had at that moment", and a pipeline can be bit-identical to itself while being
+  wrong about time.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
