@@ -35,11 +35,23 @@ fix:
 [MISS] cleaned parquet: clean_v1   -> python -m src.pipeline.clean
 ```
 
-**What the pass did not do:** a full regeneration from the raw CSV on the fresh clone.
-Stages 1-4 plus model training plus the document corpus is several hours of Spark, and the
-machine was needed for the scale benchmark and the model sprint the same day. The check now
-reports every prerequisite correctly, and the full rebuild is the item I would put first if
-the week had one more day.
+**The full rebuild, from nothing.** The README's run order stopped at Stage 3 (P-63), so
+`scripts/rebuild_all.sh` now runs every module's own command in dependency order and ends by
+recomputing the frozen results. It was run on a clone that had never been built, with only
+the raw CSV added (`benchmarks/raw/w8_fresh_clone_rebuild.json`):
+
+- **71 minutes, 14 stages**; the champion model (28 min) and the adopted model's validation
+  (30 min) are most of it, every data stage is under 40 seconds.
+- **Of 37 frozen numbers, 35 came back exactly** — 273 slower corridors of 1,130, every Week 7
+  model MAE including the adopted **30.90**, the same step size, the same adoption outcome. The
+  two that moved are extraction accuracy and rows scored, which the rebuild does not re-run:
+  the committed evaluation grew from 11 to 20 rows after the freeze was taken.
+- **The document corpus regenerated with an identical manifest and identical text**, but
+  every committed sample PDF showed as modified — ReportLab stamps a creation date. Krishna's
+  corpus now renders with `invariant=1`, and two generations are byte-identical.
+
+That is the reproducibility claim the project can now make: someone with the raw CSV and one
+command gets the same numbers the paper reports.
 
 ## 2. Release assets
 
@@ -74,6 +86,5 @@ design meeting, and Phase 3's $40 credit should be spent on removing them in tha
   history snapshots and the adopted model is a residual over the *median* (D-050). Until
   that lookup exists, the reported model and the served model are different models, and
   both the decision log and the paper outline say so.
-- **A full fresh-clone rebuild** from the raw CSV, timed, as the real reproducibility claim.
 
 Problems logged this week: P-59.
