@@ -338,31 +338,45 @@ def fig8_scale() -> dict:
 
 
 def fig9_severity_precision() -> dict:
-    """The agent layer's one measured ranking claim: severity earns its place as a filter."""
-    data = json.loads((RAW / "w6_exception_eval.json").read_text(encoding="utf-8"))
-    rows = data["by_severity"]
-    order = ["low", "medium", "high", "critical"]
-    rows = sorted(rows, key=lambda r: order.index(r["severity"]))
-    base = data["legs_truly_delayed"] / data["legs_in_replay"]
+    """The agent layer's one measured ranking claim: severity earns its place as a filter.
 
-    fig, ax = plt.subplots(figsize=(6.2, 3.0))
-    bars = ax.bar([r["severity"] for r in rows], [r["precision"] * 100 for r in rows],
-                  color=[GREY, YELLOW, ORANGE, "#b5341a"], width=0.62)
+    Bars are the **as-of** measurement (D-054). The first version of this figure plotted
+    `w6_exception_eval.json`, a replay that scored early legs with end-of-data history; its
+    values are kept as hollow markers, because the size of that gap is itself a result
+    (P-62) and a figure that silently swapped numbers would hide it.
+    """
+    original = json.loads((RAW / "w6_exception_eval.json").read_text(encoding="utf-8"))
+    as_of = json.loads((RAW / "w8_replay_leakage.json").read_text(encoding="utf-8"))["exception_agent_as_of"]
+    order = ["low", "medium", "high", "critical"]
+    rows = sorted(as_of["by_severity"], key=lambda r: order.index(r["severity"]))
+    replayed = {r["severity"]: r["precision"] for r in original["by_severity"]}
+    base = original["legs_truly_delayed"] / original["legs_in_replay"]
+
+    fig, ax = plt.subplots(figsize=(6.2, 3.2))
+    x = range(len(rows))
+    bars = ax.bar(x, [r["precision"] * 100 for r in rows],
+                  color=[GREY, YELLOW, ORANGE, "#b5341a"], width=0.62, label="as-of (reported)")
+    ax.scatter(x, [replayed[r["severity"]] * 100 for r in rows], marker="D", s=46,
+               facecolors="white", edgecolors=INK, linewidths=1.2, zorder=3,
+               label="replay with end-of-data history (superseded)")
     for bar, r in zip(bars, rows):
-        ax.text(bar.get_x() + bar.get_width() / 2, r["precision"] * 100 + 1.5,
-                f"{r['precision'] * 100:.1f}%\n({r['notified']:,} alerts)", ha="center", fontsize=8)
+        ax.text(bar.get_x() + bar.get_width() / 2, r["precision"] * 100 / 2,
+                f"{r['precision'] * 100:.1f}%\n({r['notified']:,})", ha="center", va="center",
+                fontsize=8, color="white" if r["severity"] == "critical" else INK)
     ax.axhline(base * 100, color=MUTED, ls="--", lw=1.2)
-    # Under the line and at the left, where the only bar is the one that sits on it.
-    ax.annotate(f"alert every leg: {base * 100:.1f}%", xy=(-0.45, base * 100 - 5),
-                ha="left", va="top", color=MUTED, fontsize=8)
+    ax.annotate(f"alert every leg: {base * 100:.1f}%", xy=(-0.45, base * 100 + 2),
+                ha="left", va="bottom", color=MUTED, fontsize=8)
+    ax.set_xticks(list(x), [r["severity"] for r in rows])
     ax.set_ylabel("share of alerts that were genuinely late")
     ax.set_ylim(0, 108)
-    ax.set_title("Severity grade against the truth it claims to rank")
+    ax.set_title("Severity still ranks alerts correctly, at lower precision than first reported")
+    ax.legend(frameon=False, fontsize=7.5, loc="upper left")
     ax.grid(axis="y")
     ax.set_axisbelow(True)
     return _finish(fig, "fig9_severity_precision",
-                   "Notification precision by computed severity over a 2,000-leg replay, against the "
-                   "trivial policy of alerting every leg. Source: w6_exception_eval.json")
+                   "Notification precision by computed severity over the earliest 2,000 replayed legs, "
+                   "scored with the history each leg had at its own time; hollow markers are the first, "
+                   "leaked measurement (D-054). Sources: w8_replay_leakage.json, w6_exception_eval.json")
 
 
 FIGURES = {

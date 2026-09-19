@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-09-19T22:00:26+05:30",
+  "kafka_alerts": 1347,
+  "file_source_alerts": 1347,
+  "identical_leg_sets": true,
+  "only_in_kafka": 0,
+  "only_in_file": 0,
+  "max_abs_predicted_gap_difference_min": 0.0,
+  "file_run": "w6_exception_eval_cases.csv"
+}
