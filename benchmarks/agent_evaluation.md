@@ -13,9 +13,9 @@ owed, the row says what it waits on instead of carrying an old number forward.
 |---|---|---|---|---|---|---|
 | Document Intelligence | field-level F1 (micro) | **0.929** | predict nothing: 0.000 | 16 of 20 scanned documents (W4, quota cap) | `doc_extraction/v2` | `gemini-3.6-flash` |
 | Document Intelligence | field-level F1 (micro), v1 | 0.853 | predict nothing: 0.000 | 22 of 40 scanned documents | `doc_extraction/v1` | `gemini-3.6-flash` |
-| Document Intelligence | per-field accuracy, clean PDF | **97.6%** | predict nothing: 0.0% | 11 of 40 rows so far (quota), 10 consignments stratified by seeded error type | `doc_extraction/v2` | `gemini-3.6-flash` |
-| Document Intelligence | per-field accuracy, noisy scan (Tesseract OCR) | **98.6%** | predict nothing: 0.0% | the same rows | `doc_extraction/v2` | `gemini-3.6-flash` |
-| Document Intelligence | hallucinated fields (value returned where the document is blank) | **0.0%** (0 of 153) | | the same rows | `doc_extraction/v2` | `gemini-3.6-flash` |
+| Document Intelligence | per-field accuracy, clean PDF | **98.7%** | predict nothing: 0.0% | 20 of 40 rows so far (quota), 10 consignments stratified by seeded error type | `doc_extraction/v2` | `gemini-3.6-flash` |
+| Document Intelligence | per-field accuracy, noisy scan (Tesseract OCR) | **96.9%** | predict nothing: 0.0% | the same rows | `doc_extraction/v2` | `gemini-3.6-flash` |
+| Document Intelligence | hallucinated fields (value returned where the document is blank) | **0.4%** (1 of 280) | | the same rows | `doc_extraction/v2` | `gemini-3.6-flash` |
 | Order Entry | end-to-end success rate | **100%** (50 of 50) | always file: 50.0% | all 50 cases; 25 file, 25 clarify | `order_entry/v1` | `gemini-3.6-flash` |
 | Order Entry | clarification recall / precision | **100% / 100%** | always file: 0% recall | the 25 clarify cases | `order_entry/v1` | `gemini-3.6-flash` |
 | Order Entry | invented orders · needless questions | **0 · 0** | | 50 cases | `order_entry/v1` | `gemini-3.6-flash` |
@@ -26,9 +26,9 @@ owed, the row says what it waits on instead of carrying an old number forward.
 | Invoice Auditor | dispute precision / recall | **100% / 82.2%** | dispute everything: 75.0% / 100%; approve everything: 25% accuracy | 60 seeded invoices, 10 kinds | verdict computed, no prompt | none (D-041) |
 | Invoice Auditor | right reason on disputes | **82.2%** | | 45 invoices that should be disputed | — | none |
 | Orchestrator | lifecycles completed with no intervention | **10 of 10**, 0 errors | | 10 order emails: 5 clarify, 5 booked, 2 ticketed | `--no-llm` demonstration mode | none |
-| Analytics Assistant | route correct / source correct | **90.0% / 83.3%** | | fixed 30 questions | extractive, no model | none |
-| Analytics Assistant | refusal precision / recall | **100% / 50%** | refuse nothing: 0% recall | 6 out-of-scope questions of the 30 | extractive, no model | none |
-| Analytics Assistant | groundedness | _owed — judged by hand on the model-phrased run_ | | fixed 30 questions | `analytics_assistant/v1` | `gemini-3.6-flash` |
+| Analytics Assistant | route correct / source correct | **93.3% / 86.7%** (with the model); 90.0% / 83.3% without | | fixed 30 questions | `analytics_assistant/v1` | `gemini-3.6-flash` |
+| Analytics Assistant | refusal recall, both layers | **100%** (6 of 6): 4 by the distance gate, 2 by the model itself; precision 100% | refuse nothing: 0% recall | 6 out-of-scope questions of the 30 | `analytics_assistant/v1` | `gemini-3.6-flash` |
+| Analytics Assistant | groundedness, model-written answers | **94.4%** (17 of 18), hand-judged | | 18 in-scope answers the model wrote; 6 provider-error fallbacks excluded (P-60) | `analytics_assistant/v1` | `gemini-3.6-flash` |
 
 ## What the numbers do and do not show
 
@@ -38,11 +38,11 @@ run spans five quota days (20 calls a day, D-032) and every case records the day
 on. A perfect score on templated email is a ceiling, not a verdict: D-040's reading, that
 the next evaluation should be built from email the agent gets wrong, is unchanged.
 
-**The extraction rows are 11 of 40 and OCR looks free, which is the part to distrust.**
-Noisy scans scoring *above* clean PDFs (98.6% against 97.6%) is a sample-size artefact, not
-a finding: one field's difference across 11 rows moves it either way. The number worth
-carrying is the zero hallucination rate and the two facility fields at 80%. The remaining 29
-rows run on later quota days.
+**Extraction is at 20 of 40 rows, and OCR now costs what it should.** At 11 rows the noisy
+scans scored *above* the clean PDFs (98.6% against 97.6%), which this table called a
+sample-size artefact at the time. At 20 rows it reversed: clean 98.7%, noisy 96.9%. One
+field in 280 was hallucinated — a value returned where the document is blank. The remaining
+20 rows run on later quota days.
 
 **The Exception Agent's precision comes from the model, and its severity from the audit.**
 It makes no LLM decision (D-041); the notification text is the only generated part. Across
@@ -61,11 +61,20 @@ real freight pricing (D-043).
 ground truth. It proves the lifecycle runs without a human between steps; the quality of
 the one generated step is the Order Entry row.
 
-**The Assistant's refusal recall is 50% on the distance check alone.** The three misses
-are questions close to the project's topic, such as fleet size and freight tax. Their
-nearest documents are as close as those for real questions (P-56). The second refusal
-layer, the prompt's own rule, is measured by the model-phrased run, and so is
-groundedness. Both rows stay owed until that run exists.
+**The Assistant's two refusal layers together refuse all six out-of-scope questions.** The
+distance gate alone refused four (P-56: questions close to the project's topic retrieve
+documents as near as real ones do). The two it let through — freight GST and Delhivery's
+fleet size — the model refused in its own answer, naming what data would have been needed.
+
+**Groundedness: 17 of 18 model-written answers**, judged by reading each against the
+context it was given (`w7_groundedness_verdicts.csv`, one reason per answer). The one
+failure is instructive: asked how many corridors are statistically slower (273), the model
+counted the three slower corridors among its five retrieved passages and stated "3" as the
+network's answer. Every number was in its context, which is exactly why the mechanical
+pre-check passed it — the error was the generalisation, not a digit. Two more verdicts are
+worth reading: D08 is faithful to its context but out of date, because retrieval returned
+the superseded D-024 instead of D-048; and T03 answered **Hubli** where the question set
+expected Aluva, and the model was right (P-61).
 
 ## Groundedness judging — method, fixed before the answers exist
 
@@ -73,7 +82,8 @@ For each model-phrased answer in `benchmarks/raw/w7_assistant_answers_llm.jsonl`
 
 - **grounded** if every number in the answer appears in its returned context, and no claim
   goes beyond that context;
-- **refusal correct** if an out-of-scope question gets the exact refusal sentence, and an
+- **refusal correct** if an out-of-scope question's answer begins with the refusal
+  sentence (the prompt asks the model to follow it with what data would be needed), and an
   in-scope one does not;
 - judged by Lahari, not by the assistant's own scoring script (D-028), with the verdict and
   a one-line reason recorded per question, not only the total.
@@ -97,4 +107,4 @@ For each model-phrased answer in `benchmarks/raw/w7_assistant_answers_llm.jsonl`
 | Tracking & Exception | `benchmarks/raw/w6_exception_eval.json`, `w6_exception_eval_cases.csv`; D-041, D-047 |
 | Invoice Auditor | `benchmarks/raw/w6_invoice_eval.json`, `w6_invoice_eval_cases.csv`; D-043 |
 | Orchestrator | `benchmarks/raw/w6_orchestrator_runs.json` |
-| Analytics Assistant | `benchmarks/raw/w7_assistant_run_no_llm.json`, `w7_assistant_questions_v1.json`; P-56 (branch `week7-krishna-rag-assistant`) |
+| Analytics Assistant | `benchmarks/raw/w7_assistant_run_llm.json`, `w7_assistant_run_no_llm.json`, `w7_groundedness_verdicts.csv`, `w7_groundedness_summary.json`; P-56, P-60, P-61 |
