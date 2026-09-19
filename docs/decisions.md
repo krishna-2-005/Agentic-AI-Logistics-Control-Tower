@@ -2215,3 +2215,30 @@ a replayed prediction with the same leg's as-of prediction.
 
 Evidence: `src/ml/replay_leakage.py`, `benchmarks/raw/w8_replay_leakage.json`,
 `benchmarks/raw/w6_exception_eval.json` (the superseded measurement), P-62.
+
+## D-055 · G-05 closes on a native broker, and the evidence is source equivalence, not speed — `DECIDED`
+**Week 8 · Mounika · execution plan v3.1 §2 (G-05), D-035**
+
+D-035 recorded that the Kafka path had never met a broker because there was no Docker on
+the development machine. That was true, and it was the wrong constraint: Kafka is a Java
+program and the machine has had a JDK 17 since Week 1.
+
+**Decided: G-05 is closed on Apache Kafka 4.1.2 run natively** (single node, KRaft,
+`scripts/kafka_native.ps1`), with `docker-compose.kafka.yml` kept for machines that have
+Docker. One Windows trap is handled in the script: `kafka-server-start.bat` probes the
+architecture with `wmic`, which Windows 11 no longer ships; setting `KAFKA_HEAP_OPTS`
+skips the probe.
+
+**Decided: the result reported for G-05 is equivalence, not throughput.** The same 2,000
+legs replayed through Kafka and through the file source alert on **the same 1,347 legs with
+the same predicted gaps — maximum difference 0.0 minutes**
+(`w7_kafka_source_equivalence.json`). That is what "the source is one `readStream` swap"
+claimed and could not show until now. The Kafka run's own figures (p50 event-to-alert
+20.2 s, 86.7 events/sec scoring) are reported, but not compared with the 26,369-leg file
+replay: this run offered 67 events/sec, so its throughput measures the producer.
+
+**Not changed by this:** D-054's replay leak. Both sources join queries to end-of-data
+history, so both carry it identically — which is also why it cannot affect the equivalence.
+
+Evidence: `benchmarks/raw/w7_kafka_live.json`, `benchmarks/raw/w7_kafka_source_equivalence.json`,
+`src/streaming/compare_sources.py`, `scripts/kafka_native.ps1`.

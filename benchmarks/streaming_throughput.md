@@ -44,14 +44,42 @@ behind, because per-batch overhead (loading the broadcast history, planning) is 
 per batch regardless of size. The job's default is 1000 for that reason; `--max-files-per-trigger`
 exists to reproduce the slower run, not to tune it down.
 
-## Kafka
+## Kafka — measured on a live broker (G-05, Week 8)
 
-Never measured. The producer's Kafka sink, the job's `--kafka` source and
-`scripts/kafka_live.sh` exist and are import-checked; there is no Docker on the
-development machine, so every number on this page came from the file source (D-035). On a
-machine with Docker, `docker compose -f docker-compose.kafka.yml up -d && bash
-scripts/kafka_live.sh` writes `benchmarks/raw/w7_kafka_live.json` in the same shape as the
-table above, and the comparison becomes a two-row table rather than a caveat.
+Source: a single-node **Apache Kafka 4.1.2** broker in KRaft mode, run natively on the JVM
+(`scripts/kafka_native.ps1`); producer → broker → `src.streaming.job --kafka` → alert sink.
+`benchmarks/raw/w7_kafka_live.json`, `w7_kafka_source_equivalence.json`.
+
+| Metric | Value | Conditions |
+|---|---|---|
+| Events through the broker | **4,000** | 2,000 legs, the same earliest-2,000 replay the Exception agent was evaluated on |
+| Alerts | **1,347** | |
+| p50 event→alert latency | **20.2 s** | broker append time → alert row written |
+| p95 event→alert latency | **28.0 s** | |
+| Scoring rate | **86.7 events/sec** | 11 micro-batches; per-batch overhead dominates at this size |
+| Source | **Kafka**, 4 partitions, keyed by corridor | localhost broker, same machine as the job |
+
+**The result that matters is not the speed.** Replaying the same 2,000 legs through Kafka
+and through the file source produced **the same 1,347 alerts on the same legs with the same
+predicted gaps — maximum difference 0.0 minutes.** The source swap is one `readStream`, and
+this is the evidence that it is only that: everything after it behaves identically whichever
+source fed it.
+
+**Not comparable to the full-replay row above, and not meant to be.** The file-source table
+is the full 26,369-leg replay compressed into 60 s (886 events/sec offered); this run is 2,000
+legs, 67 events/sec offered. Throughput here is bounded by what the producer offers, not by
+the pipeline. A full-replay Kafka run is a one-line change to `--limit` and belongs in
+Phase 3's cost comparison.
+
+**Why no Docker.** G-05 was blocked for two weeks on "no Docker on this machine" (D-035).
+Kafka is a Java program, and the machine has had a JDK since Week 1. The one Windows trap —
+`kafka-server-start.bat` calls `wmic`, which Windows 11 no longer ships — is handled by
+setting `KAFKA_HEAP_OPTS` first. `docker-compose.kafka.yml` remains for machines that have
+Docker.
+
+**The replay caveat applies here too** (D-054): both sources join each query to end-of-data
+history, so these alerts carry the same leak the file-source ones did. Source equivalence
+is unaffected — the leak is identical on both sides.
 
 ## Recording rules
 
