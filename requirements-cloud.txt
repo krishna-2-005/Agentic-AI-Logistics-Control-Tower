@@ -22,6 +22,10 @@
 
 streamlit>=1.62.0
 pandas>=2.3.3
+# Not imported by any page directly: pandas' corr(method='spearman') on the Hub friction page
+# imports it inside pandas. Rendering every page from a clean install of this file is what
+# found it; blocking the heavy packages in the full dev environment could not.
+scipy>=1.18.0
 numpy>=2.5.2
 pyarrow>=25.0.1
 plotly>=6.9.0
