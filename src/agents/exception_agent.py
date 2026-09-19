@@ -49,6 +49,7 @@ import pandas as pd
 from src.agents.llm import get_llm
 from src.agents.prompts.registry import Prompt, load_prompt
 from src.agents.tms_client import TMSClient, TMSError
+from src.agents.tracing import traced
 from src.common import config
 from src.common.logging_setup import get_logger
 from src.dashboard.alerts import excess_min, load_alerts
@@ -333,7 +334,19 @@ def save_state(tickets: dict[str, str], path: Path = STATE_PATH) -> None:
 def process_alert(alert: pd.Series, audit: pd.DataFrame, friction: dict[str, int],
                   client: TMSClient | None, prompt: Prompt | None, channel,
                   dry_run: bool = False) -> ExceptionOutcome:
-    """One alert, all the way through. Never raises for a single alert."""
+    """One alert, all the way through. Never raises for a single alert. Traced."""
+    inputs = {k: alert.get(k) for k in ("alert_id", "corridor_id", "leg_id", "alert_time", "planned_min",
+                                        "predicted_total_min", "threshold_gap_min")}
+    with traced("exception_triage", inputs={**inputs, "prompt": prompt.label if prompt else None,
+                                            "dry_run": dry_run}) as span:
+        outcome = _process_alert(alert, audit, friction, client, prompt, channel, dry_run)
+        span.outputs = asdict(outcome)
+        return outcome
+
+
+def _process_alert(alert: pd.Series, audit: pd.DataFrame, friction: dict[str, int],
+                   client: TMSClient | None, prompt: Prompt | None, channel,
+                   dry_run: bool) -> ExceptionOutcome:
     threshold_gap = float(alert["threshold_gap_min"])
     excess = float(alert["predicted_gap_min"]) - threshold_gap
     ratio = float(alert["predicted_gap_min"]) / threshold_gap if threshold_gap > 0 else float("inf")

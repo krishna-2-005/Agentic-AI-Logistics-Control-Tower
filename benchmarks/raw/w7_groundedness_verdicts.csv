@@ -1,0 +1,31 @@
+id,verdict,reason
+T01,grounded,every corridor rank ratio and leg count matches the ranked table verbatim
+T02,grounded,exactly three rows returned as asked; all figures from the table
+T03,grounded,"answers Hubli (373 min median) over Aluva (350) — correct for 'longest dwell', which the friction-ranked table does not sort by; the question set's expected answer was wrong, not the model"
+T04,grounded,the five hubs and their dwell figures as given; calls them 'listed' rather than asserting a ranking it was not given
+T05,grounded,five confirmed-faster corridors with ratios and leg counts from the audit rows
+T06,grounded,extractive fallback after a provider error: verbatim table text; not a model-written answer
+F01,grounded,restates the corridor audit passage without adding a claim
+F02,grounded,leg count and lateness from the Malvan passage; ignores the unrelated corridors retrieved alongside it
+F03,grounded,hub-friction passage restated including the 76% share and chain-break rate
+F04,grounded,faster verdict q-value ratio and minutes all from the passage
+F05,not grounded,"states '3 corridors are statistically confirmed slower' — the count of slower corridors among its five retrieved passages — as if it were the network answer (273). Every number is in context, which is why the mechanical pre-check passed it: the error is the generalisation, not a digit"
+F06,grounded,D-018's coverage and bottleneck figures reported as the decision states them
+D01,grounded,threshold rationale and the 93.6% / 49.6% split taken from the Week 1 write-up
+D02,grounded,extractive fallback after a provider error: verbatim passage; not a model-written answer
+D03,grounded,"886 and 740 events/sec and the 109 smoke-run figure all from D-038 and the W5 write-up, with D-038's own framing that no single number is the headline"
+D04,grounded,D-039's reasoning and the 17317-of-26369 figure as written
+D05,grounded,D-041's three reasons in the order D-041 gives them
+D06,grounded,extractive fallback after a provider error: verbatim passage; not a model-written answer
+D07,grounded,extractive fallback after a provider error: verbatim passage; not a model-written answer
+D08,grounded,"faithful to what it retrieved, and out of date: retrieval returned D-024 and results.md (corridor mean 36.1) instead of D-048 (median 33.04). A retrieval miss, already counted as the source miss; the model did not invent anything"
+P01,grounded,P-42's precision recall and 11583-of-26369 stale-label figures as written
+P02,grounded,the Sunday=1 / Monday=0 conventions and the Wednesday example from P-39 and P-45
+P03,grounded,extractive fallback after a provider error: verbatim passage; not a model-written answer
+P04,grounded,extractive fallback after a provider error: verbatim passage; not a model-written answer
+R01,grounded,refused by the distance gate before any model call
+R02,grounded,refused by the distance gate before any model call
+R03,grounded,passed the distance gate; the model refused on its own and named what data would be needed
+R04,grounded,refused by the distance gate before any model call
+R05,grounded,refused by the distance gate before any model call
+R06,grounded,passed the distance gate; the model refused on its own and named what data would be needed

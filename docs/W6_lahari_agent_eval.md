@@ -11,6 +11,9 @@ python -m src.ml.exception_eval
 python -m src.ml.invoice_eval
 ```
 
+
+> **Superseded numbers — read D-054 first.** The notification-precision figures on this page were measured on a replay that scored early legs with end-of-data history. As-of, precision is **58.6%** (not 72.1%) against a 54.1% trivial policy, and by severity 39.7 / 51.3 / 76.6 / 85.3%. The page is kept as it was measured; `benchmarks/raw/w8_replay_leakage.json` has the corrected run.
+
 ## Results freeze (D1-D2)
 
 **31 Layer 1 numbers, each recorded with the file it came from and a hash of that

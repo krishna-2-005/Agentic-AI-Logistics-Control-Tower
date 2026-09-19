@@ -142,6 +142,18 @@ def preflight(need_spark: bool = True) -> Preflight:
     """Everything that has to be true before the first service starts."""
     checks: list[Check] = []
 
+    # First, because it is first in the chain. Without it `python -m src.pipeline.clean`
+    # — the fix printed for the next line — cannot run at all. A fresh clone used to be
+    # told to rebuild the cleaned parquet and discovered the missing dataset only when
+    # that command failed, which is the one place a reproducibility check must not send
+    # someone (W8 reproducibility pass, P-59).
+    raw = config.RAW_CSV
+    raw_size = raw.stat().st_size if raw.exists() else 0
+    checks.append(Check(
+        "raw dataset", raw.exists() and raw_size == config.RAW_BYTES,
+        f"{raw.name} ({raw_size:,} bytes)" if raw.exists() else f"missing {raw}",
+        "download it — see data/README.md",
+    ))
     checks.append(Check(
         "cleaned parquet", config.CLEAN_V1.exists(),
         str(config.CLEAN_V1.name), "python -m src.pipeline.clean",

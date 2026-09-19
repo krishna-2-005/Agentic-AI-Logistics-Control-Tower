@@ -45,6 +45,7 @@ import argparse
 import json
 from datetime import datetime
 
+import numpy as np
 import pandas as pd
 from pyspark.ml import PipelineModel
 
@@ -219,6 +220,93 @@ def run(limit: int | None = None, out_md: str | None = None) -> dict:
     return summary
 
 
+def run_adopted(limit: int | None = None) -> dict:
+    """The same invariant, for the model the paper reports (W8 D3-D4, D-050).
+
+    The Week 5 run above tests the champion, which is what the stream serves today. The
+    adopted model is different in a way this test has to follow: it predicts a *residual*
+    over the per-corridor median, so a served prediction is `baseline + correction`, and the
+    baseline is itself a history feature the broadcast join would have to carry. If the
+    event round-trip broke either half, the sum would move.
+
+    What this does **not** do is serve the model. The streaming job's history snapshots
+    carry the corridor mean, not the median (D-050); wiring that is Week 8's remaining
+    engineering task, and until it is done the equality tested here is the event format's,
+    not the running pipeline's — the same honest split the module docstring draws for the
+    broadcast half.
+    """
+    from src.ml.models_v2 import FEATURES_V2, MODELS_DIR, prepare
+
+    model_path = MODELS_DIR / "v2_gbt_residual_stepsize"
+    if not model_path.exists():
+        raise FileNotFoundError(f"No adopted model at {model_path} -- run src.ml.models_v2_stepsize")
+
+    event_carried = [f for f in FEATURES_V2 if not any(f.startswith(p + "_") for p in HISTORY_PREFIXES)]
+    history_carried = [f for f in FEATURES_V2 if f not in event_carried]
+
+    spark = get_spark("stream-equals-batch-v2")
+    try:
+        pdf = pd.read_parquet(config.FEATURES_V2).sort_values("trip_creation_time").reset_index(drop=True)
+        if limit:
+            # Spread across the timeline, not the first N. The earliest legs are almost all
+            # on corridors with no history yet, so `head(limit)` scores a sample whose
+            # baseline is zero on 97% of rows — which would test the correction alone and
+            # report it as if both halves of `baseline + correction` had been exercised.
+            pdf = pdf.iloc[:: max(1, len(pdf) // limit)].head(limit).reset_index(drop=True)
+        prepared = prepare(pdf)
+
+        events = [json.loads(json.dumps(query_event(row))) for _, row in prepared.iterrows()]
+        rebuilt = []
+        for i, event in enumerate(events):
+            row = {name: prepared.iloc[i][name] for name in history_carried}
+            row["planned_min"] = float(event["planned_min"])
+            row["planned_km"] = float(event["planned_km"])
+            row["created_hour"] = int(event["created_hour"])
+            row["created_dayofweek"] = int(event["created_dayofweek"])
+            row["created_is_weekend"] = int(event["created_is_weekend"])
+            row["is_ftl"] = int(event["route_type"] == "FTL")
+            rebuilt.append(row)
+        rebuilt = pd.DataFrame(rebuilt)
+
+        model = PipelineModel.load(str(model_path))
+        baseline = prepared["baseline_median"].to_numpy()
+        batch_pred = baseline + np.asarray(_predict(spark, model, prepared[FEATURES_V2].copy()))
+        event_pred = baseline + np.asarray(_predict(spark, model, rebuilt[FEATURES_V2].copy()))
+    finally:
+        stop_spark(spark)
+
+    comparison = pd.DataFrame({
+        "leg_id": prepared["leg_id"].to_numpy(),
+        "baseline_median": baseline,
+        "batch_prediction": batch_pred,
+        "stream_prediction": event_pred,
+    })
+    comparison["abs_difference"] = (comparison["batch_prediction"] - comparison["stream_prediction"]).abs()
+    identical = int((comparison["abs_difference"] == 0).sum())
+
+    raw = config.BENCHMARKS_RAW_DIR
+    comparison.to_csv(raw / "w8_stream_equals_batch_v2.csv", index=False)
+    summary = {
+        "model": "v2_gbt_residual_absolute_step1 (the adopted model, D-050)",
+        "prediction": "per-corridor median baseline + model correction",
+        "legs": len(comparison),
+        "identical_predictions": identical,
+        "identical_rate": round(identical / len(comparison), 6) if len(comparison) else 0.0,
+        "max_abs_difference": float(comparison["abs_difference"].max()) if len(comparison) else 0.0,
+        "event_carried_features": event_carried,
+        "history_features_assumed": len(history_carried),
+        "cold_corridors_in_sample": int((comparison["baseline_median"] == 0).sum()),
+        "served_by_the_streaming_job": False,
+        "not_served_because": ("the job's history snapshots carry corr_mean_gap_min, not "
+                               "corr_median_gap_min; serving the residual model needs that lookup (D-050)"),
+        "generated_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+    }
+    (raw / "w8_stream_validation_v2.json").write_text(json.dumps(summary, indent=2), encoding="utf-8")
+    log.info("adopted model: %s of %s legs identical (max |diff| %.10g)",
+             f"{identical:,}", f"{len(comparison):,}", summary["max_abs_difference"])
+    return summary
+
+
 def _predict(spark, model: PipelineModel, features: pd.DataFrame) -> list[float]:
     """Score a feature frame, keeping input order.
 
@@ -329,7 +417,13 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--limit", type=int, default=500, help="legs to compare (default 500)")
     parser.add_argument("--all", action="store_true", help="compare every leg in features_v1")
+    parser.add_argument("--adopted", action="store_true",
+                        help="run the same invariant against the adopted residual model (W8, D-050)")
     args = parser.parse_args()
+
+    if args.adopted:
+        summary = run_adopted(limit=None if args.all else args.limit)
+        return 0 if summary["identical_predictions"] == summary["legs"] else 1
 
     if not config.FEATURES_V1.exists():
         log.error("Missing %s -- run `python -m src.pipeline.features` first.", config.FEATURES_V1)

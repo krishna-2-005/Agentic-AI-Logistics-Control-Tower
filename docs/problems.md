@@ -1067,6 +1067,268 @@ checking a number, never by reading the file.
   an argument — and the default should belong to whichever caller produces the
   evidence, not whichever was written first.
 
+### P-52 · A leg's finish time was computed as departure plus moving time, which is not when it finished
+**Week 7 · found by Lahari, fixed by Mounika · resolved in both places**
+
+- **Symptom.** The as-of corridor history rebuilt for D-048's median baseline agreed with
+  Stage 4's `corr_n_prior` on only **95.2%** of warm legs. Every disagreement ran the same
+  way: 1,128 legs saw *more* prior history than Stage 4 gave them, never less.
+- **Cause.** The first version derived a leg's finish time as
+  `od_start + (gap_min + planned_min)`, i.e. departure plus `actual_time`. But
+  `actual_time` is **moving** time: `reconstruct.py` defines dwell as
+  `start_scan_to_end_scan - actual_time`. So every fact landed before the leg really
+  finished, and legs still on the road were counted as known history — which is
+  leakage, in the direction that flatters a baseline.
+- **Fix in the diagnostics.** Join the real `od_end_time` from `trips_v1`, the column
+  Stage 4's as-of join uses. Agreement: **100%** on both count and mean. The median
+  baseline moved only from 33.06 to 33.04 min, so this changed no conclusion — but a
+  baseline whose history is *provably identical* to the features' is worth the join.
+- **The same proxy was in the streaming schema, and is now gone.**
+  `src/streaming/schema.py::fact_event` stamped every fact event at
+  `od_start + actual_time`, with a docstring calling it "exact, not an approximation".
+  Measured against the real `od_end_time`, it was **early on 26,298 of 26,369 legs, by a
+  median of 49.6 minutes** (mean 98.1, p95 345.2) — which is the median hub dwell Week 2
+  reported, arriving as a bug. It cost nothing published, because the streaming job counts
+  and drops fact events (D-037); the moment fact-driven live history is built it would have
+  been the same leak as above, a query scored against legs that had not finished.
+  `fact_event` now refuses a row with no finish time rather than deriving one, and the
+  producer and sample-event writer join `od_end_time` from `trips_v1` — exact on all 26,369
+  legs. The merge of the two branches then caught a third caller: a threshold test that
+  built a fact row by hand.
+- **Carry.** A duration column is not a clock. `actual_time` answers "how long was the
+  truck moving", and adding it to a departure time answers a question nobody asked. When
+  a timestamp exists in the data, join it; do not reconstruct it from parts that happen to
+  have the right units.
+
+
+### P-53 · A model call with no timeout hung the extraction evaluation for twenty minutes
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** The G-01 smoke run of `src.ml.eval_extraction` cached three extractions
+  and then printed nothing for twenty minutes. No error, no quota message, CPU idle.
+- **Cause.** `get_llm()` built `ChatGoogleGenerativeAI` with the library defaults: no
+  request timeout, and retries on transient errors. One request stalled on the
+  provider side and the client waited on it indefinitely. Worse, a retried request is
+  a request against the 20-per-day free tier (P-36), so a hang is not only lost time —
+  it can quietly spend quota that the cache never records.
+- **Fix.** `src/agents/llm.py` passes `timeout=REQUEST_TIMEOUT_S` (120 s) and
+  `max_retries=MAX_RETRIES` (2) to both providers. A stalled call now fails inside two
+  minutes, the evaluation's quota and error handling sees it, and the run resumes from
+  its cache next time.
+- **Carry.** Every network call needs a timeout chosen on purpose. A library default of
+  "wait forever" is not a neutral choice; it turns a provider hiccup into a stuck
+  process nobody is watching.
+
+
+### P-54 · The MCP server's health tool crashed when the TMS was down — the one moment it exists for
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** Driving the MCP server over real stdio (G-06) with the TMS stopped,
+  `tms_health` returned a protocol error instead of reporting the TMS as down.
+- **Cause.** `TMSClient` callers caught `(TMSError, OSError)`, on the assumption that a
+  refused connection surfaces as `OSError`. With `httpx` it does not: `ConnectError` and
+  its siblings derive from `httpx.HTTPError`, not `OSError`. The in-process tests had
+  always run against a live TMS, so the down path was never exercised.
+- **Fix.** `TMSClient._request` translates every `httpx.HTTPError` into
+  `TMSError(0, "transport failure: ...")`, so callers handle one exception type for
+  "the TMS did not answer" whichever layer failed. `tests/test_mcp_stdio.py` now points
+  a client at a dead port and asserts the health tool reports the TMS down.
+- **Carry.** An error path that no test forces is an error path that has never run.
+  Catch what the library actually raises, and check by pointing at something that is off.
+
+
+### P-55 · The residual sprint died twice in the JVM: once on lineage depth, once on heap
+**Week 7 · Lahari · resolved**
+
+- **Symptom.** The first `python -m src.ml.models_v2` run failed with
+  `java.lang.StackOverflowError` at stage 2,046, deep into GBT training. The second got
+  past GBT and failed in the Random Forest with `java.lang.OutOfMemoryError: Java heap
+  space` while broadcasting 10 MB task binaries. The background wrapper reported the
+  first failure as exit 0, because `stop_spark` raised on a dead JVM and masked the real
+  error.
+- **Cause.** Each boosting iteration extends the RDD lineage, and 200 of them nest deep
+  enough to overflow the stack when the plan is deserialised; Week 4's shorter grids never
+  reached that depth. The forest was 300 trees at depth 8, twice the largest Week 4 fitted
+  on the 4 g driver, and a test suite was running a second Spark session at the same time.
+- **Fix.** `setCheckpointDir` plus `checkpointInterval=10` on both estimators, which cuts
+  the lineage instead of raising `-Xss` and moving the cliff. The forest went down to 150
+  trees, Week 4's largest, and the run was repeated with nothing else using Spark. It
+  finished in 10 minutes.
+- **Carry.** Read the log, not the exit code, for a JVM job driven from Python. And a model
+  bigger than anything fitted before on the same machine is a capacity test, so run it on
+  its own.
+
+
+### P-56 · The refusal gate was calibrated on questions too easy to refuse
+**Week 7 · Krishna · open — second layer to be measured**
+
+- **Symptom.** The Analytics assistant's refusal threshold (0.63 cosine distance) split
+  twenty calibration probes perfectly: in-scope at most 0.588, out-of-scope at least
+  0.681. On the fixed 30-question set it refused only 3 of 6 out-of-scope questions.
+  "How many trucks does Delhivery own?" sat at 0.502 and "What is the GST rate on road
+  freight?" at 0.539 — nearer the index than in-scope questions at 0.510, 0.531 and
+  0.598.
+- **Cause.** The out-of-scope calibration probes were general knowledge (capitals,
+  bread, football). Distance to the nearest document measures *topic*, not whether the
+  document *answers* the question, and a freight question about a freight company is
+  on topic. The two distributions overlap, so no threshold separates them.
+- **What was not done.** Tuning the threshold on the 30-question set until the misses
+  go away. That is fitting the gate to the test, and the next domain-adjacent question
+  would sail through the same way.
+- **Fix, partly measured.** Two layers. The distance gate stays for precision — it
+  refused nothing in scope (precision 100%) and costs zero quota. The second layer is
+  the prompt's own rule to answer only from the context and otherwise return the
+  refusal sentence. Its recall is measured by the model-phrased run of the same set
+  (`benchmarks/raw/w7_assistant_run_llm.json`), which waits on quota.
+- **Carry.** Calibrate a gate on the cases that are hard to separate, not the cases that
+  are easy to name. The fixed evaluation set found this because it was written with
+  domain-adjacent traps; the calibration set was not.
+
+
+### P-58 · The extraction evaluation published "7.0% accuracy" from 37 documents it never sent
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** The first real G-01 run wrote `w7_doc_extraction_eval.json` with
+  **7.0% accuracy, 95.1% precision, 7.0% recall**. Nothing had crashed. Thirty-seven of
+  40 rows had failed with `GEMINI_API_KEY is not set`, and every one of them had been
+  counted as a document where the agent returned nothing.
+- **Two causes, one theme.**
+  1. The run started from a git worktree, whose `data/` is its own empty directory. The
+     corpus path defaulted to the relative `data/documents`, so it found nothing. Same for
+     `benchmarks/raw`. Both are now `config.DOCUMENTS_DIR` and `config.BENCHMARKS_RAW_DIR`,
+     which are absolute.
+  2. The row handler treated every exception as a total miss. That is right for a bad
+     answer and wrong for a failure to ask: the quota branch beside it existed precisely
+     to avoid publishing the free-tier limit as an accuracy number, and a missing key is
+     the same kind of event.
+- **Why it matters more than a wrong number in a scratch file.** Nothing in the output
+  said "this machine was misconfigured". It said the agent scored 7%. A file like that is
+  cited, and the citation survives long after the run is forgotten.
+- **Fix.** `is_environmental()` classifies the failure: missing credentials, no network, a
+  timeout, a provider 5xx. Those rows are left unscored like a quota refusal and counted
+  separately in the report; an unparseable answer or a missing field is still the agent's
+  miss. The rerun proved it immediately — a **503 UNAVAILABLE** arrived on row 12 and was
+  excluded rather than scored as a zero.
+- **Carry.** An evaluation harness needs to distinguish *the agent was wrong* from *the
+  agent never ran*. If it cannot, its worst numbers are reports about the machine.
+
+
+### P-59 · The preflight check sent a fresh clone to a command that cannot run yet
+**Week 8 · Mounika · resolved**
+
+- **Symptom.** The Week 8 reproducibility pass — clone the repository somewhere it has
+  never been, follow the README — ran `python -m src.common.boot --check` and got a tidy
+  list: cleaned parquet missing, run `python -m src.pipeline.clean`. Following that advice
+  fails, because there is no raw dataset to clean.
+- **Cause.** `preflight()` checked four generated artefacts and never checked the input
+  they are generated *from*. On the machines where it was written the 55 MB CSV had been
+  there since Week 1, so the first link of the chain was invisible to everyone who already
+  had it.
+- **Why a check that is 90% right is the problem.** A missing check is discovered at the
+  first failure. A *confident and incomplete* check sends someone down a path that cannot
+  work, and they debug `clean.py` instead of downloading a file. The whole point of
+  `boot --check` is that it reports every problem before anything starts (D-044).
+- **Fix.** The raw dataset is now the first preflight line, verified by size against
+  `config.RAW_BYTES`, with `data/README.md` as its fix. A fresh clone now reads
+  `[MISS] raw dataset: missing ...\data
+aw\delhivery_data.csv -> download it — see
+  data/README.md` above everything else.
+- **Carry.** A preflight list is only as good as its first entry. When adding a check for
+  a generated artefact, check what generates it, or the report is a well-formatted way of
+  pointing at the wrong problem.
+
+### P-60 · The assistant evaluation recorded six provider errors as the model's answers
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** The model-phrased run of the 30-question set finished with 30 answers, six
+  of them marked `draft_source: extractive` — verbatim passages, not model text. They were
+  in the answers file, scored for route and source, and headed for groundedness judging as
+  if the model had written them.
+- **Cause.** The runner was meant to stop on a quota refusal and not record it. It looked for
+  the error in the latest trace — but the assistant catches the model exception and falls
+  back *before* the trace is written, so the trace never contains it. The quota branch could
+  not fire, and any failure became an "answer". Two of the six were 503 UNAVAILABLE, the
+  rest `Error calling model`.
+- **Same shape as P-58.** An evaluation that cannot tell *the model was wrong* from *the
+  model never answered* reports the provider's uptime as the model's quality.
+- **Fix.** In model mode, any fallback is skipped and left for the next run; two in a row
+  stop the run (quota or outage), because every further attempt spends a call to learn
+  nothing. `--retry-fallbacks` drops recorded fallbacks so they are asked again. The
+  groundedness summary reports **model-written** answers as its headline (17 of 18 grounded)
+  and counts the six fallbacks separately rather than crediting them.
+- **Carry.** A fallback is the right behaviour for a user and the wrong record for an
+  evaluation. Code that does both has to know which one it is doing.
+
+### P-61 · The assistant ranked hubs by the wrong measure, and the model caught it
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** Asked "which hub has the longest dwell time?", the table route returned the
+  friction ranking with Aluva first (350 min). The model-phrased answer said **Hubli, 373
+  min**, citing rank 2 — contradicting the table's order and, on a first read, looking like
+  a grounding failure.
+- **Cause.** Friction ranks hubs by dwell as a *share of leg time* (Aluva 82%, Hubli 76%).
+  Dwell *time* ranks by minutes, and across all 121 ranked hubs Hubli's 373 is the longest.
+  The router sent every hub-dwell question to the friction table. **The model was handed
+  both numbers, read them, and answered the question actually asked.** The question set's
+  expected answer, the router's test and the demo script all said Aluva, and all three were
+  wrong in the same way.
+- **What it says about groundedness judging.** A mechanical check would have flagged the
+  answer as disagreeing with its context's ranking. Reading it against the context is what
+  showed the model was right and the scaffolding was not.
+- **Fix.** Questions about dwell *time* sort `w2_hub_dwell.csv` by median minutes; questions
+  about friction or congestion keep the friction table. Each context line now carries both
+  measures. The v1 question set is left as it was (versioned sets are not edited in place);
+  its T03 note is wrong and a v2 set should expect `w2_hub_dwell.csv`.
+- **Carry.** A "longest" question needs the sort key the question names. Two rankings in one
+  table is one ranking too many to guess between.
+
+### P-62 · A replay scored early legs with the future, and inflated the agent layer's headline by 13.5 points
+**Week 8 · found by Lahari from Mounika's D-053 · resolved in the reporting**
+
+- **Symptom.** None, which is the problem. The Exception agent's evaluation reported 72.1%
+  notification precision against a 54.1% trivial policy, severity precision rising from 53.2%
+  to 91.8%, and all of it reproduced cleanly every time it was re-run.
+- **Cause.** The streaming job joins each query to the *latest* history snapshot per key.
+  Live, that is history up to now. On a replay it is history up to the **end of the data**,
+  and the producer replays the **earliest** legs first — so 1,290 of the 2,000 replayed legs,
+  which had no corridor history at their own creation time, were scored as if they had
+  fourteen prior legs, some of them finishing after the leg itself.
+- **How it was found.** Not by a test. D-053 was scoping whether the stream could serve the
+  adopted model, and reading `latest_history` for that purpose raised the question of what it
+  returns on a replay. Scoring the same legs as-of and via the snapshot answered it: MAE
+  47.29 against 32.81 min, precision 58.6% against 72.1%. The snapshot run reproduced the
+  published numbers *exactly*, which is what made the finding certain.
+- **Why the equality test missed it.** Stream-equals-batch compares a leg scored in batch
+  with the same leg scored through the event path — and both paths took the history from the
+  same `features_v1` row. It proved the event format was lossless. It never compared against
+  what the *running job* joins, which is where the leak was.
+- **Fix.** Reported numbers now come from the as-of run (D-054). D-047's conclusion survives
+  — precision still rises monotonically with severity — at lower levels, and the `low` grade
+  is now below the trivial policy. The superseded page and decision carry a note pointing
+  forward instead of being rewritten.
+- **Carry.** A replay is only an evaluation if every join inside it is as-of the event being
+  replayed. "The same code as production" is not the same as "the same information as
+  production had at that moment", and a pipeline can be bit-identical to itself while being
+  wrong about time.
+
+### P-63 · The README's run order could not rebuild what the README's own dashboard reads
+**Week 8 · Mounika · resolved**
+
+- **Symptom.** Preparing the full fresh-clone rebuild, the README's steps ran out at Stage 3
+  and the corridor audit. The feature table (Stage 4), the champion model, the Week 7 model
+  sprint, the document corpus and the vector index were never in the numbered steps — they
+  appeared only as fix hints printed by `boot --check`.
+- **Cause.** Each week added its stage to its own write-up and its own module docstring; none
+  of them owned the README's run order, so it stopped growing in Week 2. Everyone who worked
+  on the project already had the artefacts, which is exactly the population that cannot see
+  this gap.
+- **Fix.** `scripts/rebuild_all.sh` runs every module's own documented command in dependency
+  order and ends with `results_freeze --verify`, so a rebuild is also a check that the
+  reported numbers come back. The README's status table points to it. It was run on a clone
+  that had never been built, with only the raw CSV added.
+- **Carry.** A run order is a dependency graph written as prose, and prose does not fail when
+  a node is missing. A script does.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
@@ -1133,6 +1395,21 @@ checking a number, never by reading the file.
   and one document per member per week.**
 - **Cost.** ~1 hour of tidying, and it stays fixed rather than needing re-tidying every
   week.
+
+### P-57 · A commit went up with two failing tests because a pipe hid the exit code
+**Week 7 · Krishna · resolved**
+
+- **Symptom.** Commit `0d77ad0` on `week7-krishna-rag-assistant` was pushed while two
+  tests failed: the MCP server's hand-typed `TOOL_NAMES` missed `search_knowledge`, so
+  the server advertised 13 tools while `--list` printed 12.
+- **Cause.** The check was `pytest ... | tail -3`. A pipeline's exit status is the last
+  command's, so `tail` succeeded and the red summary line scrolled past unread.
+- **Fix.** The next commit, `1f4b23e`, fixed the cause rather than the list: tool names
+  are recorded by the `@tool` decorator that registers them, so they cannot go stale.
+  Its message says the previous commit went up red. Test runs before a commit now read
+  `${PIPESTATUS[0]}` explicitly.
+- **Carry.** A hand-kept list of things that also exist in code will drift. And a check
+  whose result you did not read is not a check.
 
 ---
 

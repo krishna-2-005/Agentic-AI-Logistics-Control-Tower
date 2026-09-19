@@ -1,0 +1,45 @@
+{
+  "set": "analytics_assistant fixed question set v1",
+  "plan": "execution plan v3.1 W7 D5 (Krishna authors, Lahari judges groundedness)",
+  "scoring": {
+    "route_correct": "the answer came from the expected route: table, retrieval or refused",
+    "source_correct": "for table and retrieval, at least one returned source contains expected_source",
+    "grounded": "judged by hand: every number in the answer appears in the returned context, and nothing is claimed that the context does not support. A refusal on a refused question is grounded by definition."
+  },
+  "questions": [
+    {"id": "T01", "category": "ranking", "question": "Which corridors are the worst bottlenecks?", "expected_route": "table", "expected_source": "w2_top20_bottlenecks.csv", "notes": "rank 1 is IND208012AAA>IND209304AAA at 13.88x"},
+    {"id": "T02", "category": "ranking", "question": "What are the top 3 slowest corridors in the network?", "expected_route": "table", "expected_source": "w2_top20_bottlenecks.csv", "notes": "must return exactly three, Kanpur-Kanpur first"},
+    {"id": "T03", "category": "ranking", "question": "Which hub has the longest dwell time?", "expected_route": "table", "expected_source": "w2_hub_friction_top20.csv", "notes": "D-045's failure case for pure retrieval: rank 1 is Aluva IND683511AAA"},
+    {"id": "T04", "category": "ranking", "question": "List the 5 most congested hubs by friction.", "expected_route": "table", "expected_source": "w2_hub_friction_top20.csv", "notes": ""},
+    {"id": "T05", "category": "ranking", "question": "Which corridors run fastest compared with the network?", "expected_route": "table", "expected_source": "w2_corridor_audit.csv", "notes": "statistically confirmed faster, lowest excess ratio first (Dhampur-Kanth 0.22x)"},
+    {"id": "T06", "category": "ranking", "question": "Show the 10 worst bottleneck routes.", "expected_route": "table", "expected_source": "w2_top20_bottlenecks.csv", "notes": "'routes' rather than 'corridors' -- the router must accept the synonym"},
+
+    {"id": "F01", "category": "corridor fact", "question": "What does the corridor audit say about IND212402AAA>IND211002AAB?", "expected_route": "retrieval", "expected_source": "corridor_audit (IND212402AAA>IND211002AAB)", "notes": "Phulpur to Allahabad, rank 2"},
+    {"id": "F02", "category": "corridor fact", "question": "How many legs does the Malvan to Sawantwadi corridor have, and how late does it run?", "expected_route": "retrieval", "expected_source": "corridor_audit (IND416606AAA>IND416510AAA)", "notes": "10 legs, 12.15x"},
+    {"id": "F03", "category": "hub fact", "question": "Tell me about dwell at the Hubli hub.", "expected_route": "retrieval", "expected_source": "hub_friction (IND580028AAA)", "notes": "no superlative, so retrieval, not the table route"},
+    {"id": "F04", "category": "corridor fact", "question": "Is the Dhampur to Kanth corridor faster or slower than the network?", "expected_route": "retrieval", "expected_source": "corridor_audit (IND246761AAA>IND244501AAA)", "notes": "'faster or slower' must not trigger the best-corridors table route"},
+    {"id": "F05", "category": "audit method", "question": "How many corridors are statistically slower than the network?", "expected_route": "retrieval", "expected_source": "", "notes": "273; any source that carries the count is acceptable"},
+    {"id": "F06", "category": "audit method", "question": "Why was the audited-corridor support floor lowered to 10 legs?", "expected_route": "retrieval", "expected_source": "D-018", "notes": ""},
+
+    {"id": "D01", "category": "decision", "question": "Why was the delay threshold set to 2x planned time?", "expected_route": "retrieval", "expected_source": "D-003", "notes": "93.6% delayed at 1.25x"},
+    {"id": "D02", "category": "decision", "question": "Why does the streaming job drop fact events?", "expected_route": "retrieval", "expected_source": "D-037", "notes": ""},
+    {"id": "D03", "category": "decision", "question": "What sustained throughput did the streaming pipeline reach?", "expected_route": "retrieval", "expected_source": "", "notes": "886 events/sec produced, 740 scoring; W5 doc or D-038"},
+    {"id": "D04", "category": "decision", "question": "Why does the alert bot send only a shortlist of alerts?", "expected_route": "retrieval", "expected_source": "D-039", "notes": ""},
+    {"id": "D05", "category": "decision", "question": "Why do the agents compute their verdicts instead of letting the model decide?", "expected_route": "retrieval", "expected_source": "D-041", "notes": ""},
+    {"id": "D06", "category": "decision", "question": "Is the invoice auditor's rate band evidence about real freight pricing?", "expected_route": "retrieval", "expected_source": "D-043", "notes": "no: circular, the corpus's own model"},
+    {"id": "D07", "category": "decision", "question": "Does the exception agent's severity grade track real lateness?", "expected_route": "retrieval", "expected_source": "D-047", "notes": "precision 53.2% low to 91.8% critical"},
+    {"id": "D08", "category": "decision", "question": "What is the fair baseline for the ML model and what MAE does it reach?", "expected_route": "retrieval", "expected_source": "D-048", "notes": "corridor median, 33.04 min; needs the index rebuilt after D-048"},
+
+    {"id": "P01", "category": "problem", "question": "What went wrong with the delay label on the stream?", "expected_route": "retrieval", "expected_source": "P-42", "notes": "stale 1.25x column"},
+    {"id": "P02", "category": "problem", "question": "What is the day-of-week convention trap between Spark and Python?", "expected_route": "retrieval", "expected_source": "P-39", "notes": ""},
+    {"id": "P03", "category": "problem", "question": "Why did booking shipments return HTTP 500 in Week 6?", "expected_route": "retrieval", "expected_source": "P-47", "notes": "schema drift, shipment.notes"},
+    {"id": "P04", "category": "problem", "question": "How was a leg's finish time computed wrongly?", "expected_route": "retrieval", "expected_source": "P-52", "notes": "needs the index rebuilt after P-52"},
+
+    {"id": "R01", "category": "out of scope", "question": "Who is the CEO of Delhivery?", "expected_route": "refused", "expected_source": "", "notes": "domain-adjacent: a model knows this, the project data does not"},
+    {"id": "R02", "category": "out of scope", "question": "What will diesel prices be in India next month?", "expected_route": "refused", "expected_source": "", "notes": "domain-adjacent forecast"},
+    {"id": "R03", "category": "out of scope", "question": "What is the GST rate on road freight?", "expected_route": "refused", "expected_source": "", "notes": "freight-adjacent, not in the data"},
+    {"id": "R04", "category": "out of scope", "question": "What is the weather in Mumbai tomorrow?", "expected_route": "refused", "expected_source": "", "notes": "the closest out-of-scope probe in calibration (0.681)"},
+    {"id": "R05", "category": "out of scope", "question": "Write Python code to sort a list.", "expected_route": "refused", "expected_source": "", "notes": ""},
+    {"id": "R06", "category": "out of scope", "question": "How many trucks does Delhivery own?", "expected_route": "refused", "expected_source": "", "notes": "domain-adjacent fleet fact"}
+  ]
+}

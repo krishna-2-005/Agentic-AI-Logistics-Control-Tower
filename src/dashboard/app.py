@@ -849,21 +849,132 @@ elif page == "Live alerts":
 
 elif page == "Agent console":
     st.title("Agent console")
-    pending(
-        "Week 7",
-        "Krishna",
-        "Every agent call traced with inputs and outputs — the monitoring deliverable.",
+    st.caption(
+        "Every agent call, with its inputs and outputs, read from `data/traces/agent_calls.jsonl`. "
+        "Failed calls are traced too — a log of successes cannot answer \"what happened to that request\"."
     )
+    from src.agents.tracing import TRACE_PATH, read_traces
+
+    traces = read_traces(limit=2000)
+    if not traces:
+        pending("Week 7", "Krishna", "No traced calls yet. Run any agent, e.g. "
+                "`python -m src.agents.analytics_assistant \"which corridors are the worst bottlenecks?\" --no-llm`.")
+    else:
+        frame = pd.DataFrame(traces)
+        frame["failed"] = frame["error"].notna()
+        per_agent = frame.groupby("agent").agg(
+            calls=("trace_id", "size"),
+            failed=("failed", "sum"),
+            median_ms=("duration_ms", "median"),
+            last_call=("started_at", "max"),
+        ).sort_values("last_call", ascending=False)
+        st.subheader("By agent")
+        st.dataframe(per_agent, use_container_width=True)
+
+        st.subheader("Recent calls")
+        c1, c2 = st.columns([2, 1])
+        agent_choice = c1.selectbox("Agent", ["all", *per_agent.index.tolist()])
+        failures_only = c2.checkbox("Failures only")
+        shown = frame if agent_choice == "all" else frame[frame["agent"] == agent_choice]
+        if failures_only:
+            shown = shown[shown["failed"]]
+        shown = shown.head(200)
+        st.dataframe(
+            shown[["started_at", "agent", "duration_ms", "error", "trace_id"]],
+            use_container_width=True, hide_index=True,
+        )
+        if not shown.empty:
+            picked = st.selectbox("Open a call", shown["trace_id"].tolist(),
+                                  format_func=lambda t: f"{t} · {shown.set_index('trace_id').loc[t, 'agent']}")
+            record = next(r for r in traces if r["trace_id"] == picked)
+            if record["error"]:
+                st.error(record["error"])
+            left, right = st.columns(2)
+            left.markdown("**Inputs**")
+            left.json(record["inputs"])
+            right.markdown("**Outputs**")
+            right.json(record["outputs"])
+        st.caption(f"{len(traces):,} most recent call(s) from `{TRACE_PATH}`.")
+
+    transcript = load_json(config.BENCHMARKS_RAW_DIR / "w7_mcp_stdio_transcript.json")
+    if transcript:
+        st.subheader("MCP server over stdio")
+        calls = transcript.get("calls", [])
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Tools discovered", len(transcript.get("tools_discovered", [])))
+        c2.metric("Calls made", len(calls))
+        c3.metric("Errors", sum(1 for c in calls if c.get("is_error")))
+        c4.metric("Handshake", f"{transcript.get('handshake_ms', 0):,.0f} ms")
+        st.dataframe(pd.DataFrame(calls)[["tool", "duration_ms", "is_error", "result_is_json"]],
+                     use_container_width=True, hide_index=True)
+        st.caption("A real MCP client spawning `python -m src.agents.mcp_server` as a subprocess "
+                   "(`python -m src.agents.mcp_stdio_client`).")
 
 elif page == "Analytics assistant":
     st.title("Analytics assistant")
-    pending(
-        "Week 7",
-        "Krishna",
-        "RAG over the vector DB holding audit tables and results docs. Refuses "
-        "out-of-scope questions; scored on groundedness over a fixed 30-question set.",
+    st.caption(
+        "Answers from the project's own tables, audits, decisions and problem log. Ranking "
+        "questions are answered from the ranked tables; everything else by retrieval; "
+        "questions the data does not cover are refused."
     )
-    st.caption("Week 1 precursor: `python -m src.agents.hello_agent` runs the same graph shape.")
+    # The index lives under data/, which the deployed app does not carry (G-08). Asking
+    # without it raises inside Chroma; saying so up front is the difference between a page
+    # that is partial and a page that looks broken.
+    index_ready = config.CHROMA_PERSIST_DIR.exists() and any(config.CHROMA_PERSIST_DIR.iterdir())
+    if not index_ready:
+        st.info(
+            "**Live questions need the local vector index**, which is a generated artefact "
+            "under `data/` and is not deployed. Build it with `python -m src.common.vectordb "
+            "--build` (about 90 seconds) to enable the box below. The scorecard underneath is "
+            "committed and reads the same either way."
+        )
+    with st.form("ask"):
+        question = st.text_input("Question", placeholder="Which hub has the longest dwell time?",
+                                 disabled=not index_ready)
+        use_llm = st.checkbox("Phrase the answer with the model (one call from the daily quota)",
+                              value=False, disabled=not index_ready)
+        asked = st.form_submit_button("Ask", disabled=not index_ready)
+    if asked and question.strip():
+        from src.agents.analytics_assistant import answer
+
+        with st.spinner("Looking it up…"):
+            try:
+                result = answer(question.strip(), use_llm=use_llm)
+            except Exception as exc:  # noqa: BLE001 -- the vector index may not be built
+                st.error(f"The assistant could not answer: {exc}")
+                result = None
+        if result is not None:
+            route_label = {"table": "ranked table", "retrieval": "retrieval", "refused": "refused"}[result.route]
+            meta = f"Route: **{route_label}** · drafted by: **{result.draft_source}**"
+            if result.nearest_distance is not None:
+                meta += f" · nearest document distance {result.nearest_distance:.3f}"
+            st.markdown(meta)
+            (st.warning if result.route == "refused" else st.success)(result.answer)
+            if result.sources:
+                st.markdown("**Sources**")
+                for source in result.sources:
+                    st.markdown(f"- `{source}`")
+            if result.context:
+                with st.expander("Context the answer was built from"):
+                    st.text(result.context)
+
+    st.subheader("Fixed 30-question set")
+    for mode, label in (("no_llm", "Without the model"), ("llm", "With the model")):
+        run = load_json(config.BENCHMARKS_RAW_DIR / f"w7_assistant_run_{mode}.json")
+        if not run:
+            st.caption(f"{label}: not run yet — `python -m src.agents.assistant_eval"
+                       f"{' --no-llm' if mode == 'no_llm' else ' --budget 15'}`.")
+            continue
+        st.markdown(f"**{label}** — {run['answered']} of {run['questions']} answered")
+        c1, c2, c3, c4 = st.columns(4)
+        c1.metric("Route correct", f"{run['route_accuracy'] * 100:.1f}%")
+        c2.metric("Source correct", f"{run['source_accuracy'] * 100:.1f}%")
+        c3.metric("Refusal recall", f"{(run['refusal_recall'] or 0) * 100:.0f}%")
+        c4.metric("Refusal precision", f"{(run['refusal_precision'] or 0) * 100:.0f}%")
+        if run["misses"]:
+            with st.expander(f"{len(run['misses'])} miss(es)"):
+                st.dataframe(pd.DataFrame(run["misses"]), use_container_width=True, hide_index=True)
+    st.caption("Groundedness is judged by hand on the saved answers, not by the assistant's own script (D-028).")
 
 elif page == "Prompt library":
     st.title("Prompt library")

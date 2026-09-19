@@ -10,10 +10,29 @@ built on real Delhivery network data.**
 
 ## The contribution in one sentence
 
-A big-data pipeline that **audits and beats a production routing engine**, wrapped in a
-**collaborating team of AI agents** that read logistics documents, enter orders into a TMS, watch
-live shipments, resolve exceptions, and validate invoices — a working, student-scale digital
-workforce for logistics operations.
+A big-data pipeline that **localises, corridor by corridor, where a production routing engine is
+systematically wrong** — 273 corridors significantly slower and 512 faster than the network, at a
+5% false discovery rate — wrapped in a team of **deterministic-core agents** that read logistics
+documents, enter orders into a TMS, watch live shipments, resolve exceptions and validate
+invoices, each measured against a trivial policy.
+
+> **Not claimed:** "beats the planner". OSRM has no access to corridor history, so a model that
+> has seen it is not a fair comparison. Every model result is reported against the per-corridor
+> median, the baseline an MAE table should use (D-048).
+
+## Project status and where everything is
+
+| | |
+|---|---|
+| **Rebuild everything from the raw CSV** | `bash scripts/rebuild_all.sh` — every stage in dependency order, ending in `results_freeze --verify` |
+| **Run the whole system** | `python -m src.common.boot` (TMS → replay → streaming → agents), `--dashboard` to keep Streamlit up |
+| **Live Kafka, no Docker** | `scripts/kafka_native.ps1` (G-05; alerts identical to the file source) |
+| **Paper draft** | [`docs/paper_draft.md`](docs/paper_draft.md) — target ICCCI 2027 (D-052); outline and skeleton beside it |
+| **Figures** | [`docs/figures/`](docs/figures/) — nine, png and vector pdf, each from a `benchmarks/raw/` file |
+| **Final numbers** | [`benchmarks/final_tables.md`](benchmarks/final_tables.md), [`benchmarks/agent_evaluation.md`](benchmarks/agent_evaluation.md), [`benchmarks/experiments_appendix.md`](benchmarks/experiments_appendix.md) |
+| **Demo** | [`docs/demo_script.md`](docs/demo_script.md) — ten minutes, with what to do when each beat fails |
+| **Public dashboard** | bundle ready in `deploy/hf_space/`, verified in a clean environment; publishing needs a Hugging Face write token ([`docs/deploy_dashboard.md`](docs/deploy_dashboard.md)) |
+| **Still open** | G-07 real alert channel (needs a credential); extraction rows 21-40 (daily LLM quota); serving the reported model in the stream (D-053, Phase 3) |
 
 ---
 
@@ -21,8 +40,8 @@ workforce for logistics operations.
 
 **Layer 1 — the Big Data core.** A distributed PySpark pipeline over ~145K real Delhivery shipment
 segments that reconstructs trips, statistically localises the corridors where the production OSRM
-routing engine is systematically wrong, trains MLlib models that outperform that planner, and serves
-predictions in real time through Kafka + Spark Structured Streaming.
+routing engine is systematically wrong, trains an MLlib model on the residual over a per-corridor
+median, and serves predictions through Kafka + Spark Structured Streaming.
 
 **Layer 2 — the Agentic AI workforce.** Five LangGraph agents plus an orchestrator that consume
 Layer 1's intelligence and act on it autonomously, calling tools through an MCP server.
@@ -271,13 +290,13 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 
 | Week | Gate | Tag |
 |---|---|---|
-| 1 | Cleaned Parquet v1 exists; every member loads it in Spark; LLM API responds | — |
+| 1 | Cleaned Parquet v1 exists; every member loads it in Spark; LLM API responds | `week1-complete` — **met** |
 | 2 | Bottleneck corridor audit + India map exist | `week2-complete` (`audit-v1`) — **met** |
-| 3 | Feature table frozen; baselines on the board; 100+ labelled synthetic documents | `week3-complete` |
-| 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) |
+| 3 | Feature table frozen; baselines on the board; 100+ labelled synthetic documents | `week3-complete` — **met** |
+| 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) — **met**. The Week 4 model was superseded in Week 7 (D-050) and extraction accuracy recorded at 98.0% on the first 11 of 40 rows (G-01) |
 | 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` — **met** |
-| 6 | Full lifecycle runs agent-to-agent with no human in the loop | `week6-complete` |
-| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` |
+| 6 | Full lifecycle runs agent-to-agent with no human in the loop | `week6-complete` — **met** |
+| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` — **met**; G-05 (live broker) closed in Week 8 without Docker, G-07 (a real alert channel) still carried: it needs a credential, and none is faked |
 | 8 | Demo rehearsed twice; paper outline + figure set complete | `v1.0` |
 
 ---
@@ -292,11 +311,12 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | Corridor audit — robustness view at the old 30-leg floor | 34 slower and 36 faster of 99 tested; worst 1.92×. Shares **no corridor** with the 10-leg top 20 — see D-018 | [`benchmarks/raw/w2_corridor_audit_support30.csv`](benchmarks/raw/w2_corridor_audit_support30.csv) |
 | Hub friction — ranked hubs (≥30 outbound legs) | 121 of 1,657; median leg dwell 49 min (34.6% of wall clock) | [`benchmarks/raw/w2_hub_dwell.csv`](benchmarks/raw/w2_hub_dwell.csv) |
 | India map — audited corridors placed | 1,130 of 1,130; the 273 bottlenecks sit in 169 cities and 70 of them are intra-city | [`benchmarks/raw/w2_corridor_audit.csv`](benchmarks/raw/w2_corridor_audit.csv) |
-| Best model MAE vs OSRM MAE | Random Forest (MLlib) 36.9 min vs OSRM 107.1 min — 65.5% lower; still 0.8 min behind the past-only corridor-mean baseline (36.1 min), reported as such per D-024 | [`benchmarks/raw/w4_model_metrics.csv`](benchmarks/raw/w4_model_metrics.csv) |
+| Feature table and baselines (Week 3) | 26,369 legs frozen as `features_v1` with past-only corridor and hub history (11.1% cold-start); chronological 80/20 split (21,095 / 5,274). Test MAE: OSRM 107.1 min, corridor mean 36.1, linear regression 41.2. Delay classifier v1 (logistic) F1 0.764 against a 51.1% majority-class rate. Document corpus: 120 consignments, 240 labelled documents (BOL + invoice), 20 with seeded errors | [`benchmarks/raw/w3_baseline_report.json`](benchmarks/raw/w3_baseline_report.json), [`w3_baseline_metrics.csv`](benchmarks/raw/w3_baseline_metrics.csv), [`w3_doc_corpus_manifest.csv`](benchmarks/raw/w3_doc_corpus_manifest.csv) |
+| Best model MAE vs OSRM MAE | v2 GBT on the corridor-median residual **30.90 min** vs OSRM 107.1 min — 71% lower, and 6.5% under the corridor-median baseline (33.04 min) it is judged against, winning on all 14 slices (D-050). Week 4's Random Forest (36.9 min) is now an ablation row | [`benchmarks/raw/w7_model_metrics_v2_stepsize.csv`](benchmarks/raw/w7_model_metrics_v2_stepsize.csv), [`w4_model_metrics.csv`](benchmarks/raw/w4_model_metrics.csv) |
 | Sustained streaming throughput | all 52,738 replayed events scored, nothing dropped: **886 events/sec** produced, **740 events/sec** of saturated scoring, event-to-alert **p50 28.9 s** | [`benchmarks/raw/w5_stream_throughput_full.json`](benchmarks/raw/w5_stream_throughput_full.json) |
 | Stream equals batch | **500 of 500** predictions bit-identical across the batch and event paths | [`benchmarks/raw/w5_stream_validation_report.json`](benchmarks/raw/w5_stream_validation_report.json) |
 | Delay-threshold sensitivity | 2.00× holds: the best classifier's MCC barely moves across thresholds (0.507→0.536) while the alert volume falls from 98% of legs to 49%. The stream's own flag is the weakest real classifier (MCC 0.477) | [`benchmarks/raw/w5_threshold_sensitivity.csv`](benchmarks/raw/w5_threshold_sensitivity.csv) |
-| Order Entry Agent evaluation | **40 of 50** authored cases run, **40 correct**; 0 orders filed on invented values, 0 needless questions. Last 10 pending quota | [`benchmarks/raw/w5_order_eval_summary.json`](benchmarks/raw/w5_order_eval_summary.json) |
+| Order Entry Agent evaluation | **50 of 50** authored cases run, **50 correct**; 0 orders filed on invented values, 0 needless questions | [`benchmarks/raw/w5_order_eval_summary.json`](benchmarks/raw/w5_order_eval_summary.json) |
 | Lifecycle, end to end (Gate 6) | 10 emails, 3 distinct paths, no human in the middle: 5 stopped at a question, 3 booked and unflagged, 2 booked → flagged → notified → ticketed | [`benchmarks/raw/w6_orchestrator_runs.json`](benchmarks/raw/w6_orchestrator_runs.json) |
 | Freight Invoice Auditor v1 | **20 of 20** verdicts matched the seeded ground truth; no clean invoice disputed. Band is the corpus's own rate model — exact here, circular as a pricing claim (D-043) | [`benchmarks/raw/w6_invoice_audit_runs.json`](benchmarks/raw/w6_invoice_audit_runs.json) |
 | Agent evaluation summary | _pending W7_ | `benchmarks/agent_evaluation.md` |
@@ -321,11 +341,14 @@ runs with `--no-llm` or `--no-draft` and no API call at all (D-041). That is a d
 agents are less "agentic" than the word suggests, and in exchange every verdict is reproducible and
 therefore measurable.
 
-**What has never run here, stated plainly.** The Kafka sink is written and import-checked but has
-never reached a live broker — there is no Docker on the development machine, so the file-streaming
-fallback is what every reported number comes from (D-035). The alert bot's Telegram and email
-channels are implemented and unconfigured, so only the file channel has sent anything (D-039). The
-MCP server's tools have been called directly but not yet driven by an MCP client over stdio.
+**What has never run here, stated plainly.** The alert bot's Telegram and email channels are
+implemented and unconfigured, so only the file channel has sent anything (D-039); the steps to
+configure one are in `docs/W7_krishna_rag_assistant.md`. **Kafka has now run against a live
+broker** — Apache Kafka 4.1.2, natively on the JVM, no Docker (`scripts/kafka_native.ps1`) —
+and alerted on exactly the same 1,347 legs as the file source (`benchmarks/raw/
+w7_kafka_source_equivalence.json`). The MCP server has been driven by a real client over
+stdio — 13 tools, 8 calls, 0 errors (`benchmarks/raw/w7_mcp_stdio_transcript.json`). The
+adopted Week 7 model is reported but not yet served by the stream (D-053).
 
 ---
 

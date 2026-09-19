@@ -48,7 +48,16 @@ from src.common.logging_setup import get_logger
 log = get_logger("ml.results_freeze")
 
 RAW = config.BENCHMARKS_RAW_DIR
-FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v1.json"
+#: v1 froze Week 1-6 at the Week 6 sync. Week 7 reopened the results for the model
+#: correction sprint (D-048) and closed it with a different reported model (D-050), so the
+#: current freeze is v2 and v1 stays exactly as it was -- the same rule D-016 applies to
+#: data versions. `--path` still points anywhere, and `--verify` compares against whichever
+#: file it is given, so "what moved since Week 6" remains answerable.
+FREEZE_JSON_V1 = config.BENCHMARKS_DIR / "results_freeze_v1.json"
+FREEZE_JSON_V2 = config.BENCHMARKS_DIR / "results_freeze_v2.json"
+#: v3 is the freeze v1.0 ships with (D-056): v2's numbers plus Week 8's, with extraction at
+#: the row count the release actually carries. v1 and v2 stay as they were.
+FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v3.json"
 SUMMARY_MD = config.DOCS_DIR / "RESULTS_SUMMARY.md"
 
 
@@ -148,6 +157,41 @@ ENTRIES: list[tuple[str, int, str, str, str, Callable[[], Any]]] = [
      "w6_invoice_audit_runs.json", lambda: _json("w6_invoice_audit_runs.json")["cases"]),
     ("invoice_correct", 6, "Invoice verdicts matching the seeded truth", "invoices",
      "w6_invoice_audit_runs.json", lambda: _json("w6_invoice_audit_runs.json")["correct_verdicts"]),
+
+    # Week 7 reopened the freeze for the model correction sprint (D-048) and closed it with
+    # a different reported model (D-050). These are the numbers that replaced Week 4's.
+    ("median_bar_mae", 7, "The fair baseline: per-corridor as-of median", "min",
+     "w7_model_v2_stepsize_report.json",
+     lambda: _json("w7_model_v2_stepsize_report.json")["adoption"]["median_bar_min"]),
+    ("model_v2_mae", 7, "Reported model: v2 GBT on the median residual", "min",
+     "w7_model_v2_stepsize_report.json",
+     lambda: _json("w7_model_v2_stepsize_report.json")["adoption"]["overall_mae_min"]),
+    ("doc_extraction_accuracy", 7, "Document extraction, per-field accuracy", "share",
+     "w7_doc_extraction_eval.json", lambda: _json("w7_doc_extraction_eval.json")["overall"]["accuracy"]),
+    ("doc_extraction_rows", 7, "Document rows scored (of 40 planned)", "rows",
+     "w7_doc_extraction_eval.json", lambda: _json("w7_doc_extraction_eval.json")["documents_evaluated"]),
+    ("assistant_route_accuracy", 7, "Analytics assistant, correct route on the fixed set", "share",
+     "w7_assistant_run_no_llm.json", lambda: _json("w7_assistant_run_no_llm.json")["route_accuracy"]),
+    ("scale_rows", 7, "Rows the Week 2 aggregation was run on at scale", "rows",
+     "w7_scale_benchmark.json",
+     lambda: max(r["rows"] for r in _json("w7_scale_benchmark.json")["runs"])),
+
+    # Week 8: the numbers v1.0 ships with that did not exist at the Week 7 freeze.
+    ("exception_precision_as_of", 8, "Exception alert precision, as-of history (D-054)", "share",
+     "w8_replay_leakage.json",
+     lambda: _json("w8_replay_leakage.json")["exception_agent_as_of"]["notification_precision"]),
+    ("assistant_groundedness", 8, "Assistant groundedness, model-written answers", "share",
+     "w7_groundedness_summary.json",
+     lambda: _json("w7_groundedness_summary.json")["groundedness_rate_model_written"]),
+    ("kafka_file_alerts_identical", 8, "Kafka and file-source alerts identical (same legs, same gaps)", "bool",
+     "w7_kafka_source_equivalence.json",
+     lambda: _json("w7_kafka_source_equivalence.json")["identical_leg_sets"]),
+    ("adopted_stream_equals_batch", 8, "Reported model, stream equals batch", "legs",
+     "w8_stream_validation_v2.json",
+     lambda: _json("w8_stream_validation_v2.json")["identical_predictions"]),
+    ("fresh_clone_rebuild_s", 8, "Full rebuild from the raw CSV on a fresh clone", "seconds",
+     "w8_fresh_clone_rebuild.json",
+     lambda: _json("w8_fresh_clone_rebuild.json")["total_seconds"]),
 ]
 
 

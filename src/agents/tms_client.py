@@ -48,7 +48,16 @@ class TMSClient:
 
     def _request(self, method: str, path: str, **kwargs: Any) -> Any:
         url = f"{self.base_url.rstrip('/')}{path}"
-        response = httpx.request(method, url, headers=self._headers(), timeout=self.timeout, **kwargs)
+        try:
+            response = httpx.request(method, url, headers=self._headers(), timeout=self.timeout, **kwargs)
+        except httpx.HTTPError as exc:
+            # A refused or timed-out connection is `httpx.ConnectError`, which is an
+            # `httpx.HTTPError` and *not* an `OSError`. Every caller in Week 6 caught
+            # `(TMSError, OSError)`, so a TMS that was down crashed them instead of being
+            # handled -- including `tms_health`, whose whole job is to report exactly
+            # that. Found by driving the MCP server from a real stdio client (P-54).
+            # Status 0 means "no HTTP response at all", distinct from any real code.
+            raise TMSError(0, f"transport failure: {type(exc).__name__}: {exc}", path) from exc
         if response.status_code >= 400:
             try:
                 detail = response.json().get("detail", response.text[:300])

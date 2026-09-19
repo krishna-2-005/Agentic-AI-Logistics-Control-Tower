@@ -48,7 +48,9 @@ from src.streaming.schema import (
     fact_event,
     load_schema,
     query_event,
+    require_od_end_time,
     validate_event,
+    with_od_end_time,
 )
 
 log = get_logger("streaming.producer")
@@ -150,7 +152,7 @@ def load_legs(limit: int | None = None) -> pd.DataFrame:
     spark = get_spark("stream-producer")
     try:
         sdf = spark.read.parquet(str(config.FEATURES_V1)).select(*EXAMPLE_COLUMNS)
-        pdf = sdf.toPandas()
+        pdf = require_od_end_time(with_od_end_time(spark, sdf).toPandas())
     finally:
         stop_spark(spark)
     pdf = pdf.sort_values("trip_creation_time").reset_index(drop=True)

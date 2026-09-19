@@ -1,0 +1,154 @@
+{
+  "generated_at": "2026-09-19T19:28:53+05:30",
+  "legs": 2000,
+  "legs_replayed_first": "the earliest legs by creation time, as the producer replays them",
+  "model": "data/models/champion (the served model)",
+  "as_of": {
+    "mae_min": 47.29,
+    "alerts": 1720,
+    "precision": 0.5855,
+    "recall": 0.9307
+  },
+  "snapshot": {
+    "mae_min": 32.81,
+    "alerts": 1347,
+    "precision": 0.7209,
+    "recall": 0.8974
+  },
+  "median_corridor_history_legs": {
+    "as_of": 0.0,
+    "snapshot": 14.0
+  },
+  "legs_cold_as_of_but_warm_in_snapshot": 1290,
+  "mean_abs_prediction_shift_min": 31.54,
+  "exception_agent_as_of": {
+    "alerts_scored": 1720,
+    "notification_precision": 0.5855,
+    "recall_of_all_delayed": 0.9307,
+    "by_severity": [
+      {
+        "severity": "low",
+        "notified": 453,
+        "truly_delayed": 180,
+        "precision": 0.3974,
+        "median_predicted_gap_min": 71.1
+      },
+      {
+        "severity": "medium",
+        "notified": 667,
+        "truly_delayed": 342,
+        "precision": 0.5127,
+        "median_predicted_gap_min": 58.5
+      },
+      {
+        "severity": "high",
+        "notified": 308,
+        "truly_delayed": 236,
+        "precision": 0.7662,
+        "median_predicted_gap_min": 48.0
+      },
+      {
+        "severity": "critical",
+        "notified": 292,
+        "truly_delayed": 249,
+        "precision": 0.8527,
+        "median_predicted_gap_min": 48.2
+      }
+    ],
+    "policies": [
+      {
+        "notify_at_or_above": "low",
+        "notified": 1720,
+        "share_of_alerts": 1.0,
+        "precision": 0.5855,
+        "recall_of_all_delayed": 0.9307
+      },
+      {
+        "notify_at_or_above": "medium",
+        "notified": 1267,
+        "share_of_alerts": 0.7366,
+        "precision": 0.6527,
+        "recall_of_all_delayed": 0.7643
+      },
+      {
+        "notify_at_or_above": "high",
+        "notified": 600,
+        "share_of_alerts": 0.3488,
+        "precision": 0.8083,
+        "recall_of_all_delayed": 0.4482
+      },
+      {
+        "notify_at_or_above": "critical",
+        "notified": 292,
+        "share_of_alerts": 0.1698,
+        "precision": 0.8527,
+        "recall_of_all_delayed": 0.2301
+      }
+    ]
+  },
+  "exception_agent_snapshot": {
+    "alerts_scored": 1347,
+    "notification_precision": 0.7209,
+    "recall_of_all_delayed": 0.8974,
+    "by_severity": [
+      {
+        "severity": "low",
+        "notified": 434,
+        "truly_delayed": 231,
+        "precision": 0.5323,
+        "median_predicted_gap_min": 68.7
+      },
+      {
+        "severity": "medium",
+        "notified": 344,
+        "truly_delayed": 236,
+        "precision": 0.686,
+        "median_predicted_gap_min": 51.2
+      },
+      {
+        "severity": "high",
+        "notified": 275,
+        "truly_delayed": 234,
+        "precision": 0.8509,
+        "median_predicted_gap_min": 58.8
+      },
+      {
+        "severity": "critical",
+        "notified": 294,
+        "truly_delayed": 270,
+        "precision": 0.9184,
+        "median_predicted_gap_min": 60.1
+      }
+    ],
+    "policies": [
+      {
+        "notify_at_or_above": "low",
+        "notified": 1347,
+        "share_of_alerts": 1.0,
+        "precision": 0.7209,
+        "recall_of_all_delayed": 0.8974
+      },
+      {
+        "notify_at_or_above": "medium",
+        "notified": 913,
+        "share_of_alerts": 0.6778,
+        "precision": 0.8105,
+        "recall_of_all_delayed": 0.6839
+      },
+      {
+        "notify_at_or_above": "high",
+        "notified": 569,
+        "share_of_alerts": 0.4224,
+        "precision": 0.8858,
+        "recall_of_all_delayed": 0.4658
+      },
+      {
+        "notify_at_or_above": "critical",
+        "notified": 294,
+        "share_of_alerts": 0.2183,
+        "precision": 0.9184,
+        "recall_of_all_delayed": 0.2495
+      }
+    ]
+  }
+}

@@ -1,0 +1,43 @@
+dimension,slice,n,model,mae_min,median_baseline_mae_min,delta_vs_median_min
+overall,all,5274,corridor_median,33.04,33.04,0.0
+overall,all,5274,v2_gbt_residual_absolute,32.52,33.04,-0.53
+overall,all,5274,v2_gbt_residual_absolute_step1,30.9,33.04,-2.14
+corridor_support_in_train,unseen,294,corridor_median,111.18,111.18,0.0
+corridor_support_in_train,unseen,294,v2_gbt_residual_absolute,80.18,111.18,-31.01
+corridor_support_in_train,unseen,294,v2_gbt_residual_absolute_step1,75.92,111.18,-35.26
+corridor_support_in_train,1-9,1548,corridor_median,31.79,31.79,0.0
+corridor_support_in_train,1-9,1548,v2_gbt_residual_absolute,32.78,31.79,1.0
+corridor_support_in_train,1-9,1548,v2_gbt_residual_absolute_step1,31.76,31.79,-0.02
+corridor_support_in_train,10-29,2723,corridor_median,26.26,26.26,0.0
+corridor_support_in_train,10-29,2723,v2_gbt_residual_absolute,27.49,26.26,1.24
+corridor_support_in_train,10-29,2723,v2_gbt_residual_absolute_step1,26.07,26.26,-0.19
+corridor_support_in_train,>=30,709,corridor_median,29.45,29.45,0.0
+corridor_support_in_train,>=30,709,v2_gbt_residual_absolute,31.46,29.45,2.01
+corridor_support_in_train,>=30,709,v2_gbt_residual_absolute_step1,28.95,29.45,-0.51
+route_type,FTL,2594,corridor_median,39.1,39.1,0.0
+route_type,FTL,2594,v2_gbt_residual_absolute,38.03,39.1,-1.07
+route_type,FTL,2594,v2_gbt_residual_absolute_step1,36.48,39.1,-2.61
+route_type,Carting,2680,corridor_median,27.18,27.18,0.0
+route_type,Carting,2680,v2_gbt_residual_absolute,27.18,27.18,0.0
+route_type,Carting,2680,v2_gbt_residual_absolute_step1,25.51,27.18,-1.68
+distance_band,short (<33 km),1960,corridor_median,18.3,18.3,0.0
+distance_band,short (<33 km),1960,v2_gbt_residual_absolute,19.24,18.3,0.94
+distance_band,short (<33 km),1960,v2_gbt_residual_absolute_step1,18.2,18.3,-0.1
+distance_band,medium (33-67 km),1760,corridor_median,26.87,26.87,0.0
+distance_band,medium (33-67 km),1760,v2_gbt_residual_absolute,26.26,26.87,-0.61
+distance_band,medium (33-67 km),1760,v2_gbt_residual_absolute_step1,24.63,26.87,-2.24
+distance_band,long (>=67 km),1554,corridor_median,58.63,58.63,0.0
+distance_band,long (>=67 km),1554,v2_gbt_residual_absolute,56.34,58.63,-2.29
+distance_band,long (>=67 km),1554,v2_gbt_residual_absolute_step1,54.04,58.63,-4.59
+departure_hour,night,1537,corridor_median,33.99,33.99,0.0
+departure_hour,night,1537,v2_gbt_residual_absolute,33.79,33.99,-0.2
+departure_hour,night,1537,v2_gbt_residual_absolute_step1,31.54,33.99,-2.45
+departure_hour,morning,650,corridor_median,43.74,43.74,0.0
+departure_hour,morning,650,v2_gbt_residual_absolute,42.14,43.74,-1.6
+departure_hour,morning,650,v2_gbt_residual_absolute_step1,40.43,43.74,-3.31
+departure_hour,afternoon,647,corridor_median,37.16,37.16,0.0
+departure_hour,afternoon,647,v2_gbt_residual_absolute,37.78,37.16,0.62
+departure_hour,afternoon,647,v2_gbt_residual_absolute_step1,36.35,37.16,-0.81
+departure_hour,evening,2440,corridor_median,28.51,28.51,0.0
+departure_hour,evening,2440,v2_gbt_residual_absolute,27.76,28.51,-0.75
+departure_hour,evening,2440,v2_gbt_residual_absolute_step1,26.52,28.51,-1.98

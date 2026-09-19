@@ -44,6 +44,7 @@ import httpx
 from src.agents.llm import get_llm
 from src.agents.order_corpus import ORDER_CORPUS_JSON, OrderEmail
 from src.agents.prompts.registry import Prompt, load_prompt
+from src.agents.tracing import traced
 from src.common import config
 from src.common.logging_setup import get_logger
 from src.tms.models import OrderSource
@@ -177,7 +178,15 @@ def post_order(order: dict, external_ref: str, base_url: str | None = None) -> t
 
 
 def process_email(email: OrderEmail, prompt: Prompt, dry_run: bool = False) -> OrderOutcome:
-    """Extract, validate, and (unless `dry_run`) file. Never raises for one email."""
+    """Extract, validate, and (unless `dry_run`) file. Never raises for one email. Traced."""
+    with traced("order_entry", inputs={"seq": email.seq, "variant": email.variant, "subject": email.subject,
+                                       "body": email.body, "prompt": prompt.label, "dry_run": dry_run}) as span:
+        outcome = _process_email(email, prompt, dry_run)
+        span.outputs = asdict(outcome)
+        return outcome
+
+
+def _process_email(email: OrderEmail, prompt: Prompt, dry_run: bool) -> OrderOutcome:
     outcome = OrderOutcome(
         seq=email.seq,
         variant=email.variant,

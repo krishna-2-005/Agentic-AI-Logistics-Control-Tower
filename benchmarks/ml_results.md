@@ -26,9 +26,44 @@ Established Week 1 at OD-leg grain (`docs/W1_lahari_data_dictionary_and_eda.md`)
 |---|---|---|
 | OSRM production estimate | **107.1** | `osrm_time` as the prediction of `actual_time` |
 | Corridor mean | **36.1** | past-only mean per corridor (Stage 4), falls back to OSRM when cold (D-023) |
+| **Corridor median** | **33.04** | the fair bar for a table graded on MAE, which the median minimises. Found in Week 7 (D-048); every Week 7 number is reported against this, not the mean |
 | Linear regression | 41.2 | full as-of feature set; beats OSRM but **not** the corridor mean — see below |
 | Random Forest (MLlib, tuned) | **36.9** | best of the two Week 4 models on MAE — still **not** the corridor mean, by 0.8 min |
 | GBT (MLlib, tuned) | 38.3 | |
+| **v2 GBT on the residual (Week 7, reported)** | **30.90** | absolute loss, `stepSize=1.0`, trained on `gap_min − corridor median`; beats the median bar by 6.5% and wins on all 14 slices (D-050) |
+
+## Week 7: the correction sprint
+
+The Week 4 result above stands as recorded, and Week 7 explains it. Three findings, in
+order:
+
+1. **The bar was wrong.** MAE is minimised by the median, so the corridor *mean* (36.1)
+   was never the fair comparison. The median scores **33.04** — a stronger baseline than
+   either Week 4 model (D-048).
+2. **The objective was wrong.** MLlib's Random Forest is squared-loss only, on a table
+   graded by absolute error. An absolute-loss model on the same 27 features reaches 29.5
+   in sklearn, so the features were never the limit.
+3. **The step size made the fix inert.** MLlib's absolute-loss GBT fits its first tree on
+   squared error and then moves each prediction by at most `stepSize` per tree: at the
+   default-ish 0.05, 199 corrective trees can shift a prediction by 9.95 minutes in total.
+   Raising it to 1.0 — chosen on a validation cut, never on test (D-049) — took the model
+   from 32.52 to **30.90**.
+
+| model | test MAE (min) | vs corridor median |
+|---|---|---|
+| corridor median (the bar) | 33.04 | — |
+| v2 GBT residual, `stepSize=0.05` | 32.52 | −0.52 |
+| **v2 GBT residual, `stepSize=1.0`** | **30.90** | **−2.14 (−6.5%)** |
+| sklearn HistGBR, absolute loss (reference, not a candidate) | 29.52 | −3.52 |
+
+**Where the gain is.** Most of it is on the 294 test legs whose corridor has no history at
+all (111.18 → 75.92 min, worth −1.97 of the −2.14). On corridors the training set has
+seen, the model beats the median lookup by 0.02 to 0.51 min. Both facts belong in the same
+sentence: the model is a large improvement exactly where a lookup table has nothing to say,
+and a small one everywhere else.
+
+Source: `python -m src.ml.models_v2`, then `python -m src.ml.models_v2_stepsize` →
+`benchmarks/raw/w7_model_metrics_v2_stepsize.csv`, `w7_model_v2_stepsize_report.json`.
 
 **Neither Week 4 model clears the corridor mean, and that is reported as it stands.**
 Random Forest is the stronger of the two (36.9 vs GBT's 38.3 min MAE) and both comfortably

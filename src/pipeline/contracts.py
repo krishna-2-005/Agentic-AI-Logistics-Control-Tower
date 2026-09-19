@@ -282,8 +282,39 @@ FEATURES_V1 = Contract(
     },
 )
 
+# ── features_v2 — Stage 4b output (Week 7, G-04) ─────────────────────────────
+FEATURES_V2 = Contract(
+    name="features_v2",
+    version=2,
+    path=config.FEATURES_V2,
+    produced_by="src.pipeline.features_v2",
+    partition_by=("route_type",),
+    key=("leg_id",),
+    rows=26_369,
+    notes=(
+        "Every features_v1 column unchanged, plus eight past-only history columns built "
+        "with Stage 4's own fact/query union: corridor median, p90, IQR and std of gap_min, "
+        "a trailing 7-day corridor mean and count, and origin/destination hub dwell by "
+        "part of day. v1 is never repointed (D-016); this is a new cache. The plan's "
+        "segment count was not added -- n_segments is in BANNED_FEATURES."
+    ),
+    columns={
+        **FEATURES_V1.columns,
+        "corr_median_gap_min": "double",
+        "corr_p90_gap_min": "double",
+        "corr_iqr_gap_min": "double",
+        "corr_std_gap_min": "double",
+        "corr_mean_gap_7d": "double",
+        "corr_n_prior_7d": "int",
+        "src_dwell_by_hour_min": "double",
+        "dst_dwell_by_hour_min": "double",
+    },
+)
+
 #: Every frozen dataset, newest stage last. Add here when a stage starts caching.
-CONTRACTS: dict[str, Contract] = {c.name: c for c in (CLEAN_V1, TRIPS_V1, HUBS_V1, FEATURES_V1)}
+CONTRACTS: dict[str, Contract] = {
+    c.name: c for c in (CLEAN_V1, TRIPS_V1, HUBS_V1, FEATURES_V1, FEATURES_V2)
+}
 
 
 def stamp(name: str) -> dict:

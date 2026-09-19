@@ -41,6 +41,9 @@ faiss_index/
 data/documents/
 *.pdf
 !demo/sample_documents/*.pdf
+# The paper figures are vector PDFs by design (src/report/figures.py) and are evidence,
+# not generated corpus -- the blanket *.pdf rule above silently dropped them in W8.
+!docs/figures/*.pdf
 
 # ── Python ──
 __pycache__/

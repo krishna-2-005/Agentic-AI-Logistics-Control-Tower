@@ -1,0 +1,85 @@
+{
+  "generated_at": "2026-09-19T23:21:46+05:30",
+  "what": "fresh clone of week8-mounika-reproducibility at 2d5d92a, nothing built, only data/raw/delhivery_data.csv added",
+  "command": "bash scripts/rebuild_all.sh",
+  "stages": [
+    {
+      "stage": "stage 1 clean",
+      "seconds": 36
+    },
+    {
+      "stage": "stage 2 reconstruct",
+      "seconds": 21
+    },
+    {
+      "stage": "stage 3 hubs",
+      "seconds": 19
+    },
+    {
+      "stage": "stage 4 features",
+      "seconds": 16
+    },
+    {
+      "stage": "contracts",
+      "seconds": 11
+    },
+    {
+      "stage": "corridor audit",
+      "seconds": 16
+    },
+    {
+      "stage": "baselines",
+      "seconds": 10
+    },
+    {
+      "stage": "champion model",
+      "seconds": 1694
+    },
+    {
+      "stage": "document corpus",
+      "seconds": 19
+    },
+    {
+      "stage": "vector index",
+      "seconds": 29
+    },
+    {
+      "stage": "tms seed",
+      "seconds": 1
+    },
+    {
+      "stage": "features v2",
+      "seconds": 16
+    },
+    {
+      "stage": "model sprint v2",
+      "seconds": 552
+    },
+    {
+      "stage": "adopted model",
+      "seconds": 1818
+    }
+  ],
+  "total_seconds": 4258,
+  "frozen_values_checked": 37,
+  "moved": [
+    {
+      "id": "doc_extraction_accuracy",
+      "was": "0.9804",
+      "now": "0.9786"
+    },
+    {
+      "id": "doc_extraction_rows",
+      "was": "11",
+      "now": "20"
+    }
+  ],
+  "moved_explained": "both are document extraction, which the rebuild does not re-run: the committed evaluation grew from 11 to 20 rows after freeze v2 was taken (D-051 names this value as deliberately unstable)",
+  "reproduced_exactly": [
+    "273 slower corridors of 1,130",
+    "all seven Week 7 model MAEs incl. the adopted 30.90",
+    "document corpus manifest and text",
+    "champion model hyperparameters"
+  ],
+  "preflight": "all artefacts present; LLM key absent, as a fresh clone should be"
+}

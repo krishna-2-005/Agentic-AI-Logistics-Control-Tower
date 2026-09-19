@@ -1586,8 +1586,15 @@ says these ten failure modes are handled. It cannot distinguish a good agent fro
 excellent one, and the next eval should be built from email the agent gets wrong.
 
 **Week 5 was closed at 40 of 50 rather than held open another day** for the last
-10 cases, which run as a follow-up commit. Every generated table says "40 of 50" where it
-quotes a rate, so the partial state is visible wherever the number is, not only here.
+10 cases, which ran as follow-up commits. Every generated table says how many had actually
+run where it quotes a rate, so the partial state was visible wherever the number was, not
+only here.
+
+**Closed 2026-09-18 (G-02): 50 of 50 run, 50 succeeded**, over five quota days
+(2026-09-11, 09-13, 09-16, 09-17, 09-18). Five of five on every template; clarification
+recall and precision both 1.00; still no invented order and no needless question. The last
+10 cases changed nothing about the reading above — which is itself the useful part, since
+a perfect score that survives a 25% larger sample is less likely to be luck.
 
 Evidence: `src/ml/threshold_sensitivity.py`, `src/ml/order_eval.py`,
 `src.ml.baselines.delay_label`, `benchmarks/raw/w5_threshold_sensitivity.csv`,
@@ -1856,3 +1863,397 @@ and it is why these numbers exist at all in a week with 20 API calls a day.
 
 Evidence: `src/ml/exception_eval.py`, `src/ml/invoice_eval.py`,
 `benchmarks/raw/w6_exception_eval.json`, `benchmarks/raw/w6_invoice_eval.json`.
+
+---
+
+> **Correction, Week 8 (D-054):** the precision figures in D-047 were measured on a replay that joined each alert to end-of-data history. As-of, overall precision is 58.6% (not 72.1%) and by grade 39.7 / 51.3 / 76.6 / 85.3%. The ordering this decision rests on holds; the levels do not.
+
+## D-048 · The Layer 1 freeze reopens for three days, and the diagnostics say the defect is the objective, not the features — `DECIDED`
+**Week 7 · Lahari · D1 · execution plan v3.1 §1, §2.1 Step 1, G-04, G-11**
+
+*Numbering note: v3.1 lists this as D-044. D-044 to D-047 were already taken in Week 6,
+so every v3.1 decision shifts by four: its D-044 to D-049 are D-048 to D-053 here.*
+
+**Decided: the results freeze (D-046) reopens for W7 D1-D3 only, for the ML correction
+sprint.** `w4_model_metrics.csv` stays untouched as the v1 result; the sprint writes
+`w7_model_metrics_v2.csv`; whichever is adopted at the D3 sync (D-049) becomes the
+paper's number and the other becomes an ablation row. Logged before any model code
+changes, as v3.1 requires.
+
+**The four diagnostics, in the order v3.1 names them.**
+
+1. **Categorical-as-numeric: not present.** `fit_mllib_model` assembles `FEATURES` with a
+   bare `VectorAssembler`. There is no `StringIndexer` and no corridor key in the vector at
+   all — corridors enter only through their numeric history — so MLlib cannot be
+   splitting an index alphabetically, and `maxBins` does not apply. The plan's most likely
+   explanation is ruled out by reading the code.
+2. **The corridor statistic is in the vector.** `corr_mean_gap_min` is one of the 27
+   features. The Random Forest has the baseline's own answer as an input and still trails
+   it.
+3. **The fair baseline is the median, and it is much stronger: 33.04 min, not 36.13.**
+   MAE is minimised by the median. Computed with Stage 4's exact as-of semantics —
+   only legs finished before the query leg was created — and verified first: the
+   as-of *mean* built the same way matches `features_v1.corr_mean_gap_min` on **100%** of
+   warm legs.
+4. **The single-node reference says the gap is the loss function.** sklearn
+   `HistGradientBoostingRegressor`, same features, same split: **34.70 min on squared
+   loss, 29.59 min on absolute loss** — a 5.1-minute swing from the objective alone,
+   and the absolute-loss model beats the median baseline by 3.45 minutes.
+
+| test MAE, min | |
+|---|---|
+| OSRM | 107.09 |
+| MLlib GBT (W4) | 38.28 |
+| MLlib Random Forest (W4, the reported model) | 36.89 |
+| corridor mean (the W4 bar) | 36.13 |
+| HistGBR, squared loss | 34.70 |
+| **corridor median (the real bar)** | **33.04** |
+| HistGBR, absolute loss | **29.59** |
+
+**Reading.** v3.1 framed the outcome as "if MLlib loses and a single-node model wins, the
+problem is MLlib configuration". It is more specific than that: the problem is **what the
+model is asked to minimise**. MLlib's Random Forest is squared-loss only, and the table
+grades absolute error. The features carry real signal — an absolute-loss model on the
+same 27 columns clears the strongest statistical baseline by 10% — so the sprint's
+Step 3 (GBT with `lossType="absolute"`, on the residual) is aimed at the actual defect.
+
+**Two consequences for the sprint, decided now.**
+- **The bar the paper reports against is 33.04, not 36.13.** A v2 that beats the mean but
+  not the median has not beaten the baseline, and reporting the weaker one would be
+  choosing the comparison after seeing the result.
+- **The residual target in Step 3 uses the median as `corridor_baseline`**, not the mean,
+  for the same reason: a model that learns nothing then reproduces the strongest baseline
+  rather than a weaker one.
+
+**G-11, closed without a feature.** The data spans **11 September to 3 October 2018** (21
+days). Navratri 2018 began 10 October and Dussehra fell on 19 October, both after the last
+leg, so there is no festival window to encode. Ganesh Chaturthi (13 September) is inside
+the window but on one day in the training period only; the chronological test split starts
+around 28 September, so the flag would be constant in test and could never be validated.
+No `is_festival_window` in features_v2.
+
+Evidence: `src/ml/ml_diagnostics.py`, `benchmarks/raw/w7_ml_diagnostics.json`,
+`src/ml/models.py` (`fit_mllib_model`), `docs/problems.md` P-52.
+
+## D-049 · The sprint's GBT clears the bar on paper and loses on every corridor with history; the fix is chosen on validation before the test set sees it — `DECIDED`
+**Week 7 · Lahari · D3 · execution plan v3.1 §2.1 Step 5 (its D-045), G-04**
+
+**What the first v2 run says.** `python -m src.ml.models_v2`, test split, MAE in minutes:
+
+| slice (corridor support in train) | n | corridor median | v2 GBT, absolute loss | v2 RF | sklearn absolute-loss reference |
+|---|---|---|---|---|---|
+| unseen | 294 | 111.18 | **80.18** | 77.80 | 67.05 |
+| 1-9 | 1,548 | **31.79** | 32.78 | 33.29 | 31.22 |
+| 10-29 | 2,723 | **26.26** | 27.49 | 28.10 | 25.06 |
+| >=30 | 709 | **29.45** | 31.46 | 31.75 | 27.35 |
+| **overall** | 5,274 | 33.04 | **32.52** | 32.88 | 29.52 |
+
+The adoption rule returns **outcome 1**: 32.52 is more than 1% under 33.04. It is true and
+it is not the result it looks like. The whole margin comes from the 294 legs on corridors
+the training set never saw, where the "baseline" is the OSRM plan (gap 0). On the 94% of
+legs with any history, the GBT is 1.0 to 2.0 minutes *worse* than looking up the median.
+The rule as written in v3.1 never asks about well-observed corridors for outcome 1 — only
+for outcome 2 — so it cannot see this. That gap in the rule is recorded here rather than
+patched after the result.
+
+**Why the GBT underperforms, read from the saved model.** MLlib's absolute-loss GBT fits
+its first tree to the raw target with weight 1 (leaf values −1,382 to +2,605 min — a
+squared-loss tree, pulled by outliers) and every later tree to the *sign* of the error,
+with leaf values in [−1, 1] scaled by `stepSize`. At `stepSize=0.05`, the 199 corrective
+trees can move a prediction by **at most 9.95 minutes in total**. The objective D-048
+pointed at is barely switched on. sklearn's `HistGradientBoostingRegressor` updates leaves
+to the median of the residuals instead, which is why the same features and target reach
+29.52 there and beat the median on every slice. Features are not the limit; the MLlib
+optimiser settings are.
+
+**Decided, before any further run touches the test split:**
+
+1. **`stepSize` is chosen on validation, not test.** The training split is cut
+   chronologically again at the same 80% fraction (`time_split`), and GBT with
+   `lossType="absolute"`, `maxIter=200`, `maxDepth=6` is fitted at `stepSize` ∈
+   {0.05, 0.3, 1.0} on the earlier part and scored on the later. Nothing else in the grid.
+2. **Whichever step size wins on validation is refitted on the full training split and
+   scored once on test. It replaces the candidate whatever that score is** — including if
+   it is worse than 32.52. Picking between two test scores would be the selection D-048
+   warned against.
+3. **The rule is applied to it unchanged**, and the paper's model table reports the
+   support slices next to the overall MAE for whichever model is adopted, so the reader
+   sees where it wins and where a lookup is better.
+4. **The sklearn model stays a reference, not a candidate.** The plan's model layer is
+   MLlib; it is reported as the ceiling the MLlib model is measured against.
+
+Evidence: `benchmarks/raw/w7_model_metrics_v2.csv`, `benchmarks/raw/w7_model_v2_report.json`,
+`data/models/v2_gbt_residual`, `src/ml/models_v2.py`.
+
+## D-050 · Step size was the defect; the v2 residual GBT is adopted as the reported model, and the serving champion does not move with it — `DECIDED`
+**Week 7 · Lahari · D3 · execution plan v3.1 §2.1 Step 5 (its D-045), G-04**
+
+D-049 fixed the procedure before it ran: pick `stepSize` on a chronological validation cut
+of the training split, refit the winner on the full training split, score it **once** on
+test, and adopt it whatever that score says. This records what happened.
+
+**Validation (16,876 legs fit, 4,219 scored; the test split untouched).**
+
+| stepSize | most the corrective trees can move a prediction | validation MAE |
+|---|---|---|
+| — (corridor median) | — | **29.89** |
+| 0.05 (the D-049 candidate) | 9.95 min | 31.55 |
+| 0.3 | 59.7 min | 30.51 |
+| **1.0 (chosen)** | 199 min | **30.17** |
+
+The ordering confirms the mechanism D-049 read out of the saved model: MLlib's
+absolute-loss GBT fits one squared-loss tree and then moves each prediction by at most
+`stepSize` per tree, so at 0.05 the objective the sprint was built around was barely
+switched on. Nothing else in the grid varied.
+
+**Note what validation says: every step size loses to the median there** (30.17 against
+29.89). Adopting on that evidence alone would have been wrong, and scoring a second
+candidate on test to find a winner is the selection D-048 warned against. The rule was
+applied as written.
+
+**Test, scored once (5,274 legs).**
+
+| model | test MAE | vs the 33.04 bar |
+|---|---|---|
+| OSRM plan | 107.09 | — |
+| v1 Random Forest (W4, reported) | 36.89 | +3.85 |
+| corridor median (the bar, D-048) | 33.04 | — |
+| v2 GBT residual, stepSize 0.05 | 32.52 | −0.52 |
+| **v2 GBT residual, stepSize 1.0** | **30.90** | **−2.14 (−6.5%)** |
+| sklearn HistGBR reference (not a candidate) | 29.52 | −3.52 |
+
+**It wins on all fourteen slices**, which the 0.05 model did not: by support in training
+(unseen −35.26, 1-9 −0.02, 10-29 −0.19, ≥30 −0.51), by route type, distance band and
+departure hour. The adoption rule returns outcome 1 with `no_loss_on_well_observed` true,
+so this time the headline is not carried by one slice — though it is worth stating plainly
+that **most of the margin still comes from the 294 legs on corridors with no history**
+(−35 min there is −1.97 of the −2.14 overall). On corridors the training set has seen, the
+model is better than a median lookup by a fifth of a minute. That is a real gain and a
+small one, and the paper should say so in the same sentence as the 6.5%.
+
+**Decided:**
+
+1. **`v2_gbt_residual_absolute_step1` is the paper's reported model**, and Week 4's Random
+   Forest becomes an ablation row (D-048's unfreeze terms).
+2. **The serving champion at `data/models/champion` does not change.** A residual model is
+   `baseline + correction`, and the baseline is a per-corridor as-of median that the
+   streaming job does not compute today — it carries the corridor *mean* in its history
+   snapshots. Repointing the champion without that lookup would serve the correction alone,
+   which is not a prediction of anything. Wiring the median into the serving path and
+   moving the champion is Week 8 work, tracked against the retraining loop's
+   champion/challenger promotion.
+3. **The sklearn reference stays a reference.** It is still 1.38 min better than the
+   adopted model, which is the honest ceiling statement for the MLlib configuration, not a
+   result to report as the project's.
+
+Evidence: `benchmarks/raw/w7_model_v2_stepsize_report.json`,
+`benchmarks/raw/w7_model_metrics_v2_stepsize.csv`, `data/models/v2_gbt_residual_stepsize`,
+`src/ml/models_v2_stepsize.py`.
+
+## D-051 · The Layer 1 freeze closes again as v2; v1 stays as Week 6 left it — `DECIDED`
+**Week 7 · Lahari · D5 · execution plan v3.1 §1 (controlled unfreeze), D-046, D-048**
+
+D-048 reopened the results freeze for three days so the model could be corrected. This
+closes it.
+
+**Decided: the Week 7 freeze is `benchmarks/results_freeze_v2.json`, and
+`results_freeze_v1.json` is not rewritten.** The first attempt did rewrite it, which would
+have destroyed the thing the freeze is for: v1 is the record of what Week 6 reported, and
+`--verify --path benchmarks/results_freeze_v1.json` is how anyone asks "what has moved
+since the Week 6 sync" — today it answers that order-entry evaluation went from 40 cases to
+50. A freeze that is silently updated in place answers nothing. This is D-016's versioning
+rule applied to results rather than to data.
+
+**Six Week 7 numbers join the freeze**: the median bar (33.04), the adopted model's MAE
+(30.90), document-extraction per-field accuracy (0.9804) and the rows it was measured on
+(11 of 40), the assistant's route accuracy (0.90), and the row count of the scale run
+(56,353,613).
+
+Two of those are deliberately unstable and belong in the freeze anyway: the extraction
+accuracy will move when the remaining 29 rows run, and the assistant's route accuracy will
+move if the question set grows. The freeze's job is to notice, not to prevent. Recording
+the rows-scored number beside the accuracy is what makes the movement readable rather than
+alarming.
+
+Evidence: `src/ml/results_freeze.py`, `benchmarks/results_freeze_v2.json`,
+`docs/RESULTS_SUMMARY.md`.
+
+## D-052 · The paper targets ICCCI 2027 (20 February 2027), with an arXiv preprint that does not wait for it — `DECIDED`
+**Week 8 · Krishna · D1 · execution plan v3.1 §3 (its D-046)**
+
+*Numbering note: v3.1 calls this D-046; D-044 to D-047 were taken in Week 6, so its Week 8
+decision lands here as D-052.*
+
+v3.1 §3 puts this first because every Phase 2 date keys off it. Three venues were checked
+on 18 September 2026:
+
+| venue | status on 2026-09-18 | source |
+|---|---|---|
+| **ICCCI 2027** (9th Int. Conf. on Computer Communication and the Internet) | **submission 20 Feb 2027**, notification 20 Mar, camera-ready 25 May. 4-10 pages, double-blind | `iccci.org/sub.html` |
+| ICCCNT 2027 | **not announced.** The most recent edition found was the 16th, July 2025 at IIT Indore | conference site and search |
+| ICACCS 2027 | site (`icaccs.sece.ac.in`) serves a **self-signed certificate** and could not be read | — |
+
+**Decided: ICCCI 2027 is the target, deadline 20 February 2027.** It is the only one of the
+three with a published 2027 deadline, it is five months out — enough for the two-week draft
+Phase 2 plans plus revision — and double-blind review suits a paper whose headline is a
+method, not a system.
+
+**Decided: the arXiv preprint is posted when the draft is done, not when the venue
+answers.** v3.1 already says "arXiv preprint posted regardless of venue". Writing it down as
+a decision makes the ordering explicit: the preprint is the deadline that actually binds,
+and ICCCI is a submission the preprint does not wait for.
+
+**Decided: the deadline is re-checked in the first week of January 2027**, and again before
+submission. Conference sites move dates without notice, and a date copied into a plan in
+September is not evidence in February. If ICCCNT 2027 announces before then with a
+comparable deadline, it is reconsidered at that check — IIT-hosted ICCCNT has the stronger
+reputation of the three, and the only reason it is not the target today is that it has no
+published date.
+
+**What this decision does not settle:** whether the work is one paper or two. The corridor
+audit (claim 1) and the agent-architecture position (claim 6) are different contributions
+to different audiences, and v3.1's claims map assumes one paper. That stays open until the
+outline exists (G-09, this week).
+
+Evidence: `https://iccci.org/sub.html` (read 2026-09-18).
+
+## D-053 · Serving the adopted model needs rolling state, not a lookup; it moves to Phase 3 — `DECIDED`
+**Week 8 · Mounika · execution plan v3.1 §3, following D-050**
+
+D-050 left the serving champion on the Week 4 model and called wiring the adopted model
+"Week 8 engineering", on the understanding that the stream only lacked the per-corridor
+median. Reading `src/pipeline/features_v2.py` against `src/streaming/job.py` says that
+understanding was too small.
+
+**What the stream can serve today.** `job.latest_history` takes, per key, the newest leg's
+as-of history from the feature table and broadcast-joins it onto each query. That works for
+any statistic defined over *all* prior legs of a key — which covers five of the eight v2
+features: `corr_median_gap_min`, `corr_p90_gap_min`, `corr_iqr_gap_min`,
+`corr_std_gap_min`, and the median the residual is added to.
+
+**What it cannot, and why a lookup will not do.**
+
+| feature | defined as | why a latest-value snapshot is wrong |
+|---|---|---|
+| `corr_mean_gap_7d`, `corr_n_prior_7d` | mean and count over the trailing **7 days of event time** (`rangeBetween(-7 days, 0)`) | the window moves with each query. A snapshot taken at the end of the data gives every replayed query the *last* week's history — future legs, for most of them |
+| `src_dwell_by_hour_min`, `dst_dwell_by_hour_min` | median dwell keyed by **hub and departure-hour bucket** (`hub|bucket`) | keyed by two columns, one of them derived from the query's own time. A per-hub snapshot has the wrong key; a per-(hub, bucket) snapshot is buildable but is a different join from any the job does now |
+
+**Decided:**
+
+1. **The adopted model is not served in v1.0.** The paper reports it (D-050), the stream
+   serves the Week 4 champion, and both facts are stated wherever either number appears.
+   Stream-equals-batch for the adopted model (`w8_stream_validation_v2.json`, 500 of 500)
+   tests the event format, not a running pipeline, and says so.
+2. **Serving it is Phase 3 work, scoped as two pieces:** a `hub|bucket` history snapshot
+   (a join the job does not do yet, but a snapshot all the same), and **stateful windowed
+   aggregation** for the 7-day pair — Structured Streaming's event-time windows with a
+   watermark, which is a different kind of job from the stateless broadcast join Week 5 built.
+3. **A cheaper option was considered and rejected:** retrain the residual model without the
+   two 7-day features so a snapshot join suffices. That would serve *a* v2 model, not *the*
+   adopted one, and the reported and served numbers would still disagree — only less
+   visibly, which is worse.
+
+**A note on the existing stream, found while reading this.** The Week 5 job's all-history
+snapshot is the newest leg's history *as of the end of the data*. On a live stream that is
+exactly right: history up to now. On a **replay**, every replayed query is joined to history
+that includes legs finishing after it. The stream-equals-batch test does not catch this,
+because both of its paths read the same row. It does not affect any reported number — the
+model's test MAE comes from the batch path, which is strictly as-of — but it means replay
+alerts are scored with slightly more history than the moment they claim to be, and the
+throughput page should say "replay" where it does.
+
+Evidence: `src/pipeline/features_v2.py` (`rangeBetween`, `dwell_by_hour`),
+`src/streaming/job.py` (`latest_history`, `enrich`).
+
+## D-054 · Alert quality is re-stated from as-of history; D-047 survives at lower levels — `DECIDED`
+**Week 8 · Lahari · execution plan v3.1 §3 (claims map, claim 6), D-047, D-053**
+
+D-053 noted in passing that a replay joins every query to the history snapshot at the *end*
+of the data. `src/ml/replay_leakage.py` measured what that did to the numbers the agent
+layer reports, by scoring the same 2,000 replayed legs twice with the same served model:
+once with the history each leg actually had at its own creation time (as-of, D-020), and
+once with the end-of-data snapshot the replay used.
+
+**The snapshot run reproduces `w6_exception_eval.json` exactly** — 1,347 alerts, precision
+72.09%, and 434 / 344 / 275 / 294 alerts by severity at 53.2 / 68.6 / 85.1 / 91.8% — so the
+measurement is of the thing that was published, not an approximation of it.
+
+| | published (replay snapshot) | as-of |
+|---|---|---|
+| model MAE on the replayed legs | 32.81 min | **47.29 min** |
+| alerts | 1,347 | 1,720 |
+| notification precision | 72.1% | **58.6%** |
+| recall of truly delayed legs | 89.7% | 93.1% |
+| precision — low / medium / high / critical | 53.2 / 68.6 / 85.1 / 91.8% | **39.7 / 51.3 / 76.6 / 85.3%** |
+| trivial policy: alert every leg | 54.1% | 54.1% |
+
+**Why so large.** The producer replays the *earliest* legs. At their own creation time,
+**1,290 of the 2,000 had no corridor history at all** (median prior legs: 0); the snapshot
+gave them fourteen. The replay was the worst case for this leak, and it was the one
+evaluated.
+
+**Decided:**
+
+1. **The agent layer's alert numbers are reported as-of from now on**, from
+   `benchmarks/raw/w8_replay_leakage.json`. `w6_exception_eval.json` is kept as the record
+   of what was measured and why it was wrong; it is not deleted and not quoted as a result.
+2. **D-047 survives, at lower levels.** Its claim was that severity earns its place as a
+   filter because precision rises with grade. As-of, it still rises monotonically
+   (39.7 → 51.3 → 76.6 → 85.3%) — so the arithmetic severity rule ranks alerts by how
+   likely they are to be real, which is the claim. What does not survive is the size: the
+   overall gain over alerting every leg is **+4.5 points, not +18**, and the `low` grade is
+   now *below* the trivial policy — notifying on `low` alone is worse than not filtering.
+3. **The paper states both numbers and the reason**, in the agent-layer section. A replay
+   leak that inflated a headline by 13.5 points is a finding about evaluating streaming
+   systems, and it is better found by us than by a reviewer.
+
+**What this does not touch.** Every Layer 1 number — the audit, the model's 30.90 MAE, the
+threshold sweep — is computed on the batch path, which is strictly as-of. The stream-equals-
+batch tests (500 of 500) are unaffected too: both of their paths read the same feature row.
+The leak is specific to *replayed* alerts, which is why it survived until someone compared
+a replayed prediction with the same leg's as-of prediction.
+
+Evidence: `src/ml/replay_leakage.py`, `benchmarks/raw/w8_replay_leakage.json`,
+`benchmarks/raw/w6_exception_eval.json` (the superseded measurement), P-62.
+
+## D-055 · G-05 closes on a native broker, and the evidence is source equivalence, not speed — `DECIDED`
+**Week 8 · Mounika · execution plan v3.1 §2 (G-05), D-035**
+
+D-035 recorded that the Kafka path had never met a broker because there was no Docker on
+the development machine. That was true, and it was the wrong constraint: Kafka is a Java
+program and the machine has had a JDK 17 since Week 1.
+
+**Decided: G-05 is closed on Apache Kafka 4.1.2 run natively** (single node, KRaft,
+`scripts/kafka_native.ps1`), with `docker-compose.kafka.yml` kept for machines that have
+Docker. One Windows trap is handled in the script: `kafka-server-start.bat` probes the
+architecture with `wmic`, which Windows 11 no longer ships; setting `KAFKA_HEAP_OPTS`
+skips the probe.
+
+**Decided: the result reported for G-05 is equivalence, not throughput.** The same 2,000
+legs replayed through Kafka and through the file source alert on **the same 1,347 legs with
+the same predicted gaps — maximum difference 0.0 minutes**
+(`w7_kafka_source_equivalence.json`). That is what "the source is one `readStream` swap"
+claimed and could not show until now. The Kafka run's own figures (p50 event-to-alert
+20.2 s, 86.7 events/sec scoring) are reported, but not compared with the 26,369-leg file
+replay: this run offered 67 events/sec, so its throughput measures the producer.
+
+**Not changed by this:** D-054's replay leak. Both sources join queries to end-of-data
+history, so both carry it identically — which is also why it cannot affect the equivalence.
+
+Evidence: `benchmarks/raw/w7_kafka_live.json`, `benchmarks/raw/w7_kafka_source_equivalence.json`,
+`src/streaming/compare_sources.py`, `scripts/kafka_native.ps1`.
+
+## D-056 · v1.0 ships with results freeze v3 — `DECIDED`
+**Week 8 · Lahari · D-046, D-051**
+
+`results_freeze_v3.json` is the freeze v1.0 ships with: the 37 values of v2, re-read now that
+document extraction carries 20 of 40 rows rather than 11, plus five Week 8 values — as-of
+exception precision (D-054), assistant groundedness, Kafka-to-file alert equivalence (D-055),
+stream-equals-batch for the reported model, and the fresh-clone rebuild time. `--verify`
+against v3 is clean at release.
+
+v1 (Week 6) and v2 (Week 7) are unchanged, so `--verify --path` against either still answers
+what moved since that point. Extraction accuracy will move again when rows 21-40 run; that is
+the freeze working, and the row count beside it says why.
+
+Evidence: `benchmarks/results_freeze_v3.json`, `docs/RESULTS_SUMMARY.md`.
