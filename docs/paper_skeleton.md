@@ -210,5 +210,4 @@ rather than reopened once the test score was known.
 
 - Document extraction rows 12-40 (quota).
 - Assistant groundedness, hand-judged (needs the model-phrased run).
-- A live-broker run, or the removal of "on a live broker" from claim 5.
 - Citations: the related-work table in the outline lists five works, two read in full.

@@ -35,11 +35,23 @@ fix:
 [MISS] cleaned parquet: clean_v1   -> python -m src.pipeline.clean
 ```
 
-**What the pass did not do:** a full regeneration from the raw CSV on the fresh clone.
-Stages 1-4 plus model training plus the document corpus is several hours of Spark, and the
-machine was needed for the scale benchmark and the model sprint the same day. The check now
-reports every prerequisite correctly, and the full rebuild is the item I would put first if
-the week had one more day.
+**The full rebuild, from nothing.** The README's run order stopped at Stage 3 (P-63), so
+`scripts/rebuild_all.sh` now runs every module's own command in dependency order and ends by
+recomputing the frozen results. It was run on a clone that had never been built, with only
+the raw CSV added (`benchmarks/raw/w8_fresh_clone_rebuild.json`):
+
+- **71 minutes, 14 stages**; the champion model (28 min) and the adopted model's validation
+  (30 min) are most of it, every data stage is under 40 seconds.
+- **Of 37 frozen numbers, 35 came back exactly** — 273 slower corridors of 1,130, every Week 7
+  model MAE including the adopted **30.90**, the same step size, the same adoption outcome. The
+  two that moved are extraction accuracy and rows scored, which the rebuild does not re-run:
+  the committed evaluation grew from 11 to 20 rows after the freeze was taken.
+- **The document corpus regenerated with an identical manifest and identical text**, but
+  every committed sample PDF showed as modified — ReportLab stamps a creation date. Krishna's
+  corpus now renders with `invariant=1`, and two generations are byte-identical.
+
+That is the reproducibility claim the project can now make: someone with the raw CSV and one
+command gets the same numbers the paper reports.
 
 ## 2. Release assets
 
@@ -62,18 +74,17 @@ rebuild, and version-locked to the library that wrote it).
 
 **$0.00**, written out in `docs/cost.md` with what the zero bought. The short version: the
 20-calls-a-day LLM cap is why agent verdicts are computed rather than generated, one laptop
-with one disk is why the scale curve flattens past four cores, and no Docker is why Kafka
-has never met a broker. Those three constraints did more to shape the architecture than any
-design meeting, and Phase 3's $40 credit should be spent on removing them in that order.
+with one disk is why the scale curve flattens past four cores, and no Docker kept Kafka off
+a broker for two weeks — until it turned out Kafka runs natively on the JDK the machine
+already had (D-055). Those constraints shaped the architecture more than any design meeting.
 
-## 4. Carried into Phase 3
+## 4. Closed this week, and carried into Phase 3
 
-- **G-05**, a live broker: the compose file and `scripts/kafka_live.sh` are one command on
-  any machine with Docker; this one has none.
-- **Serving the adopted model**: the streaming job carries the corridor *mean* in its
-  history snapshots and the adopted model is a residual over the *median* (D-050). Until
-  that lookup exists, the reported model and the served model are different models, and
-  both the decision log and the paper outline say so.
-- **A full fresh-clone rebuild** from the raw CSV, timed, as the real reproducibility claim.
+- **G-05 closed** (D-055): Apache Kafka 4.1.2 run natively, no Docker; the same 2,000 legs
+  through Kafka and through files alert on the same 1,347 legs with the same predicted gaps.
+- **Carried — serving the reported model** (D-053): two of its features are seven-day
+  event-time windows and two are keyed by hub and hour bucket, which the stream's stateless
+  history join cannot supply. Until then the reported model and the served model differ, and
+  the decision log, the paper and the release notes all say so.
 
-Problems logged this week: P-59.
+Problems logged this week: P-59, P-63. Decisions: D-053, D-055.

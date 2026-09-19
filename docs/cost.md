@@ -31,9 +31,9 @@ shaped the work:
 - **One laptop, 20 cores, 4 GB of Spark driver memory** is why the scale appendix reports
   a 1.24× speedup from 5× the cores: 914 MB from one disk is IO-bound. A cluster would not
   have that ceiling, and the appendix says so rather than implying the curve continues.
-- **No Docker** is why the Kafka path has never met a broker (D-035, G-05), and why that
-  sentence appears in the README, the throughput page and the paper outline instead of
-  being quietly dropped.
+- **No Docker** kept the Kafka path off a broker for two weeks (D-035). The constraint turned
+  out to be softer than it looked: Kafka runs natively on the JDK the machine already had,
+  and G-05 closed that way (D-055).
 
 ## The baseline for Phase 3
 
@@ -41,8 +41,8 @@ If the cloud phase is priced against this, the comparison is not "cloud costs $X
 "cloud costs $X to remove these three constraints". Phase 3's own budget is a $40 credit,
 and the three things worth spending it on, in order:
 
-1. **A broker and a place to run it** — closes G-05 and turns claim 5 in the paper from
-   "the code path exists" into "measured on a live broker".
+1. **A multi-node broker** — G-05 is closed on a single local broker; a cluster is what turns
+   the throughput figure into a capacity figure.
 2. **LLM quota** — the extraction evaluation is 40 rows over three days at 20/day; paid
    throughput makes it one run, and makes a second prompt iteration affordable.
 3. **A machine with more than one disk** — the scale appendix's ceiling is IO, so the next

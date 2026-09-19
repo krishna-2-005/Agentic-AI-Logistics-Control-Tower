@@ -30,10 +30,9 @@ of the plan forbids the other two headlines, and for good reasons repeated below
 | 7 | Document extraction with a **clean-vs-degraded split and a hallucination rate** (0 of 153 fields) | `w7_doc_extraction_eval.json` | — |
 | 8 | The corridor-aggregation code runs **unchanged at 56.4M rows**, with the runtime table and its ceiling | `w7_scale_benchmark.json` | fig8 |
 
-**Claims 5 and 7 are incomplete as of this outline.** Claim 5 says "on a live broker" in
-the plan; there is no live-broker run (no Docker, D-035), so either the phrase goes or the
-run happens. Claim 7 rests on 11 of 40 planned rows. Both are stated here so the draft
-cannot quietly inherit a number that does not exist yet.
+**Claim 5 is now complete** — the live-broker run happened on a native Kafka broker, with
+alerts identical to the file source (D-055). **Claim 7 rests on 20 of 40 planned rows**; the
+rest run on the daily LLM quota, and the draft says so beside the number.
 
 ---
 
@@ -92,12 +91,12 @@ runtime is Spark's fixed cost, and 5× the cores bought 1.24× the speed on one 
 ### 9. Limitations and threats to validity
 One dataset, one country, one operator, 21 days. The support-threshold instability (claim 2)
 applies to our own top-20 list. The document and agent evaluations use synthetic corpora we
-generated, so they measure the pipeline, not the world. No live broker. OSRM is reported as
+generated, so they measure the pipeline, not the world. One local broker, not a cluster. OSRM is reported as
 context, never as a defeated competitor.
 
 ### 10. Conclusion and future work
 Serving the adopted model (the stream carries the corridor mean, not the median, so the
-residual model cannot be served today — D-050); a live-broker run; extraction rows 12-40.
+residual model cannot be served today — D-053); a multi-node broker; extraction rows 21-40.
 
 ---
 

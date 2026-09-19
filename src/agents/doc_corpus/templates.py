@@ -107,7 +107,7 @@ def field_rows(rec: ConsignmentRecord, label: dict, doc_type: str) -> list[tuple
 
 
 def render_bol_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
-    c = canvas.Canvas(str(path), pagesize=A4)
+    c = canvas.Canvas(str(path), pagesize=A4, invariant=1)
     y = _header(c, TITLES["BOL"])
 
     left = MARGIN
@@ -157,7 +157,7 @@ def render_bol_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
 
 
 def render_invoice_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
-    c = canvas.Canvas(str(path), pagesize=A4)
+    c = canvas.Canvas(str(path), pagesize=A4, invariant=1)
     y = _header(c, TITLES["INVOICE"])
 
     left = MARGIN

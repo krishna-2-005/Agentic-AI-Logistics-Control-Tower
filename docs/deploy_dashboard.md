@@ -24,9 +24,10 @@ teammate can rebuild with one command.
 | Agent console | shows the MCP transcript | the trace log is local |
 | Analytics assistant | shows the 30-question scorecard; the ask box is disabled | needs the local Chroma index |
 
-Each of those pages says so on screen. Verified by rendering all nine pages from a fresh
-clone with **no `data/` directory and with `pyspark`, `chromadb`, `langchain`, `sklearn`,
-`onnxruntime`, `torch` and `kafka` made unimportable** — zero exceptions.
+Each of those pages says so on screen. Verified twice: first by rendering all nine pages
+from a fresh clone with `pyspark`, `chromadb`, `langchain`, `sklearn`, `onnxruntime`,
+`torch` and `kafka` made unimportable; then, properly, from a clean virtualenv holding only
+`requirements-cloud.txt` — which found a dependency the first check could not (below).
 
 ## Deploy
 
@@ -43,6 +44,27 @@ clone with **no `data/` directory and with `pyspark`, `chromadb`, `langchain`, `
 
 **Deployed URL:** _not yet deployed — this file is the runbook, and the README link lands
 with the URL._
+
+## Hugging Face Space (the route prepared on W8)
+
+`deploy/hf_space/` wraps the dashboard as a Docker-SDK Space, and
+`scripts/deploy_hf_space.py` uploads exactly the files the dashboard reads:
+
+```bash
+huggingface-cli login                                      # once, with a write token
+python scripts/deploy_hf_space.py --repo <user>/control-tower
+```
+
+**How the bundle was verified before anything was uploaded:** `--stage` builds the exact
+upload set (184 files, 14.5 MB) into a folder; a brand-new virtualenv got nothing but
+`requirements-cloud.txt`; all nine pages were rendered from the staged folder. The first
+attempt failed on **Hub friction**: pandas' `corr(method="spearman")` imports scipy
+internally, no page names it, and the earlier check — blocking the heavy packages inside the
+full development environment — could not see it because scipy was installed there. It is
+now in the cloud requirements, and all nine pages render.
+
+The one step not taken: publishing. The connected Hugging Face account grants read access
+to this environment, not write, and no token was created on the owner's behalf.
 
 ## What to check after the first deploy
 

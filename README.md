@@ -10,10 +10,29 @@ built on real Delhivery network data.**
 
 ## The contribution in one sentence
 
-A big-data pipeline that **audits and beats a production routing engine**, wrapped in a
-**collaborating team of AI agents** that read logistics documents, enter orders into a TMS, watch
-live shipments, resolve exceptions, and validate invoices — a working, student-scale digital
-workforce for logistics operations.
+A big-data pipeline that **localises, corridor by corridor, where a production routing engine is
+systematically wrong** — 273 corridors significantly slower and 512 faster than the network, at a
+5% false discovery rate — wrapped in a team of **deterministic-core agents** that read logistics
+documents, enter orders into a TMS, watch live shipments, resolve exceptions and validate
+invoices, each measured against a trivial policy.
+
+> **Not claimed:** "beats the planner". OSRM has no access to corridor history, so a model that
+> has seen it is not a fair comparison. Every model result is reported against the per-corridor
+> median, the baseline an MAE table should use (D-048).
+
+## Project status and where everything is
+
+| | |
+|---|---|
+| **Rebuild everything from the raw CSV** | `bash scripts/rebuild_all.sh` — every stage in dependency order, ending in `results_freeze --verify` |
+| **Run the whole system** | `python -m src.common.boot` (TMS → replay → streaming → agents), `--dashboard` to keep Streamlit up |
+| **Live Kafka, no Docker** | `scripts/kafka_native.ps1` (G-05; alerts identical to the file source) |
+| **Paper draft** | [`docs/paper_draft.md`](docs/paper_draft.md) — target ICCCI 2027 (D-052); outline and skeleton beside it |
+| **Figures** | [`docs/figures/`](docs/figures/) — nine, png and vector pdf, each from a `benchmarks/raw/` file |
+| **Final numbers** | [`benchmarks/final_tables.md`](benchmarks/final_tables.md), [`benchmarks/agent_evaluation.md`](benchmarks/agent_evaluation.md), [`benchmarks/experiments_appendix.md`](benchmarks/experiments_appendix.md) |
+| **Demo** | [`docs/demo_script.md`](docs/demo_script.md) — ten minutes, with what to do when each beat fails |
+| **Public dashboard** | bundle ready in `deploy/hf_space/`, verified in a clean environment; publishing needs a Hugging Face write token ([`docs/deploy_dashboard.md`](docs/deploy_dashboard.md)) |
+| **Still open** | G-07 real alert channel (needs a credential); extraction rows 21-40 (daily LLM quota); serving the reported model in the stream (D-053, Phase 3) |
 
 ---
 
@@ -21,8 +40,8 @@ workforce for logistics operations.
 
 **Layer 1 — the Big Data core.** A distributed PySpark pipeline over ~145K real Delhivery shipment
 segments that reconstructs trips, statistically localises the corridors where the production OSRM
-routing engine is systematically wrong, trains MLlib models that outperform that planner, and serves
-predictions in real time through Kafka + Spark Structured Streaming.
+routing engine is systematically wrong, trains an MLlib model on the residual over a per-corridor
+median, and serves predictions through Kafka + Spark Structured Streaming.
 
 **Layer 2 — the Agentic AI workforce.** Five LangGraph agents plus an orchestrator that consume
 Layer 1's intelligence and act on it autonomously, calling tools through an MCP server.
