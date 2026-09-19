@@ -1,12 +1,13 @@
 {
-  "generated_at": "2026-09-18T12:35:51+05:30",
+  "generated_at": "2026-09-19T18:50:13+05:30",
   "mode": "llm",
-  "answered": 18,
+  "answered": 30,
   "questions": 30,
-  "route_accuracy": 1.0,
-  "source_accuracy": 0.9444,
-  "refusal_recall": null,
-  "refusal_precision": null,
+  "route_accuracy": 0.9333,
+  "source_accuracy": 0.8667,
+  "refusal_recall": 0.6667,
+  "refusal_precision": 1.0,
+  "refusal_recall_both_layers": 1.0,
   "by_category": {
     "ranking": {
       "n": 6,
@@ -29,9 +30,19 @@
       "source_correct": 2
     },
     "decision": {
+      "n": 8,
+      "route_correct": 8,
+      "source_correct": 6
+    },
+    "problem": {
+      "n": 4,
+      "route_correct": 4,
+      "source_correct": 4
+    },
+    "out of scope": {
       "n": 6,
-      "route_correct": 6,
-      "source_correct": 5
+      "route_correct": 4,
+      "source_correct": 4
     }
   },
   "groundedness": "not scored by this script -- judged by hand on the saved answers (Lahari, W7 D5)",
@@ -44,6 +55,36 @@
         "W5_lahari_stream_validation.md -- The day-of-week trap this test caught",
         "W5_mounika_kafka_streaming.md -- Nothing here re-invents the event",
         "W5_mounika_kafka_streaming.md -- First real run"
+      ]
+    },
+    {
+      "id": "D08",
+      "expected": "retrieval",
+      "got": "retrieval",
+      "sources": [
+        "decisions.md -- D-024 \u00b7 Week 4 is judged on MAE, not RMSE or R2 \u2014 `DECIDED`",
+        "results.md -- The headline, reported as it actually landed",
+        "W4_lahari_beat_osrm.md -- 2. Per-corridor gains -- test split, best model"
+      ]
+    },
+    {
+      "id": "R03",
+      "expected": "refused",
+      "got": "retrieval",
+      "sources": [
+        "decisions.md -- D-043 \u00b7 The invoice rate band is the corpus's own generator model, which makes v1 exact and circular at the same time \u2014 `DECIDED`",
+        "hub_friction (IND395023AAD)",
+        "hub_friction (IND244901AAB)"
+      ]
+    },
+    {
+      "id": "R06",
+      "expected": "refused",
+      "got": "retrieval",
+      "sources": [
+        "hub_friction (IND110037AAK)",
+        "hub_friction (IND244901AAB)",
+        "hub_friction (IND395023AAD)"
       ]
     }
   ]
