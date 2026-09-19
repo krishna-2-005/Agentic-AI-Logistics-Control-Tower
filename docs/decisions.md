@@ -2117,6 +2117,186 @@ outline exists (G-09, this week).
 
 Evidence: `https://iccci.org/sub.html` (read 2026-09-18).
 
+## D-053 · Serving the adopted model needs rolling state, not a lookup; it moves to Phase 3 — `DECIDED`
+**Week 8 · Mounika · execution plan v3.1 §3, following D-050**
+
+D-050 left the serving champion on the Week 4 model and called wiring the adopted model
+"Week 8 engineering", on the understanding that the stream only lacked the per-corridor
+median. Reading `src/pipeline/features_v2.py` against `src/streaming/job.py` says that
+understanding was too small.
+
+**What the stream can serve today.** `job.latest_history` takes, per key, the newest leg's
+as-of history from the feature table and broadcast-joins it onto each query. That works for
+any statistic defined over *all* prior legs of a key — which covers five of the eight v2
+features: `corr_median_gap_min`, `corr_p90_gap_min`, `corr_iqr_gap_min`,
+`corr_std_gap_min`, and the median the residual is added to.
+
+**What it cannot, and why a lookup will not do.**
+
+| feature | defined as | why a latest-value snapshot is wrong |
+|---|---|---|
+| `corr_mean_gap_7d`, `corr_n_prior_7d` | mean and count over the trailing **7 days of event time** (`rangeBetween(-7 days, 0)`) | the window moves with each query. A snapshot taken at the end of the data gives every replayed query the *last* week's history — future legs, for most of them |
+| `src_dwell_by_hour_min`, `dst_dwell_by_hour_min` | median dwell keyed by **hub and departure-hour bucket** (`hub|bucket`) | keyed by two columns, one of them derived from the query's own time. A per-hub snapshot has the wrong key; a per-(hub, bucket) snapshot is buildable but is a different join from any the job does now |
+
+**Decided:**
+
+1. **The adopted model is not served in v1.0.** The paper reports it (D-050), the stream
+   serves the Week 4 champion, and both facts are stated wherever either number appears.
+   Stream-equals-batch for the adopted model (`w8_stream_validation_v2.json`, 500 of 500)
+   tests the event format, not a running pipeline, and says so.
+2. **Serving it is Phase 3 work, scoped as two pieces:** a `hub|bucket` history snapshot
+   (a join the job does not do yet, but a snapshot all the same), and **stateful windowed
+   aggregation** for the 7-day pair — Structured Streaming's event-time windows with a
+   watermark, which is a different kind of job from the stateless broadcast join Week 5 built.
+3. **A cheaper option was considered and rejected:** retrain the residual model without the
+   two 7-day features so a snapshot join suffices. That would serve *a* v2 model, not *the*
+   adopted one, and the reported and served numbers would still disagree — only less
+   visibly, which is worse.
+
+**A note on the existing stream, found while reading this.** The Week 5 job's all-history
+snapshot is the newest leg's history *as of the end of the data*. On a live stream that is
+exactly right: history up to now. On a **replay**, every replayed query is joined to history
+that includes legs finishing after it. The stream-equals-batch test does not catch this,
+because both of its paths read the same row. It does not affect any reported number — the
+model's test MAE comes from the batch path, which is strictly as-of — but it means replay
+alerts are scored with slightly more history than the moment they claim to be, and the
+throughput page should say "replay" where it does.
+
+Evidence: `src/pipeline/features_v2.py` (`rangeBetween`, `dwell_by_hour`),
+`src/streaming/job.py` (`latest_history`, `enrich`).
+
+## D-050 · Step size was the defect; the v2 residual GBT is adopted as the reported model, and the serving champion does not move with it — `DECIDED`
+**Week 7 · Lahari · D3 · execution plan v3.1 §2.1 Step 5 (its D-045), G-04**
+
+D-049 fixed the procedure before it ran: pick `stepSize` on a chronological validation cut
+of the training split, refit the winner on the full training split, score it **once** on
+test, and adopt it whatever that score says. This records what happened.
+
+**Validation (16,876 legs fit, 4,219 scored; the test split untouched).**
+
+| stepSize | most the corrective trees can move a prediction | validation MAE |
+|---|---|---|
+| — (corridor median) | — | **29.89** |
+| 0.05 (the D-049 candidate) | 9.95 min | 31.55 |
+| 0.3 | 59.7 min | 30.51 |
+| **1.0 (chosen)** | 199 min | **30.17** |
+
+The ordering confirms the mechanism D-049 read out of the saved model: MLlib's
+absolute-loss GBT fits one squared-loss tree and then moves each prediction by at most
+`stepSize` per tree, so at 0.05 the objective the sprint was built around was barely
+switched on. Nothing else in the grid varied.
+
+**Note what validation says: every step size loses to the median there** (30.17 against
+29.89). Adopting on that evidence alone would have been wrong, and scoring a second
+candidate on test to find a winner is the selection D-048 warned against. The rule was
+applied as written.
+
+**Test, scored once (5,274 legs).**
+
+| model | test MAE | vs the 33.04 bar |
+|---|---|---|
+| OSRM plan | 107.09 | — |
+| v1 Random Forest (W4, reported) | 36.89 | +3.85 |
+| corridor median (the bar, D-048) | 33.04 | — |
+| v2 GBT residual, stepSize 0.05 | 32.52 | −0.52 |
+| **v2 GBT residual, stepSize 1.0** | **30.90** | **−2.14 (−6.5%)** |
+| sklearn HistGBR reference (not a candidate) | 29.52 | −3.52 |
+
+**It wins on all fourteen slices**, which the 0.05 model did not: by support in training
+(unseen −35.26, 1-9 −0.02, 10-29 −0.19, ≥30 −0.51), by route type, distance band and
+departure hour. The adoption rule returns outcome 1 with `no_loss_on_well_observed` true,
+so this time the headline is not carried by one slice — though it is worth stating plainly
+that **most of the margin still comes from the 294 legs on corridors with no history**
+(−35 min there is −1.97 of the −2.14 overall). On corridors the training set has seen, the
+model is better than a median lookup by a fifth of a minute. That is a real gain and a
+small one, and the paper should say so in the same sentence as the 6.5%.
+
+**Decided:**
+
+1. **`v2_gbt_residual_absolute_step1` is the paper's reported model**, and Week 4's Random
+   Forest becomes an ablation row (D-048's unfreeze terms).
+2. **The serving champion at `data/models/champion` does not change.** A residual model is
+   `baseline + correction`, and the baseline is a per-corridor as-of median that the
+   streaming job does not compute today — it carries the corridor *mean* in its history
+   snapshots. Repointing the champion without that lookup would serve the correction alone,
+   which is not a prediction of anything. Wiring the median into the serving path and
+   moving the champion is Week 8 work, tracked against the retraining loop's
+   champion/challenger promotion.
+3. **The sklearn reference stays a reference.** It is still 1.38 min better than the
+   adopted model, which is the honest ceiling statement for the MLlib configuration, not a
+   result to report as the project's.
+
+Evidence: `benchmarks/raw/w7_model_v2_stepsize_report.json`,
+`benchmarks/raw/w7_model_metrics_v2_stepsize.csv`, `data/models/v2_gbt_residual_stepsize`,
+`src/ml/models_v2_stepsize.py`.
+
+## D-051 · The Layer 1 freeze closes again as v2; v1 stays as Week 6 left it — `DECIDED`
+**Week 7 · Lahari · D5 · execution plan v3.1 §1 (controlled unfreeze), D-046, D-048**
+
+D-048 reopened the results freeze for three days so the model could be corrected. This
+closes it.
+
+**Decided: the Week 7 freeze is `benchmarks/results_freeze_v2.json`, and
+`results_freeze_v1.json` is not rewritten.** The first attempt did rewrite it, which would
+have destroyed the thing the freeze is for: v1 is the record of what Week 6 reported, and
+`--verify --path benchmarks/results_freeze_v1.json` is how anyone asks "what has moved
+since the Week 6 sync" — today it answers that order-entry evaluation went from 40 cases to
+50. A freeze that is silently updated in place answers nothing. This is D-016's versioning
+rule applied to results rather than to data.
+
+**Six Week 7 numbers join the freeze**: the median bar (33.04), the adopted model's MAE
+(30.90), document-extraction per-field accuracy (0.9804) and the rows it was measured on
+(11 of 40), the assistant's route accuracy (0.90), and the row count of the scale run
+(56,353,613).
+
+Two of those are deliberately unstable and belong in the freeze anyway: the extraction
+accuracy will move when the remaining 29 rows run, and the assistant's route accuracy will
+move if the question set grows. The freeze's job is to notice, not to prevent. Recording
+the rows-scored number beside the accuracy is what makes the movement readable rather than
+alarming.
+
+Evidence: `src/ml/results_freeze.py`, `benchmarks/results_freeze_v2.json`,
+`docs/RESULTS_SUMMARY.md`.
+
+## D-052 · The paper targets ICCCI 2027 (20 February 2027), with an arXiv preprint that does not wait for it — `DECIDED`
+**Week 8 · Krishna · D1 · execution plan v3.1 §3 (its D-046)**
+
+*Numbering note: v3.1 calls this D-046; D-044 to D-047 were taken in Week 6, so its Week 8
+decision lands here as D-052.*
+
+v3.1 §3 puts this first because every Phase 2 date keys off it. Three venues were checked
+on 18 September 2026:
+
+| venue | status on 2026-09-18 | source |
+|---|---|---|
+| **ICCCI 2027** (9th Int. Conf. on Computer Communication and the Internet) | **submission 20 Feb 2027**, notification 20 Mar, camera-ready 25 May. 4-10 pages, double-blind | `iccci.org/sub.html` |
+| ICCCNT 2027 | **not announced.** The most recent edition found was the 16th, July 2025 at IIT Indore | conference site and search |
+| ICACCS 2027 | site (`icaccs.sece.ac.in`) serves a **self-signed certificate** and could not be read | — |
+
+**Decided: ICCCI 2027 is the target, deadline 20 February 2027.** It is the only one of the
+three with a published 2027 deadline, it is five months out — enough for the two-week draft
+Phase 2 plans plus revision — and double-blind review suits a paper whose headline is a
+method, not a system.
+
+**Decided: the arXiv preprint is posted when the draft is done, not when the venue
+answers.** v3.1 already says "arXiv preprint posted regardless of venue". Writing it down as
+a decision makes the ordering explicit: the preprint is the deadline that actually binds,
+and ICCCI is a submission the preprint does not wait for.
+
+**Decided: the deadline is re-checked in the first week of January 2027**, and again before
+submission. Conference sites move dates without notice, and a date copied into a plan in
+September is not evidence in February. If ICCCNT 2027 announces before then with a
+comparable deadline, it is reconsidered at that check — IIT-hosted ICCCNT has the stronger
+reputation of the three, and the only reason it is not the target today is that it has no
+published date.
+
+**What this decision does not settle:** whether the work is one paper or two. The corridor
+audit (claim 1) and the agent-architecture position (claim 6) are different contributions
+to different audiences, and v3.1's claims map assumes one paper. That stays open until the
+outline exists (G-09, this week).
+
+Evidence: `https://iccci.org/sub.html` (read 2026-09-18).
+
 ## D-054 · Alert quality is re-stated from as-of history; D-047 survives at lower levels — `DECIDED`
 **Week 8 · Lahari · execution plan v3.1 §3 (claims map, claim 6), D-047, D-053**
 
