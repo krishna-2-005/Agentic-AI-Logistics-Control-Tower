@@ -100,8 +100,23 @@ def severity_of(excess: float, direction: str) -> dict[str, Any]:
 
 # ── small helpers ────────────────────────────────────────────────────────────
 
-def _now() -> str:
-    return datetime.now(timezone.utc).isoformat()
+def _data_timestamp() -> str:
+    """When the *data* was frozen — not when this script happened to run.
+
+    Deliberately not `datetime.now()`. The export has to be reproducible: CI
+    re-runs it and fails if the committed output differs, which is what stops a
+    stale JSON reaching the site. A wall-clock timestamp would make every run
+    differ from every other and turn that check into noise.
+
+    The freeze's own `frozen_at` is also the more useful answer to the question
+    a provenance envelope is asked — "how old is this number?" — since it dates
+    the benchmark rather than the person who last ran an export.
+    """
+    if FREEZE_PATH.exists():
+        frozen_at = _read_json(FREEZE_PATH).get("frozen_at")
+        if frozen_at:
+            return str(frozen_at)
+    return datetime.fromtimestamp(0, timezone.utc).isoformat()
 
 
 def _clean(value: Any) -> Any:
@@ -136,7 +151,7 @@ def _envelope(source: str | list[str], payload: Any, **extra: Any) -> dict:
     """Every file the site reads says where it came from (D-059 rule 3)."""
     return {
         "source": source,
-        "generated_at": _now(),
+        "generated_at": _data_timestamp(),
         "freeze": FREEZE_VERSION,
         **extra,
         "data": payload,
