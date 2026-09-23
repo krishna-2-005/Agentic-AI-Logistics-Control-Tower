@@ -1,0 +1,213 @@
+import type { Metadata } from "next";
+
+import { ModelSlices } from "@/components/charts/ModelSlices";
+import {
+  Card,
+  Evidence,
+  Kpi,
+  KpiRow,
+  Notice,
+  PageHeader,
+  Section,
+  TableShell,
+  Td,
+  Th,
+} from "@/components/ui";
+import { getEvidence, getFigures, getModel } from "@/lib/data";
+import { repoFileUrl } from "@/lib/repo";
+import { num, shortDate } from "@/lib/format";
+
+export const metadata: Metadata = {
+  title: "Results",
+  description:
+    "Every number this project reports, the file it comes from, and the figures behind the paper.",
+};
+
+const WEEK_LABELS: Record<number, string> = {
+  1: "The data",
+  2: "Corridor audit",
+  3: "Baselines",
+  4: "Batch ML and documents",
+  5: "Streaming and order entry",
+  6: "The lifecycle",
+  7: "Model correction, RAG, scale",
+  8: "Reproducibility and the leak",
+};
+
+export default function EvidencePage() {
+  const evidence = getEvidence();
+  const model = getModel();
+  const figures = getFigures();
+
+  const byWeek = new Map<number, typeof evidence.data.entries>();
+  evidence.data.entries.forEach((e) => {
+    const w = e.week ?? 0;
+    if (!byWeek.has(w)) byWeek.set(w, []);
+    byWeek.get(w)!.push(e);
+  });
+
+  const h = model.data.headline;
+
+  return (
+    <>
+      <PageHeader
+        eyebrow="Evidence"
+        title="Every number, and where it came from"
+        lede={
+          <>
+            A figure is only trustworthy if someone can check whether its source
+            still says the same thing. All {evidence.data.n_values} values below
+            are frozen; re-running the pipeline recomputes every one of them and
+            reports what moved.
+          </>
+        }
+      />
+
+      <Section>
+        <KpiRow>
+          <Kpi
+            value={`${num(h.mae_min, 2)} min`}
+            label="reported model error"
+            sub="gradient-boosted, on the residual over a per-corridor median"
+            accent
+          />
+          <Kpi
+            value={`${num(h.baseline_mae_min, 2)} min`}
+            label="the bar it must beat"
+            sub="the per-corridor median — MAE is minimised by the median, not the mean"
+          />
+          <Kpi
+            value={`${num(h.osrm_mae_min, 2)} min`}
+            label="the planner's own error"
+            sub="context, not a fair comparison — OSRM never sees corridor history"
+          />
+          <Kpi
+            value={evidence.data.n_values}
+            label="frozen values"
+            sub={`frozen ${shortDate(evidence.data.frozen_at)}`}
+          />
+        </KpiRow>
+      </Section>
+
+      {/* ── the served-model caveat, stated where the number appears ──── */}
+      <Section>
+        <Notice tone="warn" title="The reported model is not the served model">
+          {h.served_note} The live predictor scores with the{" "}
+          {h.served_model}, and says so on every answer it gives.
+        </Notice>
+      </Section>
+
+      <Section
+        title="Where the model wins"
+        description="Adopted because it wins on all fourteen slices — but most of the margin comes from corridors the training set never saw. On corridors with history it beats a median lookup by a fifth of a minute. That is a real gain and a small one."
+        actions={
+          <Evidence file="benchmarks/raw/w7_model_metrics_v2_stepsize.csv" />
+        }
+      >
+        <Card>
+          <ModelSlices slices={model.data.slices} />
+        </Card>
+      </Section>
+
+      {/* ── the figures ───────────────────────────────────────────────── */}
+      {figures.data.figures.length > 0 && (
+        <Section
+          title="The figures"
+          description="The nine figures in the paper, each generated from a file in benchmarks/raw/."
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            {figures.data.figures.map((f) => (
+              <Card key={f.id} padded={false} className="overflow-hidden">
+                <div className="bg-white p-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={f.file}
+                    alt={f.title}
+                    loading="lazy"
+                    className="w-full"
+                  />
+                </div>
+                <p className="border-t border-[var(--line)] px-4 py-2.5 font-mono text-xs text-[var(--ink-muted)]">
+                  {f.id}
+                </p>
+              </Card>
+            ))}
+          </div>
+        </Section>
+      )}
+
+      {/* ── the freeze, week by week ──────────────────────────────────── */}
+      <Section
+        title="The results freeze"
+        description="Each value, the week it was produced and the file that holds it. Click any file to open it on GitHub."
+      >
+        <div className="space-y-6">
+          {[...byWeek.entries()]
+            .sort((a, b) => a[0] - b[0])
+            .map(([week, entries]) => (
+              <div key={week}>
+                <h3 className="mb-2 flex items-baseline gap-2 text-sm font-semibold">
+                  <span className="font-mono text-[var(--ink-faint)]">
+                    W{week}
+                  </span>
+                  {WEEK_LABELS[week] ?? ""}
+                </h3>
+                <TableShell>
+                  <thead>
+                    <tr>
+                      <Th align="left">Value</Th>
+                      <Th align="right">Result</Th>
+                      <Th align="left">Source</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {entries.map((e) => (
+                      <tr
+                        key={e.key}
+                        className="transition-colors hover:bg-[var(--surface-sunken)]"
+                      >
+                        <Td>{e.label}</Td>
+                        <Td align="right" mono className="whitespace-nowrap">
+                          <strong>
+                            {typeof e.value === "number"
+                              ? e.value.toLocaleString("en-IN")
+                              : String(e.value)}
+                          </strong>{" "}
+                          <span className="text-[var(--ink-faint)]">
+                            {e.unit}
+                          </span>
+                        </Td>
+                        <Td>
+                          <a
+                            href={repoFileUrl(e.file)}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="font-mono text-[11px] text-[var(--ink-faint)] hover:text-[var(--accent)]"
+                          >
+                            {e.file.replace("benchmarks/raw/", "")}
+                          </a>
+                        </Td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </TableShell>
+              </div>
+            ))}
+        </div>
+      </Section>
+
+      <Section>
+        <Card className="border-dashed">
+          <h3 className="text-sm font-semibold">What the freeze does not do</h3>
+          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--ink-muted)]">
+            It does not make anything immutable — re-running a stage overwrites
+            its artefact exactly as before. What it adds is{" "}
+            <strong className="text-[var(--ink)]">detection</strong>: a verify
+            pass recomputes every value and every source hash and says what
+            changed, which is the property a paper actually needs.
+          </p>
+        </Card>
+      </Section>
+    </>
+  );
+}

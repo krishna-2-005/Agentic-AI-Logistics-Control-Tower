@@ -1,0 +1,32 @@
+{
+  "name": "control-tower-web",
+  "version": "1.1.0",
+  "private": true,
+  "description": "Public frontend for the Agentic AI Logistics Control Tower",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@deck.gl/core": "^9.0.33",
+    "@deck.gl/layers": "^9.0.33",
+    "@deck.gl/mapbox": "^9.0.33",
+    "echarts": "^5.5.1",
+    "maplibre-gl": "^4.7.1",
+    "next": "15.1.6",
+    "react": "19.0.0",
+    "react-dom": "19.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.5",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.5.1",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.3"
+  }
+}

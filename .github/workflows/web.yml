@@ -1,0 +1,81 @@
+name: web
+
+# Two things this guards (W-10):
+#
+# 1. The site's JSON is generated, never hand-edited. If someone changes a file
+#    under benchmarks/raw/ and does not re-run the export, the committed data
+#    and the benchmark disagree — and the site would quietly show the old
+#    number. This job regenerates and fails if the result differs.
+# 2. The frontend builds on a machine that has never seen this repo, with no
+#    `data/` directory and no Spark.
+
+on:
+  push:
+    branches: [main, dev]
+  pull_request:
+    branches: [main, dev]
+
+jobs:
+  export-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      # The export reads only benchmarks/raw/ and the committed reference CSVs,
+      # so it needs pandas and nothing else — not the project's full
+      # requirements.txt, which pulls PySpark.
+      - name: Install export dependencies
+        run: python -m pip install --quiet pandas numpy
+
+      - name: Regenerate the site's data
+        run: python -m src.report.export_web
+
+      - name: Fail if the committed data is stale
+        run: |
+          if ! git diff --quiet -- web/public/data web/public/figures; then
+            echo "::error::web/public/data is out of date."
+            echo "Run 'python -m src.report.export_web' and commit the result."
+            git diff --stat -- web/public/data web/public/figures
+            exit 1
+          fi
+          echo "committed site data matches benchmarks/raw/"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install
+        working-directory: web
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        working-directory: web
+        run: pnpm typecheck
+
+      - name: Build
+        working-directory: web
+        run: pnpm build
+
+      # A key committed to web/ would be public the moment it deployed, so the
+      # build is checked for one rather than trusted to be clean (D-062).
+      - name: Check the bundle carries no secrets
+        working-directory: web
+        run: |
+          if grep -rIlE "(AIza[0-9A-Za-z_-]{35}|sk-[A-Za-z0-9]{32,}|ghp_[A-Za-z0-9]{36})" out/ 2>/dev/null; then
+            echo "::error::a credential pattern appears in the built bundle"
+            exit 1
+          fi
+          echo "no credential patterns in the bundle"
