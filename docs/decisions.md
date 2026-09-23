@@ -2257,3 +2257,124 @@ what moved since that point. Extraction accuracy will move again when rows 21-40
 the freeze working, and the row count beside it says why.
 
 Evidence: `benchmarks/results_freeze_v3.json`, `docs/RESULTS_SUMMARY.md`.
+
+## D-057 · The frontend is rebuilt on Next.js and statically exported to Vercel — `DECIDED`
+**v4.0 Phase F1 · Krishna · execution plan v4.0 §3**
+
+`src/dashboard/app.py` was 1,004 lines, one file, nine pages behind a sidebar radio
+button. It was honest and correct and it was a Week 1 skeleton that grew a page a week.
+What a first-time visitor saw was a build-status checklist, captions citing D-009 and
+P-24, three chart libraries on one site, and four pages that print "needs the local Spark
+session" on any host but the author's laptop.
+
+**Decided: Next.js 15 + React 19 + TypeScript + Tailwind, `output: 'export'`, on Vercel.**
+Observable Framework was the named fallback if the Overview page was not reading real JSON
+by the end of D2. It was, so path A stands.
+
+**Why static export is the right shape here and not just the fashionable one.** The public
+dashboard is read-only by decision (D-009 — the dashboard reads only cached artefacts).
+Eight of the ten routes therefore need nothing at runtime but JSON committed beside the
+code. That removes the entire class of problem the Streamlit deployment had: no container
+to sleep, no cold start, no "the URL is dead when someone clicks it from a CV".
+
+**What was kept rather than redesigned.** The eight severity cut points (D-058), the
+placement rule that position comes from the centre code and only the label from the name
+(D-019, P-21, P-24), and the caveats — D-053's served-vs-reported split and D-054's as-of
+precision — which are now asserted by `tests/test_web_numbers.py` rather than trusted to
+survive a redesign.
+
+Evidence: `web/`, `benchmarks/raw/` unchanged, `docs/deploy_web.md`.
+
+## D-058 · One chart library and one map library for the whole site — `DECIDED`
+**v4.0 Phase F1 · Krishna · execution plan v4.0 §3.3**
+
+**Decided: ECharts for every chart, MapLibre GL + deck.gl for the map.** The Streamlit app
+mixed `st.bar_chart`, Plotly and Folium, and mixed styling is most of why a dashboard reads
+as amateur. Every chart goes through one wrapper (`web/components/Chart.tsx`) that resolves
+the theme's own CSS variables, so a chart cannot keep dark-mode axis colours on a white
+background.
+
+**The eight severity cut points are carried over unchanged.** They were tuned against the
+real bottleneck distribution — median 1.39, p75 1.78, p95 3.42 — so the bins hold
+50 / 113 / 86 / 24 rather than piling 110 of 273 bottlenecks into one shade. Redesigning
+them for the web would have been a visual decision overriding a measured one.
+`test_severity_bins_are_the_tuned_ones` pins them.
+
+**The map basemap needs no API key.** CARTO's styles are served publicly, which matters
+because a key would have to be committed into a public bundle (D-062). The arcs are a
+deck.gl overlay rather than part of the style, so tiles failing degrades the map to arcs on
+a blank ground rather than to nothing.
+
+**The Chart wrapper is hand-written, not `echarts-for-react`.** That package's peer ranges
+had not caught up with React 19. Forty lines is cheaper than a dependency that blocks an
+upgrade.
+
+## D-059 · The site reads only generated JSON, and its numbers are tested against the freeze — `DECIDED`
+**v4.0 Phase F1 · Mounika · execution plan v4.0 §5.1**
+
+**Decided: `src/report/export_web.py` is the only writer of `web/public/data/`.** It reads
+`benchmarks/raw/` and the committed reference CSVs — no Spark, no `data/` — so it runs in
+CI on a fresh clone. Every file it writes carries its source path, generation time and
+freeze version, which is what makes the Evidence link on screen generated rather than typed.
+
+**Pre-aggregation is not an optimisation, it is the contract.** `w1_leg_summary.csv` is
+10.9 MB; the Overview needs a 40-bin histogram and four scalars, which is 1 KB. The whole
+site's data is 790 KB, 74 KB of it the corridor table after gzip.
+
+**The guard that matters.** `tests/test_web_numbers.py` diffs the exported JSON against
+`results_freeze_v3.json`, and `.github/workflows/web.yml` re-runs the export in CI and fails
+if the committed output differs. A number on the site and the same number in the paper
+therefore cannot drift apart without something going red. Four claims are pinned
+explicitly because they are the ones a redesign would quietly lose: the 10-leg and 30-leg
+top-20 lists stay disjoint (D-018), every corridor stays drawable (P-24), severity always
+carries a word and not only a hue (W-11), and the exception agent reports 58.6% and never
+the leaked 72.1% (D-054).
+
+## D-060 · The predictor names the model that scored the request — `DECIDED`
+**v4.0 Phase F1 · Lahari (copy) / Mounika (`model_id`) · W-05**
+
+D-053 left the project reporting one model and serving another. On a page with a form and
+a number, that gap is invisible unless the page says so.
+
+**Decided: every `/api/predict` response carries `model_id`, and the result card prints
+it.** The Predict page also carries the split in its own words above the form. A test
+(`test_the_served_model_is_named_as_not_the_reported_one`) fails if the served model ever
+equals the reported one without the note being updated, so the caveat cannot rot into a
+false claim once the stream does serve the adopted model.
+
+The scikit-learn serving twin from the plan's fallback was not needed: the decision is only
+reached if a cold-start measurement forces it, and no API is deployed yet to measure.
+
+## D-061 · The web app is the public artefact; Streamlit is retired at v1.1-web — `DECIDED`
+**v4.0 Phase F2 · Lahari · execution plan v4.0 §8**
+
+**Decided: `docs/deploy_dashboard.md` is superseded by `docs/deploy_web.md`, and
+G-08 closes on the Vercel URL rather than a Hugging Face Space.**
+
+**`src/dashboard/` is not deleted yet.** The plan retires it at the F2 gate, after the demo
+script is rewritten and the user test passes. Deleting it now would break
+`boot --dashboard` and the current demo script, and the Streamlit app is still the only
+surface for the pages that need a local Spark session. It stays until the API Space exists.
+
+## D-062 · Secrets exist only on the API Space; the web build is secret-free by construction — `DECIDED`
+**v4.0 Phase F1 · Mounika · W-16**
+
+A static bundle is published the moment it deploys, so anything committed under `web/` is
+public. **Decided: no credential ever enters `web/`.** The map needs no key by choice of
+basemap (D-058); the assistant's key will live as a Space secret and the browser will ask
+the API, which asks the model.
+
+Checked rather than asserted: the CI job greps the built bundle for Google, OpenAI and
+GitHub token patterns and fails on a hit.
+
+## D-063 · The public assistant defaults to the no-LLM route — `DECIDED`
+**v4.0 Phase F2 · Mounika · W-04**
+
+The free tier is 20 requests a day (`docs/cost.md`), which a public ask box can exhaust in
+an hour — during a demo, by a stranger.
+
+**Decided: `use_llm=false` is the default, LLM phrasing is capped server-side at 10 a day,
+and the UI shows the quota state rather than an error.** This costs less than it sounds:
+the assistant's routing and retrieval are code either way (D-041), so the extractive route
+returns the same facts in blunter prose. The frontend's checkbox is opt-in and labelled
+with the cap.

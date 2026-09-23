@@ -6,6 +6,13 @@ built on real Delhivery network data.**
 > Big Data Analytics · Transportation & Logistics · Machine Learning · Agentic AI
 > 8-week team project · Sai Krishna (AI Agents & Automation) · Lahari (ML & Evaluation) · Mounika (Data & Systems)
 
+### ▶ **[Open the control tower](https://control-tower-mu-rouge.vercel.app)** — `control-tower-mu-rouge.vercel.app`
+
+The network map, the corridor audit, the agent workforce and every frozen number, live.
+Eight of its ten pages need no backend at all: the site reads JSON written from
+`benchmarks/raw/` by `python -m src.report.export_web` and committed beside the code, so a
+number on screen and a number in the paper cannot drift apart (D-059).
+
 ---
 
 ## The contribution in one sentence
@@ -31,8 +38,9 @@ invoices, each measured against a trivial policy.
 | **Figures** | [`docs/figures/`](docs/figures/) — nine, png and vector pdf, each from a `benchmarks/raw/` file |
 | **Final numbers** | [`benchmarks/final_tables.md`](benchmarks/final_tables.md), [`benchmarks/agent_evaluation.md`](benchmarks/agent_evaluation.md), [`benchmarks/experiments_appendix.md`](benchmarks/experiments_appendix.md) |
 | **Demo** | [`docs/demo_script.md`](docs/demo_script.md) — ten minutes, with what to do when each beat fails |
-| **Public dashboard** | bundle ready in `deploy/hf_space/`, verified in a clean environment; publishing needs a Hugging Face write token ([`docs/deploy_dashboard.md`](docs/deploy_dashboard.md)) |
-| **Still open** | G-07 real alert channel (needs a credential); extraction rows 21-40 (daily LLM quota); serving the reported model in the stream (D-053, Phase 3) |
+| **Public site** | **[control-tower-mu-rouge.vercel.app](https://control-tower-mu-rouge.vercel.app)** — Next.js, static, on Vercel; rebuilt from GitHub on every push ([`docs/deploy_web.md`](docs/deploy_web.md)) |
+| **Work on the site** | `python -m src.report.export_web` then `cd web && pnpm install && pnpm dev` |
+| **Still open** | G-07 real alert channel (needs a credential); the four live pages need the API Space (W-01); extraction rows 21-40 (daily LLM quota); serving the reported model in the stream (D-053, Phase 3) |
 
 ---
 
