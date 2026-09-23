@@ -28,9 +28,10 @@ jobs:
 
       # The export reads only benchmarks/raw/ and the committed reference CSVs,
       # so it needs pandas and nothing else — not the project's full
-      # requirements.txt, which pulls PySpark.
+      # requirements.txt, which pulls PySpark. python-dotenv comes along because
+      # src.common.config loads .env at import time.
       - name: Install export dependencies
-        run: python -m pip install --quiet pandas numpy
+        run: python -m pip install --quiet pandas numpy python-dotenv pytest
 
       - name: Regenerate the site's data
         run: python -m src.report.export_web
@@ -44,6 +45,10 @@ jobs:
             exit 1
           fi
           echo "committed site data matches benchmarks/raw/"
+
+      # The site's numbers against results_freeze_v3.json (D-059).
+      - name: Check the site's numbers against the freeze
+        run: python -m pytest tests/test_web_numbers.py -q
 
       - name: Set up pnpm
         uses: pnpm/action-setup@v4
