@@ -16,7 +16,7 @@
     "@deck.gl/mapbox": "^9.0.33",
     "echarts": "^5.5.1",
     "maplibre-gl": "^4.7.1",
-    "next": "15.1.6",
+    "next": "^15.5.26",
     "react": "19.0.0",
     "react-dom": "19.0.0"
   },
