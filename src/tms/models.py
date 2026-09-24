@@ -26,7 +26,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 from enum import Enum
 
-from pydantic import BaseModel, field_validator, model_validator
+from pydantic import BaseModel, NaiveDatetime, field_validator, model_validator
 from pydantic import Field as PydanticField
 from sqlmodel import Field, SQLModel
 
@@ -135,14 +135,14 @@ class Order(SQLModel, table=True):
 
     pieces: int
     weight_kg: float
-    requested_pickup: datetime | None = None
+    requested_pickup: NaiveDatetime | None = None
 
     status: OrderStatus = Field(default=OrderStatus.RECEIVED, index=True)
     source: OrderSource = Field(default=OrderSource.API, index=True)
     notes: str | None = None
 
-    created_at: datetime = Field(default_factory=utcnow)
-    updated_at: datetime = Field(default_factory=utcnow)
+    created_at: NaiveDatetime = Field(default_factory=utcnow)
+    updated_at: NaiveDatetime = Field(default_factory=utcnow)
 
 
 class Shipment(SQLModel, table=True):
@@ -156,14 +156,14 @@ class Shipment(SQLModel, table=True):
     route_type: RouteType
 
     status: ShipmentStatus = Field(default=ShipmentStatus.CREATED, index=True)
-    planned_departure: datetime | None = None
-    planned_arrival: datetime | None = None
+    planned_departure: NaiveDatetime | None = None
+    planned_arrival: NaiveDatetime | None = None
     #: Set on a status transition — why it moved to `exception`, why it was marked
     #: `delivered` late, and so on. Free text, same role `Order.notes` plays.
     notes: str | None = None
 
-    created_at: datetime = Field(default_factory=utcnow)
-    updated_at: datetime = Field(default_factory=utcnow)
+    created_at: NaiveDatetime = Field(default_factory=utcnow)
+    updated_at: NaiveDatetime = Field(default_factory=utcnow)
 
 
 class ExceptionTicket(SQLModel, table=True):
@@ -180,9 +180,9 @@ class ExceptionTicket(SQLModel, table=True):
     status: ExceptionStatus = Field(default=ExceptionStatus.OPEN, index=True)
     notes: str | None = None
 
-    created_at: datetime = Field(default_factory=utcnow)
-    updated_at: datetime = Field(default_factory=utcnow)
-    resolved_at: datetime | None = None
+    created_at: NaiveDatetime = Field(default_factory=utcnow)
+    updated_at: NaiveDatetime = Field(default_factory=utcnow)
+    resolved_at: NaiveDatetime | None = None
 
 
 class Invoice(SQLModel, table=True):
@@ -207,8 +207,8 @@ class Invoice(SQLModel, table=True):
     status: InvoiceStatus = Field(default=InvoiceStatus.SUBMITTED, index=True)
     dispute_reason: str | None = None
 
-    created_at: datetime = Field(default_factory=utcnow)
-    updated_at: datetime = Field(default_factory=utcnow)
+    created_at: NaiveDatetime = Field(default_factory=utcnow)
+    updated_at: NaiveDatetime = Field(default_factory=utcnow)
 
 
 # ── Request payloads ─────────────────────────────────────────────────────────

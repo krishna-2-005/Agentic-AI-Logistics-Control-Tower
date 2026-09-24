@@ -1366,6 +1366,39 @@ aw\delhivery_data.csv -> download it — see
   the dependency should not be optional.
 
 
+### P-65 · The TMS stopped accepting its own timestamps on a fresh install
+**Post-v1.0 (WP-01) · Mounika · resolved**
+
+- **Symptom.** With the dependencies actually installed from `requirements.txt`, 22 of
+  `tests/test_tms.py`'s 41 tests failed on every write:
+  `ValueError: Datetime values must have timezone information. Use
+  datetime.now(timezone.utc), or annotate the field with NaiveDatetime for naive
+  storage.` Nothing in `src/tms/` had changed since v1.0.
+- **Cause.** `requirements.txt` specifies floors (`sqlmodel>=0.0.19`,
+  `sqlalchemy` transitively), so a fresh resolve installs whatever is current --
+  here sqlmodel 0.0.47 and SQLAlchemy 2.0.54. Recent versions refuse a naive
+  datetime unless the field declares it means one. `models.py` stores naive-UTC
+  deliberately, because SQLite has no timezone type and the response models add the
+  `Z` back on the way out; the storage decision was right and simply undeclared.
+- **Why it had not been seen.** Every machine that ran this had resolved its
+  dependencies months earlier and was holding older versions. The failure only
+  appears on a *fresh* install, which is precisely the case a reproducibility claim
+  is about, and precisely the case nobody runs once a project is working.
+- **Fix.** The twelve persisted datetime columns on the four `table=True` models are
+  annotated `NaiveDatetime`. That declares the existing behaviour rather than
+  changing it: nothing about how timestamps are stored or rendered moved, and the
+  request/response models stay plain `datetime` so a client may still send an
+  offset. 41 of 41 TMS tests pass, and the full suite is 382 fast plus 49 Spark.
+- **Cost.** About 30 minutes, and it was found only because WP-01 put the suite in
+  CI and CI installs from `requirements.txt` rather than from a warm virtualenv.
+- **Carry.** This is the concrete version of the addendum's C-05. Floors are right
+  for a library and wrong for a research artefact: they mean the code that produced
+  the frozen results and the code a reader installs six months later are not the
+  same code, and nothing announces the difference. The lock file in WP-09 is the
+  real fix; until it lands, a green CI run is the only evidence that a fresh
+  install still works, which is an argument for CI rather than against floors.
+
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
