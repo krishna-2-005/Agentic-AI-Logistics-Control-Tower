@@ -177,9 +177,10 @@ export default function AboutPage() {
                 its 1,657 facility codes are the real ones.
               </li>
               <li>
-                No real alert has ever been sent. The email and Telegram
-                channels are implemented and unconfigured, because no credential
-                was committed to the repository.
+                No alert has ever been sent to a real person. The email and
+                messaging channels are built but switched off, because doing
+                otherwise would have meant storing a live account password
+                alongside the project.
               </li>
             </ul>
           </Card>

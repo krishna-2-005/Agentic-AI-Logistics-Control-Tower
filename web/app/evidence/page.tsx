@@ -65,10 +65,9 @@ export default function EvidencePage() {
         title="The results"
         lede={
           <>
-            Everything this project measured, in one place: how well the model
-            predicts, where it wins, and what the nine analyses found. All{" "}
-            {evidence.data.n_values} figures are locked to a released set, so
-            they cannot quietly change.
+            Everything this project measured, in one place: how accurate the
+            prediction is, where it beats a simple lookup and where it does
+            not, and what the analysis of the network found.
           </>
         }
       />
@@ -101,9 +100,16 @@ export default function EvidencePage() {
 
       {/* ── the served-model caveat, stated where the number appears ──── */}
       <Section>
-        <Notice tone="warn" title="The reported model is not the served model">
-          {h.served_note} The live predictor scores with the{" "}
-          {h.served_model}, and says so on every answer it gives.
+        <Notice
+          tone="warn"
+          title="The live predictor uses an earlier model than this one"
+        >
+          The model below needs a rolling view of each lane&apos;s recent
+          history that the live service cannot build yet, so the{" "}
+          <a href="/predict/" className="underline">
+            delay predictor
+          </a>{" "}
+          runs an earlier, slightly weaker model and names it on every answer.
         </Notice>
       </Section>
 

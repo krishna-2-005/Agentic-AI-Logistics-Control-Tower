@@ -71,7 +71,7 @@ export default function HomePage() {
       {/* ── four headline numbers ──────────────────────────────────────── */}
       <Section
         title="The finding"
-        description="Systematic error is localisable error. Every number links to the file that produced it."
+        description="If the error were random it would cancel out across a lane. It does not — so it concentrates, and it can be found."
       >
         <KpiRow>
           <Kpi

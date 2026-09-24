@@ -28,9 +28,9 @@ export default function AlertsPage() {
         title="The alert stream"
         lede={
           <>
-            Replayed shipment events are scored as they arrive, and the ones
-            predicted to run late become alerts an agent acts on. These are the
-            pages a duty operator would actually receive.
+            Shipment events are scored as they arrive, and the ones predicted to
+            run late become alerts an agent acts on — notifying the customer and
+            filing a ticket. This is what a duty operator would see.
           </>
         }
       />

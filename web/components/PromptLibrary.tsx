@@ -51,6 +51,22 @@ function diffLines(a: string, b: string) {
   return out;
 }
 
+/** Folder names are how the repository stores these; a reader wants the agent. */
+const AGENT_NAMES: Record<string, string> = {
+  analytics_assistant: "Analytics Assistant",
+  doc_extraction: "Document Intelligence",
+  exception_triage: "Tracking & Exception",
+  invoice_audit: "Invoice Auditor",
+  order_entry: "Order Entry",
+};
+
+function agentName(slug: string): string {
+  return (
+    AGENT_NAMES[slug] ??
+    slug.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
+  );
+}
+
 export function PromptLibrary({ agents }: { agents: PromptAgent[] }) {
   const [agentIdx, setAgentIdx] = useState(0);
   const [mode, setMode] = useState<"read" | "diff">("read");
@@ -89,9 +105,11 @@ export function PromptLibrary({ agents }: { agents: PromptAgent[] }) {
                 : "text-[var(--ink-muted)] hover:bg-[var(--surface-raised)] hover:text-[var(--ink)]"
             )}
           >
-            <span className="truncate font-mono text-[13px]">{a.agent}</span>
-            <span className="shrink-0 font-mono text-[10px] text-[var(--ink-faint)]">
-              {a.versions.length}v
+            <span className="truncate text-[13px]">{agentName(a.agent)}</span>
+            <span className="tabular shrink-0 text-[10px] text-[var(--ink-faint)]">
+              {a.versions.length === 1
+                ? "1 version"
+                : `${a.versions.length} versions`}
             </span>
           </button>
         ))}

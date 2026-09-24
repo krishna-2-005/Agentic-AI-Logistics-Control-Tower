@@ -47,14 +47,14 @@ export default function HubsPage() {
           />
           <Kpi
             value={minutes(medianDwell)}
-            label="median hub dwell"
-            sub="per outbound leg"
+            label="typical wait at a ranked hub"
+            sub="the middle hub of the 121, per outbound journey"
             accent
           />
           <Kpi
             value={pct(medianShare, 1)}
-            label="of wall clock is dwell"
-            sub="time parked rather than moving"
+            label="of the journey spent waiting there"
+            sub="at that same middle hub — across all journeys the figure is 34.6%"
           />
           <Kpi
             value="2"

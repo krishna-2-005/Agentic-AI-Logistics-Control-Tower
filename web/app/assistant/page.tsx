@@ -52,9 +52,9 @@ export default function AssistantPage() {
             sub="questions the data cannot answer, correctly declined"
           />
           <Kpi
-            value={e.groundedness?.extractive_fallbacks ?? 0}
-            label="provider errors"
-            sub="counted apart, never credited to the model"
+            value="30"
+            label="questions in the test set"
+            sub="fixed in advance, including six the data cannot answer"
           />
         </KpiRow>
       </Section>

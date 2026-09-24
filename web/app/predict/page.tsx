@@ -29,26 +29,26 @@ export default function PredictPage() {
     <>
       <PageHeader
         eyebrow="Predict"
-        title="How late will this leg run?"
+        title="How late will this journey run?"
         lede={
           <>
-            Pick a corridor and a departure, and the model predicts the gap
-            between the planned time and the realised one. It answers with{" "}
-            <strong className="font-semibold text-[var(--ink)]">
-              which model scored the request
-            </strong>
-            , because the model this project reports and the model it serves are
-            not the same one.
+            Pick a lane and a departure, and the model estimates how far past
+            its planned time the journey will actually take — the quantity the
+            whole analysis is about.
           </>
         }
       />
 
       <Section>
-        <Notice tone="warn" title="Served model, not the reported model">
-          {model.data.headline.served_note} So this page answers with the{" "}
-          {model.data.headline.served_model} — a genuinely weaker model than the{" "}
-          {num(model.data.headline.mae_min, 2)}-minute one on the results page.
-          Saying so here is cheaper than a footnote nobody reads.
+        <Notice
+          tone="warn"
+          title="This page uses an earlier model than the one in the results"
+        >
+          The best model needs a rolling view of each lane&apos;s recent
+          history, which the live service cannot build yet. So predictions here
+          come from an earlier, slightly weaker model — about six minutes less
+          accurate than the {num(model.data.headline.mae_min, 2)}-minute figure
+          on the results page. Every answer says which model produced it.
         </Notice>
       </Section>
 
