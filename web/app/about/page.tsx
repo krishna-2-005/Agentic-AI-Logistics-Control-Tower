@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 
-import { ArrowLink, Card, PageHeader, Section } from "@/components/ui";
+import { Card, PageHeader, Section } from "@/components/ui";
 import { getEvidence, getOverview } from "@/lib/data";
-import { REPO_URL } from "@/lib/repo";
 import { num } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -252,24 +251,15 @@ export default function AboutPage() {
 
       <Section>
         <Card>
-          <h3 className="text-sm font-semibold">Read further</h3>
-          <div className="mt-3 flex flex-col gap-2">
-            <ArrowLink href={`${REPO_URL}/blob/main/docs/paper_draft.md`} external>
-              The paper draft
-            </ArrowLink>
-            <ArrowLink href={`${REPO_URL}/blob/main/docs/decisions.md`} external>
-              The decision log — every choice, and why
-            </ArrowLink>
-            <ArrowLink href={`${REPO_URL}/blob/main/docs/problems.md`} external>
-              The problems log — every bug and what it cost
-            </ArrowLink>
-            <ArrowLink href={REPO_URL} external>
-              The repository
-            </ArrowLink>
-          </div>
-          <p className="mt-4 border-t border-[var(--line)] pt-3 font-mono text-xs text-[var(--ink-faint)]">
-            results freeze {evidence.freeze} · {evidence.data.n_values} values ·
-            academic coursework · Delhivery dataset under its original licence
+          <p className="text-sm leading-relaxed text-[var(--ink-muted)]">
+            Every figure on this site is computed from the project&apos;s own
+            measurements and checked against a frozen set of{" "}
+            {evidence.data.n_values} values before each release, so a number
+            here and a number in the write-up cannot drift apart.
+          </p>
+          <p className="mt-3 border-t border-[var(--line)] pt-3 text-xs text-[var(--ink-faint)]">
+            Academic coursework · Delhivery dataset used under its original
+            licence
           </p>
         </Card>
       </Section>

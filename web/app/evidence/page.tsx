@@ -14,13 +14,12 @@ import {
   Th,
 } from "@/components/ui";
 import { getEvidence, getFigures, getModel } from "@/lib/data";
-import { repoFileUrl } from "@/lib/repo";
-import { num, shortDate } from "@/lib/format";
+import { num } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Results",
   description:
-    "Every number this project reports, the file it comes from, and the figures behind the paper.",
+    "The measured results behind the network map, the model and the agents.",
 };
 
 const WEEK_LABELS: Record<number, string> = {
@@ -33,6 +32,14 @@ const WEEK_LABELS: Record<number, string> = {
   7: "Model correction, RAG, scale",
   8: "Reproducibility and the leak",
 };
+
+/** "fig3_top_bottlenecks" -> "3 · Top bottlenecks". */
+function prettyFigure(id: string): string {
+  const m = id.match(/^fig(\d+)_(.+)$/);
+  if (!m) return id.replace(/_/g, " ");
+  const words = m[2].replace(/_/g, " ");
+  return `${m[1]} · ${words.charAt(0).toUpperCase()}${words.slice(1)}`;
+}
 
 export default function EvidencePage() {
   const evidence = getEvidence();
@@ -52,13 +59,13 @@ export default function EvidencePage() {
     <>
       <PageHeader
         eyebrow="Evidence"
-        title="Every number, and where it came from"
+        title="The results"
         lede={
           <>
-            A figure is only trustworthy if someone can check whether its source
-            still says the same thing. All {evidence.data.n_values} values below
-            are frozen; re-running the pipeline recomputes every one of them and
-            reports what moved.
+            Everything this project measured, in one place: how well the model
+            predicts, where it wins, and what the nine analyses found. All{" "}
+            {evidence.data.n_values} figures are locked to a released set, so
+            they cannot quietly change.
           </>
         }
       />
@@ -82,9 +89,9 @@ export default function EvidencePage() {
             sub="context, not a fair comparison — OSRM never sees corridor history"
           />
           <Kpi
-            value={evidence.data.n_values}
-            label="frozen values"
-            sub={`frozen ${shortDate(evidence.data.frozen_at)}`}
+            value="14 / 14"
+            label="slices the model wins on"
+            sub="by corridor history, route type, distance band and departure hour"
           />
         </KpiRow>
       </Section>
@@ -113,7 +120,7 @@ export default function EvidencePage() {
       {figures.data.figures.length > 0 && (
         <Section
           title="The figures"
-          description="The nine figures in the paper, each generated from a file in benchmarks/raw/."
+          description="The nine figures behind the write-up, each computed from the measurements on this page."
         >
           <div className="grid gap-4 sm:grid-cols-2">
             {figures.data.figures.map((f) => (
@@ -127,8 +134,8 @@ export default function EvidencePage() {
                     className="w-full"
                   />
                 </div>
-                <p className="border-t border-[var(--line)] px-4 py-2.5 font-mono text-xs text-[var(--ink-muted)]">
-                  {f.id}
+                <p className="border-t border-[var(--line)] px-4 py-2.5 text-xs text-[var(--ink-muted)]">
+                  {prettyFigure(f.id)}
                 </p>
               </Card>
             ))}
@@ -138,8 +145,8 @@ export default function EvidencePage() {
 
       {/* ── the freeze, week by week ──────────────────────────────────── */}
       <Section
-        title="The results freeze"
-        description="Each value, the week it was produced and the file that holds it. Click any file to open it on GitHub."
+        title="All measurements"
+        description="Every figure this project reports, grouped by the stage of work that produced it."
       >
         <div className="space-y-6">
           {[...byWeek.entries()]
@@ -157,7 +164,6 @@ export default function EvidencePage() {
                     <tr>
                       <Th align="left">Value</Th>
                       <Th align="right">Result</Th>
-                      <Th align="left">Source</Th>
                     </tr>
                   </thead>
                   <tbody>
@@ -177,16 +183,6 @@ export default function EvidencePage() {
                             {e.unit}
                           </span>
                         </Td>
-                        <Td>
-                          <a
-                            href={repoFileUrl(e.file)}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="font-mono text-[11px] text-[var(--ink-faint)] hover:text-[var(--accent)]"
-                          >
-                            {e.file.replace("benchmarks/raw/", "")}
-                          </a>
-                        </Td>
                       </tr>
                     ))}
                   </tbody>
@@ -196,18 +192,6 @@ export default function EvidencePage() {
         </div>
       </Section>
 
-      <Section>
-        <Card className="border-dashed">
-          <h3 className="text-sm font-semibold">What the freeze does not do</h3>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--ink-muted)]">
-            It does not make anything immutable — re-running a stage overwrites
-            its artefact exactly as before. What it adds is{" "}
-            <strong className="text-[var(--ink)]">detection</strong>: a verify
-            pass recomputes every value and every source hash and says what
-            changed, which is the property a paper actually needs.
-          </p>
-        </Card>
-      </Section>
     </>
   );
 }

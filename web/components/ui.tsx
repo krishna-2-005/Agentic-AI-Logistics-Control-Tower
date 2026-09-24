@@ -10,7 +10,6 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 import { cx } from "@/lib/format";
-import { repoFileUrl } from "@/lib/repo";
 
 // ── page skeleton ────────────────────────────────────────────────────────────
 
@@ -104,43 +103,27 @@ export function Card({
 // ── the evidence link, used on every number ──────────────────────────────────
 
 /**
- * Progressive disclosure, the third design rule: the number, then a one-line
- * story, then the file it came from. Nothing on this site is asserted without
- * a link to the artefact that produced it.
+ * Deliberately renders nothing.
+ *
+ * Every number on this site is still computed from a benchmark file and is
+ * still checked against the results freeze by `tests/test_web_numbers.py` --
+ * that guarantee is in the build, where it belongs. What it does not need to be
+ * is a source-code link under every figure on a public page.
+ *
+ * A visitor came to read the network, not to read the repository. Putting a
+ * file path and a GitHub link beside each KPI made the site read as a repo
+ * browser rather than a product, which is the opposite of the point.
+ *
+ * The call sites are left in place so provenance can be re-enabled for an
+ * internal build by restoring the link here, rather than by editing twenty
+ * pages back.
  */
-export function Evidence({
-  file,
-  label = "Evidence",
-  className,
-}: {
+export function Evidence(_: {
   file: string;
   label?: string;
   className?: string;
 }) {
-  return (
-    <a
-      href={repoFileUrl(file)}
-      target="_blank"
-      rel="noreferrer"
-      title={file}
-      className={cx(
-        "inline-flex items-center gap-1 font-mono text-[11px] text-[var(--ink-faint)]",
-        "transition-colors hover:text-[var(--accent)]",
-        className
-      )}
-    >
-      <svg width="11" height="11" viewBox="0 0 16 16" fill="none" aria-hidden>
-        <path
-          d="M9 2h5v5M14 2 7 9M12 9.5V13a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3.5"
-          stroke="currentColor"
-          strokeWidth="1.4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-      {label}
-    </a>
-  );
+  return null;
 }
 
 // ── KPI ──────────────────────────────────────────────────────────────────────

@@ -5,7 +5,6 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { cx } from "@/lib/format";
-import { REPO_URL } from "@/lib/repo";
 
 /**
  * Top navigation in four sections.
@@ -171,14 +170,6 @@ export function Nav() {
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <a
-            href={REPO_URL}
-            target="_blank"
-            rel="noreferrer"
-            className="hidden rounded-lg border border-[var(--line)] px-3 py-1.5 text-sm text-[var(--ink-muted)] transition-colors hover:border-[var(--ink-faint)] hover:text-[var(--ink)] sm:block"
-          >
-            GitHub
-          </a>
           <ThemeToggle />
           <button
             onClick={() => setOpen((v) => !v)}
