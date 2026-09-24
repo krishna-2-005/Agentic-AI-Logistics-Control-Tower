@@ -7,7 +7,7 @@ A package is **done** only when the evidence named in its Acceptance row exists 
 
 | WP | Package | Status | Blocked on | Evidence |
 |---|---|---|---|---|
-| 01 | Foundation — README, main, license, CI, secret scan | **in progress** | release + branch protection need repo-owner rights (HUMAN_ACTIONS §1.1, §1.2) | `.github/workflows/tests.yml`, `tests/test_readme_numbers.py`, `LICENSE`, `CITATION.cff`, `.pre-commit-config.yaml` |
+| 01 | Foundation — README, main, license, CI, secret scan | **code done; release blocked** | v1.0 release + branch protection need repo-owner rights (HUMAN_ACTIONS §1.1, §1.2) | `.github/workflows/tests.yml`, `tests/test_readme_numbers.py` (20 green), `LICENSE`, `DATA_LICENSE.md`, `CITATION.cff`, `.pre-commit-config.yaml`, `.gitattributes` |
 | 02 | Agent evaluation at scale (n ≥ 150, Wilson intervals) | not started | nothing — runs `--no-llm` | `benchmarks/raw/w9_order_eval.json`, `w9_invoice_eval.json`, `w9_lifecycle_eval.json` |
 | 03 | Public site phase 1 — export, scaffold, Overview, Network, Corridors, About | **done, ahead of order** | — | `src/report/export_web.py`, `web/`, production URL, `tests/test_web_numbers.py` (21 green) |
 | 04 | Public API Space — read-only API, TMS isolation, rate limits, predict | not started | **HF token + Space** (HUMAN_ACTIONS §2.2) | `src/api/app.py`, `benchmarks/raw/f1_api_latency.json`, D-064 |
@@ -38,17 +38,27 @@ nobody spends time closing something already closed.
 
 ---
 
-## Known problems this work order will have to deal with
+## Known problems, and what WP-01 found
 
-Found while auditing, not caused by it.
-
-1. **The test suite does not currently pass.** 14 of 26 test files fail to import because the
-   `control-tower` virtualenv is missing `fastapi`, `sqlmodel`, `sklearn`, `mcp` and `reportlab`;
-   of the 190 tests that do run, **4 fail** (3 in `test_eval_extraction.py`, 1 in
-   `test_analytics_assistant.py`). `docs/RELEASE_v1.0.md` claims "the full suite passes on the
-   release commit", which is no longer true on this machine. WP-01 puts the suite in CI, which is
-   exactly what would have caught this.
+1. **The test suite now passes: 382 without Spark, 49 with.** It did not when this audit
+   started. Three separate causes, only one of which was a missing local install:
+   - Ten test files could not import because the working virtualenv lacked packages that
+     `requirements.txt` does declare (`fastapi`, `sqlmodel`, `sklearn`, `mcp`, `reportlab`).
+     Installed.
+   - **`rapidfuzz` was used and never declared** (P-64). Without it the extraction scorer
+     silently fell back to exact string matching, so the published 98.7% per-field accuracy
+     would have come out several points lower on a clean machine with nothing saying why.
+     Declared, and the scorer now refuses to run rather than degrade.
+   - **The TMS stopped accepting its own timestamps on a fresh dependency resolve** (P-65).
+     Current sqlmodel rejects naive datetimes unless the field declares it means one.
+   The last two were invisible to everyone who already had a working environment — which is
+   the entire team. Putting the suite in CI is what surfaced them, within an hour.
 2. **`LLM_MODEL` disagrees between files** — `.env.example` says `gemini-3.6-flash`,
-   `src/common/config.py` defaults to `gemini-2.0-flash`.
+   `src/common/config.py` defaults to `gemini-2.0-flash`. Not yet reconciled; needs a decision
+   on which model actually answered the Week 7 runs before either file is changed.
 3. **The frontend went to `dev` without a PR** (23 Sep), a GIT_RULES §5 miss. Not rewritten —
-   §11 restricts rewrites to metadata fixes and the metadata is clean.
+   §11 restricts rewrites to metadata fixes and the metadata is clean. Everything since is on
+   `wo-01-mounika-foundation`.
+4. **`requirements.txt` uses floors, not pins.** P-65 is the first thing that has broken
+   because of it. The lock file is WP-09; until then a green CI run is the only evidence that
+   a fresh install still works.
