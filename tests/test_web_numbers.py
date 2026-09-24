@@ -85,14 +85,26 @@ def test_model_headline_matches_freeze(frozen) -> None:
 def test_the_served_model_is_named_as_not_the_reported_one() -> None:
     """D-053 is a caveat the site must carry, not a detail it may drop.
 
-    The predictor page scores with the Week 4 champion while the results page
-    reports a better model. If that sentence ever goes missing, the page starts
-    implying it is scoring with the number printed next to it.
+    The predictor scores with the Week 4 champion while the results page reports
+    a better model. If that sentence ever goes missing, the page starts implying
+    it is scoring with the number printed beside it.
+
+    The assertion is on the *substance*, deliberately: the note used to be
+    required to contain the string "D-053", which made this test fail the moment
+    the decision reference was taken off the public copy -- punishing a change
+    that improved the page while still allowing the caveat itself to be deleted.
+    A test on a citation is not a test on a claim.
     """
     h = _load("model.json")["data"]["headline"]
     assert h["served_model"], "no served model named"
-    assert "D-053" in h["served_note"]
-    assert h["served_model"] != h["model"]
+    assert h["served_model"] != h["model"], (
+        "the served and reported models now match; if that is real, this caveat "
+        "should be removed from the site rather than reworded"
+    )
+    note = h["served_note"].lower()
+    assert "earlier" in note or "weaker" in note, (
+        "the served-model note no longer says the live model is the weaker one"
+    )
 
 
 # ── the corridor audit reproduces exactly ────────────────────────────────────

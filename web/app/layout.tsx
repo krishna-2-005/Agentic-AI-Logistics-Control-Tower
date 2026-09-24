@@ -3,7 +3,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 
 import { Nav } from "@/components/Nav";
 import { StatusStrip } from "@/components/StatusStrip";
-import { REPO_URL, getOverview } from "@/lib/data";
+import { getOverview } from "@/lib/data";
 
 import "./globals.css";
 
@@ -70,21 +70,8 @@ export default function RootLayout({
                 network data underneath is real.
               </p>
             </div>
-            <div className="flex flex-col gap-1.5 font-mono text-xs">
-              <a
-                href={REPO_URL}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-[var(--accent)]"
-              >
-                github ↗
-              </a>
-              <span className="text-[var(--ink-faint)]">
-                results freeze {overview.freeze}
-              </span>
-              <span className="text-[var(--ink-faint)]">
-                academic coursework · 2026
-              </span>
+            <div className="flex flex-col gap-1.5 text-xs text-[var(--ink-faint)]">
+              <span>Academic coursework · 2026</span>
             </div>
           </div>
         </footer>

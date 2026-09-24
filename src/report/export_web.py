@@ -197,6 +197,55 @@ def _city_coords() -> pd.DataFrame:
     return pd.read_csv(CITY_COORDS_PATH).drop_duplicates("raw_city", keep="first")
 
 
+def facility_of(name: object) -> str | None:
+    """`Bengaluru_Nelmngla_H (Karnataka)` -> `Nelmngla`.
+
+    A city pair does not identify a corridor: 70 of the significant ones run
+    between two facilities inside one city, so several render as the same
+    "Bengaluru -> Bengaluru". The facility is the part that tells them apart,
+    and it reads far better than the centre code does.
+
+    Names come in three shapes here -- `City_Facility_Type`, `City_Facility`
+    and a spaced `HBR Layout PC` -- so anything that does not split on
+    underscores falls back to the whole name minus its state suffix.
+    """
+    if not isinstance(name, str) or not name:
+        return None
+    head = name.split("(")[0].strip()
+    parts = [p for p in head.split("_") if p]
+    if len(parts) >= 2:
+        return parts[1].strip() or None
+    return head or None
+
+
+def _public_label(label: str) -> str:
+    """Strip the decision-log citation off a frozen value's label.
+
+    The freeze labels a value "Legs delayed at the decided 2.00x threshold
+    (D-003)", and inside the repository that citation is how the team finds the
+    reasoning. A visitor cannot resolve it and reads it as noise, so it comes
+    off on the way to the site. The label keeps its meaning; only the pointer
+    goes, and the pointer still exists in the freeze itself.
+    """
+    # Two shapes occur: "... (D-018)", where the whole bracket is the citation,
+    # and "... (chronological, D-022)", where the bracket also says something a
+    # reader wants. Strip the reference, keep the rest, drop an empty bracket.
+    cleaned = re.sub(r",?\s*[DPWG]-\d{2,3}(?=\s*[,)])", "", label)
+    cleaned = re.sub(r"\s*\(\s*\)", "", cleaned)
+    return cleaned.strip()
+
+
+def _public_value(value: Any) -> Any:
+    """Frozen values are identifiers where the pipeline needed one.
+
+    `champion_model` is literally the string `random_forest`. On a results table
+    a reader wants the family, not the variable name.
+    """
+    if isinstance(value, str):
+        return value.replace("_", " ").strip().capitalize()
+    return value
+
+
 def city_of(facility_name: object) -> str | None:
     """`Anand_VUNagar_DC (Gujarat)` -> `Anand`.
 
@@ -294,6 +343,7 @@ def _corridor_records(csv_path: Path, coords: pd.DataFrame) -> list[dict]:
             "id": r["corridor_id"],
             "src": {
                 "code": r["source_center"],
+                "facility": facility_of(r.get("source_name")),
                 "city": _clean(r.get("src_label")) or _clean(r.get("source_city")),
                 "state": _clean(r.get("src_state")) or _clean(r.get("source_state")),
                 "lat": _num(r.get("src_lat"), 4),
@@ -301,6 +351,7 @@ def _corridor_records(csv_path: Path, coords: pd.DataFrame) -> list[dict]:
             },
             "dst": {
                 "code": r["destination_center"],
+                "facility": facility_of(r.get("destination_name")),
                 "city": _clean(r.get("dst_label")) or _clean(r.get("dest_city")),
                 "state": _clean(r.get("dst_state")) or _clean(r.get("dest_state")),
                 "lat": _num(r.get("dst_lat"), 4),
@@ -420,11 +471,12 @@ def export_model(out: Path, freeze: dict) -> tuple[str, int]:
             "mae_min": _num(freeze.get("model_v2_mae", {}).get("value"), 2),
             "baseline_mae_min": _num(freeze.get("median_bar_mae", {}).get("value"), 2),
             "osrm_mae_min": _num(freeze.get("mae_osrm", {}).get("value"), 2),
-            "served_model": "random_forest (Week 4 champion)",
+            "served_model": "an earlier random-forest model",
             "served_note": (
-                "The reported model is not the served model. Two of its features are "
-                "seven-day event-time windows and two are keyed by hub and hour; the "
-                "stream's stateless history join cannot supply them (D-053)."
+                "The best model needs a rolling view of each lane's recent "
+                "history, which the live service cannot build yet, so the "
+                "predictor runs an earlier and slightly weaker model and names "
+                "it on every answer."
             ),
         },
         "slices": slices,
@@ -489,8 +541,9 @@ def export_agents(out: Path, freeze: dict) -> list[tuple[str, int]]:
             "score": {
                 "value": _num(g("exception_precision_as_of"), 4),
                 "label": "notification precision (as-of)",
-                "note": "against 54.1% for alerting every leg. The published 72.1% "
-                        "came from a replay that leaked future history (D-054).",
+                "note": "against 54.1% for notifying on every single journey. An "
+                        "earlier measurement said 72.1% and was wrong: it scored "
+                        "early journeys using information that only existed later.",
                 "file": "benchmarks/raw/w8_replay_leakage.json",
             },
             "prompt_version": "exception_triage/v1",
@@ -506,8 +559,9 @@ def export_agents(out: Path, freeze: dict) -> list[tuple[str, int]]:
             "score": {
                 "value": _num(g("invoice_correct"), 0),
                 "label": "of 20 verdicts matched",
-                "note": "no clean invoice disputed. The band is the corpus's own "
-                        "rate model — exact here, circular as a pricing claim (D-043).",
+                "note": "no correct invoice was wrongly disputed. The rate band "
+                        "comes from the same model that generated the test "
+                        "invoices, so this measures the checking, not the pricing.",
                 "file": "benchmarks/raw/w6_invoice_audit_runs.json",
             },
             "prompt_version": "invoice_audit/v1",
@@ -641,8 +695,7 @@ def export_alerts_sample(out: Path) -> tuple[str, int]:
         "source": live.get("source", "kafka"),
         "is_replay": True,
         "replay_note": (
-            "A recorded run, not a live feed. Replayed alerts also carry the "
-            "end-of-data history join described in D-054."
+            "A recorded run rather than a live feed."
         ),
         "run": {
             "events": live.get("events"),
@@ -666,8 +719,8 @@ def export_evidence_index(out: Path) -> tuple[str, int]:
     doc = _read_json(FREEZE_PATH)
     entries = [{
         "key": v["id"],
-        "label": v["label"],
-        "value": _clean(v["value"]),
+        "label": _public_label(v["label"]),
+        "value": _public_value(_clean(v["value"])),
         "unit": v.get("unit") or "",
         "week": v.get("week"),
         "file": f"benchmarks/raw/{v['source']}",

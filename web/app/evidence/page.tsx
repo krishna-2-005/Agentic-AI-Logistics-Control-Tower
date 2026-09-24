@@ -14,13 +14,12 @@ import {
   Th,
 } from "@/components/ui";
 import { getEvidence, getFigures, getModel } from "@/lib/data";
-import { repoFileUrl } from "@/lib/repo";
-import { num, shortDate } from "@/lib/format";
+import { num } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Results",
   description:
-    "Every number this project reports, the file it comes from, and the figures behind the paper.",
+    "The measured results behind the network map, the model and the agents.",
 };
 
 const WEEK_LABELS: Record<number, string> = {
@@ -33,6 +32,17 @@ const WEEK_LABELS: Record<number, string> = {
   7: "Model correction, RAG, scale",
   8: "Reproducibility and the leak",
 };
+
+/** "fig3_top_bottlenecks" -> "3 · Top bottlenecks". */
+function prettyFigure(id: string): string {
+  const m = id.match(/^fig(\d+)_(.+)$/);
+  if (!m) return id.replace(/_/g, " ");
+  const words = m[2]
+    .split("_")
+    .map((w) => (w.toLowerCase() === "mae" ? "MAE" : w))
+    .join(" ");
+  return `${m[1]} · ${words.charAt(0).toUpperCase()}${words.slice(1)}`;
+}
 
 export default function EvidencePage() {
   const evidence = getEvidence();
@@ -51,14 +61,13 @@ export default function EvidencePage() {
   return (
     <>
       <PageHeader
-        eyebrow="Evidence"
-        title="Every number, and where it came from"
+        eyebrow="Results"
+        title="The results"
         lede={
           <>
-            A figure is only trustworthy if someone can check whether its source
-            still says the same thing. All {evidence.data.n_values} values below
-            are frozen; re-running the pipeline recomputes every one of them and
-            reports what moved.
+            Everything this project measured, in one place: how accurate the
+            prediction is, where it beats a simple lookup and where it does
+            not, and what the analysis of the network found.
           </>
         }
       />
@@ -67,33 +76,40 @@ export default function EvidencePage() {
         <KpiRow>
           <Kpi
             value={`${num(h.mae_min, 2)} min`}
-            label="reported model error"
-            sub="gradient-boosted, on the residual over a per-corridor median"
+            label="best model's average error"
+            sub="how far off a delay prediction is, on average"
             accent
           />
           <Kpi
             value={`${num(h.baseline_mae_min, 2)} min`}
             label="the bar it must beat"
-            sub="the per-corridor median — MAE is minimised by the median, not the mean"
+            sub="what you get by just looking up this corridor's usual delay"
           />
           <Kpi
             value={`${num(h.osrm_mae_min, 2)} min`}
-            label="the planner's own error"
-            sub="context, not a fair comparison — OSRM never sees corridor history"
+            label="the routing engine's error"
+            sub="shown for context: it has no access to past journeys"
           />
           <Kpi
-            value={evidence.data.n_values}
-            label="frozen values"
-            sub={`frozen ${shortDate(evidence.data.frozen_at)}`}
+            value="14 / 14"
+            label="slices the model wins on"
+            sub="by corridor history, route type, distance band and departure hour"
           />
         </KpiRow>
       </Section>
 
       {/* ── the served-model caveat, stated where the number appears ──── */}
       <Section>
-        <Notice tone="warn" title="The reported model is not the served model">
-          {h.served_note} The live predictor scores with the{" "}
-          {h.served_model}, and says so on every answer it gives.
+        <Notice
+          tone="warn"
+          title="The live predictor uses an earlier model than this one"
+        >
+          The model below needs a rolling view of each corridor&apos;s recent
+          history that the live service cannot build yet, so the{" "}
+          <a href="/predict/" className="underline">
+            delay predictor
+          </a>{" "}
+          runs an earlier, slightly weaker model and names it on every answer.
         </Notice>
       </Section>
 
@@ -113,7 +129,7 @@ export default function EvidencePage() {
       {figures.data.figures.length > 0 && (
         <Section
           title="The figures"
-          description="The nine figures in the paper, each generated from a file in benchmarks/raw/."
+          description="The nine figures behind the write-up, each computed from the measurements on this page."
         >
           <div className="grid gap-4 sm:grid-cols-2">
             {figures.data.figures.map((f) => (
@@ -127,8 +143,8 @@ export default function EvidencePage() {
                     className="w-full"
                   />
                 </div>
-                <p className="border-t border-[var(--line)] px-4 py-2.5 font-mono text-xs text-[var(--ink-muted)]">
-                  {f.id}
+                <p className="border-t border-[var(--line)] px-4 py-2.5 text-xs text-[var(--ink-muted)]">
+                  {prettyFigure(f.id)}
                 </p>
               </Card>
             ))}
@@ -138,8 +154,8 @@ export default function EvidencePage() {
 
       {/* ── the freeze, week by week ──────────────────────────────────── */}
       <Section
-        title="The results freeze"
-        description="Each value, the week it was produced and the file that holds it. Click any file to open it on GitHub."
+        title="All measurements"
+        description="Every figure this project reports, grouped by the stage of work that produced it."
       >
         <div className="space-y-6">
           {[...byWeek.entries()]
@@ -157,7 +173,6 @@ export default function EvidencePage() {
                     <tr>
                       <Th align="left">Value</Th>
                       <Th align="right">Result</Th>
-                      <Th align="left">Source</Th>
                     </tr>
                   </thead>
                   <tbody>
@@ -177,16 +192,6 @@ export default function EvidencePage() {
                             {e.unit}
                           </span>
                         </Td>
-                        <Td>
-                          <a
-                            href={repoFileUrl(e.file)}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="font-mono text-[11px] text-[var(--ink-faint)] hover:text-[var(--accent)]"
-                          >
-                            {e.file.replace("benchmarks/raw/", "")}
-                          </a>
-                        </Td>
                       </tr>
                     ))}
                   </tbody>
@@ -196,18 +201,6 @@ export default function EvidencePage() {
         </div>
       </Section>
 
-      <Section>
-        <Card className="border-dashed">
-          <h3 className="text-sm font-semibold">What the freeze does not do</h3>
-          <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--ink-muted)]">
-            It does not make anything immutable — re-running a stage overwrites
-            its artefact exactly as before. What it adds is{" "}
-            <strong className="text-[var(--ink)]">detection</strong>: a verify
-            pass recomputes every value and every source hash and says what
-            changed, which is the property a paper actually needs.
-          </p>
-        </Card>
-      </Section>
     </>
   );
 }

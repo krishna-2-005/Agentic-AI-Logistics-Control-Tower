@@ -28,9 +28,9 @@ export default function AlertsPage() {
         title="The alert stream"
         lede={
           <>
-            Replayed shipment events are scored as they arrive, and the ones
-            predicted to run late become alerts an agent acts on. These are the
-            pages a duty operator would actually receive.
+            Shipment events are scored as they arrive, and the ones predicted to
+            run late become alerts an agent acts on — notifying the customer and
+            filing a ticket. This is what a duty operator would see.
           </>
         }
       />
@@ -46,18 +46,18 @@ export default function AlertsPage() {
           <Kpi
             value={`${num(scoringRate, 0)}/s`}
             label="saturated scoring rate"
-            sub="sustained, with the stage breakdown beside it"
+            sub="sustained, with nothing queued or dropped"
             accent
           />
           <Kpi
             value={`${num(latency, 1)} s`}
             label="event to alert, median"
-            sub="from arriving on the topic to being flagged"
+            sub="from the event arriving to the alert being raised"
           />
           <Kpi
             value={pct(precision, 1)}
             label="notification precision"
-            sub="against 54.1% for alerting on every single leg"
+            sub="against 54.1% if you simply alerted on every leg"
             file="benchmarks/raw/w8_replay_leakage.json"
           />
         </KpiRow>

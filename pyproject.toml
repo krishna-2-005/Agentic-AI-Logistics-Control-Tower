@@ -1,0 +1,49 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+# `python -m pytest` puts the working directory on sys.path and a bare `pytest`
+# does not, so `import src...` worked on developer machines and failed in CI
+# with "No module named 'src'". Setting it here makes both invocations behave
+# the same rather than relying on how the suite happens to be started.
+pythonpath = ["."]
+# Markers exist so CI can run the fast suite on every pull request and the
+# JVM-dependent suite on a runner that has actually installed a JDK. Without the
+# split, either every PR waits for Spark to start or nothing runs at all.
+markers = [
+    "spark: needs a JVM and a SparkSession (JDK 17 on JAVA_HOME)",
+    "kafka: needs a reachable Kafka broker",
+]
+addopts = "-ra --strict-markers"
+filterwarnings = [
+    "ignore::DeprecationWarning:pyspark.*",
+]
+
+[tool.ruff]
+line-length = 96
+target-version = "py311"
+extend-exclude = ["web", "notebooks", "dist"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = [
+    # FastAPI's dependency-injection idiom is a function call in a default
+    # argument, which B008 flags on every route. The framework requires it.
+    "B008",
+    # Long lines inside docstrings and comments carry the reasoning this project
+    # keeps in prose; the formatter handles code width.
+    "E501",
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["src"]
+
+[tool.mypy]
+python_version = "3.11"
+warn_unused_configs = true
+ignore_missing_imports = true
+# Strict only where the work order asks for it. Widening this to the whole tree
+# on day one produces hundreds of findings nobody reads.
+files = ["src/common", "src/agents"]
+
+[[tool.mypy.overrides]]
+module = ["src.agents.doc_corpus.*"]
+ignore_errors = true

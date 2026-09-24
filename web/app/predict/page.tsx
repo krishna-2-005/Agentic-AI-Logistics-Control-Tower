@@ -14,14 +14,32 @@ export default function PredictPage() {
   const corridors = getCorridors();
   const model = getModel();
 
-  // A searchable picker needs the corridor's identity and label, nothing else.
-  const options = corridors.data
-    .map((c) => ({
-      id: c.id,
-      label: `${c.src.city ?? c.src.code} → ${c.dst.city ?? c.dst.code}`,
-      state: c.src.state ?? "",
-      legs: c.n_legs,
-      km: c.mean_osrm_km,
+  // A city pair does not identify a corridor. 70 of the significant ones run
+  // between two facilities inside the same city, so several collapse to the
+  // same "Bengaluru → Bengaluru" label and the picker showed what looked like
+  // duplicate rows with different leg counts. Where a label repeats, the
+  // facilities are named so the rows are telling apart.
+  const labelled = corridors.data.map((c) => ({
+    id: c.id,
+    label: `${c.src.city ?? c.src.code} → ${c.dst.city ?? c.dst.code}`,
+    facilities:
+      c.src.facility && c.dst.facility
+        ? `${c.src.facility} → ${c.dst.facility}`
+        : "",
+    state: c.src.state ?? "",
+    legs: c.n_legs,
+    km: c.mean_osrm_km,
+  }));
+
+  const seen = new Map<string, number>();
+  labelled.forEach((o) => seen.set(o.label, (seen.get(o.label) ?? 0) + 1));
+
+  const options = labelled
+    .map((o) => ({
+      ...o,
+      // The centre code's last four characters are what distinguishes two
+      // facilities in one city; the PIN prefix is shared.
+      hint: (seen.get(o.label) ?? 0) > 1 ? o.facilities : "",
     }))
     .sort((a, b) => b.legs - a.legs);
 
@@ -32,23 +50,23 @@ export default function PredictPage() {
         title="How late will this leg run?"
         lede={
           <>
-            Pick a corridor and a departure, and the model predicts the gap
-            between the planned time and the realised one. It answers with{" "}
-            <strong className="font-semibold text-[var(--ink)]">
-              which model scored the request
-            </strong>
-            , because the model this project reports and the model it serves are
-            not the same one.
+            Pick a corridor and a departure, and the model estimates how far past
+            its planned time the journey will actually take — the quantity the
+            whole analysis is about.
           </>
         }
       />
 
       <Section>
-        <Notice tone="warn" title="Served model, not the reported model">
-          {model.data.headline.served_note} So this page answers with the{" "}
-          {model.data.headline.served_model} — a genuinely weaker model than the{" "}
-          {num(model.data.headline.mae_min, 2)}-minute one on the results page.
-          Saying so here is cheaper than a footnote nobody reads.
+        <Notice
+          tone="warn"
+          title="This page uses an earlier model than the one in the results"
+        >
+          The best model needs a rolling view of each corridor&apos;s recent
+          history, which the live service cannot build yet. So predictions here
+          come from an earlier, slightly weaker model — about six minutes less
+          accurate than the {num(model.data.headline.mae_min, 2)}-minute figure
+          on the results page. Every answer says which model produced it.
         </Notice>
       </Section>
 

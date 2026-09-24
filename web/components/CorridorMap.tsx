@@ -27,6 +27,18 @@ const STYLE_DARK =
 const STYLE_LIGHT =
   "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json";
 
+/** Mainland India, west-to-east and south-to-north.
+ *
+ * Every corridor in this data is Indian, so the frame is fixed to the country
+ * rather than fitted to whichever subset is being drawn -- otherwise filtering
+ * down to a handful of corridors would fly the map off to one state and lose
+ * the sense of a national network, which is the thing the map is for.
+ */
+const INDIA_BOUNDS: [[number, number], [number, number]] = [
+  [68.0, 7.5],
+  [97.5, 35.8],
+];
+
 function hexToRgb(hex: string): [number, number, number] {
   const h = hex.replace("#", "");
   return [
@@ -78,8 +90,12 @@ export function CorridorMap({
     const map = new maplibregl.Map({
       container: container.current,
       style: isLight ? STYLE_LIGHT : STYLE_DARK,
-      center: [80.9, 22.6],
-      zoom: 3.85,
+      // Framed by bounds rather than a fixed centre and zoom. A fixed zoom is
+      // only correct for one container size: at 3.85 a wide desktop hero showed
+      // Oman to Vietnam, with India a small shape in the middle of a mostly
+      // empty map. Bounds re-fit to whatever width the viewport actually has.
+      bounds: INDIA_BOUNDS,
+      fitBoundsOptions: { padding: 24 },
       minZoom: 3,
       maxZoom: 12,
       attributionControl: { compact: true },
@@ -97,7 +113,16 @@ export function CorridorMap({
 
     map.on("load", () => setReady(true));
 
+    // A width change alters how much of the world a zoom level covers, so the
+    // frame is recomputed rather than left at whatever fitted on first paint.
+    const ro = new ResizeObserver(() => {
+      map.resize();
+      map.fitBounds(INDIA_BOUNDS, { padding: 24, duration: 0 });
+    });
+    ro.observe(container.current);
+
     return () => {
+      ro.disconnect();
       overlayRef.current = null;
       map.remove();
       mapRef.current = null;

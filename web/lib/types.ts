@@ -25,6 +25,8 @@ export interface Severity {
 
 export interface Place {
   code: string;
+  /** The facility within the city, e.g. "Nelmngla" — what tells two apart. */
+  facility?: string | null;
   city: string | null;
   state: string | null;
   lat: number | null;
