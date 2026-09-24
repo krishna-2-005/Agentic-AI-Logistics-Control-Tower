@@ -22,11 +22,11 @@ export default function AssistantPage() {
         title="Ask the network a question"
         lede={
           <>
-            Retrieval over the project&apos;s own corridor, hub and document
-            index. The interesting behaviour is not the answering — it is the{" "}
+            It searches this project&apos;s own corridor, hub and document
+            records. The interesting behaviour is not the answering — it is the{" "}
             <strong className="font-semibold text-[var(--ink)]">refusing</strong>
-            : a question this data cannot answer gets told so, rather than
-            answered plausibly.
+            : ask something the data cannot answer and it says so, rather than
+            inventing a plausible reply.
           </>
         }
       />

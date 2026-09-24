@@ -14,14 +14,31 @@ export default function PredictPage() {
   const corridors = getCorridors();
   const model = getModel();
 
-  // A searchable picker needs the corridor's identity and label, nothing else.
-  const options = corridors.data
-    .map((c) => ({
-      id: c.id,
-      label: `${c.src.city ?? c.src.code} → ${c.dst.city ?? c.dst.code}`,
-      state: c.src.state ?? "",
-      legs: c.n_legs,
-      km: c.mean_osrm_km,
+  // A city pair does not identify a corridor. 70 of the significant ones run
+  // between two facilities inside the same city, so several collapse to the
+  // same "Bengaluru → Bengaluru" label and the picker showed what looked like
+  // duplicate rows with different leg counts. Where a label repeats, the
+  // facilities are named so the rows are telling apart.
+  const labelled = corridors.data.map((c) => ({
+    id: c.id,
+    label: `${c.src.city ?? c.src.code} → ${c.dst.city ?? c.dst.code}`,
+    state: c.src.state ?? "",
+    legs: c.n_legs,
+    km: c.mean_osrm_km,
+  }));
+
+  const seen = new Map<string, number>();
+  labelled.forEach((o) => seen.set(o.label, (seen.get(o.label) ?? 0) + 1));
+
+  const options = labelled
+    .map((o) => ({
+      ...o,
+      // The centre code's last four characters are what distinguishes two
+      // facilities in one city; the PIN prefix is shared.
+      hint:
+        (seen.get(o.label) ?? 0) > 1
+          ? `${o.id.split(">")[0].slice(-4)} → ${o.id.split(">")[1]?.slice(-4) ?? ""}`
+          : "",
     }))
     .sort((a, b) => b.legs - a.legs);
 

@@ -17,6 +17,8 @@ interface Option {
   state: string;
   legs: number;
   km: number | null;
+  /** Set only where the city-pair label is ambiguous. */
+  hint?: string;
 }
 
 /** The service reports a model by its internal name; a reader wants a phrase. */
@@ -77,7 +79,8 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
       .filter(
         (c) =>
           c.label.toLowerCase().includes(q) ||
-          c.state.toLowerCase().includes(q)
+          c.state.toLowerCase().includes(q) ||
+          (c.hint ?? "").toLowerCase().includes(q)
       )
       .slice(0, 8);
   }, [corridors, query]);
@@ -128,8 +131,15 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
                   : "hover:bg-[var(--surface-sunken)]"
               )}
             >
-              <span className="truncate">{c.label}</span>
-              <span className="tabular shrink-0 font-mono text-[11px] text-[var(--ink-faint)]">
+              <span className="min-w-0 truncate">
+                {c.label}
+                {c.hint && (
+                  <span className="ml-1.5 font-mono text-[10px] text-[var(--ink-faint)]">
+                    {c.hint}
+                  </span>
+                )}
+              </span>
+              <span className="tabular shrink-0 text-[11px] text-[var(--ink-faint)]">
                 {c.legs} legs
               </span>
             </button>

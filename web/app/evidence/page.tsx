@@ -76,19 +76,19 @@ export default function EvidencePage() {
         <KpiRow>
           <Kpi
             value={`${num(h.mae_min, 2)} min`}
-            label="reported model error"
-            sub="gradient-boosted, on the residual over a per-corridor median"
+            label="best model's average error"
+            sub="how far off a delay prediction is, on average"
             accent
           />
           <Kpi
             value={`${num(h.baseline_mae_min, 2)} min`}
             label="the bar it must beat"
-            sub="the per-corridor median — MAE is minimised by the median, not the mean"
+            sub="what you get by just looking up this corridor's usual delay"
           />
           <Kpi
             value={`${num(h.osrm_mae_min, 2)} min`}
-            label="the planner's own error"
-            sub="context, not a fair comparison — OSRM never sees corridor history"
+            label="the routing engine's error"
+            sub="shown for context: it has no access to past journeys"
           />
           <Kpi
             value="14 / 14"
