@@ -1329,6 +1329,43 @@ aw\delhivery_data.csv -> download it — see
 - **Carry.** A run order is a dependency graph written as prose, and prose does not fail when
   a node is missing. A script does.
 
+### P-64 · An undeclared dependency quietly lowered a published accuracy
+**Post-v1.0 (WP-01) · Mounika · resolved**
+
+- **Symptom.** `tests/test_eval_extraction.py::test_facility_names_tolerate_small_ocr_noise`
+  failed on a clean checkout: `values_match` said `Farrukhbad_Pnchlght_D` and
+  `Farrukhbad_Pnchight_D` were different values. The test is right -- that is one
+  character of OCR noise in a facility name, exactly what the tolerance exists for.
+- **Cause.** `src/ml/eval_extraction.py` imports `rapidfuzz` inside a
+  `try/except ImportError` and sets `fuzz = None` on failure, and **`rapidfuzz` is
+  not in `requirements.txt`**. With the matcher absent, `values_match` fell through
+  to `return False`, so every text field that was close-but-not-identical counted
+  as a wrong answer.
+- **Why this is worse than a crash.** Nothing failed. The run completed and wrote a
+  report, and the per-field accuracy it published -- 98.7% on clean PDFs, 96.9% on
+  noisy scans -- would have come out several points lower on any machine that
+  happened not to have the package, with nothing in the output saying the matcher
+  was missing. The numbers were right only because the machines that produced them
+  had `rapidfuzz` installed for some other reason. A reproducibility claim that
+  depends on an undeclared package is not a reproducibility claim.
+- **Fix.** Two parts, and the second matters more than the first:
+  1. `rapidfuzz>=3.9` added to `requirements.txt` with a comment saying why the
+     `try/except` around its import does not make it optional.
+  2. `values_match` now **raises** when the matcher is missing instead of returning
+     `False`. A harness that cannot compare text should refuse to produce a score.
+- **Cost.** About 40 minutes, most of it spent assuming the four failing tests were
+  the same class of environment gap as the other ten (`fastapi`, `sqlmodel`,
+  `sklearn`, `mcp`, `reportlab` were all genuinely just uninstalled). Three of the
+  four were. This one was a real defect wearing the same costume.
+- **Carry.** This is **P-58 in a different place**. There the extraction evaluation
+  published 7.0% accuracy from 37 documents it never sent, and the lesson written
+  down was that an evaluation must distinguish *the agent was wrong* from *the agent
+  never ran*. The same rule applies one level down: it must also distinguish *the
+  agent was wrong* from *the scorer was not fully installed*. Any `except ImportError`
+  in a scoring path is that bug waiting to happen -- the fallback should raise, or
+  the dependency should not be optional.
+
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
