@@ -197,6 +197,27 @@ def _city_coords() -> pd.DataFrame:
     return pd.read_csv(CITY_COORDS_PATH).drop_duplicates("raw_city", keep="first")
 
 
+def facility_of(name: object) -> str | None:
+    """`Bengaluru_Nelmngla_H (Karnataka)` -> `Nelmngla`.
+
+    A city pair does not identify a corridor: 70 of the significant ones run
+    between two facilities inside one city, so several render as the same
+    "Bengaluru -> Bengaluru". The facility is the part that tells them apart,
+    and it reads far better than the centre code does.
+
+    Names come in three shapes here -- `City_Facility_Type`, `City_Facility`
+    and a spaced `HBR Layout PC` -- so anything that does not split on
+    underscores falls back to the whole name minus its state suffix.
+    """
+    if not isinstance(name, str) or not name:
+        return None
+    head = name.split("(")[0].strip()
+    parts = [p for p in head.split("_") if p]
+    if len(parts) >= 2:
+        return parts[1].strip() or None
+    return head or None
+
+
 def _public_label(label: str) -> str:
     """Strip the decision-log citation off a frozen value's label.
 
@@ -322,6 +343,7 @@ def _corridor_records(csv_path: Path, coords: pd.DataFrame) -> list[dict]:
             "id": r["corridor_id"],
             "src": {
                 "code": r["source_center"],
+                "facility": facility_of(r.get("source_name")),
                 "city": _clean(r.get("src_label")) or _clean(r.get("source_city")),
                 "state": _clean(r.get("src_state")) or _clean(r.get("source_state")),
                 "lat": _num(r.get("src_lat"), 4),
@@ -329,6 +351,7 @@ def _corridor_records(csv_path: Path, coords: pd.DataFrame) -> list[dict]:
             },
             "dst": {
                 "code": r["destination_center"],
+                "facility": facility_of(r.get("destination_name")),
                 "city": _clean(r.get("dst_label")) or _clean(r.get("dest_city")),
                 "state": _clean(r.get("dst_state")) or _clean(r.get("dest_state")),
                 "lat": _num(r.get("dst_lat"), 4),

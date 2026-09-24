@@ -22,6 +22,10 @@ export default function PredictPage() {
   const labelled = corridors.data.map((c) => ({
     id: c.id,
     label: `${c.src.city ?? c.src.code} → ${c.dst.city ?? c.dst.code}`,
+    facilities:
+      c.src.facility && c.dst.facility
+        ? `${c.src.facility} → ${c.dst.facility}`
+        : "",
     state: c.src.state ?? "",
     legs: c.n_legs,
     km: c.mean_osrm_km,
@@ -35,10 +39,7 @@ export default function PredictPage() {
       ...o,
       // The centre code's last four characters are what distinguishes two
       // facilities in one city; the PIN prefix is shared.
-      hint:
-        (seen.get(o.label) ?? 0) > 1
-          ? `${o.id.split(">")[0].slice(-4)} → ${o.id.split(">")[1]?.slice(-4) ?? ""}`
-          : "",
+      hint: (seen.get(o.label) ?? 0) > 1 ? o.facilities : "",
     }))
     .sort((a, b) => b.legs - a.legs);
 
