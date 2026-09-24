@@ -83,7 +83,7 @@ export default function AboutPage() {
   return (
     <>
       <PageHeader
-        eyebrow="Evidence"
+        eyebrow="Results"
         title="About this project"
         lede={
           <>

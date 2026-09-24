@@ -37,7 +37,10 @@ const WEEK_LABELS: Record<number, string> = {
 function prettyFigure(id: string): string {
   const m = id.match(/^fig(\d+)_(.+)$/);
   if (!m) return id.replace(/_/g, " ");
-  const words = m[2].replace(/_/g, " ");
+  const words = m[2]
+    .replace(/_/g, " ")
+    .replace(/mae/gi, "MAE")
+    .replace(/p90/gi, "p90");
   return `${m[1]} · ${words.charAt(0).toUpperCase()}${words.slice(1)}`;
 }
 
@@ -58,7 +61,7 @@ export default function EvidencePage() {
   return (
     <>
       <PageHeader
-        eyebrow="Evidence"
+        eyebrow="Results"
         title="The results"
         lede={
           <>

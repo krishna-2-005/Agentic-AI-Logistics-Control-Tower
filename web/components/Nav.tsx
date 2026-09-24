@@ -39,9 +39,9 @@ const SECTIONS: { label: string; items: { href: string; label: string }[] }[] = 
     ],
   },
   {
-    label: "Evidence",
+    label: "Results",
     items: [
-      { href: "/evidence/", label: "Results" },
+      { href: "/evidence/", label: "The numbers" },
       { href: "/about/", label: "About" },
     ],
   },
