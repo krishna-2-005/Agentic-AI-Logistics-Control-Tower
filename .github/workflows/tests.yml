@@ -1,0 +1,127 @@
+name: tests
+
+# There are 27 test files and roughly 4,500 lines of tests, and until now the
+# only workflow ran the web export. A broken commit to src/agents/ or src/tms/
+# reached dev with no signal at all.
+#
+# Split in two because the two halves cost very different amounts:
+#   fast  — every push and PR, no JVM, finishes in a couple of minutes
+#   spark — pushes to dev and a nightly run, installs a JDK and a broker
+#
+# A PR therefore gets an answer quickly, and the JVM-dependent paths still get
+# exercised somewhere other than one laptop.
+
+on:
+  push:
+    branches: [main, dev, "wo-**"]
+  pull_request:
+    branches: [main, dev]
+  schedule:
+    # 02:30 UTC ≈ 08:00 IST — the overnight run is read in the morning.
+    - cron: "30 2 * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  fast:
+    name: pytest (no spark) · py${{ matrix.python }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The floors in requirements.txt exist because the obvious "stable"
+        # pins have no cp313 wheels and pip silently builds from source. Both
+        # ends of the supported range are tested so that stays true.
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+
+      - name: Run the suite
+        env:
+          # The agents must not reach a provider from CI. Every one of them
+          # runs with --no-llm, and an absent key is how that is enforced.
+          LLM_PROVIDER: none
+          TMS_API_KEY: ci-test-key
+        run: pytest -m "not spark" -q
+
+  spark:
+    name: pytest (spark + kafka)
+    # Only where it is worth the minutes: dev, the nightly run, or by hand.
+    if: >-
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev')
+    runs-on: ubuntu-latest
+
+    services:
+      # Closes the last trace of the "no Docker on the dev machine" constraint
+      # that kept the Kafka path off a broker for two weeks (D-035, D-055).
+      kafka:
+        image: bitnami/kafka:3.9
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_CFG_NODE_ID: "0"
+          KAFKA_CFG_PROCESS_ROLES: controller,broker
+          KAFKA_CFG_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+          KAFKA_CFG_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+          KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 0@localhost:9093
+          KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: >-
+            CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+          ALLOW_PLAINTEXT_LISTENER: "yes"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest
+
+      - name: Wait for the broker
+        run: |
+          for i in $(seq 1 30); do
+            if (echo > /dev/tcp/localhost/9092) 2>/dev/null; then
+              echo "broker up after ${i}s"; exit 0
+            fi
+            sleep 1
+          done
+          echo "::warning::broker did not come up; kafka-marked tests will skip"
+
+      - name: Run the JVM-dependent tests
+        env:
+          LLM_PROVIDER: none
+          TMS_API_KEY: ci-test-key
+          KAFKA_BOOTSTRAP_SERVERS: localhost:9092
+          SPARK_LOCAL_IP: "127.0.0.1"
+          # local[2] rather than local[*]: a runner has two cores and letting
+          # Spark claim more produces scheduling noise, not speed.
+          SPARK_DRIVER_MEMORY: 2g
+        run: pytest -m "spark" -q
