@@ -136,7 +136,7 @@ export default function HomePage() {
               <>
                 Every corridor with at least ten legs is tested against the rest
                 of the network — Welch&apos;s t-test on log time ratios, with
-                Benjamini–Hochberg control at 5%. That turns &ldquo;this lane
+                Benjamini–Hochberg control at 5%. That turns &ldquo;this corridor
                 looks unreliable&rdquo; into a false-discovery-controlled claim.
               </>
             }
@@ -179,7 +179,7 @@ export default function HomePage() {
 
       {/* ── worst corridors, as a teaser ───────────────────────────────── */}
       <Section
-        title="The worst lanes in the network"
+        title="The worst corridors in the network"
         description="Ranked by how much more a corridor overruns than the network typically does. The leg count matters — a 13.9× on 13 legs is a lead, not a verdict."
         actions={<ArrowLink href="/corridors/">All {num(o.corridors_tested)} corridors</ArrowLink>}
       >
