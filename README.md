@@ -3,6 +3,11 @@
 **A multi-agent digital workforce operating on a distributed big-data delay-prediction pipeline,
 built on real Delhivery network data.**
 
+[![tests](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/actions/workflows/tests.yml/badge.svg?branch=dev)](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/actions/workflows/tests.yml)
+[![web](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/actions/workflows/web.yml/badge.svg?branch=dev)](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/actions/workflows/web.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![python 3.11–3.13](https://img.shields.io/badge/python-3.11–3.13-blue.svg)](requirements.txt)
+
 > Big Data Analytics · Transportation & Logistics · Machine Learning · Agentic AI
 > 8-week team project · Sai Krishna (AI Agents & Automation) · Lahari (ML & Evaluation) · Mounika (Data & Systems)
 
@@ -26,6 +31,14 @@ invoices, each measured against a trivial policy.
 > **Not claimed:** "beats the planner". OSRM has no access to corridor history, so a model that
 > has seen it is not a fair comparison. Every model result is reported against the per-corridor
 > median, the baseline an MAE table should use (D-048).
+
+> **The model was wrong once, and the correction is part of the result.** Week 4's Random Forest
+> reached 36.9 min and *lost* to a corridor-mean lookup. Two defects, found by diagnosing rather
+> than retuning: the reported baseline was the mean when MAE is minimised by the median (33.04,
+> not 36.13), and the gradient-booster chosen for absolute loss ran at a step size where its
+> corrective trees could move a prediction by at most 9.95 minutes in total — the objective it was
+> picked for was barely switched on. Fixing the step size gives **30.90 min**, beating the median
+> baseline on all fourteen slices (D-048 → D-050).
 
 ## Project status and where everything is
 
@@ -327,8 +340,8 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | Order Entry Agent evaluation | **50 of 50** authored cases run, **50 correct**; 0 orders filed on invented values, 0 needless questions | [`benchmarks/raw/w5_order_eval_summary.json`](benchmarks/raw/w5_order_eval_summary.json) |
 | Lifecycle, end to end (Gate 6) | 10 emails, 3 distinct paths, no human in the middle: 5 stopped at a question, 3 booked and unflagged, 2 booked → flagged → notified → ticketed | [`benchmarks/raw/w6_orchestrator_runs.json`](benchmarks/raw/w6_orchestrator_runs.json) |
 | Freight Invoice Auditor v1 | **20 of 20** verdicts matched the seeded ground truth; no clean invoice disputed. Band is the corpus's own rate model — exact here, circular as a pricing claim (D-043) | [`benchmarks/raw/w6_invoice_audit_runs.json`](benchmarks/raw/w6_invoice_audit_runs.json) |
-| Agent evaluation summary | _pending W7_ | `benchmarks/agent_evaluation.md` |
-| Scale appendix (50M+ rows) | _pending W7_ | `benchmarks/scale_appendix.md` |
+| Agent evaluation summary | Every agent beside the trivial policy on its own set. Exception agent notification precision **58.6%** as-of against 54.1% for alerting on every leg — the first published 72.1% came from a replay that leaked future history (D-054). Invoice auditor dispute precision/recall **100% / 82.2%** on 60 seeded invoices. Order entry **50 of 50**, 0 invented orders. Document extraction **98.7%** per-field on clean PDFs, 96.9% on noisy scans. Assistant route accuracy **93.3%**, refusal recall 6 of 6 | [`benchmarks/agent_evaluation.md`](benchmarks/agent_evaluation.md), [`w8_replay_leakage.json`](benchmarks/raw/w8_replay_leakage.json) |
+| Scale appendix (50M+ rows) | The **same two functions** (`network_baseline`, `corridor_aggregate`), imported unchanged, on **56,353,613** NYC TLC rows → 51,515 corridors in **14.32 s** (3.9M rows/sec) on one 20-core laptop. 2,138× the Delhivery row count | [`benchmarks/scale_appendix.md`](benchmarks/scale_appendix.md), [`w7_scale_benchmark.json`](benchmarks/raw/w7_scale_benchmark.json) |
 
 ---
 
@@ -375,4 +388,11 @@ weekly doc; then PR → `dev`. Nobody commits to `main`.
 
 ## License
 
-Academic coursework. Delhivery dataset used under its original Kaggle license.
+Code: **MIT** ([`LICENSE`](LICENSE)) — so anyone may actually run it.
+
+Data: not redistributed here. The Delhivery records carry their own Kaggle terms and the NYC TLC
+records their own; both, plus what this project generates synthetically, are set out in
+[`DATA_LICENSE.md`](DATA_LICENSE.md).
+
+Citing this work: [`CITATION.cff`](CITATION.cff) — GitHub renders it as a *Cite this repository*
+button. Please cite the Delhivery dataset separately.

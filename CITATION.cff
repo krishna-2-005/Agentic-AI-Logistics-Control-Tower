@@ -1,0 +1,53 @@
+cff-version: 1.2.0
+title: >-
+  Agentic AI Logistics Control Tower: corridor-level localisation of
+  systematic routing error, with a measured agent layer
+message: >-
+  If you use this software or its results, please cite it using the
+  metadata below. Please also cite the Delhivery dataset separately —
+  see DATA_LICENSE.md.
+type: software
+authors:
+  - family-names: Kuchuru
+    given-names: Sai Krishna Reddy
+    affiliation: Agentic AI Logistics Control Tower project
+  - family-names: Suresh
+    given-names: Lahari
+    affiliation: Agentic AI Logistics Control Tower project
+  - family-names: Reddy
+    given-names: Mounika
+    affiliation: Agentic AI Logistics Control Tower project
+repository-code: >-
+  https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower
+url: https://control-tower-mu-rouge.vercel.app
+abstract: >-
+  Production routing engines estimate how long a road-freight leg should
+  take, and on the network studied here they are wrong in one direction
+  almost every time: 98.3% of 26,369 origin-destination legs run over plan
+  and the median leg takes 2.00 times its planned time. We test every
+  corridor with at least ten legs against the rest of the network using
+  Welch's t-test on log time ratios with Benjamini-Hochberg control at 5%,
+  and find 273 corridors significantly slower and 512 significantly faster,
+  covering 78.6% of legs. We show this answer depends heavily on one
+  parameter: raising the support floor from ten legs to thirty produces a
+  top-20 list with no corridor in common. A gradient-boosted model trained
+  on the residual over a per-corridor median reaches 30.90 minutes mean
+  absolute error against the median's 33.04, winning on all fourteen
+  evaluation slices. We report two engineering findings that affect how
+  such systems are evaluated: a default optimiser setting that silently
+  disabled the loss function the model was chosen for, and a replay-based
+  evaluation that scored early events against later history and inflated a
+  reported alert precision from 58.6% to 72.1%. The pipeline runs unchanged
+  on 56.4 million rows.
+keywords:
+  - big data
+  - apache spark
+  - logistics
+  - travel time prediction
+  - route auditing
+  - false discovery rate
+  - llm agents
+  - stream processing
+license: MIT
+version: 1.0.0
+date-released: '2026-09-19'
