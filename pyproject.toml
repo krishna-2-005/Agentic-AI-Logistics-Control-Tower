@@ -1,5 +1,10 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# `python -m pytest` puts the working directory on sys.path and a bare `pytest`
+# does not, so `import src...` worked on developer machines and failed in CI
+# with "No module named 'src'". Setting it here makes both invocations behave
+# the same rather than relying on how the suite happens to be started.
+pythonpath = ["."]
 # Markers exist so CI can run the fast suite on every pull request and the
 # JVM-dependent suite on a runner that has actually installed a JDK. Without the
 # split, either every PR waits for Spark to start or nothing runs at all.
