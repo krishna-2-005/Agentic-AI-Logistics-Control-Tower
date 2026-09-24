@@ -51,7 +51,7 @@ export function StatusStrip({ freeze }: { freeze: string }) {
     <div className="border-b border-[var(--line)] bg-[var(--surface-sunken)]">
       <div className="mx-auto flex max-w-content flex-wrap items-center gap-x-5 gap-y-1 px-4 py-1.5 text-[11px] text-[var(--ink-faint)] sm:px-6">
         <span className="tabular">
-          144,867 scan records · 26,369 journeys · 1,130 lanes analysed ·
+          144,867 scan records · 26,369 journeys · 1,130 corridors analysed ·
           Sep–Oct 2018
         </span>
         {liveNote && (

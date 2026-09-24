@@ -11,14 +11,13 @@ import {
   Pill,
   Section,
 } from "@/components/ui";
-import { getCorridors, getEvidence, getModel, getOverview } from "@/lib/data";
+import { getCorridors, getModel, getOverview } from "@/lib/data";
 import { minutes, num, pct, ratio } from "@/lib/format";
 
 export default function HomePage() {
   const overview = getOverview();
   const corridors = getCorridors();
   const model = getModel();
-  const evidence = getEvidence();
 
   const o = overview.data;
   const worst = [...corridors.data]
@@ -71,7 +70,7 @@ export default function HomePage() {
       {/* ── four headline numbers ──────────────────────────────────────── */}
       <Section
         title="The finding"
-        description="If the error were random it would cancel out across a lane. It does not — so it concentrates, and it can be found."
+        description="If the error were random it would cancel out across a corridor. It does not — so it concentrates, and it can be found."
       >
         <KpiRow>
           <Kpi
@@ -235,9 +234,9 @@ export default function HomePage() {
         </Card>
       </Section>
 
-      <p className="text-center font-mono text-xs text-[var(--ink-faint)]">
-        every figure on this site traces to a file · results freeze{" "}
-        {evidence.freeze} · {evidence.data.n_values} frozen values
+      <p className="text-center text-xs text-[var(--ink-faint)]">
+        Built on {num(o.legs)} real freight journeys recorded across India,
+        September–October 2018.
       </p>
     </>
   );

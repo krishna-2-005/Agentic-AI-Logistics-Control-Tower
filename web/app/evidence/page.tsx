@@ -104,7 +104,7 @@ export default function EvidencePage() {
           tone="warn"
           title="The live predictor uses an earlier model than this one"
         >
-          The model below needs a rolling view of each lane&apos;s recent
+          The model below needs a rolling view of each corridor&apos;s recent
           history that the live service cannot build yet, so the{" "}
           <a href="/predict/" className="underline">
             delay predictor

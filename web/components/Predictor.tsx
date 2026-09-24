@@ -23,7 +23,7 @@ interface Option {
 function friendlyModel(id: string): string {
   if (/random_forest/i.test(id)) return "a random-forest model";
   if (/gbt|gradient/i.test(id)) return "a gradient-boosted model";
-  if (/median/i.test(id)) return "this lane's own median";
+  if (/median/i.test(id)) return "this corridor's own median";
   return "the delay model";
 }
 
@@ -205,7 +205,7 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
 
         {status === "warming" && (
           <p className="mt-2 text-center font-mono text-[11px] text-amber-400">
-            model warming — the first call starts a Spark session
+            warming up — the first prediction after a quiet spell is slower
           </p>
         )}
       </Card>
@@ -240,7 +240,7 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
               />
               <Row k="Planned" v={minutes(osrmMin)} />
               <Row
-                k="Past journeys on this lane"
+                k="Past journeys on this corridor"
                 v={
                   result.cold_start
                     ? "none on record"
@@ -255,7 +255,7 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
 
             {result.cold_start && (
               <p className="mt-3 text-xs leading-relaxed text-[var(--ink-muted)]">
-                Nothing has travelled this lane before in the data, so the
+                Nothing has travelled this corridor before in the data, so the
                 estimate rests on the route itself — distance, vehicle type and
                 departure hour — rather than on history. This is where the model
                 is most useful and also least certain.
