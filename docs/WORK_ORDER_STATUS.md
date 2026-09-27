@@ -8,7 +8,7 @@ A package is **done** only when the evidence named in its Acceptance row exists 
 | WP | Package | Status | Blocked on | Evidence |
 |---|---|---|---|---|
 | 01 | Foundation — README, main, license, CI, secret scan | **code done; release blocked** | v1.0 release + branch protection need repo-owner rights (HUMAN_ACTIONS §1.1, §1.2) | `.github/workflows/tests.yml`, `tests/test_readme_numbers.py` (20 green), `LICENSE`, `DATA_LICENSE.md`, `CITATION.cff`, `.pre-commit-config.yaml`, `.gitattributes` |
-| 02 | Agent evaluation at scale (n ≥ 150, Wilson intervals) | not started | nothing — runs `--no-llm` | `benchmarks/raw/w9_order_eval.json`, `w9_invoice_eval.json`, `w9_lifecycle_eval.json` |
+| 02 | Agent evaluation at scale (n ≥ 150, Wilson intervals) | **done** | label review by Lahari still owed (HUMAN_ACTIONS §3.1) | all three `w9_*` files, `results_freeze_v4.json`, `agent_evaluation.md` section, 427 tests |
 | 03 | Public site phase 1 — export, scaffold, Overview, Network, Corridors, About | **done, ahead of order** | — | `src/report/export_web.py`, `web/`, production URL, `tests/test_web_numbers.py` (21 green) |
 | 04 | Public API Space — read-only API, TMS isolation, rate limits, predict | not started | **HF token + Space** (HUMAN_ACTIONS §2.2) | `src/api/app.py`, `benchmarks/raw/f1_api_latency.json`, D-064 |
 | 05 | Public site phase 2 — live pages, Playwright, Lighthouse | **partly done** | WP-04 for the live half; user test needs three people | pages built; `web/e2e/` and Lighthouse CI outstanding |
