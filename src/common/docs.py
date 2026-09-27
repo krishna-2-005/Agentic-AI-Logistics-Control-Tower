@@ -29,6 +29,10 @@ SECTION_ORDER = [
     "beat-osrm", "beat-osrm-ablations", "doc-eval", "stream-equals-batch",
     "threshold-sensitivity", "order-eval",
     "exception-eval", "invoice-eval",
+    # Last, because it is a re-measurement of the agents the sections above
+    # already report: the reader needs the original numbers and the reading of
+    # them before the larger, stratified versions make sense.
+    "agent-eval-at-scale",
 ]
 
 

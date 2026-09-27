@@ -3040,7 +3040,9 @@
     "straightforward": {
       "successes": 100,
       "total": 100,
-      "rate": 1.0
+      "rate": 1.0,
+      "ci_low": 0.963,
+      "ci_high": 1.0
     },
     "adversarial": {
       "successes": 70,

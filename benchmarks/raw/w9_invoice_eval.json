@@ -1,47 +1,47 @@
 {
-  "n_cases": 150,
-  "per_kind": 15,
+  "n_cases": 200,
+  "per_kind": 20,
   "seed": 9022,
   "stratified": true,
   "accuracy": {
-    "successes": 135,
-    "total": 150,
+    "successes": 180,
+    "total": 200,
     "rate": 0.9,
-    "ci_low": 0.8416,
-    "ci_high": 0.9385
+    "ci_low": 0.8506,
+    "ci_high": 0.9343
   },
   "dispute_precision": {
-    "successes": 90,
-    "total": 90,
+    "successes": 120,
+    "total": 120,
     "rate": 1.0,
-    "ci_low": 0.9591,
+    "ci_low": 0.969,
     "ci_high": 1.0
   },
   "dispute_recall": {
-    "successes": 90,
-    "total": 105,
+    "successes": 120,
+    "total": 140,
     "rate": 0.8571,
-    "ci_low": 0.7776,
-    "ci_high": 0.9115
+    "ci_low": 0.7896,
+    "ci_high": 0.9056
   },
   "right_reason": {
-    "successes": 90,
-    "total": 105,
+    "successes": 120,
+    "total": 140,
     "rate": 0.8571,
-    "ci_low": 0.7776,
-    "ci_high": 0.9115
+    "ci_low": 0.7896,
+    "ci_high": 0.9056
   },
   "false_disputes": 0,
-  "missed_problems": 15,
+  "missed_problems": 20,
   "unbenchmarked_corridors": 0,
   "by_kind": {
     "clean": {
       "expected_verdict": "approve",
       "verdict": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       },
       "right_reason": null
@@ -49,61 +49,61 @@
     "duplicate_number": {
       "expected_verdict": "dispute",
       "verdict": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       },
       "right_reason": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       }
     },
     "excessive_other": {
       "expected_verdict": "dispute",
       "verdict": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       },
       "right_reason": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       }
     },
     "foreign_currency": {
       "expected_verdict": "dispute",
       "verdict": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       },
       "right_reason": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       }
     },
     "other_at_edge": {
       "expected_verdict": "approve",
       "verdict": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       },
       "right_reason": null
@@ -111,17 +111,17 @@
     "overcharge_gross": {
       "expected_verdict": "dispute",
       "verdict": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       },
       "right_reason": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       }
     },
@@ -129,26 +129,26 @@
       "expected_verdict": "dispute",
       "verdict": {
         "successes": 0,
-        "total": 15,
+        "total": 20,
         "rate": 0.0,
         "ci_low": 0.0,
-        "ci_high": 0.2039
+        "ci_high": 0.1611
       },
       "right_reason": {
         "successes": 0,
-        "total": 15,
+        "total": 20,
         "rate": 0.0,
         "ci_low": 0.0,
-        "ci_high": 0.2039
+        "ci_high": 0.1611
       }
     },
     "rounding_total": {
       "expected_verdict": "approve",
       "verdict": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       },
       "right_reason": null
@@ -156,34 +156,34 @@
     "total_mismatch": {
       "expected_verdict": "dispute",
       "verdict": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       },
       "right_reason": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       }
     },
     "undercharge": {
       "expected_verdict": "dispute",
       "verdict": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       },
       "right_reason": {
-        "successes": 15,
-        "total": 15,
+        "successes": 20,
+        "total": 20,
         "rate": 1.0,
-        "ci_low": 0.7961,
+        "ci_low": 0.8389,
         "ci_high": 1.0
       }
     }
@@ -191,25 +191,25 @@
   "expected_misses": {
     "overcharge_hidden": "10% over the band top, inside the auditor's 15% tolerance (D-047). Missed by design; this is what the tolerance costs."
   },
-  "missed_by_design": 15,
+  "missed_by_design": 20,
   "trivial_policy_dispute_everything": {
-    "successes": 105,
-    "total": 150,
+    "successes": 140,
+    "total": 200,
     "rate": 0.7,
-    "ci_low": 0.6224,
-    "ci_high": 0.7676
+    "ci_low": 0.6332,
+    "ci_high": 0.7593
   },
   "trivial_policy_approve_everything": {
-    "successes": 45,
-    "total": 150,
+    "successes": 60,
+    "total": 200,
     "rate": 0.3,
-    "ci_low": 0.2324,
-    "ci_high": 0.3776
+    "ci_low": 0.2407,
+    "ci_high": 0.3668
   },
   "note": "Stratified: equal cases per kind, so the overall rate reflects the design of this set and not the mix of a real invoice run, which is overwhelmingly clean. Per-kind rates are the comparable numbers.",
-  "generated_at": "2026-09-27T08:05:27.963009+00:00",
+  "generated_at": "2026-09-27T08:10:53.019785+00:00",
   "week6_for_comparison": {
-    "cases": 150,
+    "cases": 200,
     "accuracy": 0.9,
     "note": "20 cases, kinds drawn at random; some kinds appeared once."
   },
@@ -1855,6 +1855,556 @@
     },
     {
       "seq": 150,
+      "kind": "foreign_currency",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "unexpected_currency",
+      "findings": "unexpected_currency",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 151,
+      "kind": "clean",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 152,
+      "kind": "rounding_total",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 153,
+      "kind": "other_at_edge",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 154,
+      "kind": "total_mismatch",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "total_mismatch",
+      "findings": "total_mismatch",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 155,
+      "kind": "overcharge_gross",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_above_band",
+      "findings": "rate_above_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 156,
+      "kind": "overcharge_hidden",
+      "expected_verdict": "dispute",
+      "verdict": "approve",
+      "verdict_correct": false,
+      "expected_finding": "rate_above_band",
+      "findings": "",
+      "found_expected": false,
+      "benchmarked": true
+    },
+    {
+      "seq": 157,
+      "kind": "undercharge",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_below_band",
+      "findings": "rate_below_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 158,
+      "kind": "excessive_other",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "other_charges_out_of_band",
+      "findings": "other_charges_out_of_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 159,
+      "kind": "duplicate_number",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "duplicate_invoice_number",
+      "findings": "duplicate_invoice_number",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 160,
+      "kind": "foreign_currency",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "unexpected_currency",
+      "findings": "unexpected_currency",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 161,
+      "kind": "clean",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 162,
+      "kind": "rounding_total",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 163,
+      "kind": "other_at_edge",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 164,
+      "kind": "total_mismatch",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "total_mismatch",
+      "findings": "total_mismatch",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 165,
+      "kind": "overcharge_gross",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_above_band",
+      "findings": "rate_above_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 166,
+      "kind": "overcharge_hidden",
+      "expected_verdict": "dispute",
+      "verdict": "approve",
+      "verdict_correct": false,
+      "expected_finding": "rate_above_band",
+      "findings": "",
+      "found_expected": false,
+      "benchmarked": true
+    },
+    {
+      "seq": 167,
+      "kind": "undercharge",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_below_band",
+      "findings": "rate_below_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 168,
+      "kind": "excessive_other",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "other_charges_out_of_band",
+      "findings": "other_charges_out_of_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 169,
+      "kind": "duplicate_number",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "duplicate_invoice_number",
+      "findings": "duplicate_invoice_number",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 170,
+      "kind": "foreign_currency",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "unexpected_currency",
+      "findings": "unexpected_currency",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 171,
+      "kind": "clean",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 172,
+      "kind": "rounding_total",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 173,
+      "kind": "other_at_edge",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 174,
+      "kind": "total_mismatch",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "total_mismatch",
+      "findings": "total_mismatch",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 175,
+      "kind": "overcharge_gross",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_above_band",
+      "findings": "rate_above_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 176,
+      "kind": "overcharge_hidden",
+      "expected_verdict": "dispute",
+      "verdict": "approve",
+      "verdict_correct": false,
+      "expected_finding": "rate_above_band",
+      "findings": "",
+      "found_expected": false,
+      "benchmarked": true
+    },
+    {
+      "seq": 177,
+      "kind": "undercharge",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_below_band",
+      "findings": "rate_below_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 178,
+      "kind": "excessive_other",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "other_charges_out_of_band",
+      "findings": "other_charges_out_of_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 179,
+      "kind": "duplicate_number",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "duplicate_invoice_number",
+      "findings": "duplicate_invoice_number",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 180,
+      "kind": "foreign_currency",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "unexpected_currency",
+      "findings": "unexpected_currency",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 181,
+      "kind": "clean",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 182,
+      "kind": "rounding_total",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 183,
+      "kind": "other_at_edge",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 184,
+      "kind": "total_mismatch",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "total_mismatch",
+      "findings": "total_mismatch",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 185,
+      "kind": "overcharge_gross",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_above_band",
+      "findings": "rate_above_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 186,
+      "kind": "overcharge_hidden",
+      "expected_verdict": "dispute",
+      "verdict": "approve",
+      "verdict_correct": false,
+      "expected_finding": "rate_above_band",
+      "findings": "",
+      "found_expected": false,
+      "benchmarked": true
+    },
+    {
+      "seq": 187,
+      "kind": "undercharge",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_below_band",
+      "findings": "rate_below_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 188,
+      "kind": "excessive_other",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "other_charges_out_of_band",
+      "findings": "other_charges_out_of_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 189,
+      "kind": "duplicate_number",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "duplicate_invoice_number",
+      "findings": "duplicate_invoice_number",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 190,
+      "kind": "foreign_currency",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "unexpected_currency",
+      "findings": "unexpected_currency",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 191,
+      "kind": "clean",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 192,
+      "kind": "rounding_total",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 193,
+      "kind": "other_at_edge",
+      "expected_verdict": "approve",
+      "verdict": "approve",
+      "verdict_correct": true,
+      "expected_finding": null,
+      "findings": "",
+      "found_expected": null,
+      "benchmarked": true
+    },
+    {
+      "seq": 194,
+      "kind": "total_mismatch",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "total_mismatch",
+      "findings": "total_mismatch",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 195,
+      "kind": "overcharge_gross",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_above_band",
+      "findings": "rate_above_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 196,
+      "kind": "overcharge_hidden",
+      "expected_verdict": "dispute",
+      "verdict": "approve",
+      "verdict_correct": false,
+      "expected_finding": "rate_above_band",
+      "findings": "",
+      "found_expected": false,
+      "benchmarked": true
+    },
+    {
+      "seq": 197,
+      "kind": "undercharge",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "rate_below_band",
+      "findings": "rate_below_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 198,
+      "kind": "excessive_other",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "other_charges_out_of_band",
+      "findings": "other_charges_out_of_band",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 199,
+      "kind": "duplicate_number",
+      "expected_verdict": "dispute",
+      "verdict": "dispute",
+      "verdict_correct": true,
+      "expected_finding": "duplicate_invoice_number",
+      "findings": "duplicate_invoice_number",
+      "found_expected": true,
+      "benchmarked": true
+    },
+    {
+      "seq": 200,
       "kind": "foreign_currency",
       "expected_verdict": "dispute",
       "verdict": "dispute",

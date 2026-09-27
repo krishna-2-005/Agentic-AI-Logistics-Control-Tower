@@ -1,7 +1,12 @@
 """
-Invoice Auditor evaluation at scale (WP-02): 150 invoices, 15 per error kind.
+Invoice Auditor evaluation at scale (WP-02): 200 invoices, 20 per error kind.
 
-    python -m src.ml.invoice_eval_scale            # 150 cases, zero API calls
+    python -m src.ml.invoice_eval_scale            # 200 cases, zero API calls
+
+The work order asks for "150 invoices stratified by error type (>= 20 per type)",
+which cannot both hold: there are ten kinds and 150/10 is 15. The per-type floor
+is the constraint that matters -- it is what makes a per-type rate reportable --
+so the set is 20 of each and 200 in total.
 
 The Week 6 number is "20 of 20 verdicts matched". Ten error kinds were sampled
 by a weighted draw into those twenty cases, so some kinds appeared twice and one
@@ -187,7 +192,7 @@ def render_markdown(s: dict) -> str:
     return "\n".join(ln for ln in lines if ln != "")
 
 
-def run(per_kind: int = 15) -> dict:
+def run(per_kind: int = 20) -> dict:
     kinds = stratified_kinds(per_kind)
     cases = build_eval_set(count=len(kinds), seed=SEED, kinds=kinds)
     frame, base = score(cases)
@@ -198,7 +203,7 @@ def run(per_kind: int = 15) -> dict:
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("--per-kind", type=int, default=15, help="invoices of each kind")
+    ap.add_argument("--per-kind", type=int, default=20, help="invoices of each kind")
     ap.add_argument("--out", type=Path, default=RESULT_JSON)
     args = ap.parse_args()
 
