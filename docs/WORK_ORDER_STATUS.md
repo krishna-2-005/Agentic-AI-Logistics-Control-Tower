@@ -15,7 +15,7 @@ A package is **done** only when the evidence named in its Acceptance row exists 
 | 06 | Real alert channel + monitoring | not started | **Telegram token** (HUMAN_ACTIONS §2.5), UptimeRobot | `benchmarks/raw/f2_alert_channel_live.json` |
 | 07 | One measured LLM decision + approval queue + cost traces | not started | 2 labellers × 2 h (HUMAN_ACTIONS §3.2) | `benchmarks/raw/w9_llm_decision_eval.json`, D-065, D-067 |
 | 08 | Real documents for the doc agent | not started | 10 phone photos (HUMAN_ACTIONS §3.4) | `benchmarks/raw/w9_doc_eval_real.json` |
-| 09 | Code hygiene — ruff, mypy, split modules, LF, lock file, compose | not started | Docker Desktop for the compose half only | `requirements.lock`, ruff + mypy CI jobs |
+| 09 | Code hygiene — ruff, mypy, LF, lock file | **mostly done** | `docker compose` needs Docker Desktop; module splitting deferred | `requirements.lock`, `scripts/lock_requirements.sh`, ruff + mypy + locked-install CI jobs, all green |
 | 10 | Paper readiness — model card, data card, ablations, related work | not started | depends on WP-02 and WP-07 numbers | `docs/model_card.md`, `docs/data_card.md` |
 | 11 | Serve the v2 model in the stream (close D-053) | not started | nothing | `benchmarks/raw/w10_stream_validation_v2.json` |
 | 12 | Demo video, screenshots, README hero, social preview | not started | recording + voice by the team | `docs/demo_video_script.md`, README hero |
