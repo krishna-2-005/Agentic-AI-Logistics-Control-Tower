@@ -79,12 +79,23 @@ def _build(provider: str, model: str, temperature: float) -> BaseChatModel:
 
     if provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
+        from pydantic import SecretStr
 
         key = os.environ.get("ANTHROPIC_API_KEY")
         if not key:
             raise LLMNotConfigured("ANTHROPIC_API_KEY is not set — copy .env.example to .env")
-        return ChatAnthropic(
-            model=model, temperature=temperature, api_key=key,
+        # The key is wrapped rather than passed as a str. Pydantic would coerce
+        # it either way, but SecretStr is what the field is declared as and it
+        # keeps the key out of a repr -- these objects end up in tracebacks.
+        #
+        # `model=` keeps the ignore: mypy reads pydantic's generated __init__,
+        # which is keyed on the aliases (`model_name`), and does not model
+        # populate_by_name. Checked against the installed package rather than
+        # assumed -- both forms construct. Left as `model=` because rewriting an
+        # untested fallback path to satisfy a checker is how a fallback quietly
+        # stops working.
+        return ChatAnthropic(  # type: ignore[call-arg]
+            model=model, temperature=temperature, api_key=SecretStr(key),
             timeout=REQUEST_TIMEOUT_S, max_retries=MAX_RETRIES,
         )
 
