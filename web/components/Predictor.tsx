@@ -17,6 +17,16 @@ interface Option {
   state: string;
   legs: number;
   km: number | null;
+  /** Set only where the city-pair label is ambiguous. */
+  hint?: string;
+}
+
+/** The service reports a model by its internal name; a reader wants a phrase. */
+function friendlyModel(id: string): string {
+  if (/random_forest/i.test(id)) return "a random-forest model";
+  if (/gbt|gradient/i.test(id)) return "a gradient-boosted model";
+  if (/median/i.test(id)) return "this corridor's own median";
+  return "the delay model";
 }
 
 /**
@@ -69,7 +79,8 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
       .filter(
         (c) =>
           c.label.toLowerCase().includes(q) ||
-          c.state.toLowerCase().includes(q)
+          c.state.toLowerCase().includes(q) ||
+          (c.hint ?? "").toLowerCase().includes(q)
       )
       .slice(0, 8);
   }, [corridors, query]);
@@ -120,8 +131,15 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
                   : "hover:bg-[var(--surface-sunken)]"
               )}
             >
-              <span className="truncate">{c.label}</span>
-              <span className="tabular shrink-0 font-mono text-[11px] text-[var(--ink-faint)]">
+              <span className="min-w-0 truncate">
+                {c.label}
+                {c.hint && (
+                  <span className="ml-1.5 font-mono text-[10px] text-[var(--ink-faint)]">
+                    {c.hint}
+                  </span>
+                )}
+              </span>
+              <span className="tabular shrink-0 text-[11px] text-[var(--ink-faint)]">
                 {c.legs} legs
               </span>
             </button>
@@ -197,7 +215,7 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
 
         {status === "warming" && (
           <p className="mt-2 text-center font-mono text-[11px] text-amber-400">
-            model warming — the first call starts a Spark session
+            warming up — the first prediction after a quiet spell is slower
           </p>
         )}
       </Card>
@@ -232,33 +250,25 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
               />
               <Row k="Planned" v={minutes(osrmMin)} />
               <Row
-                k="Prior legs on this corridor"
+                k="Past journeys on this corridor"
                 v={
                   result.cold_start
-                    ? "none — cold start"
+                    ? "none on record"
                     : num(result.corridor_prior_legs ?? 0)
                 }
               />
             </dl>
 
-            <div className="mt-4 rounded-lg border border-[var(--line)] bg-[var(--surface-sunken)] p-3">
-              <p className="text-xs font-medium">Scored by</p>
-              <p className="mt-0.5 font-mono text-[11px] text-[var(--ink-muted)]">
-                {result.model_id}
-              </p>
-              {result.model_note && (
-                <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--ink-faint)]">
-                  {result.model_note}
-                </p>
-              )}
-            </div>
+            <p className="mt-4 text-xs text-[var(--ink-faint)]">
+              Estimated by {friendlyModel(result.model_id)}.
+            </p>
 
             {result.cold_start && (
               <p className="mt-3 text-xs leading-relaxed text-[var(--ink-muted)]">
-                This corridor has no prior history, so the model is working from
-                route features alone. That is exactly the slice where it beats a
-                median lookup by the largest margin — and where its own error is
-                highest in absolute terms.
+                Nothing has travelled this corridor before in the data, so the
+                estimate rests on the route itself — distance, vehicle type and
+                departure hour — rather than on history. This is where the model
+                is most useful and also least certain.
               </p>
             )}
           </Card>

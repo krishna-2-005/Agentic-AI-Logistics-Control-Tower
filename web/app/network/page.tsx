@@ -27,7 +27,7 @@ export default function NetworkPage() {
             Every one of the {num(corridors.data.length)} audited corridors,
             drawn between the two facilities it connects. Thickness and colour
             say how much more it overruns than the network typically does — and
-            the blue arcs are lanes that beat the plan.
+            the blue arcs are corridors that beat the plan.
           </>
         }
       />

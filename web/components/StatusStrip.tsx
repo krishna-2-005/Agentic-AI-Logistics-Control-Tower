@@ -36,32 +36,32 @@ export function StatusStrip({ freeze }: { freeze: string }) {
     static: "bg-[var(--accent)]",
   }[state];
 
-  const text = {
-    checking: "checking the live service…",
-    up: "live service up",
-    down: "live service asleep — recorded evidence shown",
-    static: "static build — recorded evidence",
+  // Only say something when there is something to say. "static build" and a
+  // freeze version told a visitor about our deployment, which is not what a
+  // strip at the top of a page is for. What it is for is the scope of the data
+  // underneath -- one line that makes the rest of the site legible.
+  const liveNote = {
+    checking: null,
+    up: "live predictions available",
+    down: null,
+    static: null,
   }[state];
 
   return (
     <div className="border-b border-[var(--line)] bg-[var(--surface-sunken)]">
-      <div className="mx-auto flex max-w-content flex-wrap items-center gap-x-5 gap-y-1 px-4 py-1.5 font-mono text-[11px] text-[var(--ink-faint)] sm:px-6">
-        <span className="flex items-center gap-1.5">
-          <span
-            className={cx(
-              "inline-block h-1.5 w-1.5 rounded-full",
-              dot,
-              state === "checking" && "animate-pulse-dot"
-            )}
-          />
-          {text}
+      <div className="mx-auto flex max-w-content flex-wrap items-center gap-x-5 gap-y-1 px-4 py-1.5 text-[11px] text-[var(--ink-faint)] sm:px-6">
+        <span className="tabular">
+          144,867 scan records · 26,369 journeys · 1,130 corridors analysed ·
+          Sep–Oct 2018
         </span>
-        <span className="hidden sm:inline">
-          results freeze <span className="text-[var(--ink-muted)]">{freeze}</span>
-        </span>
-        <span className="hidden md:inline">
-          145K segments · 26,369 legs · 1,130 corridors tested
-        </span>
+        {liveNote && (
+          <span className="flex items-center gap-1.5">
+            <span
+              className={cx("inline-block h-1.5 w-1.5 rounded-full", dot)}
+            />
+            {liveNote}
+          </span>
+        )}
       </div>
     </div>
   );

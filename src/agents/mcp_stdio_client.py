@@ -27,7 +27,7 @@ import asyncio
 import json
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -86,7 +86,7 @@ async def drive(out_path: Path = OUT_JSON) -> dict:
         cwd=str(config.REPO_ROOT),
     )
     transcript: dict = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "transport": "stdio",
         "server_command": f"{Path(sys.executable).name} -m src.agents.mcp_server",
         "calls": [],

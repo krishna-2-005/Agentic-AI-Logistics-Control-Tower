@@ -1,0 +1,62 @@
+# Install once per machine:  pre-commit install
+#
+# These run on staged files before a commit is created. The ordering matters:
+# the secret scan is last, because it should see exactly what is about to be
+# written, after any formatter has finished rewriting it.
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+      - id: check-yaml
+      - id: check-toml
+      - id: check-added-large-files
+        # The raw CSV is 55 MB and gitignored; models and parquet caches are
+        # larger again. Nothing that size should reach a commit by accident.
+        args: [--maxkb=5000]
+      - id: check-merge-conflict
+      - id: mixed-line-ending
+        args: [--fix=lf]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.4
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+        # GIT_RULES §7 bans notebook output cells outright. Notebooks here are
+        # exploration; their outputs are noise in a diff and can carry data.
+
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.21.2
+    hooks:
+      - id: gitleaks
+        # The project's rule on a leaked key is to rotate it, never to rewrite
+        # history to hide it (GIT_RULES §7, §11). That rule is much cheaper to
+        # follow if the key never lands in the first place.
+
+# How this is wired up, because it is not the usual way.
+#
+#     pip install pre-commit
+#     git config core.hooksPath .githooks     # if it is not set already
+#
+# Do **not** run `pre-commit install`. `core.hooksPath` points git at
+# `.githooks/`, so anything written into `.git/hooks/` is ignored. Instead
+# `.githooks/pre-commit` calls `pre-commit run` itself once the tool is on
+# PATH, so there is one hook path and these checks are additional to the
+# shell ones rather than a competing copy of them.
+#
+# There is deliberately no commit-message hook in this file either:
+# `.githooks/commit-msg` already enforces GIT_RULES §0 and §7 -- no co-author
+# trailer, no attribution line, no bracketed prefix, no marketing wording,
+# lowercase subject under 72 characters. A second implementation would drift
+# from the first, and when two copies of a rule disagree the rule stops being
+# readable in one place.

@@ -49,7 +49,7 @@ import shutil
 import time
 from contextlib import contextmanager
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pyspark.ml import PipelineModel
@@ -328,7 +328,7 @@ def _to_iso(epoch_ms: float | None) -> str | None:
     """Epoch milliseconds to a timezone-aware ISO string in this machine's zone."""
     if epoch_ms is None:
         return None
-    return datetime.fromtimestamp(epoch_ms / 1000.0, tz=timezone.utc).astimezone().isoformat()
+    return datetime.fromtimestamp(epoch_ms / 1000.0, tz=UTC).astimezone().isoformat()
 
 
 def process_batch(

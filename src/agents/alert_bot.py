@@ -286,7 +286,10 @@ def run(
     for position, (_, row) in enumerate(picked.iterrows(), start=1):
         message = format_message(row, position, total)
         result.messages.append(message)
-        if dry_run:
+        if dry_run or channel is None:
+            # `channel` is None only when dry_run, so this is the same branch
+            # said once instead of twice -- and it stops a future caller
+            # reaching send() with nothing to send on.
             continue
         try:
             channel.send(message)

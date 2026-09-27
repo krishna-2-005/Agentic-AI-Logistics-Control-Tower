@@ -33,7 +33,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pyspark.sql import DataFrame, SparkSession, Window
@@ -377,7 +377,7 @@ def drop_exact_duplicates(df: DataFrame) -> tuple[DataFrame, int]:
 # ── Orchestration ────────────────────────────────────────────────────────────
 def clean(spark: SparkSession, input_path: Path, output_path: Path) -> dict:
     report: dict = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "input": str(input_path),
         "output": str(output_path),
         "stage": "1-clean",

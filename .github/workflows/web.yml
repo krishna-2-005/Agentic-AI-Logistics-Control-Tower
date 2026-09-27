@@ -11,7 +11,10 @@ name: web
 
 on:
   push:
-    branches: [main, dev]
+    # wo-** included so a work-order branch gets the same answer as dev does.
+    # Without it the export/freeze check only ran after a merge, which is the
+    # point at which it is least useful.
+    branches: [main, dev, "wo-**"]
   pull_request:
     branches: [main, dev]
 

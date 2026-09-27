@@ -11,14 +11,13 @@ import {
   Pill,
   Section,
 } from "@/components/ui";
-import { getCorridors, getEvidence, getModel, getOverview } from "@/lib/data";
+import { getCorridors, getModel, getOverview } from "@/lib/data";
 import { minutes, num, pct, ratio } from "@/lib/format";
 
 export default function HomePage() {
   const overview = getOverview();
   const corridors = getCorridors();
   const model = getModel();
-  const evidence = getEvidence();
 
   const o = overview.data;
   const worst = [...corridors.data]
@@ -71,7 +70,7 @@ export default function HomePage() {
       {/* ── four headline numbers ──────────────────────────────────────── */}
       <Section
         title="The finding"
-        description="Systematic error is localisable error. Every number links to the file that produced it."
+        description="If the error were random it would cancel out across a corridor. It does not — so it concentrates, and it can be found."
       >
         <KpiRow>
           <Kpi
@@ -137,7 +136,7 @@ export default function HomePage() {
               <>
                 Every corridor with at least ten legs is tested against the rest
                 of the network — Welch&apos;s t-test on log time ratios, with
-                Benjamini–Hochberg control at 5%. That turns &ldquo;this lane
+                Benjamini–Hochberg control at 5%. That turns &ldquo;this corridor
                 looks unreliable&rdquo; into a false-discovery-controlled claim.
               </>
             }
@@ -180,7 +179,7 @@ export default function HomePage() {
 
       {/* ── worst corridors, as a teaser ───────────────────────────────── */}
       <Section
-        title="The worst lanes in the network"
+        title="The worst corridors in the network"
         description="Ranked by how much more a corridor overruns than the network typically does. The leg count matters — a 13.9× on 13 legs is a lead, not a verdict."
         actions={<ArrowLink href="/corridors/">All {num(o.corridors_tested)} corridors</ArrowLink>}
       >
@@ -235,9 +234,9 @@ export default function HomePage() {
         </Card>
       </Section>
 
-      <p className="text-center font-mono text-xs text-[var(--ink-faint)]">
-        every figure on this site traces to a file · results freeze{" "}
-        {evidence.freeze} · {evidence.data.n_values} frozen values
+      <p className="text-center text-xs text-[var(--ink-faint)]">
+        Built on {num(o.legs)} real freight journeys recorded across India,
+        September–October 2018.
       </p>
     </>
   );

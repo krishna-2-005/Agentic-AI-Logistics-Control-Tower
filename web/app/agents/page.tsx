@@ -39,13 +39,14 @@ export default function AgentsPage() {
       />
 
       <Section>
-        <Notice tone="info" title="Why that trade was made deliberately">
-          A free tier of twenty requests a day forced the decision, and it
-          became the clearest design position in the project. Severity, invoice
-          verdicts and routing are arithmetic, so every one of them is
-          reproducible — and therefore <strong>measurable</strong>. The agents
-          are less &ldquo;agentic&rdquo; than the word suggests, and in exchange
-          every number on this page exists.
+        <Notice tone="info" title="Why the decisions are arithmetic, not generated">
+          A verdict a language model produces can come out differently the next
+          time it is asked, which makes it very hard to say how often the system
+          is right. Here severity, invoice verdicts and routing are computed, so
+          each one is repeatable — and therefore{" "}
+          <strong>measurable</strong>. That is the trade behind every score on
+          this page: less improvisation, in exchange for numbers that mean
+          something.
         </Notice>
       </Section>
 

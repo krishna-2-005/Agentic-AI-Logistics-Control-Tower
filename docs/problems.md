@@ -1329,6 +1329,76 @@ aw\delhivery_data.csv -> download it — see
 - **Carry.** A run order is a dependency graph written as prose, and prose does not fail when
   a node is missing. A script does.
 
+### P-64 · An undeclared dependency quietly lowered a published accuracy
+**Post-v1.0 (WP-01) · Mounika · resolved**
+
+- **Symptom.** `tests/test_eval_extraction.py::test_facility_names_tolerate_small_ocr_noise`
+  failed on a clean checkout: `values_match` said `Farrukhbad_Pnchlght_D` and
+  `Farrukhbad_Pnchight_D` were different values. The test is right -- that is one
+  character of OCR noise in a facility name, exactly what the tolerance exists for.
+- **Cause.** `src/ml/eval_extraction.py` imports `rapidfuzz` inside a
+  `try/except ImportError` and sets `fuzz = None` on failure, and **`rapidfuzz` is
+  not in `requirements.txt`**. With the matcher absent, `values_match` fell through
+  to `return False`, so every text field that was close-but-not-identical counted
+  as a wrong answer.
+- **Why this is worse than a crash.** Nothing failed. The run completed and wrote a
+  report, and the per-field accuracy it published -- 98.7% on clean PDFs, 96.9% on
+  noisy scans -- would have come out several points lower on any machine that
+  happened not to have the package, with nothing in the output saying the matcher
+  was missing. The numbers were right only because the machines that produced them
+  had `rapidfuzz` installed for some other reason. A reproducibility claim that
+  depends on an undeclared package is not a reproducibility claim.
+- **Fix.** Two parts, and the second matters more than the first:
+  1. `rapidfuzz>=3.9` added to `requirements.txt` with a comment saying why the
+     `try/except` around its import does not make it optional.
+  2. `values_match` now **raises** when the matcher is missing instead of returning
+     `False`. A harness that cannot compare text should refuse to produce a score.
+- **Cost.** About 40 minutes, most of it spent assuming the four failing tests were
+  the same class of environment gap as the other ten (`fastapi`, `sqlmodel`,
+  `sklearn`, `mcp`, `reportlab` were all genuinely just uninstalled). Three of the
+  four were. This one was a real defect wearing the same costume.
+- **Carry.** This is **P-58 in a different place**. There the extraction evaluation
+  published 7.0% accuracy from 37 documents it never sent, and the lesson written
+  down was that an evaluation must distinguish *the agent was wrong* from *the agent
+  never ran*. The same rule applies one level down: it must also distinguish *the
+  agent was wrong* from *the scorer was not fully installed*. Any `except ImportError`
+  in a scoring path is that bug waiting to happen -- the fallback should raise, or
+  the dependency should not be optional.
+
+
+### P-65 · The TMS stopped accepting its own timestamps on a fresh install
+**Post-v1.0 (WP-01) · Mounika · resolved**
+
+- **Symptom.** With the dependencies actually installed from `requirements.txt`, 22 of
+  `tests/test_tms.py`'s 41 tests failed on every write:
+  `ValueError: Datetime values must have timezone information. Use
+  datetime.now(timezone.utc), or annotate the field with NaiveDatetime for naive
+  storage.` Nothing in `src/tms/` had changed since v1.0.
+- **Cause.** `requirements.txt` specifies floors (`sqlmodel>=0.0.19`,
+  `sqlalchemy` transitively), so a fresh resolve installs whatever is current --
+  here sqlmodel 0.0.47 and SQLAlchemy 2.0.54. Recent versions refuse a naive
+  datetime unless the field declares it means one. `models.py` stores naive-UTC
+  deliberately, because SQLite has no timezone type and the response models add the
+  `Z` back on the way out; the storage decision was right and simply undeclared.
+- **Why it had not been seen.** Every machine that ran this had resolved its
+  dependencies months earlier and was holding older versions. The failure only
+  appears on a *fresh* install, which is precisely the case a reproducibility claim
+  is about, and precisely the case nobody runs once a project is working.
+- **Fix.** The twelve persisted datetime columns on the four `table=True` models are
+  annotated `NaiveDatetime`. That declares the existing behaviour rather than
+  changing it: nothing about how timestamps are stored or rendered moved, and the
+  request/response models stay plain `datetime` so a client may still send an
+  offset. 41 of 41 TMS tests pass, and the full suite is 382 fast plus 49 Spark.
+- **Cost.** About 30 minutes, and it was found only because WP-01 put the suite in
+  CI and CI installs from `requirements.txt` rather than from a warm virtualenv.
+- **Carry.** This is the concrete version of the addendum's C-05. Floors are right
+  for a library and wrong for a research artefact: they mean the code that produced
+  the frozen results and the code a reader installs six months later are not the
+  same code, and nothing announces the difference. The lock file in WP-09 is the
+  real fix; until it lands, a green CI run is the only evidence that a fresh
+  install still works, which is an argument for CI rather than against floors.
+
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
