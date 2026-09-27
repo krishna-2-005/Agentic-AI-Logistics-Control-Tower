@@ -23,7 +23,7 @@ Model notes
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 
 from pydantic import BaseModel, NaiveDatetime, field_validator, model_validator
@@ -34,7 +34,7 @@ from sqlmodel import Field, SQLModel
 def utcnow() -> datetime:
     """Timezone-aware UTC. SQLite has no native tz type, so timestamps are stored
     naive-UTC and rendered with an explicit `Z` by the response models."""
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return datetime.now(UTC).replace(tzinfo=None)
 
 
 class RouteType(str, Enum):

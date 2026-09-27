@@ -31,7 +31,7 @@ import json
 import math
 import re
 import shutil
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -116,7 +116,7 @@ def _data_timestamp() -> str:
         frozen_at = _read_json(FREEZE_PATH).get("frozen_at")
         if frozen_at:
             return str(frozen_at)
-    return datetime.fromtimestamp(0, timezone.utc).isoformat()
+    return datetime.fromtimestamp(0, UTC).isoformat()
 
 
 def _clean(value: Any) -> Any:

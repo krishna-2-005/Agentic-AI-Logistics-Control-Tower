@@ -37,7 +37,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -275,7 +275,7 @@ def run(input_path: Path = config.FEATURES_V1, out_md: Path = DOC_PATH) -> dict:
         "pct_delayed_all_legs": {str(t): v for t, v in rates.items()},
         "d003_week1_pct_delayed": {str(t): v for t, v in D003_PCT_DELAYED.items()},
         "results": results.to_dict(orient="records"),
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
     }
     OUT_JSON.write_text(json.dumps(report, indent=2), encoding="utf-8")
     docs.write_section(out_md, "threshold-sensitivity", render_doc(results, rates, len(train), len(test), cutoff))

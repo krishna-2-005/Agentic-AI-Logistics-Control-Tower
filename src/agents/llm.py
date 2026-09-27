@@ -138,7 +138,7 @@ def get_llm(
 
     backups = [_build(p, DEFAULT_MODELS[p], temperature) for p in others]
     log.info("LLM: %s with fallback to %s", provider, ", ".join(others))
-    return primary.with_fallbacks(backups)
+    return primary.with_fallbacks(backups)  # type: ignore[return-value]  # with_fallbacks returns a RunnableWithFallbacks; it is a chat model at runtime and langchain does not express that
 
 
 def describe() -> str:

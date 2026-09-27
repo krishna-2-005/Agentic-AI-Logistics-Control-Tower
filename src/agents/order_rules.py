@@ -220,7 +220,7 @@ def read_pieces(text: str) -> tuple[int | None, bool]:
     # "roughly 10-12 boxes" — the hedge and the range both point the same way, but
     # the range regex needs the noun adjacent and the template does not always
     # oblige, so the hedge is checked on its own too.
-    for m in re.finditer(
+    if re.search(
         r"(about|around|roughly|approx\w*|~)\s*(\d+)\s*(?:-|–|to)\s*(\d+)", lowered
     ):
         return None, True
@@ -228,9 +228,9 @@ def read_pieces(text: str) -> tuple[int | None, bool]:
     noun_group = "|".join(PIECE_NOUNS)
 
     # "12 cartons", "No. of packages: 12"
-    m = re.search(rf"(\d+)\s*(?:{noun_group})\b", lowered)
-    if m:
-        pos = m.start()
+    adjacent = re.search(rf"(\d+)\s*(?:{noun_group})\b", lowered)
+    if adjacent:
+        pos = adjacent.start()
         before = lowered[max(0, pos - 20) : pos]
         if any(h in before for h in ("about", "around", "roughly", "approx", "~")):
             return None, True
@@ -238,19 +238,19 @@ def read_pieces(text: str) -> tuple[int | None, bool]:
         # already rejects a count below 1, so filing it here only moves the
         # rejection to a 422 from the TMS three layers away -- the two halves of
         # one agent disagreeing about the same rule.
-        return _positive_or_vague(int(m.group(1)))
+        return _positive_or_vague(int(adjacent.group(1)))
 
-    m = re.search(rf"(?:{noun_group})\D{{0,12}}?(\d+)", lowered)
-    if m:
-        return _positive_or_vague(int(m.group(1)))
+    trailing = re.search(rf"(?:{noun_group})\D{{0,12}}?(\d+)", lowered)
+    if trailing:
+        return _positive_or_vague(int(trailing.group(1)))
 
     # "twelve cartons"
     words = "|".join(_NUMBER_WORDS)
-    m = re.search(rf"\b({words})(?:-({words}))?\s*(?:{noun_group})\b", lowered)
-    if m:
-        value = _NUMBER_WORDS[m.group(1)]
-        if m.group(2):
-            value += _NUMBER_WORDS[m.group(2)]
+    spelled = re.search(rf"\b({words})(?:-({words}))?\s*(?:{noun_group})\b", lowered)
+    if spelled:
+        value = _NUMBER_WORDS[spelled.group(1)]
+        if spelled.group(2):
+            value += _NUMBER_WORDS[spelled.group(2)]
         return value, False
 
     return None, False

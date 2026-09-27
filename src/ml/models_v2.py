@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -243,7 +243,7 @@ def run(metrics_csv: Path = METRICS_CSV, report_json: Path = REPORT_JSON) -> dic
     overall = table[table["dimension"] == "overall"].set_index("model")["mae_min"].to_dict()
     decision = adoption_outcome(table, "v2_gbt_residual_absolute")
     report = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "features": {"v1": len(FEATURES), "v2": len(FEATURES_V2)},
         "n_train": len(train), "n_test": len(test), "split_cutoff": str(cutoff),
         "judge_median_check": judge,

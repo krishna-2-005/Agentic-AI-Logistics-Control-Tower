@@ -38,7 +38,7 @@ import argparse
 import json
 import time
 from dataclasses import dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -171,7 +171,7 @@ def score(graded: pd.DataFrame, facts: dict[str, int]) -> dict:
             "agent_decision_p50_ms": round(float(decide.median()), 2),
             "agent_decision_p95_ms": round(float(decide.quantile(0.95)), 2),
         },
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
     }
 
 

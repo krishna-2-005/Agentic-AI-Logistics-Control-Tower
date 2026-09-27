@@ -41,7 +41,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from src.common import config
@@ -143,7 +143,7 @@ def summarise(frame, base: dict, per_kind: int) -> dict:
             "design of this set and not the mix of a real invoice run, which is "
             "overwhelmingly clean. Per-kind rates are the comparable numbers."
         ),
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "week6_for_comparison": {
             "cases": base.get("cases"),
             "accuracy": base.get("accuracy"),

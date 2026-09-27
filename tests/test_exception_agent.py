@@ -58,7 +58,7 @@ def test_a_corridor_is_only_confirmed_slow_when_significant_and_worse():
 def test_the_audit_vocabulary_is_the_one_audit_py_writes():
     # src/ml/audit.py: np.where(excess_ratio >= 1, "worse", "better")
     assert ea.SLOWER_THAN_NETWORK == "worse"
-    assert ea.AUDIT_DIRECTIONS == {"worse", "better"}
+    assert {"worse", "better"} == ea.AUDIT_DIRECTIONS
 
 
 def test_an_unknown_direction_value_fails_loudly(tmp_path):

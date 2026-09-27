@@ -13,7 +13,6 @@ Run:  pytest tests/test_web_numbers.py
 from __future__ import annotations
 
 import json
-from pathlib import Path
 
 import pytest
 

@@ -34,7 +34,7 @@ import argparse
 import json
 import random
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -203,7 +203,7 @@ def score(cases: list[EvalCase]) -> tuple[pd.DataFrame, dict]:
             for kind, group in frame.groupby("kind")
         ],
         "seed": EVAL_SEED,
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
     }
     return frame, summary
 

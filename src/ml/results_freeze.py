@@ -36,7 +36,7 @@ import hashlib
 import json
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -262,7 +262,7 @@ def freeze(out_path: Path = FREEZE_JSON) -> dict:
     values, problems = collect()
     sources = sorted({f.source for f in values} | {p["source"] for p in problems})
     snapshot = {
-        "frozen_at": datetime.now(timezone.utc).isoformat(),
+        "frozen_at": datetime.now(UTC).isoformat(),
         "layer": 1,
         "n_values": len(values),
         "values": [asdict(f) for f in values],
@@ -299,7 +299,7 @@ def verify(path: Path = FREEZE_JSON) -> dict:
     touched = [name for name, digest in snapshot["source_hashes"].items() if hashes_now.get(name) != digest]
 
     report = {
-        "verified_at": datetime.now(timezone.utc).isoformat(),
+        "verified_at": datetime.now(UTC).isoformat(),
         "frozen_at": snapshot["frozen_at"],
         "values_checked": len(current),
         "changed": changed,

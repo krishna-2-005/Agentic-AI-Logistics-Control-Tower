@@ -41,7 +41,7 @@ from __future__ import annotations
 import argparse
 import json
 from collections import Counter
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from src.agents.orchestrator import run_case
@@ -153,7 +153,7 @@ def run(cases: int = 100, route: str = "rules", dry_run: bool = True) -> dict:
             "route=truth hands intake the case's expected fields and cannot route "
             "wrongly; it measures the graph. route=rules reads the email and can."
         ),
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "cases": results,
     }
 

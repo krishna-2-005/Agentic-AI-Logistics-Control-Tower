@@ -18,7 +18,7 @@ The test split is not touched until step 3, and only for one model.
 from __future__ import annotations
 
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -114,7 +114,7 @@ def run(metrics_csv: Path = METRICS_CSV, report_json: Path = REPORT_JSON) -> dic
     overall = table[table["dimension"] == "overall"].set_index("model")["mae_min"].to_dict()
     support = table[(table["dimension"] == "corridor_support_in_train") & (table["model"] == candidate)]
     report = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "decision": "D-049",
         "grid": {"stepSize": list(STEP_SIZES), "maxIter": MAX_ITER, "maxDepth": MAX_DEPTH, "lossType": "absolute"},
         "validation": {

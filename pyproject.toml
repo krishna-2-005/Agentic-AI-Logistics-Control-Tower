@@ -31,13 +31,34 @@ ignore = [
     # Long lines inside docstrings and comments carry the reasoning this project
     # keeps in prose; the formatter handles code width.
     "E501",
+    # `class RouteType(str, Enum)` -> `StrEnum`.
+    #
+    # Declined deliberately. It changes what `f"{RouteType.FTL}"` produces --
+    # "RouteType.FTL" today, "FTL" after -- on the enums `src/tms/models.py`
+    # serialises to the API and stores in SQLite. Nothing in the tree
+    # interpolates one today, so the migration would be safe *now*; the
+    # objection is that it is a behaviour change to a serialisation boundary
+    # bought for a style point, and the next person to write an f-string around
+    # a status would get a different payload depending on when they did it.
+    # Revisit if these enums ever need `StrEnum`'s semantics for their own sake.
+    "UP042",
 ]
 
 [tool.ruff.lint.isort]
 known-first-party = ["src"]
 
 [tool.mypy]
-python_version = "3.11"
+# Deliberately not pinned to 3.11.
+#
+# Pinning it made mypy parse the *installed* numpy stubs as 3.11 source, and
+# current numpy ships `type` statements, which are 3.12 syntax. The result was
+# a syntax error inside a dependency that stopped the check before it reached
+# any project code -- a type checker reporting on numpy's grammar rather than
+# on this repository. Unset, mypy uses the interpreter it runs on, which is the
+# one whose libraries it is reading.
+#
+# The 3.11 floor is enforced where it can actually be tested: the CI matrix runs
+# the suite on 3.11 and 3.13.
 warn_unused_configs = true
 ignore_missing_imports = true
 # Strict only where the work order asks for it. Widening this to the whole tree

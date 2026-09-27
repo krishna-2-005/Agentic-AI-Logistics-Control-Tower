@@ -60,8 +60,8 @@ from src.agents.exception_agent import (
     severity_for,
 )
 from src.agents.order_agent import process_email, validate_order
-from src.agents.order_rules import extract_order_rules
 from src.agents.order_corpus import OrderEmail
+from src.agents.order_rules import extract_order_rules
 from src.agents.prompts.registry import load_prompt
 from src.agents.tms_client import TMSClient, TMSError
 from src.agents.tracing import traced
@@ -181,8 +181,17 @@ def book(state: LifecycleState) -> LifecycleState:
     """File the order and book a shipment against it."""
     steps = [*state.get("steps", []), "book"]
     order = state["order"]
+
+    # `route_after_intake` only routes here when the order is truthy, so this
+    # cannot fire. It is written down because the guarantee lives in a routing
+    # function rather than in this one, and a future edge into `book` would
+    # otherwise fail on a KeyError rather than saying what went wrong.
+    if not order:
+        return {**state, "steps": steps, "error": "routed to book with no order"}
+
     if state.get("dry_run"):
-        return {**state, "steps": steps, "corridor_id": f"{order['origin_centre']}>{order['dest_centre']}"}
+        return {**state, "steps": steps,
+                "corridor_id": f"{order['origin_centre']}>{order['dest_centre']}"}
 
     client = _client()
     if client is None:
