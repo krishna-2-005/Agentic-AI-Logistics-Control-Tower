@@ -85,13 +85,28 @@ class EvalCase:
     expected_finding: str | None
 
 
-def build_eval_set(count: int = 60, seed: int = EVAL_SEED) -> list[EvalCase]:
-    """`count` invoices over my ten kinds, every kind represented."""
+def build_eval_set(
+    count: int = 60,
+    seed: int = EVAL_SEED,
+    kinds: list[str] | None = None,
+) -> list[EvalCase]:
+    """`count` invoices over my ten kinds, every kind represented.
+
+    `kinds` overrides the weighted draw with an exact assignment, which is how
+    the stratified 150-case set in `invoice_eval_scale` gets a guaranteed number
+    per kind. Left as None, the behaviour is unchanged: this function has
+    produced a reported number and its default path is not moving.
+    """
     records = generate_records(count, seed=seed)
     rng = random.Random(seed)
-    kinds = list(EXPECTED)
-    kinds += [rng.choice(list(EXPECTED)) for _ in range(max(0, count - len(kinds)))]
-    rng.shuffle(kinds)
+    if kinds is None:
+        kinds = list(EXPECTED)
+        kinds += [rng.choice(list(EXPECTED)) for _ in range(max(0, count - len(kinds)))]
+        rng.shuffle(kinds)
+    else:
+        kinds = list(kinds)
+    # `duplicate_number` copies a number from a case already built, so it cannot
+    # be the first one out.
     if len(kinds) > 1 and kinds[0] == "duplicate_number":
         kinds[0], kinds[1] = kinds[1], kinds[0]
 
