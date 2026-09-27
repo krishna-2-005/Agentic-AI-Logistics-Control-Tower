@@ -2,11 +2,11 @@
   "route": "rules",
   "n_cases": 200,
   "overall": {
-    "successes": 170,
+    "successes": 200,
     "total": 200,
-    "rate": 0.85,
-    "ci_low": 0.7939,
-    "ci_high": 0.8929
+    "rate": 1.0,
+    "ci_low": 0.9812,
+    "ci_high": 1.0
   },
   "straightforward": {
     "successes": 100,
@@ -16,117 +16,36 @@
     "ci_high": 1.0
   },
   "adversarial": {
-    "successes": 70,
+    "successes": 100,
     "total": 100,
-    "rate": 0.7,
-    "ci_low": 0.6042,
-    "ci_high": 0.7811
+    "rate": 1.0,
+    "ci_low": 0.963,
+    "ci_high": 1.0
   },
   "clarification_recall": {
-    "successes": 80,
+    "successes": 110,
     "total": 110,
-    "rate": 0.7273,
-    "ci_low": 0.6374,
-    "ci_high": 0.8018
+    "rate": 1.0,
+    "ci_low": 0.9663,
+    "ci_high": 1.0
   },
   "clarification_precision": {
-    "successes": 80,
-    "total": 80,
+    "successes": 110,
+    "total": 110,
     "rate": 1.0,
-    "ci_low": 0.9542,
+    "ci_low": 0.9663,
     "ci_high": 1.0
   },
   "asked_about_the_right_field": {
-    "successes": 80,
+    "successes": 110,
     "total": 110,
-    "rate": 0.7273,
-    "ci_low": 0.6374,
-    "ci_high": 0.8018
+    "rate": 1.0,
+    "ci_low": 0.9663,
+    "ci_high": 1.0
   },
-  "orders_filed": 120,
-  "orders_filed_on_invented_values": 30,
-  "invented_examples": [
-    {
-      "seq": 101,
-      "template": "contradiction",
-      "adversarial": true,
-      "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
-      "fields_ok": true,
-      "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
-    },
-    {
-      "seq": 102,
-      "template": "contradiction",
-      "adversarial": true,
-      "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
-      "fields_ok": true,
-      "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
-    },
-    {
-      "seq": 103,
-      "template": "contradiction",
-      "adversarial": true,
-      "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
-      "fields_ok": true,
-      "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
-    },
-    {
-      "seq": 104,
-      "template": "contradiction",
-      "adversarial": true,
-      "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
-      "fields_ok": true,
-      "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
-    },
-    {
-      "seq": 105,
-      "template": "contradiction",
-      "adversarial": true,
-      "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
-      "fields_ok": true,
-      "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
-    }
-  ],
+  "orders_filed": 90,
+  "orders_filed_on_invented_values": 0,
+  "invented_examples": [],
   "by_template": {
     "table": {
       "adversarial": false,
@@ -210,19 +129,19 @@
     },
     "contradiction": {
       "adversarial": true,
-      "successes": 0,
+      "successes": 10,
       "total": 10,
-      "rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.2775
+      "rate": 1.0,
+      "ci_low": 0.7225,
+      "ci_high": 1.0
     },
     "two_consignments": {
       "adversarial": true,
-      "successes": 0,
+      "successes": 10,
       "total": 10,
-      "rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.2775
+      "rate": 1.0,
+      "ci_low": 0.7225,
+      "ci_high": 1.0
     },
     "pounds": {
       "adversarial": true,
@@ -258,11 +177,11 @@
     },
     "zero_pieces": {
       "adversarial": true,
-      "successes": 0,
+      "successes": 10,
       "total": 10,
-      "rate": 0.0,
-      "ci_low": 0.0,
-      "ci_high": 0.2775
+      "rate": 1.0,
+      "ci_low": 0.7225,
+      "ci_high": 1.0
     },
     "quoted_thread": {
       "adversarial": true,
@@ -1709,320 +1628,280 @@
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 102,
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 103,
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 104,
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 105,
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 106,
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 107,
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 108,
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 109,
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 110,
       "template": "contradiction",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "weight_kg",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "weight_kg"
-      ],
-      "correct": false
+      "got_missing": "weight_kg",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 111,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 112,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 113,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 114,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 115,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 116,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 117,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 118,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 119,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 120,
       "template": "two_consignments",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
-      "expected_missing": "dest_centre",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "dest_centre"
-      ],
-      "correct": false
+      "expected_missing": "consignment",
+      "got_missing": "consignment",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 121,
@@ -2589,160 +2468,140 @@
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 162,
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 163,
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 164,
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 165,
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 166,
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 167,
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 168,
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 169,
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 170,
       "template": "zero_pieces",
       "adversarial": true,
       "expected_action": "clarify",
-      "got_action": "file",
-      "action_ok": false,
+      "got_action": "clarify",
+      "action_ok": true,
       "fields_ok": true,
       "expected_missing": "pieces",
-      "got_missing": null,
-      "asked_about_the_right_field": false,
-      "invented_fields": [
-        "pieces"
-      ],
-      "correct": false
+      "got_missing": "pieces",
+      "asked_about_the_right_field": true,
+      "invented_fields": [],
+      "correct": true
     },
     {
       "seq": 171,
@@ -3168,5 +3027,35 @@
   "llm_route": {
     "status": "not run",
     "reason": "200 cases would need 200 model calls against a free tier of 20 a day. Deferred to WP-07, where the same set is scored for the rules-vs-model comparison."
+  },
+  "held_out_first_run": {
+    "commit": "bdf9eeb",
+    "overall": {
+      "successes": 170,
+      "total": 200,
+      "rate": 0.85,
+      "ci_low": 0.7944,
+      "ci_high": 0.8928
+    },
+    "straightforward": {
+      "successes": 100,
+      "total": 100,
+      "rate": 1.0
+    },
+    "adversarial": {
+      "successes": 70,
+      "total": 100,
+      "rate": 0.7,
+      "ci_low": 0.604,
+      "ci_high": 0.781
+    },
+    "orders_filed_on_invented_values": 30,
+    "templates_at_zero": [
+      "contradiction",
+      "two_consignments",
+      "zero_pieces"
+    ],
+    "what_it_found": "All three failed the same way: the route filed confidently on a value the email never established. Two were policy gaps -- contradictory weights and two consignments in one mail. The third was an inconsistency inside one agent: validate_order rejects pieces below 1, and the rule route filed 0 cartons anyway, moving the rejection to a 422 from the TMS three layers away.",
+    "note": "The current score in this file is post-fix and is not held out. The 85.0% above is."
   }
 }

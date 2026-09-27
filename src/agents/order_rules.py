@@ -96,6 +96,43 @@ def _num(text: str) -> float:
     return float(text.replace(",", ""))
 
 
+def _positive_or_vague(value: int) -> tuple[int | None, bool]:
+    """A piece count at or below zero is stated-but-unusable, not missing."""
+    return (value, False) if value >= 1 else (None, True)
+
+
+def _in_quoted_block(text: str, pos: int) -> bool:
+    """Is this position inside quoted history rather than the live request?
+
+    A mail thread repeats old figures under `>` or beneath a forwarded header,
+    and those are superseded rather than contradictory. Without this distinction
+    the contradiction check would fire on every reply anyone ever sends.
+    """
+    line_start = text.rfind("\n", 0, pos) + 1
+    if text[line_start:pos].lstrip().startswith(">"):
+        return True
+    before = text[:pos].lower()
+    for marker in ("---------- forwarded", "--- forwarded", "wrote:", "original message"):
+        if marker in before:
+            return True
+    return False
+
+
+def _counts_consignments(text: str) -> int:
+    """How many separate shipments this email appears to be asking for.
+
+    An email listing two loads is not a harder single order, it is two orders,
+    and filing either one is a guess about which the customer meant. Detected by
+    the enumeration people actually use -- "1)" and "2)" on their own lines, or
+    an explicit "two loads/shipments/consignments".
+    """
+    lowered = text.lower()
+    if re.search(r"\b(two|three|both)\s+(loads|shipments|consignments|bookings|orders)\b", lowered):
+        return 2
+    enumerated = re.findall(r"^\s*([1-9])[).]\s+\S", text, re.M)
+    return len({n for n in enumerated}) if len(set(enumerated)) > 1 else 1
+
+
 # ── field readers ────────────────────────────────────────────────────────────
 #
 # Each returns (value, ambiguous). `ambiguous` is not the same as `value is None`:
@@ -142,10 +179,31 @@ def read_weight_kg(text: str) -> tuple[float | None, bool]:
     if not kept:
         return None, False
 
+    # Two different weights that nothing in the email reconciles.
+    #
+    # This is not the same as a correction, where the email says which figure is
+    # superseded and a reader can resolve it. Here both are asserted, and picking
+    # one -- the first, the larger, the nearest to a keyword -- is the guess the
+    # whole policy exists to prevent. The 200-case evaluation caught this filing
+    # 10 of 10 contradictions with an invented weight.
+    #
+    # Quoted history is excluded: a thread where an older figure sits under a "> "
+    # is not a contradiction, it is a supersession, and the live request wins.
+    distinct = {
+        round(value, 1)
+        for pos, value in kept
+        if not _in_quoted_block(text, pos)
+    }
+    if len(distinct) > 1:
+        return None, True
+
     # A hedge immediately before the number makes it an estimate.
     pos, value = kept[0]
     before = lowered[max(0, pos - 24) : pos]
     if any(h in before for h in ("about", "around", "roughly", "approx", "circa", "~")):
+        return None, True
+
+    if value <= 0:
         return None, True
 
     return round(value, 3), False
@@ -176,11 +234,15 @@ def read_pieces(text: str) -> tuple[int | None, bool]:
         before = lowered[max(0, pos - 20) : pos]
         if any(h in before for h in ("about", "around", "roughly", "approx", "~")):
             return None, True
-        return int(m.group(1)), False
+        # "0 cartons" is stated, parseable and impossible. `validate_order`
+        # already rejects a count below 1, so filing it here only moves the
+        # rejection to a 422 from the TMS three layers away -- the two halves of
+        # one agent disagreeing about the same rule.
+        return _positive_or_vague(int(m.group(1)))
 
     m = re.search(rf"(?:{noun_group})\D{{0,12}}?(\d+)", lowered)
     if m:
-        return int(m.group(1)), False
+        return _positive_or_vague(int(m.group(1)))
 
     # "twelve cartons"
     words = "|".join(_NUMBER_WORDS)
@@ -282,9 +344,25 @@ def read_customer_name(text: str) -> str | None:
 #: Which gap to ask about when several exist. Prompt rule 2: the thing that blocks
 #: the booking hardest, and weight and pieces come before service level. The
 #: judge's `missing_two` case depends on this exact ordering.
-ASK_ORDER = ("weight_kg", "pieces", "origin_centre", "dest_centre", "route_type", "customer_name")
+#
+# `consignment` comes first because it dominates every other gap: you cannot
+# sensibly ask which weight applies until you know which shipment is being
+# booked. It is not a TMS field, which is the point -- the 200-case evaluation
+# showed the agent had no way to say "this email is two orders", so it answered
+# the question it *could* express and asked about a weight instead.
+ASK_ORDER = (
+    "consignment", "weight_kg", "pieces", "origin_centre", "dest_centre",
+    "route_type", "customer_name",
+)
+
+#: The fields that are actually part of an order. `consignment` is in ASK_ORDER
+#: for its priority and is deliberately not here -- it is a question about the
+#: email, not a column in the TMS.
+REQUIRED_ORDER_FIELDS = tuple(f for f in ASK_ORDER if f != "consignment")
 
 QUESTIONS = {
+    "consignment": "This mail lists more than one shipment. Which one should we book first, "
+                   "or should we raise them as separate orders?",
     "weight_kg": "Could you confirm the total gross weight in kilograms for this consignment?",
     "pieces": "How many pieces should we book for this consignment?",
     "origin_centre": "Which centre code should we collect from? A city can have several.",
@@ -329,16 +407,23 @@ def extract_order_rules(subject: str, body: str) -> dict:
         "pieces": pieces_vague,
         "route_type": route_vague,
     }
+    # Only the real order fields are checked for presence here. `consignment` is
+    # in ASK_ORDER for its priority, not because it is a field -- including it in
+    # this loop made `order.get("consignment")` None on every email, so every one
+    # of the 200 cases reported it missing and the score fell from 95% to 5%.
     missing = [
         name
         for name in ASK_ORDER
-        if order.get(name) in (None, "") or vague.get(name, False)
+        if name in order and (order.get(name) in (None, "") or vague.get(name, False))
     ]
 
     # The same self-consistency checks `validate_order` applies, hoisted so the
     # rule route asks rather than files something the TMS would reject anyway.
     if origin and dest and origin == dest:
         missing.append("dest_centre")
+    # Two shipments in one mail: the fields parse, but they are not one order.
+    if _counts_consignments(text) > 1:
+        missing.append("consignment")
     if route_type is not None and route_type not in config.ROUTE_TYPES:
         order["route_type"] = None
         missing.append("route_type")

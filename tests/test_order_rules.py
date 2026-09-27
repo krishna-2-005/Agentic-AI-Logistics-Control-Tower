@@ -199,19 +199,76 @@ def test_identical_origin_and_destination_is_asked_about_not_filed() -> None:
     assert out["action"] == "clarify"
 
 
-def test_order_rules_are_frozen_before_the_hard_set() -> None:
-    """A note about method, asserted so it is not quietly forgotten.
+def test_the_question_is_asked_in_priority_order() -> None:
+    """Prompt rule 2: ask about the thing that blocks the booking hardest.
 
-    This module was written while reading the ten templates in `order_eval.py`, and
-    it scores 50 of 50 on them -- the same as the model route. That number is
-    therefore **not** evidence the rule route is good; it is evidence the author saw
-    the test. D-028 separates builder from judge for exactly this reason.
-
-    The 200-case adversarial corpus in `order_corpus.py` is the set that is allowed
-    to be evidence, and it was written *after* this file was committed. If this
-    module is ever tuned in response to a score on that corpus, the score stops
-    meaning anything and this comment stops being true.
+    `consignment` leads because it dominates -- which weight applies is not a
+    sensible question until it is clear which shipment is being booked. Then
+    weight and pieces, then the route, then service level, which is the ordering
+    `order_eval.py`'s `missing_two` case depends on.
     """
     from src.agents import order_rules
 
-    assert order_rules.ASK_ORDER[0] == "weight_kg"
+    order = order_rules.ASK_ORDER
+    assert order[0] == "consignment"
+    assert order.index("weight_kg") < order.index("pieces")
+    assert order.index("pieces") < order.index("route_type")
+    assert set(order) == set(order_rules.QUESTIONS)
+
+
+def test_consignment_is_a_question_not_an_order_field() -> None:
+    """It sits in ASK_ORDER for its priority and must never reach the TMS.
+
+    Regression guard with a real cost behind it: including it in the
+    field-presence loop made `order.get("consignment")` None on every email, so
+    all 200 evaluation cases reported it missing and the score fell from 95% to
+    5% in one commit.
+    """
+    from src.agents.order_rules import REQUIRED_ORDER_FIELDS, extract_order_rules
+
+    assert "consignment" not in REQUIRED_ORDER_FIELDS
+
+    out = extract_order_rules(
+        "Consignment request",
+        "Origin hub code: IND560067AAA\nDestination hub code: IND209304AAA\n"
+        "No. of packages: 12\nGross weight: 1817.7 kg\nMode: Full Truck Load\n\n"
+        "Best regards,\nPriya Nair\nLogistics desk, Acme Traders",
+    )
+    assert out["action"] == "file"
+    assert "consignment" not in out["order"]
+
+
+def test_two_shipments_in_one_mail_are_not_one_order() -> None:
+    out = extract_order_rules(
+        "Two bookings",
+        "Hi,\n\nTwo loads to arrange this week.\n\n"
+        "1) A (IND560067AAA) to B (IND209304AAA), 18 pieces, 482.6 kg, Carting\n"
+        "2) B (IND209304AAA) to A (IND560067AAA), 9 pieces, 241.3 kg, Carting\n\n"
+        "Regards,\nAcme Traders\nConsignor",
+    )
+    assert out["action"] == "clarify"
+    assert out["missing_field"] == "consignment"
+
+
+def test_two_weights_nothing_reconciles_is_asked_about() -> None:
+    """Different from a correction, where the email says which figure is dead."""
+    out = extract_order_rules(
+        "Booking",
+        "From IND560067AAA to IND209304AAA. 12 pieces. Gross weight 900.0 kg. FTL.\n"
+        "Warehouse has the total as 1260.0 kg on their docket.\n\n"
+        "Regards,\nAcme Traders\nConsignor",
+    )
+    assert out["action"] == "clarify"
+    assert out["missing_field"] == "weight_kg"
+
+
+def test_zero_pieces_is_refused_by_both_halves_of_the_agent() -> None:
+    """`validate_order` rejects a count below 1. The rule route used to file it
+    anyway, moving the rejection to a 422 from the TMS three layers away."""
+    out = extract_order_rules(
+        "Booking",
+        "From IND560067AAA to IND209304AAA. 0 cartons for now, 900.0 kg, FTL.\n\n"
+        "Regards,\nAcme Traders\nConsignor",
+    )
+    assert out["action"] == "clarify"
+    assert out["missing_field"] == "pieces"

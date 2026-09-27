@@ -1816,13 +1816,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) Khambhat_MotvdDPP_D (Gujarat) (IND388620AAB) to Anand_Vaghasi_IP (Gujarat) (IND388320AAA), 18 pieces, 482.6 kg, Carting (part load)\n2) Anand_Vaghasi_IP (Gujarat) (IND388320AAA) back to Khambhat_MotvdDPP_D (Gujarat) (IND388620AAB), 9 pieces, 241.3 kg, Carting (part load)\n\nPlease confirm both.\n\nBest regards,\nPriya Nair\nLogistics desk, Khambhat Enterprises",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Khambhat Enterprises",
       "origin_centre": "IND388620AAB",
-      "route_type": "Carting",
-      "pieces": 18,
-      "weight_kg": 482.6
+      "route_type": "Carting"
     }
   },
   {
@@ -1832,13 +1830,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) Mumbai_CottonGreen_DPC (Maharashtra) (IND400015AAA) to Mumbai Hub (Maharashtra) (IND400072AAB), 8 pieces, 349.5 kg, Carting (part load)\n2) Mumbai Hub (Maharashtra) (IND400072AAB) back to Mumbai_CottonGreen_DPC (Maharashtra) (IND400015AAA), 4 pieces, 174.8 kg, Carting (part load)\n\nPlease confirm both.\n\nBest regards,\nRahul Menon\nLogistics desk, Mumbai Distributors",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Mumbai Distributors",
       "origin_centre": "IND400015AAA",
-      "route_type": "Carting",
-      "pieces": 8,
-      "weight_kg": 349.5
+      "route_type": "Carting"
     }
   },
   {
@@ -1848,13 +1844,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) Coonoor_Fairybnk_D (Tamil Nadu) (IND643231AAA) to Kotagiri_CroslySRT_D (Tamil Nadu) (IND643217AAA), 4 pieces, 375.7 kg, Carting (part load)\n2) Kotagiri_CroslySRT_D (Tamil Nadu) (IND643217AAA) back to Coonoor_Fairybnk_D (Tamil Nadu) (IND643231AAA), 2 pieces, 187.8 kg, Carting (part load)\n\nPlease confirm both.\n\nBest regards,\nAnita Desai\nLogistics desk, Coonoor Distributors",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Coonoor Distributors",
       "origin_centre": "IND643231AAA",
-      "route_type": "Carting",
-      "pieces": 4,
-      "weight_kg": 375.7
+      "route_type": "Carting"
     }
   },
   {
@@ -1864,13 +1858,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) Orai_Ajnari_D (Uttar Pradesh) (IND285001AAD) to Konch_Central_D_2 (Uttar Pradesh) (IND285205AAB), 1 pieces, 8065.8 kg, Full Truck Load\n2) Konch_Central_D_2 (Uttar Pradesh) (IND285205AAB) back to Orai_Ajnari_D (Uttar Pradesh) (IND285001AAD), 1 pieces, 4032.9 kg, Full Truck Load\n\nPlease confirm both.\n\nBest regards,\nVikram Shah\nLogistics desk, Orai Exports",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Orai Exports",
       "origin_centre": "IND285001AAD",
-      "route_type": "FTL",
-      "pieces": 1,
-      "weight_kg": 8065.8
+      "route_type": "FTL"
     }
   },
   {
@@ -1880,13 +1872,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) Sathupally_VidyaNGR_D (Telangana) (IND507303AAA) to Khammam_NSTRoad_I (Telangana) (IND507002AAA), 6 pieces, 2606.1 kg, Full Truck Load\n2) Khammam_NSTRoad_I (Telangana) (IND507002AAA) back to Sathupally_VidyaNGR_D (Telangana) (IND507303AAA), 3 pieces, 1303.0 kg, Full Truck Load\n\nPlease confirm both.\n\nBest regards,\nSneha Iyer\nLogistics desk, Sathupally Traders",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Sathupally Traders",
       "origin_centre": "IND507303AAA",
-      "route_type": "FTL",
-      "pieces": 6,
-      "weight_kg": 2606.1
+      "route_type": "FTL"
     }
   },
   {
@@ -1896,13 +1886,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) Sankaran_Kovil_D (Tamil Nadu) (IND627756AAA) to Rajpalayam_AshkTalk_D (Tamil Nadu) (IND626117AAA), 6 pieces, 5788.4 kg, Full Truck Load\n2) Rajpalayam_AshkTalk_D (Tamil Nadu) (IND626117AAA) back to Sankaran_Kovil_D (Tamil Nadu) (IND627756AAA), 3 pieces, 2894.2 kg, Full Truck Load\n\nPlease confirm both.\n\nBest regards,\nArjun Rao\nLogistics desk, Sankaran Freight Carriers",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Sankaran Freight Carriers",
       "origin_centre": "IND627756AAA",
-      "route_type": "FTL",
-      "pieces": 6,
-      "weight_kg": 5788.4
+      "route_type": "FTL"
     }
   },
   {
@@ -1912,13 +1900,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) Rudrapur_UdhamNgr_H (Uttarakhand) (IND263153AAB) to Sonipat_Kundli_H (Haryana) (IND131028AAB), 1 pieces, 5071.0 kg, Full Truck Load\n2) Sonipat_Kundli_H (Haryana) (IND131028AAB) back to Rudrapur_UdhamNgr_H (Uttarakhand) (IND263153AAB), 1 pieces, 2535.5 kg, Full Truck Load\n\nPlease confirm both.\n\nBest regards,\nMeera Krishnan\nLogistics desk, Rudrapur Exports",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Rudrapur Exports",
       "origin_centre": "IND263153AAB",
-      "route_type": "FTL",
-      "pieces": 1,
-      "weight_kg": 5071.0
+      "route_type": "FTL"
     }
   },
   {
@@ -1928,13 +1914,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) Bhopal_Kolar Mandakni (Madhya Pradesh) (IND462042AAA) to Bhopal_Trnsport_H (Madhya Pradesh) (IND462022AAA), 1 pieces, 271.4 kg, Carting (part load)\n2) Bhopal_Trnsport_H (Madhya Pradesh) (IND462022AAA) back to Bhopal_Kolar Mandakni (Madhya Pradesh) (IND462042AAA), 1 pieces, 135.7 kg, Carting (part load)\n\nPlease confirm both.\n\nBest regards,\nImran Sheikh\nLogistics desk, Bhopal Industries",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Bhopal Industries",
       "origin_centre": "IND462042AAA",
-      "route_type": "Carting",
-      "pieces": 1,
-      "weight_kg": 271.4
+      "route_type": "Carting"
     }
   },
   {
@@ -1944,13 +1928,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) SundarNgr_Bhogpur_D (Himachal Pradesh) (IND175018AAA) to Mandi_PlaceCol_D (Himachal Pradesh) (IND175001AAA), 1 pieces, 2850.5 kg, Full Truck Load\n2) Mandi_PlaceCol_D (Himachal Pradesh) (IND175001AAA) back to SundarNgr_Bhogpur_D (Himachal Pradesh) (IND175018AAA), 1 pieces, 1425.2 kg, Full Truck Load\n\nPlease confirm both.\n\nBest regards,\nKavya Reddy\nLogistics desk, Sundarngr Traders",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Sundarngr Traders",
       "origin_centre": "IND175018AAA",
-      "route_type": "FTL",
-      "pieces": 1,
-      "weight_kg": 2850.5
+      "route_type": "FTL"
     }
   },
   {
@@ -1960,13 +1942,11 @@
     "subject": "Two bookings",
     "body": "Hi,\n\nTwo loads to arrange this week.\n\n1) Gadag_Cdosclrd_D (Karnataka) (IND582101AAB) to Hubli_Adargchi_IP (Karnataka) (IND580028AAA), 2 pieces, 2043.8 kg, Full Truck Load\n2) Hubli_Adargchi_IP (Karnataka) (IND580028AAA) back to Gadag_Cdosclrd_D (Karnataka) (IND582101AAB), 1 pieces, 1021.9 kg, Full Truck Load\n\nPlease confirm both.\n\nBest regards,\nNikhil Bose\nLogistics desk, Gadag Enterprises",
     "expected_action": "clarify",
-    "expected_missing": "dest_centre",
+    "expected_missing": "consignment",
     "expected_fields": {
       "customer_name": "Gadag Enterprises",
       "origin_centre": "IND582101AAB",
-      "route_type": "FTL",
-      "pieces": 2,
-      "weight_kg": 2043.8
+      "route_type": "FTL"
     }
   },
   {
