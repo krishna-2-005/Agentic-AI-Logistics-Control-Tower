@@ -23,6 +23,7 @@ interface Option {
 
 /** The service reports a model by its internal name; a reader wants a phrase. */
 function friendlyModel(id: string): string {
+  if (/^v2_gbt_residual/i.test(id)) return "the v2 model reported in the results";
   if (/random_forest/i.test(id)) return "a random-forest model";
   if (/gbt|gradient/i.test(id)) return "a gradient-boosted model";
   if (/median/i.test(id)) return "this corridor's own median";

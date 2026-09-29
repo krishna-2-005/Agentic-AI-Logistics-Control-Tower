@@ -20,6 +20,7 @@ from src.common import config
 from src.report import export_web
 
 WEB_DATA = config.REPO_ROOT / "web" / "public" / "data"
+RAW = config.BENCHMARKS_RAW_DIR
 FREEZE = config.BENCHMARKS_DIR / "results_freeze_v3.json"
 
 pytestmark = pytest.mark.skipif(
@@ -81,29 +82,28 @@ def test_model_headline_matches_freeze(frozen) -> None:
     assert h["osrm_mae_min"] == pytest.approx(frozen["mae_osrm"], abs=0.01)
 
 
-def test_the_served_model_is_named_as_not_the_reported_one() -> None:
-    """D-053 is a caveat the site must carry, not a detail it may drop.
+def test_the_served_model_claim_is_backed_by_the_stream_validation() -> None:
+    """The site may say the reported model is the served one only with evidence.
 
-    The predictor scores with the Week 4 champion while the results page reports
-    a better model. If that sentence ever goes missing, the page starts implying
-    it is scoring with the number printed beside it.
-
-    The assertion is on the *substance*, deliberately: the note used to be
-    required to contain the string "D-053", which made this test fail the moment
-    the decision reference was taken off the public copy -- punishing a change
-    that improved the page while still allowing the caveat itself to be deleted.
-    A test on a citation is not a test on a claim.
+    Until WP-11 the predictor ran the Week 4 champion and this test required the page
+    to say so (D-053). The stream now serves v2, so the claim flipped -- and the test
+    flipped with it rather than being deleted: "served" must now be backed by
+    `w10_stream_validation_v2.json` showing every sampled leg identical, and the
+    fallback wording must still admit the weaker model if that file ever goes away.
     """
     h = _load("model.json")["data"]["headline"]
     assert h["served_model"], "no served model named"
-    assert h["served_model"] != h["model"], (
-        "the served and reported models now match; if that is real, this caveat "
-        "should be removed from the site rather than reworded"
-    )
-    note = h["served_note"].lower()
-    assert "earlier" in note or "weaker" in note, (
-        "the served-model note no longer says the live model is the weaker one"
-    )
+    validation = RAW / "w10_stream_validation_v2.json"
+    if h["served_model"] == h["model"]:
+        assert validation.exists(), "the site claims v2 is served with no validation file behind it"
+        report = json.loads(validation.read_text(encoding="utf-8"))
+        assert report["identical_predictions"] == report["legs"] >= 500
+        assert h["stream_equals_batch"] == {"identical": report["legs"], "legs": report["legs"]}
+    else:
+        note = h["served_note"].lower()
+        assert "earlier" in note or "weaker" in note, (
+            "the served-model note no longer says the live model is the weaker one"
+        )
 
 
 # ── the corridor audit reproduces exactly ────────────────────────────────────
