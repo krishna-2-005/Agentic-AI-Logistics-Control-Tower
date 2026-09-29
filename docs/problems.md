@@ -1398,6 +1398,25 @@ aw\delhivery_data.csv -> download it — see
   real fix; until it lands, a green CI run is the only evidence that a fresh
   install still works, which is an argument for CI rather than against floors.
 
+### P-66 · The stateful stream had no watermark, and said so only at run time
+**Post-v1.0 (WP-11) · Mounika · resolved**
+
+- **Symptom.** The first run of the v2 stream failed inside the Python worker on its first
+  micro-batch: `[CANNOT_WITHOUT] Cannot get event time watermark timestamp without setting
+  watermark before applyInPandasWithState`. The plan printed with the error showed
+  `EventTimeWatermark ... event_ts, 1 hours` sitting right there in it.
+- **Cause.** `keyed_events` declared the watermark on `event_ts` and then dropped the column,
+  since the state function reads `event_time` as a string. Spark attaches the watermark to the
+  column, not to the DataFrame; once the column is projected away, the stateful operator
+  downstream has no event-time attribute and so no watermark. Nothing complains when the plan
+  is built, only when the state function first asks for the watermark.
+- **Fix.** `event_ts` stays in the operator's input, with a comment on why. The watermark now
+  reaches the state function, which uses it to prune the 7-day buffer.
+- **Also found in the same package.** `fact_event` briefly required `created_hour`, which
+  broke the one caller that builds facts without it (`tests/test_threshold_sensitivity.py`).
+  Both new fact fields are optional in the schema, and the function now treats them that way.
+- **Cost.** About 15 minutes. Found because the smoke run went through the real
+  `readStream`, not a static DataFrame, which would not have had a watermark to lose.
 
 ## Process and tooling
 
