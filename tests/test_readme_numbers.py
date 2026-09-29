@@ -120,14 +120,17 @@ def test_the_as_of_alert_precision_is_the_one_reported(readme) -> None:
 def test_closed_caveats_are_not_still_claimed(readme) -> None:
     """A caveat that has been closed and left in place understates the project.
 
-    Kafka has met a live broker and the MCP server has been driven over stdio;
-    both sentences were true once and are not any more.
+    Kafka has met a live broker, the MCP server has been driven over stdio, and
+    the stream serves the reported model (D-070); each sentence was true once and
+    is not any more.
     """
     stale = [
         "has never reached a live broker",
         "never met a broker",
         "has not been driven by an MCP client",
         "the MCP server has never",
+        "not yet served by the stream",
+        "serving the reported model in the stream (d-053",
     ]
     found = [s for s in stale if s.lower() in readme.lower()]
     assert not found, f"the README still carries closed caveats: {found}"
@@ -136,13 +139,13 @@ def test_closed_caveats_are_not_still_claimed(readme) -> None:
 def test_open_caveats_are_still_stated(readme) -> None:
     """The reverse failure: dropping a limitation that is still true.
 
-    G-07 (no real alert sent) and D-053 (reported model is not the served model)
-    are both open. Removing either would make the README describe a better
-    project than the repository contains.
+    G-07 (no real alert sent) is open. Removing it would make the README describe a
+    better project than the repository contains. D-053 closed with WP-11, so what is
+    required in its place is the claim that replaced it, with its evidence file.
     """
     lowered = readme.lower()
-    assert "d-053" in lowered or "not yet served" in lowered, (
-        "the served-vs-reported model gap (D-053) is no longer stated"
+    assert "w10_stream_validation_v2.json" in lowered, (
+        "the README says nothing, with evidence, about which model the stream serves"
     )
     assert "unconfigured" in lowered or "g-07" in lowered, (
         "the alert channel caveat (G-07) is no longer stated"

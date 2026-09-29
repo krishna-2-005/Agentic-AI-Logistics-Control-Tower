@@ -1,0 +1,185 @@
+{
+  "model": "v2_gbt_residual_absolute_step1 (the reported model, D-050)",
+  "served_by_the_streaming_job": true,
+  "history": "event-time state: applyInPandasWithState over five key types, watermark 1 hour, state persisted in the checkpoint's state store",
+  "legs": 500,
+  "identical_predictions": 500,
+  "identical_rate": 1.0,
+  "max_abs_difference": 0.0,
+  "cold_corridors_in_sample": 57,
+  "all_legs": {
+    "legs": 26369,
+    "scored_by_stream": 26369,
+    "identical_predictions": 26369,
+    "max_abs_difference": 0.0
+  },
+  "history_features_compared": 26,
+  "history_features_differing_legs": 0,
+  "feature_agreement": {
+    "corr_n_prior": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_mean_log_ratio": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_std_log_ratio": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_mean_gap_min": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_last_log_ratio": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_hours_since_last": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "src_n_prior": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "src_mean_log_ratio": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "src_std_log_ratio": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "src_mean_gap_min": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "src_last_log_ratio": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "src_hours_since_last": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "dst_n_prior": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "dst_mean_log_ratio": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "dst_std_log_ratio": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "dst_mean_gap_min": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "dst_last_log_ratio": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "dst_hours_since_last": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_median_gap_min": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_p90_gap_min": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_iqr_gap_min": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_std_gap_min": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_mean_gap_7d": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "corr_n_prior_7d": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "src_dwell_by_hour_min": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    },
+    "dst_dwell_by_hour_min": {
+      "differ": 0,
+      "max_abs_difference": 0.0
+    }
+  },
+  "test_split": {
+    "legs": 5274,
+    "stream_mae_min": 30.9048,
+    "batch_mae_min": 30.9048,
+    "reported_mae_min": 30.9,
+    "stream_matches_reported": true
+  },
+  "restart": {
+    "runs": [
+      {
+        "run": "first",
+        "files": 7,
+        "batches": 4,
+        "events": 28000,
+        "queries": 14286,
+        "facts_dropped": 0,
+        "facts_applied": 13714,
+        "out_of_order": 0,
+        "alerts": 7425,
+        "wall_seconds": 387.82,
+        "events_per_second": 72.2,
+        "scoring_seconds": 376.26,
+        "scoring_rate_eps": 74.4,
+        "stage_seconds": {
+          "assemble": 1.86,
+          "collect_state": 161.51,
+          "prepare_and_score": 106.54,
+          "score": 98.39,
+          "write": 0.24,
+          "write_scored": 3.68
+        }
+      },
+      {
+        "run": "resumed",
+        "files": 7,
+        "batches": 4,
+        "events": 24738,
+        "queries": 12083,
+        "facts_dropped": 0,
+        "facts_applied": 12655,
+        "out_of_order": 0,
+        "alerts": 6201,
+        "wall_seconds": 341.39,
+        "events_per_second": 72.5,
+        "scoring_seconds": 333.84,
+        "scoring_rate_eps": 74.1,
+        "stage_seconds": {
+          "assemble": 1.51,
+          "collect_state": 131.63,
+          "prepare_and_score": 100.05,
+          "score": 93.7,
+          "write": 0.21,
+          "write_scored": 3.45
+        }
+      }
+    ],
+    "note": "the second run is a new query on the first run's checkpoint; its queries read history only the restored state store could supply"
+  },
+  "latency": "not measured here: tick files are written before the job starts",
+  "replaces": "w8_stream_validation_v2.json tested the event format only (history read from features_v2 on both sides); this file tests the running job",
+  "generated_at": "2026-09-29T23:31:51+05:30"
+}
