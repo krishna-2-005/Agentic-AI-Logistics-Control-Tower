@@ -465,12 +465,31 @@ def export_model(out: Path, freeze: dict) -> tuple[str, int]:
         "delta_vs_median_min": _num(r.get("delta_vs_median_min"), 2),
     } for _, r in df.iterrows()]
 
-    payload = {
-        "headline": {
-            "model": "v2_gbt_residual_absolute_step1",
-            "mae_min": _num(freeze.get("model_v2_mae", {}).get("value"), 2),
-            "baseline_mae_min": _num(freeze.get("median_bar_mae", {}).get("value"), 2),
-            "osrm_mae_min": _num(freeze.get("mae_osrm", {}).get("value"), 2),
+    # The site says the reported model is the served one only when the running
+    # stream has been shown to reproduce it (WP-11, D-053 closed). Without that file
+    # it falls back to the old caveat rather than to an unearned claim.
+    served_path = RAW / "w10_stream_validation_v2.json"
+    served = json.loads(served_path.read_text(encoding="utf-8")) if served_path.exists() else {}
+    proven = bool(served) and served.get("identical_predictions") == served.get("legs")
+    headline = {
+        "model": "v2_gbt_residual_absolute_step1",
+        "mae_min": _num(freeze.get("model_v2_mae", {}).get("value"), 2),
+        "baseline_mae_min": _num(freeze.get("median_bar_mae", {}).get("value"), 2),
+        "osrm_mae_min": _num(freeze.get("mae_osrm", {}).get("value"), 2),
+    }
+    if proven:
+        headline.update({
+            "served_model": "v2_gbt_residual_absolute_step1",
+            "served_note": (
+                "The live stream and the predictor run the same model the results "
+                "report. Each lane's rolling history is rebuilt from events as they "
+                f"arrive, and {served['identical_predictions']} of {served['legs']} "
+                "sampled legs score exactly as they do in the offline evaluation."
+            ),
+            "stream_equals_batch": {"identical": served["identical_predictions"], "legs": served["legs"]},
+        })
+    else:
+        headline.update({
             "served_model": "an earlier random-forest model",
             "served_note": (
                 "The best model needs a rolling view of each lane's recent "
@@ -478,14 +497,12 @@ def export_model(out: Path, freeze: dict) -> tuple[str, int]:
                 "predictor runs an earlier and slightly weaker model and names "
                 "it on every answer."
             ),
-        },
-        "slices": slices,
-    }
-    return _write(out, "model.json", _envelope(
-        ["benchmarks/raw/w7_model_metrics_v2_stepsize.csv",
-         "benchmarks/results_freeze_v3.json"],
-        payload,
-    ))
+        })
+    payload = {"headline": headline, "slices": slices}
+    sources = ["benchmarks/raw/w7_model_metrics_v2_stepsize.csv", "benchmarks/results_freeze_v3.json"]
+    if proven:
+        sources.append("benchmarks/raw/w10_stream_validation_v2.json")
+    return _write(out, "model.json", _envelope(sources, payload))
 
 
 def export_agents(out: Path, freeze: dict) -> list[tuple[str, int]]:

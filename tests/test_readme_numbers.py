@@ -120,8 +120,9 @@ def test_the_as_of_alert_precision_is_the_one_reported(readme) -> None:
 def test_closed_caveats_are_not_still_claimed(readme) -> None:
     """A caveat that has been closed and left in place understates the project.
 
-    Kafka has met a live broker and the MCP server has been driven over stdio;
-    both sentences were true once and are not any more.
+    Kafka has met a live broker, the MCP server has been driven over stdio, the
+    stream serves the reported model (D-070) and alerts have reached a person
+    (D-071); each sentence was true once and is not any more.
     """
     stale = [
         "has never reached a live broker",
@@ -130,6 +131,8 @@ def test_closed_caveats_are_not_still_claimed(readme) -> None:
         "the MCP server has never",
         "implemented and unconfigured",
         "only the file channel has sent anything",
+        "not yet served by the stream",
+        "serving the reported model in the stream (d-053",
     ]
     found = [s for s in stale if s.lower() in readme.lower()]
     assert not found, f"the README still carries closed caveats: {found}"
@@ -138,13 +141,13 @@ def test_closed_caveats_are_not_still_claimed(readme) -> None:
 def test_open_caveats_are_still_stated(readme) -> None:
     """The reverse failure: dropping a limitation that is still true.
 
-    D-053 (reported model is not the served model) is open on this branch.
-    G-07 closed with WP-06, so what is required in its place is the claim that
-    replaced it, with its evidence file.
+    G-07 and D-053 both closed (WP-06, WP-11), so what is required in place of each
+    is the claim that replaced it, with its evidence file. A caveat that is still true
+    must not be dropped either; this test grows a line when one is opened.
     """
     lowered = readme.lower()
-    assert "d-053" in lowered or "not yet served" in lowered, (
-        "the served-vs-reported model gap (D-053) is no longer stated"
+    assert "w10_stream_validation_v2.json" in lowered, (
+        "the README says nothing, with evidence, about which model the stream serves"
     )
     assert "f2_alert_channel_live.json" in lowered, (
         "the README says nothing, with evidence, about the live alert channel (G-07)"

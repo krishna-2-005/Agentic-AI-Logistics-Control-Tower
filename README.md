@@ -53,7 +53,7 @@ invoices, each measured against a trivial policy.
 | **Demo** | [`docs/demo_script.md`](docs/demo_script.md) — ten minutes, with what to do when each beat fails |
 | **Public site** | **[control-tower-mu-rouge.vercel.app](https://control-tower-mu-rouge.vercel.app)** — Next.js, static, on Vercel; rebuilt from GitHub on every push ([`docs/deploy_web.md`](docs/deploy_web.md)) |
 | **Work on the site** | `python -m src.report.export_web` then `cd web && pnpm install && pnpm dev` |
-| **Still open** | the four live pages need the API Space (W-01); extraction rows 21-40 (daily LLM quota); serving the reported model in the stream (D-053, Phase 3) |
+| **Still open** | the four live pages need the API Space (W-01); extraction rows 21-40 (daily LLM quota) |
 
 ---
 
@@ -336,6 +336,7 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | Best model MAE vs OSRM MAE | v2 GBT on the corridor-median residual **30.90 min** vs OSRM 107.1 min — 71% lower, and 6.5% under the corridor-median baseline (33.04 min) it is judged against, winning on all 14 slices (D-050). Week 4's Random Forest (36.9 min) is now an ablation row | [`benchmarks/raw/w7_model_metrics_v2_stepsize.csv`](benchmarks/raw/w7_model_metrics_v2_stepsize.csv), [`w4_model_metrics.csv`](benchmarks/raw/w4_model_metrics.csv) |
 | Sustained streaming throughput | all 52,738 replayed events scored, nothing dropped: **886 events/sec** produced, **740 events/sec** of saturated scoring, event-to-alert **p50 28.9 s** | [`benchmarks/raw/w5_stream_throughput_full.json`](benchmarks/raw/w5_stream_throughput_full.json) |
 | Stream equals batch | **500 of 500** predictions bit-identical across the batch and event paths | [`benchmarks/raw/w5_stream_validation_report.json`](benchmarks/raw/w5_stream_validation_report.json) |
+| Stream serves the reported model | **500 of 500** sampled legs (26,369 of 26,369 overall) scored by the running v2 stream identically to batch; stream test MAE 30.90 | [`benchmarks/raw/w10_stream_validation_v2.json`](benchmarks/raw/w10_stream_validation_v2.json) |
 | Delay-threshold sensitivity | 2.00× holds: the best classifier's MCC barely moves across thresholds (0.507→0.536) while the alert volume falls from 98% of legs to 49%. The stream's own flag is the weakest real classifier (MCC 0.477) | [`benchmarks/raw/w5_threshold_sensitivity.csv`](benchmarks/raw/w5_threshold_sensitivity.csv) |
 | Order Entry Agent evaluation | **50 of 50** authored cases run, **50 correct**; 0 orders filed on invented values, 0 needless questions | [`benchmarks/raw/w5_order_eval_summary.json`](benchmarks/raw/w5_order_eval_summary.json) |
 | Lifecycle, end to end (Gate 6) | 10 emails, 3 distinct paths, no human in the middle: 5 stopped at a question, 3 booked and unflagged, 2 booked → flagged → notified → ticketed | [`benchmarks/raw/w6_orchestrator_runs.json`](benchmarks/raw/w6_orchestrator_runs.json) |
@@ -371,7 +372,10 @@ broker** — Apache Kafka 4.1.2, natively on the JVM, no Docker (`scripts/kafka_
 and alerted on exactly the same 1,347 legs as the file source (`benchmarks/raw/
 w7_kafka_source_equivalence.json`). The MCP server has been driven by a real client over
 stdio — 13 tools, 8 calls, 0 errors (`benchmarks/raw/w7_mcp_stdio_transcript.json`). The
-adopted Week 7 model is reported but not yet served by the stream (D-053).
+stream and the what-if predictor now serve the reported v2 model on event-time state (D-070,
+closing D-053). The cost is throughput: about 74 events/s of busy time on this laptop against
+the Week 4 path's 740, which is enough for the real event rate but not for a 60-second replay
+of the whole window.
 
 ---
 

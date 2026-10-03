@@ -2117,7 +2117,7 @@ outline exists (G-09, this week).
 
 Evidence: `https://iccci.org/sub.html` (read 2026-09-18).
 
-## D-053 · Serving the adopted model needs rolling state, not a lookup; it moves to Phase 3 — `DECIDED`
+## D-053 · Serving the adopted model needs rolling state, not a lookup; it moves to Phase 3 — `CLOSED by D-070`
 **Week 8 · Mounika · execution plan v3.1 §3, following D-050**
 
 D-050 left the serving champion on the Week 4 model and called wiring the adopted model
@@ -2378,6 +2378,57 @@ and the UI shows the quota state rather than an error.** This costs less than it
 the assistant's routing and retrieval are code either way (D-041), so the extractive route
 returns the same facts in blunter prose. The frontend's checkbox is opt-in and labelled
 with the cap.
+
+## D-070 · The stream serves the reported model on event-time state; D-053 closes — `DECIDED`
+**Post-v1.0 (WP-11) · Mounika · closes D-053**
+
+D-053 scoped serving the v2 model as two pieces: a `hub|bucket` history the job did not
+join, and stateful windowed aggregation for the 7-day pair. Both are built. It went further
+than that scope in one respect, deliberately.
+
+**Decided:**
+
+1. **All history is event-time state, not only the two pieces D-053 named.** Every event is
+   keyed five ways (corridor, source hub, destination hub, and both hub-and-part-of-day
+   pairs) and folded through `applyInPandasWithState`. A fact updates the state of the keys
+   it belongs to; a query reads that state as of its own event time. Keeping the other 21
+   history features on a snapshot would have left D-054's replay leak in the served path,
+   and a model scored half on as-of history and half on end-of-data history reproduces
+   nothing.
+2. **One implementation, three callers.** The state is plain Python
+   (`src/streaming/state.py`). The stream, the what-if predictor and the tests all fold
+   events through it. It repeats Spark's arithmetic order (sequential sums, the
+   `CentralMomentAgg` update for the sample std, Spark's percentile interpolation, the
+   7-day RANGE frame over whole seconds) so that it equals the batch tables bit for bit,
+   not approximately.
+3. **v2 is the default; the champion path stays behind `--model champion`.** The W5 and W7
+   throughput files were measured on it, and `src.streaming.throughput` pins it so re-runs
+   still measure what those files describe.
+4. **Facts carry two optional fields** (`created_hour`, `dwell_min`). The schema change is
+   additive, and events and alerts written before WP-11 still validate. Alerts gain an
+   optional `model_id`.
+5. **The predictor is strictly as-of the departure asked about.** This replaces the Week 4
+   simplification of reading each key's newest snapshot whatever the date.
+
+**Evidence** (`benchmarks/raw/w10_stream_validation_v2.json`, from
+`python -m src.streaming.validate_v2`). The full 52,738-event replay went through the running
+job in two runs over one checkpoint, so the second half could score correctly only from state
+restored out of the state store:
+
+| check | result |
+|---|---|
+| sampled legs identical to batch (the acceptance test) | **500 of 500**, max difference 0.0 |
+| all legs identical to batch | **26,369 of 26,369** |
+| history features differing from `features_v2`, any leg, any of 26 columns | **0** |
+| test-split MAE from the stream's own predictions | **30.90** (30.9048), the reported figure |
+| facts dropped / events out of order | 0 / 0 |
+
+**The cost, stated.** The stateful stage runs every micro-batch. On this laptop the resumed
+run scored about 74 events/s of busy time, where the champion path managed 740 on the full
+replay (`w5_stream_throughput_full.json`). The replay offers about 880 events/s, so the v2
+stream does not keep up with a 60-second replay of the whole window. It keeps up with the real
+one: 26 days of events arrive at well under one event per second. Both numbers stay in the
+record; neither replaces the other.
 
 ## D-071 · Alerts reach people: Telegram and email run live, receipts kept; G-07 closes — `DECIDED`
 **Post-v1.0 (WP-06) · Mounika · closes G-07, D-039's channel caveat**

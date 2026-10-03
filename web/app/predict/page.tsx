@@ -7,7 +7,7 @@ import { num } from "@/lib/format";
 
 export const metadata: Metadata = {
   title: "Delay predictor",
-  description: "Score a leg against the model the streaming pipeline serves.",
+  description: "Score a leg against the reported model the streaming pipeline serves.",
 };
 
 export default function PredictPage() {
@@ -58,16 +58,25 @@ export default function PredictPage() {
       />
 
       <Section>
-        <Notice
-          tone="warn"
-          title="This page uses an earlier model than the one in the results"
-        >
-          The best model needs a rolling view of each corridor&apos;s recent
-          history, which the live service cannot build yet. So predictions here
-          come from an earlier, slightly weaker model — about six minutes less
-          accurate than the {num(model.data.headline.mae_min, 2)}-minute figure
-          on the results page. Every answer says which model produced it.
-        </Notice>
+        {model.data.headline.served_model === model.data.headline.model ? (
+          <Notice tone="info" title="Scored by the model in the results">
+            Predictions here come from the same model behind the{" "}
+            {num(model.data.headline.mae_min, 2)}-minute figure on the results
+            page. Each lane&apos;s rolling history is rebuilt from events as they
+            arrive, and{" "}
+            {model.data.headline.stream_equals_batch?.identical ?? 0} of{" "}
+            {model.data.headline.stream_equals_batch?.legs ?? 0} sampled legs
+            score exactly as they do offline. Every answer says which model
+            produced it.
+          </Notice>
+        ) : (
+          <Notice
+            tone="warn"
+            title="This page uses an earlier model than the one in the results"
+          >
+            {model.data.headline.served_note}
+          </Notice>
+        )}
       </Section>
 
       <Predictor corridors={options} />

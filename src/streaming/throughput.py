@@ -128,6 +128,10 @@ def measure_step(
             duration_seconds=duration + drain_seconds,
             max_files_per_trigger=max_files_per_trigger,
             spark=spark,
+            # The W5 and W7 throughput files were measured on this path. The stream
+            # now serves v2 (WP-11); its rate is recorded with its validation in
+            # `w10_stream_validation_v2.json` rather than under these files' names.
+            model="champion",
         )
 
     thread = threading.Thread(target=_run_job, name=f"stream-job-step-{step}", daemon=True)
