@@ -77,7 +77,8 @@ def build_alert_feed(alerts_dir: Path, out: Path = ALERT_FEED, meta_out: Path = 
             "excess_ratio": round(ratio, 2) if ratio != float("inf") else None,
             "severity": severity_for(ratio, found),
             "n_legs": found.audit_n_legs or 0,
-            "event_time": alert["event_time"].isoformat(),
+            # No event time: an alert is model output, but its timestamp is the 2018
+            # record's, and the public files carry aggregates and model output only (D-073).
             "model_id": alert.get("model_id") if isinstance(alert.get("model_id"), str) else None,
         })
     out.parent.mkdir(parents=True, exist_ok=True)

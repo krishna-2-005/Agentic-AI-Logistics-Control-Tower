@@ -1441,6 +1441,24 @@ aw\delhivery_data.csv -> download it — see
 - **Cost.** About 20 minutes, including the profile that pointed at `collect` instead of the
   model.
 
+### P-68 · The first deploy would have published the dataset, and a paywall stopped it
+**Post-v1.0 (WP-04) · Mounika · resolved before anything was published**
+
+- **Symptom.** None visible. The deploy script staged `facts.jsonl.gz` (26,369 fact events:
+  trip ids, centre codes, finish times, outcomes) to upload into a public Hugging Face Space,
+  whose files anyone can download. Creating the Space failed with a 402 before any upload.
+- **Cause.** The file was built to make the predictor independent of the parquet caches,
+  and was treated as a serving artefact like the model. It is the dataset in another shape.
+  `DATA_LICENSE.md` says the dataset is not redistributed, and nothing in the deploy script
+  checked against it. A scan for *secrets* was run before the upload and passed, because
+  records are not secrets.
+- **Fix.** The facts file is gone. The host serves from aggregates
+  (`src/ml/history_snapshot.py`, D-073), proved equal to the fold. `scripts/build_api_bundle.py`
+  now fails if a trip id, leg id or event time appears in any public file, which turns the
+  licence from a sentence into a check.
+- **What it cost.** Nothing was published, but only by luck, and that is the lesson. The
+  licence check belongs in the script that publishes, not in someone remembering to look.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
