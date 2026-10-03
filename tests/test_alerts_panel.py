@@ -190,7 +190,11 @@ def test_the_message_warns_when_the_prediction_had_no_history():
     assert "no history yet for the corridor" in bot.format_message(row)
 
 
-def test_an_unconfigured_channel_refuses_before_sending_anything():
+def test_an_unconfigured_channel_refuses_before_sending_anything(monkeypatch):
+    # Blank the configured credentials: an empty argument falls back to `.env`, and a
+    # machine that has a real bot configured would otherwise never see the refusal.
+    monkeypatch.setattr(bot.config, "TELEGRAM_BOT_TOKEN", "")
+    monkeypatch.setattr(bot.config, "TELEGRAM_CHAT_ID", "")
     with pytest.raises(RuntimeError, match="TELEGRAM_BOT_TOKEN"):
         bot.TelegramChannel(token="", chat_id="").check()
     with pytest.raises(RuntimeError, match="SMTP_HOST"):
