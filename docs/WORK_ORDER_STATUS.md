@@ -12,7 +12,7 @@ A package is **done** only when the evidence named in its Acceptance row exists 
 | 03 | Public site phase 1 — export, scaffold, Overview, Network, Corridors, About | **done, ahead of order** | — | `src/report/export_web.py`, `web/`, production URL, `tests/test_web_numbers.py` (21 green) |
 | 04 | Public API Space — read-only API, TMS isolation, rate limits, predict | not started | **HF token + Space** (HUMAN_ACTIONS §2.2) | `src/api/app.py`, `benchmarks/raw/f1_api_latency.json`, D-064 |
 | 05 | Public site phase 2 — live pages, Playwright, Lighthouse | **partly done** | WP-04 for the live half; user test needs three people | pages built; `web/e2e/` and Lighthouse CI outstanding |
-| 06 | Real alert channel + monitoring | not started | **Telegram token** (HUMAN_ACTIONS §2.5), UptimeRobot | `benchmarks/raw/f2_alert_channel_live.json` |
+| 06 | Real alert channel + monitoring | **alert channel done; monitoring waits** | UptimeRobot needs the WP-04 API URL to watch | `f2_alert_channel_live.json`: 3 real stream alerts on Telegram + 3 by email, 0 failures, provider receipts kept; D-071 closes G-07 |
 | 07 | One measured LLM decision + approval queue + cost traces | not started | 2 labellers × 2 h (HUMAN_ACTIONS §3.2) | `benchmarks/raw/w9_llm_decision_eval.json`, D-065, D-067 |
 | 08 | Real documents for the doc agent | not started | 10 phone photos (HUMAN_ACTIONS §3.4) | `benchmarks/raw/w9_doc_eval_real.json` |
 | 09 | Code hygiene — ruff, mypy, LF, lock file | **mostly done** | `docker compose` needs Docker Desktop; module splitting deferred | `requirements.lock`, `scripts/lock_requirements.sh`, ruff + mypy + locked-install CI jobs, all green |

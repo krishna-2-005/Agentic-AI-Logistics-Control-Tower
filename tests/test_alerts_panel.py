@@ -230,3 +230,68 @@ def test_a_corrupt_state_file_does_not_stop_the_bot(tmp_path):
     state = tmp_path / "state.json"
     state.write_text("{broken", encoding="utf-8")
     assert bot.load_seen(state) == set()
+
+
+# ── WP-06: a send leaves a receipt, and the record reaches no one ────────────
+def test_a_telegram_send_returns_what_the_api_said(monkeypatch):
+    import httpx
+
+    class Reply:
+        status_code = 200
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"ok": True, "result": {"message_id": 42, "date": 1790000000,
+                                           "chat": {"id": 7559318489, "type": "private"}}}
+
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: Reply())
+    receipt = bot.TelegramChannel(token="t", chat_id="7559318489").send("hello")
+    assert receipt["message_id"] == 42 and receipt["chat_type"] == "private"
+    assert "7559318489" not in json.dumps(receipt)
+
+
+def test_a_telegram_reply_that_is_not_ok_counts_as_a_failure(monkeypatch):
+    import httpx
+
+    class Reply:
+        status_code = 200
+
+        def raise_for_status(self):
+            return None
+
+        def json(self):
+            return {"ok": False, "description": "chat not found"}
+
+    monkeypatch.setattr(httpx, "post", lambda *a, **k: Reply())
+    with pytest.raises(RuntimeError, match="chat not found"):
+        bot.TelegramChannel(token="t", chat_id="1").send("hello")
+
+
+def test_identifiers_are_masked_enough_to_tell_apart_not_to_reach():
+    assert bot.mask("someone@gmail.com") == "so***@gmail.com"
+    assert bot.mask("7559318489") == "***8489"
+    assert bot.mask("12") == "***"
+
+
+def test_the_record_appends_each_channel_and_names_what_delivered(tmp_path):
+    record = tmp_path / "live.json"
+    for channel, failed in (("telegram", 0), ("email", 1)):
+        result = bot.SendResult(channel=channel, sent=2, failed=failed)
+        result.receipts = [{"alert_id": "a1", "message_id": 1}]
+        bot.record_run(result, record)
+    saved = json.loads(record.read_text(encoding="utf-8"))
+    assert [r["channel"] for r in saved["runs"]] == ["telegram", "email"]
+    assert saved["channels_delivered"] == ["telegram"]
+
+
+def test_a_run_keeps_one_receipt_per_alert_sent(tmp_path):
+    sink, state, log_file = tmp_path / "alerts", tmp_path / "state.json", tmp_path / "out.log"
+    _write(sink, 0, [_alert(f"a{i}", predicted_gap_min=100.0 + i) for i in range(3)])
+    bot.CHANNELS["file"] = lambda: bot.FileChannel(log_file)
+    try:
+        result = bot.run("file", top=2, alerts_dir=sink, state_path=state)
+    finally:
+        bot.CHANNELS["file"] = bot.FileChannel
+    assert [r["alert_id"] for r in result.receipts] == ["a2", "a1"]

@@ -128,6 +128,8 @@ def test_closed_caveats_are_not_still_claimed(readme) -> None:
         "never met a broker",
         "has not been driven by an MCP client",
         "the MCP server has never",
+        "implemented and unconfigured",
+        "only the file channel has sent anything",
     ]
     found = [s for s in stale if s.lower() in readme.lower()]
     assert not found, f"the README still carries closed caveats: {found}"
@@ -136,16 +138,16 @@ def test_closed_caveats_are_not_still_claimed(readme) -> None:
 def test_open_caveats_are_still_stated(readme) -> None:
     """The reverse failure: dropping a limitation that is still true.
 
-    G-07 (no real alert sent) and D-053 (reported model is not the served model)
-    are both open. Removing either would make the README describe a better
-    project than the repository contains.
+    D-053 (reported model is not the served model) is open on this branch.
+    G-07 closed with WP-06, so what is required in its place is the claim that
+    replaced it, with its evidence file.
     """
     lowered = readme.lower()
     assert "d-053" in lowered or "not yet served" in lowered, (
         "the served-vs-reported model gap (D-053) is no longer stated"
     )
-    assert "unconfigured" in lowered or "g-07" in lowered, (
-        "the alert channel caveat (G-07) is no longer stated"
+    assert "f2_alert_channel_live.json" in lowered, (
+        "the README says nothing, with evidence, about the live alert channel (G-07)"
     )
 
 
