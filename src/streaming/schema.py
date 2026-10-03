@@ -97,7 +97,12 @@ def validate_event(event: dict, schema: dict) -> None:
 
 def with_od_end_time(spark, legs, trips_path=config.TRIPS_V1):
     """Join each leg's real finish time from `trips_v1`, on the same `leg_id` Stage 4 builds
-    (`trip_uuid|date_format(od_start_time)|corridor_id`, in the session time zone)."""
+    (`trip_uuid|date_format(od_start_time)|corridor_id`, in the session time zone).
+
+    The leg's dwell rides along: `start_scan_to_end_scan - actual_time`, the definition
+    `reconstruct.py` and `features_v2.dwell_by_hour` both use. It is outcome data, known
+    only once the leg is over, so it goes on the fact event and never on the query.
+    """
     from pyspark.sql import functions as F
 
     ends = (
@@ -105,6 +110,7 @@ def with_od_end_time(spark, legs, trips_path=config.TRIPS_V1):
         .select(
             F.concat_ws("|", "trip_uuid", F.date_format("od_start_time", "yyyyMMddHHmmss"), "corridor_id").alias("leg_id"),
             "od_end_time",
+            (F.col("start_scan_to_end_scan") - F.col("actual_time")).cast("double").alias("dwell_min"),
         )
         .dropDuplicates(["leg_id"])
     )
@@ -159,7 +165,7 @@ def fact_event(row: pd.Series) -> dict:
     # (`src.ml.baselines.delay_label`, Lahari's W5 D3-D4) -- the training label, the
     # thresholded predictions and this event can no longer disagree about it.
     is_delayed = int(delay_label(row["gap_min"], row["planned_min"]))
-    return {
+    event = {
         "event_id": f"fact-{row['leg_id']}",
         "kind": "fact",
         "event_time": pd.Timestamp(od_end_time).isoformat(),
@@ -172,6 +178,17 @@ def fact_event(row: pd.Series) -> dict:
         "log_gap_ratio": float(row["log_gap_ratio"]),
         "is_delayed": is_delayed,
     }
+    # The finished leg's own creation hour: `dwell_by_hour` files its dwell under the
+    # part of the day the leg was *created* in, so the stateful stream needs it to find
+    # the same (hub, bucket) key the batch table used (WP-11). Optional, like dwell:
+    # callers that build facts for other purposes (label checks, the W6 replay) need not.
+    hour = row.get("created_hour")
+    if hour is not None and not pd.isna(hour):
+        event["created_hour"] = int(hour)
+    dwell = row.get("dwell_min")
+    if dwell is not None and not pd.isna(dwell):
+        event["dwell_min"] = float(dwell)
+    return event
 
 
 def generate_examples(n: int) -> list[dict]:

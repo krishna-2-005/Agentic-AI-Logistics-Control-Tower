@@ -81,7 +81,7 @@ export interface PredictResponse {
   predicted_gap_min: number;
   predicted_total_min: number;
   is_delayed: boolean;
-  /** Which model actually scored this — D-053 means it is not the reported one. */
+  /** Which model actually scored this — the reported v2 model since WP-11 closed D-053. */
   model_id: string;
   model_note?: string;
   cold_start: boolean;

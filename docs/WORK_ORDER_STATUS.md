@@ -17,7 +17,7 @@ A package is **done** only when the evidence named in its Acceptance row exists 
 | 08 | Real documents for the doc agent | not started | 10 phone photos (HUMAN_ACTIONS §3.4) | `benchmarks/raw/w9_doc_eval_real.json` |
 | 09 | Code hygiene — ruff, mypy, LF, lock file | **mostly done** | `docker compose` needs Docker Desktop; module splitting deferred | `requirements.lock`, `scripts/lock_requirements.sh`, ruff + mypy + locked-install CI jobs, all green |
 | 10 | Paper readiness — model card, data card, ablations, related work | not started | depends on WP-02 and WP-07 numbers | `docs/model_card.md`, `docs/data_card.md` |
-| 11 | Serve the v2 model in the stream (close D-053) | not started | nothing | `benchmarks/raw/w10_stream_validation_v2.json` |
+| 11 | Serve the v2 model in the stream (close D-053) | **done** | — | `w10_stream_validation_v2.json`: 500/500 sampled, 26,369/26,369 overall, 0 of 26 history features differ, stream test MAE 30.90, resumed from a restored state store; `src/streaming/state.py`, D-070, Predict page names v2 |
 | 12 | Demo video, screenshots, README hero, social preview | not started | recording + voice by the team | `docs/demo_video_script.md`, README hero |
 
 ---

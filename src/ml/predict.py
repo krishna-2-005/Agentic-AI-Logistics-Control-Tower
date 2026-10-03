@@ -1,28 +1,22 @@
-"""What-if delay prediction (execution plan W4 D5) -- the one place the dashboard
-starts a SparkSession, per D-034's documented exception to D-009.
+"""What-if delay prediction (execution plan W4 D5, served model switched by WP-11) -- the
+one place the dashboard starts a SparkSession, per D-034's documented exception to D-009.
 
     python -m src.ml.predict --corridor IND208012AAA>IND209304AAA \
         --planned-min 593 --planned-km 19.8 --route-type FTL \
         --departure "2018-09-20 14:30"
 
-Loads the champion `PipelineModel` (Mounika's auto-retrain script promotes it,
-D-029) and looks up the corridor's and both hubs' most recent as-of history straight
-from `features_v1`, in the same Spark session -- not a second, independently
-recomputed history. Reusing Stage 4's own numbers rather than a second cached copy
-is the same reasoning D-029 gives for calling `src.ml.models.run()` instead of
-reimplementing it, applied one level further downstream.
+Scores with the model the paper reports -- the v2 residual GBT (D-050) -- and says so on
+every answer (`model_id`). Until WP-11 this page ran the Week 4 champion, because the
+v2 features need history a snapshot lookup cannot give (D-053).
 
-**A documented simplification, not a rigorous backtest.** The history looked up is
-each key's single *most recent* known snapshot in `features_v1`, regardless of the
-departure date/time the form is asking about. For a departure after the dataset's
-observation window (the intended use -- "what if I ship this today") that is exactly
-right: nothing has happened since. For a hypothetical departure date *inside* the
-window, this can hand the model a snapshot that is technically from after that date,
-which the batch pipeline's own as-of join (D-020) would never do. Accepted here
-because rebuilding a live as-of join for one form submission would mean re-deriving
-Stage 4's entire logic a second time (the exact duplication D-029 already avoided
-once) for a page whose purpose is illustrating the model, not re-litigating D-020's
-leakage guarantee.
+**History is strictly as of the departure asked about.** Every leg that had *finished*
+by then is folded, in event-time order, through `src.streaming.state` -- the same state
+the streaming job keeps, so the two cannot disagree about what a corridor's history
+was. This replaces the Week 4 simplification of reading each key's newest snapshot
+whatever the date, which handed a departure inside the data window history from after
+it. For a departure after the window (the intended use, "what if I ship this today")
+all legs count, and the trailing 7-day mean is honestly empty: nothing is known about
+the last week.
 """
 
 from __future__ import annotations
@@ -30,57 +24,52 @@ from __future__ import annotations
 import argparse
 from datetime import datetime
 
-from pyspark.ml import PipelineModel
-from pyspark.sql import SparkSession
+import pandas as pd
 
 from src.common import config
 from src.common.logging_setup import get_logger
-from src.common.spark import get_spark, stop_spark
-from src.ml.baselines import (
-    COLD_ONLY_NULL_STATS,
-    FEATURES,
-    HISTORY_PREFIXES,
-    HISTORY_STATS,
-)
-from src.streaming.schema import temporal_features
+from src.common.spark import get_spark
+from src.ml.baselines import HISTORY_PREFIXES
+from src.streaming.schema import fact_event, temporal_features
+from src.streaming.state import HistoryBook, epoch_us, sort_key
 
 log = get_logger("ml.predict")
 
-#: Which features_v1 column each history prefix's "as of now" lookup keys on.
-KEY_COLUMN = {"corr": "corridor_id", "src": "source_center", "dst": "destination_center"}
+#: The model every answer names. Restated from `src.ml.serving` so this module's
+#: Spark-free half imports without loading a model; a test pins the two together.
+MODEL_ID = "v2_gbt_residual_absolute_step1"
 
 
-def _latest_history(spark: SparkSession, prefix: str, key_value: str) -> dict:
-    """The single most recent known `{prefix}_*` snapshot for `key_value`, or the
-    cold-start fill (D-023) if that key has never been seen in `features_v1` at all.
+#: Every leg's fact event, in D-020 order -- read once per process. The legs are the
+#: frozen `features_v1` cache, so re-reading them through Spark on every form submission
+#: cost ~40 seconds an answer and bought nothing.
+_FACTS: list[dict] | None = None
+_MODEL = None
+
+
+def load_facts(spark) -> list[dict]:
+    global _FACTS
+    if _FACTS is None:
+        from src.streaming.producer import load_legs
+
+        legs = load_legs(spark=spark)
+        _FACTS = sorted((fact_event(row) for _, row in legs.iterrows()), key=sort_key)
+    return _FACTS
+
+
+def history_as_of(facts: list[dict], query: dict) -> dict:
+    """The query's 26 history features from every leg finished by its event time.
+
+    `facts` must be in `sort_key` order; folding stops at the first fact after the query,
+    which is also where a fact at the query's own instant stops counting (D-020).
     """
-    key_col = KEY_COLUMN[prefix]
-    cols = [f"{prefix}_{s}" for s in HISTORY_STATS]
-    row = (
-        spark.read.parquet(str(config.FEATURES_V1))
-        .filter(f"{key_col} = '{key_value}'")
-        .orderBy("trip_creation_time", ascending=False)
-        .select(*cols)
-        .limit(1)
-        .collect()
-    )
-    if not row:
-        stats = dict.fromkeys((f"{prefix}_{s}" for s in HISTORY_STATS if s != "n_prior"), 0.0)
-        stats[f"{prefix}_n_prior"] = 0
-        stats[f"{prefix}_is_cold"] = 1
-        return stats
-
-    r = row[0].asDict()
-    is_cold = r[f"{prefix}_n_prior"] == 0
-    for s in HISTORY_STATS:
-        col = f"{prefix}_{s}"
-        if s == "n_prior":
-            continue
-        fill_null = is_cold if s in COLD_ONLY_NULL_STATS else r[col] is None
-        if fill_null or r[col] is None:
-            r[col] = 0.0
-    r[f"{prefix}_is_cold"] = int(is_cold)
-    return r
+    cutoff = epoch_us(query["event_time"])
+    book = HistoryBook()
+    for fact in facts:
+        if epoch_us(fact["event_time"]) > cutoff:
+            break
+        book.apply_fact(fact)
+    return book.read(query)
 
 
 def base_row(route_type: str, planned_min: float, planned_km: float, departure: datetime) -> dict:
@@ -110,40 +99,38 @@ def predict_delay(
     planned_km: float,
     departure: datetime,
 ) -> dict:
-    """One what-if prediction from the champion model. Returns predicted gap/total
-    minutes, the D-003 delay call, and which history keys were cold -- so the page
-    can say "this corridor has no history yet" rather than silently predicting off
-    zeros that look identical to "this corridor is normally on time."
+    """One what-if prediction from the served v2 model. Returns predicted gap/total
+    minutes, the D-003 delay call, which history keys were cold and which model answered
+    -- so the page can say "this corridor has no history yet" rather than silently
+    predicting off zeros that look identical to "this corridor is normally on time."
     """
-    champion_path = config.MODELS_DIR / "champion"
-    if not champion_path.exists():
-        raise FileNotFoundError(
-            f"No champion model at {champion_path} -- run `python -m src.automation.retrain` first."
-        )
+    from src.ml import serving
 
+    global _MODEL
+    # The session and the model stay warm between answers. Starting a JVM and loading
+    # 200 trees was most of every answer's wait; a what-if page in a live demo is used
+    # several times in a row, and the process exiting is what stops Spark.
     spark = get_spark("what-if-predict")
-    try:
-        row: dict = base_row(route_type, planned_min, planned_km, departure)
-        key_values = {"corr": corridor_id, "src": source_center, "dst": destination_center}
-        cold_flags = {}
-        for prefix in HISTORY_PREFIXES:
-            history = _latest_history(spark, prefix, key_values[prefix])
-            row.update(history)
-            cold_flags[prefix] = bool(history[f"{prefix}_is_cold"])
+    if _MODEL is None:
+        _MODEL = serving.load_model()
+    query = {
+        "kind": "query", "leg_id": "what-if", "event_time": departure.isoformat(),
+        "corridor_id": corridor_id, "source_center": source_center,
+        "destination_center": destination_center,
+        "route_type": route_type, **base_row(route_type, planned_min, planned_km, departure),
+    }
+    row = {**query, **history_as_of(load_facts(spark), query)}
+    scored = serving.score(spark, _MODEL, pd.DataFrame([row])).iloc[0]
 
-        sdf = spark.createDataFrame([row]).select(*FEATURES)
-        model = PipelineModel.load(str(champion_path))
-        prediction = model.transform(sdf).select("prediction").collect()[0]["prediction"]
-    finally:
-        stop_spark(spark)
-
-    return build_result(float(prediction), planned_min, cold_flags)
+    cold_flags = {p: bool(scored[f"{p}_is_cold"]) for p in HISTORY_PREFIXES}
+    return build_result(float(scored["predicted_gap_min"]), planned_min, cold_flags)
 
 
-def build_result(predicted_gap_min: float, planned_min: float, cold_flags: dict) -> dict:
+def build_result(predicted_gap_min: float, planned_min: float, cold_flags: dict,
+                 model_id: str = MODEL_ID) -> dict:
     """The part of a prediction that has nothing to do with Spark -- split out so it
     can be tested (`tests/test_predict.py`) without a SparkSession or a real
-    champion model on disk.
+    model on disk.
     """
     threshold_gap = (config.DELAY_THRESHOLD - 1) * planned_min
     return {
@@ -152,6 +139,7 @@ def build_result(predicted_gap_min: float, planned_min: float, cold_flags: dict)
         "is_delayed_predicted": predicted_gap_min > threshold_gap,
         "threshold_gap_min": round(threshold_gap, 1),
         "cold_flags": cold_flags,
+        "model_id": model_id,
     }
 
 
@@ -177,8 +165,8 @@ def main() -> int:
         args.planned_min, args.planned_km, departure,
     )
     log.info(
-        "predicted gap %.1f min (total %.1f min), delayed=%s, cold=%s",
-        result["predicted_gap_min"], result["predicted_total_min"],
+        "%s: predicted gap %.1f min (total %.1f min), delayed=%s, cold=%s",
+        result["model_id"], result["predicted_gap_min"], result["predicted_total_min"],
         result["is_delayed_predicted"], result["cold_flags"],
     )
     return 0

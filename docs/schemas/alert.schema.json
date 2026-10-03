@@ -35,6 +35,7 @@
     "corr_is_cold": {"type": "integer", "enum": [0, 1], "description": "1 when this corridor had no prior history at the snapshot the job broadcast. A prediction off an all-zero history is not the same claim as 'this corridor is normally on time', and D-023 already made that distinction in the features; the alert carries it so a panel can say so rather than presenting both with equal confidence."},
     "src_is_cold": {"type": "integer", "enum": [0, 1]},
     "dst_is_cold": {"type": "integer", "enum": [0, 1]},
+    "model_id": {"type": "string", "description": "Which model scored this leg: v2_gbt_residual_absolute_step1 (the reported model, served by default since WP-11) or random_forest_w4_champion (the Week 4 path, kept for reproducing the W5/W7 throughput runs). Optional so alerts written before WP-11 still validate."},
 
     "emit_time": {
       "type": "string",

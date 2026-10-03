@@ -101,6 +101,8 @@ export interface ModelData {
     osrm_mae_min: number | null;
     served_model: string;
     served_note: string;
+    /** Present once the running stream has reproduced the batch predictions (WP-11). */
+    stream_equals_batch?: { identical: number; legs: number };
   };
   slices: ModelSlice[];
 }
