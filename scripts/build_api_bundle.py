@@ -1,28 +1,30 @@
-"""Stage and push the public API to a Hugging Face Docker Space (WP-04).
+"""Build the files the public API serves from, into `deploy/api/serving/` (WP-04, D-073).
 
-    python scripts/deploy_api_space.py --stage-only        # build the folder, push nothing
-    python scripts/deploy_api_space.py                     # stage, then create/update the Space
+    python scripts/build_api_bundle.py
 
-Needs `HF_TOKEN` (write) in `.env`. The Space is `<your HF user>/agentic-control-tower-api`
-unless `--repo` says otherwise.
+Run on a machine that has the data (`data/processed`, the model, a v2 stream run). It
+writes four files, all committed, because the host builds from the repository:
 
-What goes up is an **allow-list**, never the working tree: the API's code, the committed
-benchmark tables the assistant and the alert feed read, the docs the assistant indexes,
-the served model, and the three serving files built from local data (facts, alert feed,
-agent traces). `.env`, `.env.git`, the parquet caches, the TMS database and everything
-else under `data/` stay on this machine. The staged folder is listed before upload so
-what is about to become public can be read first.
+=========================  ==================================================================
+v2_forest.json.gz          the served model's 200 trees, verified identical to Spark on
+                           every leg (`src.ml.gbt_local --verify`)
+history_snapshot.json.gz   per-corridor and per-hub aggregates for "today" (`src.ml.history_snapshot`),
+                           verified identical to the full fold on 52,738 queries
+alert_feed.jsonl.gz        the v2 stream's alerts: corridor, predicted gap, severity
+agent_calls.jsonl          agent call log, trimmed to agent, time, duration and outcome
+=========================  ==================================================================
 
-Secrets go to the Space's secret store, never into a file: `GEMINI_API_KEY` (only used
-when a visitor opts into a model answer, capped at 10 a day). `LLM_MODEL` goes as a
-plain variable. There is no TMS in the container (D-072), so `TMS_API_KEY` is not sent.
+**Nothing here is a Delhivery record.** `DATA_LICENSE.md` says the dataset is not
+redistributed, and the public bundle is held to it: model parameters, aggregates and model
+output only. The script refuses to finish if a trip id, a leg id or an event time appears
+in any file it wrote.
 """
 
 from __future__ import annotations
 
-import argparse
+import gzip
 import json
-import os
+import re
 import shutil
 import sys
 from pathlib import Path
@@ -32,103 +34,53 @@ sys.path.insert(0, str(ROOT))
 
 from src.common import config  # noqa: E402 -- the repo root has to be on the path first
 
-STAGE = config.DATA_DIR / "api_space_stage"
-SPACE_NAME = "agentic-control-tower-api"
-MODEL_DIR = config.MODELS_DIR / "v2_gbt_residual_stepsize"
+BUNDLE = ROOT / "deploy" / "api" / "serving"
 SERVING = config.DATA_DIR / "serving"
+STREAM_ALERTS = config.STREAM_DIR / "validation_v2" / "alerts"
 TRACES = config.DATA_DIR / "traces" / "agent_calls.jsonl"
-NEVER = (".env", ".env.git", "tms.sqlite")
+#: What a raw record would look like if one slipped through.
+LEAK = re.compile(r"trip-\d{6,}|\"event_time\"|\"leg_id\"|\"trip_uuid\"")
 
 
-def stage() -> list[Path]:
-    """Build the Space folder from the allow-list. Returns every staged file."""
-    for required in (MODEL_DIR, SERVING / "facts.jsonl.gz", SERVING / "alert_feed.jsonl.gz"):
-        if not required.exists():
-            raise SystemExit(f"missing {required} -- see the deploy section of docs/deploy_api.md")
-    if STAGE.exists():
-        shutil.rmtree(STAGE)
-    STAGE.mkdir(parents=True)
-
-    def copy_tree(src: Path, dest: Path, patterns=("*",)) -> None:
-        for pattern in patterns:
-            for path in src.rglob(pattern):
-                if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc":
-                    target = dest / path.relative_to(src)
-                    target.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(path, target)
-
-    deploy = ROOT / "deploy" / "api_space"
-    for name in ("Dockerfile", "requirements-api.txt", "README.md"):
-        shutil.copy2(deploy / name, STAGE / name)
-    copy_tree(ROOT / "src", STAGE / "src", ("*.py", "*.yaml", "*.yml", "*.md", "*.txt", "*.json"))
-    copy_tree(ROOT / "docs", STAGE / "docs", ("*.md",))
-    copy_tree(ROOT / "benchmarks" / "raw", STAGE / "benchmarks" / "raw", ("*.csv", "*.json"))
-    copy_tree(MODEL_DIR, STAGE / "data" / "models" / MODEL_DIR.name)
-    copy_tree(SERVING, STAGE / "data" / "serving")
-    if TRACES.exists():
-        # Trimmed to what `/api/traces` returns: a Space's files are downloadable, so the
-        # raw log -- every input every agent was given -- must not be among them.
-        (STAGE / "data" / "traces").mkdir(parents=True, exist_ok=True)
-        keep = ("route", "decision", "verdict")
-        trimmed = []
-        for line in TRACES.read_text(encoding="utf-8").splitlines():
-            try:
-                r = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            outputs = {k: v for k, v in (r.get("outputs") or {}).items() if k in keep}
-            trimmed.append(json.dumps({
-                "agent": r.get("agent"), "started_at": r.get("started_at"),
-                "duration_ms": r.get("duration_ms"),
-                "error": None if r.get("error") is None else "error", "outputs": outputs,
-            }))
-        (STAGE / "data" / "traces" / TRACES.name).write_text("\n".join(trimmed) + "\n", encoding="utf-8")
-
-    staged = sorted(p for p in STAGE.rglob("*") if p.is_file())
-    leaked = [p for p in staged if p.name in NEVER or p.name.startswith(".env")]
-    if leaked:
-        raise SystemExit(f"refusing to stage {leaked}")
-    return staged
-
-
-def push(repo: str, token: str) -> str:
-    from huggingface_hub import HfApi
-
-    api = HfApi(token=token)
-    api.create_repo(repo, repo_type="space", space_sdk="docker", private=False, exist_ok=True)
-    gemini = os.environ.get("GEMINI_API_KEY", "")
-    if gemini:
-        api.add_space_secret(repo, "GEMINI_API_KEY", gemini)
-    api.add_space_variable(repo, "LLM_MODEL", config.LLM_MODEL)
-    api.add_space_variable(repo, "LLM_PROVIDER", "gemini")
-    api.upload_folder(repo_id=repo, repo_type="space", folder_path=str(STAGE),
-                      commit_message="deploy the public API", delete_patterns=["src/**", "docs/**"])
-    return f"https://huggingface.co/spaces/{repo}"
+def trimmed_traces(path: Path) -> list[str]:
+    """The call log cut to what `/api/traces` returns. A public file is downloadable, so
+    the inputs every agent was given -- including whatever was typed -- stay here."""
+    keep = ("route", "decision", "verdict")
+    rows = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            r = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        rows.append(json.dumps({
+            "agent": r.get("agent"), "started_at": r.get("started_at"), "duration_ms": r.get("duration_ms"),
+            "error": None if r.get("error") is None else "error",
+            "outputs": {k: v for k, v in (r.get("outputs") or {}).items() if k in keep},
+        }))
+    return rows
 
 
 def main() -> int:
-    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument("--stage-only", action="store_true")
-    parser.add_argument("--repo", default=None, help="owner/name; default <HF user>/" + SPACE_NAME)
-    args = parser.parse_args()
+    from src.api.feeds import build_alert_feed
+    from src.ml import gbt_local, serving
+    from src.ml.predict import export_snapshot
 
-    staged = stage()
-    size = sum(p.stat().st_size for p in staged)
-    print(f"staged {len(staged)} files, {size / 1e6:.1f} MB, in {STAGE}")
-    for top in sorted({p.relative_to(STAGE).parts[0] for p in staged}):
-        count = sum(1 for p in staged if p.relative_to(STAGE).parts[0] == top)
-        print(f"  {top:24s} {count} file(s)")
-    if args.stage_only:
-        return 0
+    BUNDLE.mkdir(parents=True, exist_ok=True)
+    gbt_local.to_json(gbt_local.load(serving.MODEL_PATH), BUNDLE / "v2_forest.json.gz")
+    snap = export_snapshot(SERVING / "history_snapshot.json.gz")
+    shutil.copy2(SERVING / "history_snapshot.json.gz", BUNDLE / "history_snapshot.json.gz")
+    feed = build_alert_feed(STREAM_ALERTS, BUNDLE / "alert_feed.jsonl.gz", BUNDLE / "alert_feed_meta.json",
+                            recorded_from="src.streaming.validate_v2: the v2 stream over the full replay (WP-11)")
+    (BUNDLE / "agent_calls.jsonl").write_text("\n".join(trimmed_traces(TRACES)) + "\n", encoding="utf-8")
 
-    token = os.environ.get("HF_TOKEN", "")
-    if not token:
-        raise SystemExit("HF_TOKEN is not set in .env")
-    from huggingface_hub import HfApi
-
-    repo = args.repo or f"{HfApi(token=token).whoami()['name']}/{SPACE_NAME}"
-    print("pushed:", push(repo, token))
-    print("API URL:", f"https://{repo.replace('/', '-').replace('_', '-').lower()}.hf.space")
+    for path in sorted(BUNDLE.iterdir()):
+        opener = gzip.open if path.suffix == ".gz" else open
+        with opener(path, "rt", encoding="utf-8") as handle:
+            if LEAK.search(handle.read()):
+                path.unlink()
+                raise SystemExit(f"{path.name} carries a raw record; removed, bundle not built")
+        print(f"  {path.name:28s} {path.stat().st_size / 1024:8.0f} KB")
+    print(json.dumps({"snapshot": snap, "alert_feed": feed}, indent=2))
     return 0
 
 

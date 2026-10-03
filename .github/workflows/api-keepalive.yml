@@ -1,0 +1,26 @@
+name: api-keepalive
+
+# The free API host sleeps after 15 idle minutes and takes about a minute to wake, which a
+# visitor would read as the site being broken. A ping every 10 minutes from 08:00 to 22:00
+# IST keeps it awake when people are likely to look, and lets it sleep overnight so the
+# month's free instance hours are not spent on nobody (WP-04).
+#
+# The URL lives in the repository variable API_URL, so the workflow is a no-op until the
+# API exists.
+
+on:
+  schedule:
+    # 02:30-16:30 UTC = 08:00-22:00 IST
+    - cron: "*/10 2-16 * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    if: ${{ vars.API_URL != '' }}
+    steps:
+      - name: GET /health
+        run: |
+          code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 90 "${{ vars.API_URL }}/health")
+          echo "health: $code"
+          test "$code" = "200"

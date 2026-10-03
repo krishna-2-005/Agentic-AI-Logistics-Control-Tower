@@ -2463,3 +2463,63 @@ read the real `.env` through `config` and stopped refusing the moment a bot exis
 `test_a_batch_run_matches_the_seeded_truth` rewrote the committed
 `w6_invoice_cases.json` on every run. Both now set their own state.
 
+## D-072 · The public API: six routes, no TMS, limits in-process — `DECIDED`
+**Post-v1.0 (WP-04) · Mounika · the work order's D-064, renumbered: D-064 to D-069 were reserved by it, unwritten**
+
+`src/api/app.py` is the API behind the site's four live pages. What it is, and the choices
+with a trade-off:
+
+1. **Six routes and nothing else** (`/health`, predict and its status, alerts, traces,
+   ask). A test asserts the route table, so a seventh cannot arrive unnoticed.
+2. **The TMS is absent, not guarded.** The work order allowed binding it to localhost or
+   keying its routes. Neither is needed: the public container imports no TMS route, so
+   every TMS path is a 404 and there is no write route for a key to protect. The agents
+   that need the TMS run from the repository, where it does.
+3. **Limits written here, not taken from `slowapi`.** 30 predictions a minute per client
+   and two in flight at once, 5 questions a minute, 120 reads a minute, 10 model answers a
+   day in total, bounded inputs, 4 KB bodies. That is about forty lines
+   (`src/api/limits.py`), keyed on the first `X-Forwarded-For` hop (the visitor, not the
+   proxy) and hashed, so neither the limiter nor the logs hold an address. A refusal is a
+   429 with `Retry-After`, which the site renders as "busy".
+4. **Alerts are a recorded run, served live and labelled.** No stream runs in a free
+   container. The API releases the v2 stream's 13,626 recorded alerts in order, a few per
+   poll; every response carries `mode: "replay"`, and the Alerts page shows that label.
+   Severity is the exception agent's own (`severity_for` after `investigate`), so the word
+   means the same on the page and in a ticket.
+5. **Traces never echo inputs.** The console needs agent, time, outcome; a public route
+   that returned what one visitor typed to the next would be a leak by design.
+
+**Evidence:** `tests/test_api.py` (29 tests). Measured on the local server: warm predict
+p95 665 ms over 20 requests; 200 requests from one client gave 127 × 429 and 0 × 5xx.
+
+## D-073 · Served from a free host with no JVM and no data — `DECIDED`
+**Post-v1.0 (WP-04) · Mounika · follows D-072**
+
+The plan was a free Hugging Face Docker Space. Creating it returned **402 Payment
+Required**: Docker and Gradio Spaces on free CPU now need a paid subscription. The work
+order rules out paid infrastructure, so the API moved to Render's free plan: 512 MB of
+memory and no JVM to spare. Two things had to change, and both were proved, not assumed.
+
+1. **The model runs without Spark.** MLlib saves a GBT as two small parquet files: the
+   nodes and the tree weights. `src/ml/gbt_local.py` reads them and walks the 200 trees in
+   numpy. On all 26,369 legs it is **identical to Spark, bit for bit**
+   (`benchmarks/raw/w10_gbt_local_equivalence.json`), but only with the right summation:
+   Spark adds the tree outputs with a BLAS dot product that accumulates in four lanes, and
+   a plain left-to-right sum matched on only 2,009 legs, the rest off in the last bit. The
+   verification compares four groupings and records them all, and it runs through the JSON
+   file the host reads, not the parquet original.
+2. **The host carries no Delhivery record.** `DATA_LICENSE.md` says the dataset is not
+   redistributed. The predictor's history is a fold over every leg's outcome, but the public
+   predictor only predicts *today*, and for a departure that late every feature depends
+   only on per-key aggregates. `src/ml/history_snapshot.py` stores those aggregates: counts,
+   means, the median and p90, the last value and its time. It reads exactly what the fold
+   reads on **52,738 of 52,738** checks, and refuses a departure early enough that it would
+   not. The alert feed carries corridor, predicted gap and severity, with no time and no id.
+   `scripts/build_api_bundle.py` refuses to finish if any file contains a trip id, a leg id
+   or an event time.
+
+**Measured locally in the host's configuration** (numpy engine, snapshot, no parquet): no
+JVM process, ready 1 s after start, about 0.3 s a prediction, 366 MB with the assistant's
+index loaded. Deployment evidence (`f1_api_latency.json`, `f1_api_load_test.json`) is
+measured from the public URL once the service exists.
+
