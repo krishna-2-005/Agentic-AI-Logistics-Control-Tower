@@ -53,7 +53,7 @@ invoices, each measured against a trivial policy.
 | **Demo** | [`docs/demo_script.md`](docs/demo_script.md) — ten minutes, with what to do when each beat fails |
 | **Public site** | **[control-tower-mu-rouge.vercel.app](https://control-tower-mu-rouge.vercel.app)** — Next.js, static, on Vercel; rebuilt from GitHub on every push ([`docs/deploy_web.md`](docs/deploy_web.md)) |
 | **Work on the site** | `python -m src.report.export_web` then `cd web && pnpm install && pnpm dev` |
-| **Still open** | G-07 real alert channel (needs a credential); the four live pages need the API Space (W-01); extraction rows 21-40 (daily LLM quota) |
+| **Still open** | the four live pages need the API Space (W-01); extraction rows 21-40 (daily LLM quota) |
 
 ---
 
@@ -317,7 +317,7 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) — **met**. The Week 4 model was superseded in Week 7 (D-050) and extraction accuracy recorded at 98.0% on the first 11 of 40 rows (G-01) |
 | 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` — **met** |
 | 6 | Full lifecycle runs agent-to-agent with no human in the loop | `week6-complete` — **met** |
-| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` — **met**; G-05 (live broker) closed in Week 8 without Docker, G-07 (a real alert channel) still carried: it needs a credential, and none is faked |
+| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` — **met**; G-05 (live broker) closed in Week 8 without Docker, G-07 (a real alert channel) carried, then closed post-v1.0 by WP-06 (D-071) |
 | 8 | Demo rehearsed twice; paper outline + figure set complete | `v1.0` |
 
 ---
@@ -363,9 +363,11 @@ runs with `--no-llm` or `--no-draft` and no API call at all (D-041). That is a d
 agents are less "agentic" than the word suggests, and in exchange every verdict is reproducible and
 therefore measurable.
 
-**What has never run here, stated plainly.** The alert bot's Telegram and email channels are
-implemented and unconfigured, so only the file channel has sent anything (D-039); the steps to
-configure one are in `docs/W7_krishna_rag_assistant.md`. **Kafka has now run against a live
+**What has run live, and where the proof is.** The alert bot has sent real stream alerts
+through both of its human channels: the three most severe of 1,347 replayed alerts went to a
+Telegram chat and to an inbox, every send acknowledged by the provider (Telegram `message_id`,
+SMTP with no refused recipient), recorded with identifiers masked in
+`benchmarks/raw/f2_alert_channel_live.json` (D-071, closing G-07). **Kafka has now run against a live
 broker** — Apache Kafka 4.1.2, natively on the JVM, no Docker (`scripts/kafka_native.ps1`) —
 and alerted on exactly the same 1,347 legs as the file source (`benchmarks/raw/
 w7_kafka_source_equivalence.json`). The MCP server has been driven by a real client over

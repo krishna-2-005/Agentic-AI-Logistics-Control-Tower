@@ -150,7 +150,7 @@ Two notes:
 per-minute limits). Add as `GROQ_API_KEY` and set `LLM_PROVIDER=groq` if Gemini's daily cap blocks
 an evaluation.
 
-### 2.5 Telegram bot · **[BLOCKED — needs you]** · WP-06, closes G-07
+### 2.5 Telegram bot · **DONE** · WP-06, closed G-07 (D-071)
 
 This closes the caveat the README has carried since Week 5: *no real alert has ever been sent.*
 
@@ -163,7 +163,7 @@ This closes the caveat the README has carried since Week 5: *no real alert has e
 save the API response to `benchmarks/raw/f2_alert_channel_live.json`. The README caveat is then
 removed rather than reworded.
 
-### 2.6 Gmail app password · Optional · WP-06
+### 2.6 Gmail app password · **DONE** · WP-06
 
 Only if you want the email channel as well as Telegram. Requires 2-Step Verification on:
 **Google Account → Security → 2-Step Verification → App passwords → App: Mail** → copy the
@@ -244,9 +244,9 @@ I will generate the labelling sheet for 3.2 and the exact narration with click-b
 | Kaggle dataset | — | **DONE** |
 | `main` default + v1.0 release | WP-01 | **needs you** |
 | Branch protection on `dev` | WP-01 | **needs you** |
-| Hugging Face token + Space | WP-04 | **needs you** |
-| Strong `TMS_API_KEY` | WP-04 | **needs you** |
-| Telegram bot token + chat id | WP-06 | **needs you** |
+| Hugging Face token (write) | WP-04 | **DONE** — the Space is created from it in WP-04 |
+| Strong `TMS_API_KEY` | WP-04 | **DONE** (43 characters) |
+| Telegram bot token + chat id | WP-06 | **DONE** — live alerts sent (D-071) |
 | UptimeRobot monitors | WP-06 | **needs you** |
 | Docker Desktop | WP-09 | **needs you** |
 | Label review (Lahari) | WP-02 | **needs a person** |
@@ -254,6 +254,6 @@ I will generate the labelling sheet for 3.2 and the exact narration with click-b
 | Three-person user test | WP-05 | **needs people** |
 | 10 phone photos | WP-08 | **needs you** |
 | Demo video | WP-12 | **needs you** |
-| Gmail app password | WP-06 | optional |
+| Gmail app password | WP-06 | **DONE** — live alerts sent (D-071) |
 | Sentry DSN | WP-06 | optional |
-| Groq key (LLM backup) | WP-02/07 | optional |
+| Groq key (LLM backup) | WP-02/07 | **DONE** |

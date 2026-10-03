@@ -2430,3 +2430,36 @@ stream does not keep up with a 60-second replay of the whole window. It keeps up
 one: 26 days of events arrive at well under one event per second. Both numbers stay in the
 record; neither replaces the other.
 
+## D-071 · Alerts reach people: Telegram and email run live, receipts kept; G-07 closes — `DECIDED`
+**Post-v1.0 (WP-06) · Mounika · closes G-07, D-039's channel caveat**
+
+G-07 has been open since Week 5: the bot's Telegram and email channels were written and
+import-checked, but no credential existed, so only the file channel had ever sent anything.
+The credentials now exist. An alert channel is proved by a message arriving, not by the
+code calling the API, so this is what was decided about the run that closes it.
+
+**Decided:**
+
+1. **The proof is the provider's answer, kept.** Each send now returns a receipt
+   (Telegram's `message_id` and HTTP status; for SMTP, the generated `Message-ID` and the
+   server's report of zero refused recipients), and `--record` appends them to
+   `benchmarks/raw/f2_alert_channel_live.json`. A send the provider did not acknowledge
+   counts as a failure. A Telegram reply with `ok: false` used to pass silently and now raises.
+2. **Identifiers are masked in the committed record.** The chat id keeps its last four digits
+   and the address keeps two letters and its domain: enough to tell two destinations apart,
+   not enough to reach anyone. A scan of the file against every value in `.env` found none.
+3. **Real alerts, from a real replay, under D-039's own policy.** 2,000 legs went through the
+   producer and the streaming job, which raised 1,347 alerts, the W6 count. The bot sent the
+   three most severe by excess over their own threshold, on each channel, each channel with
+   its own sent-state so neither suppresses the other. No hand-written test message counts.
+4. **Three per channel, not more.** The cap is the bot's existing `--top`. The run proves
+   the channel; it does not page a person 1,347 times to do it.
+
+**Evidence:** `f2_alert_channel_live.json`: telegram 3 sent, 0 failed; email 3 sent, 0 failed.
+
+**Also fixed while proving it.** Two tests had silently depended on this machine having no
+credentials and on nobody noticing a rewritten file. `test_an_unconfigured_channel_refuses…`
+read the real `.env` through `config` and stopped refusing the moment a bot existed, and
+`test_a_batch_run_matches_the_seeded_truth` rewrote the committed
+`w6_invoice_cases.json` on every run. Both now set their own state.
+

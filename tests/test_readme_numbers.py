@@ -120,15 +120,17 @@ def test_the_as_of_alert_precision_is_the_one_reported(readme) -> None:
 def test_closed_caveats_are_not_still_claimed(readme) -> None:
     """A caveat that has been closed and left in place understates the project.
 
-    Kafka has met a live broker, the MCP server has been driven over stdio, and
-    the stream serves the reported model (D-070); each sentence was true once and
-    is not any more.
+    Kafka has met a live broker, the MCP server has been driven over stdio, the
+    stream serves the reported model (D-070) and alerts have reached a person
+    (D-071); each sentence was true once and is not any more.
     """
     stale = [
         "has never reached a live broker",
         "never met a broker",
         "has not been driven by an MCP client",
         "the MCP server has never",
+        "implemented and unconfigured",
+        "only the file channel has sent anything",
         "not yet served by the stream",
         "serving the reported model in the stream (d-053",
     ]
@@ -139,16 +141,16 @@ def test_closed_caveats_are_not_still_claimed(readme) -> None:
 def test_open_caveats_are_still_stated(readme) -> None:
     """The reverse failure: dropping a limitation that is still true.
 
-    G-07 (no real alert sent) is open. Removing it would make the README describe a
-    better project than the repository contains. D-053 closed with WP-11, so what is
-    required in its place is the claim that replaced it, with its evidence file.
+    G-07 and D-053 both closed (WP-06, WP-11), so what is required in place of each
+    is the claim that replaced it, with its evidence file. A caveat that is still true
+    must not be dropped either; this test grows a line when one is opened.
     """
     lowered = readme.lower()
     assert "w10_stream_validation_v2.json" in lowered, (
         "the README says nothing, with evidence, about which model the stream serves"
     )
-    assert "unconfigured" in lowered or "g-07" in lowered, (
-        "the alert channel caveat (G-07) is no longer stated"
+    assert "f2_alert_channel_live.json" in lowered, (
+        "the README says nothing, with evidence, about the live alert channel (G-07)"
     )
 
 
