@@ -1418,6 +1418,29 @@ aw\delhivery_data.csv -> download it — see
 - **Cost.** About 15 minutes. Found because the smoke run went through the real
   `readStream`, not a static DataFrame, which would not have had a watermark to lose.
 
+### P-67 · A one-row prediction took 13.9 seconds, 13 of them moving one row
+**Post-v1.0 (WP-04) · Mounika · resolved**
+
+- **Symptom.** The API's warm predictions measured p50 13.2 s, p95 14.2 s, against the work
+  order's 3 s target. Spark had been started and the model loaded long before; this was
+  the warm path.
+- **Cause.** Profiled by stage: history 0.00 s, feature preparation 0.03 s, model transform
+  0.30 s, **collect 13.9 s**. `spark.createDataFrame(pandas_frame)` without Arrow turns the
+  frame into a Python RDD with the default parallelism, 20 partitions here, and collecting
+  the result runs 20 tasks, each starting a Python worker. On Windows that costs about
+  0.7 s per worker, so the cost is a fixed charge per prediction whatever the row count.
+- **Fix.** The predictor's session enables `spark.sql.execution.arrow.pyspark.enabled`, so a
+  pandas frame becomes a local relation in the JVM with no Python tasks. The same prediction
+  came back bit for bit (22.554508 before and after), in **0.37 s**. Measured through the
+  API: p50 513 ms, p95 665 ms over 20 warm requests. `coalesce(1)` and building from tuples
+  were tried and changed nothing, since both still go through Python tasks.
+- **Not changed.** The streaming job converts the same way and pays the same per-batch cost
+  (WP-11's 74 events/s). Turning Arrow on there is the obvious next step, but it changes a
+  validated path, so it needs the 10-minute stream-equals-batch run again. Recorded here
+  rather than done quietly.
+- **Cost.** About 20 minutes, including the profile that pointed at `collect` instead of the
+  model.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27

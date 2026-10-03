@@ -22,7 +22,10 @@ the last week.
 from __future__ import annotations
 
 import argparse
+import gzip
+import json
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 
@@ -45,31 +48,91 @@ MODEL_ID = "v2_gbt_residual_absolute_step1"
 #: cost ~40 seconds an answer and bought nothing.
 _FACTS: list[dict] | None = None
 _MODEL = None
+#: The book folded over every fact, for departures after the last one -- which is every
+#: departure the public predictor asks about, since it predicts "today" (WP-04).
+_FULL_BOOK: tuple[int, HistoryBook] | None = None
+
+#: The fact events as a file, for a host that has the model but not the parquet caches
+#: (the API Space). Written by `export_facts`, read in preference to Spark when present.
+FACTS_FILE = config.DATA_DIR / "serving" / "facts.jsonl.gz"
 
 
-def load_facts(spark) -> list[dict]:
+def load_facts(spark=None) -> list[dict]:
     global _FACTS
     if _FACTS is None:
-        from src.streaming.producer import load_legs
+        if FACTS_FILE.exists():
+            with gzip.open(FACTS_FILE, "rt", encoding="utf-8") as handle:
+                _FACTS = [json.loads(line) for line in handle if line.strip()]
+        else:
+            from src.streaming.producer import load_legs
 
-        legs = load_legs(spark=spark)
-        _FACTS = sorted((fact_event(row) for _, row in legs.iterrows()), key=sort_key)
+            legs = load_legs(spark=spark or get_spark("what-if-predict"))
+            _FACTS = sorted((fact_event(row) for _, row in legs.iterrows()), key=sort_key)
     return _FACTS
+
+
+def export_facts(path: Path = FACTS_FILE) -> int:
+    """Write every fact event, in fold order, as gzipped JSON lines. Returns the count.
+
+    The same events `load_facts` builds from the parquet caches, through JSON exactly as
+    the stream carries them -- so a host reading this file folds the same history.
+    """
+    facts = load_facts()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with gzip.open(path, "wt", encoding="utf-8") as handle:
+        for fact in facts:
+            handle.write(json.dumps(fact) + "\n")
+    return len(facts)
 
 
 def history_as_of(facts: list[dict], query: dict) -> dict:
     """The query's 26 history features from every leg finished by its event time.
 
     `facts` must be in `sort_key` order; folding stops at the first fact after the query,
-    which is also where a fact at the query's own instant stops counting (D-020).
+    which is also where a fact at the query's own instant stops counting (D-020). A query
+    after the last fact reads a book folded once and kept.
     """
+    global _FULL_BOOK
     cutoff = epoch_us(query["event_time"])
+    if facts and cutoff >= epoch_us(facts[-1]["event_time"]):
+        if _FULL_BOOK is None or _FULL_BOOK[0] != len(facts):
+            full = HistoryBook()
+            for fact in facts:
+                full.apply_fact(fact)
+            _FULL_BOOK = (len(facts), full)
+        return _FULL_BOOK[1].read(query)
     book = HistoryBook()
     for fact in facts:
         if epoch_us(fact["event_time"]) > cutoff:
             break
         book.apply_fact(fact)
     return book.read(query)
+
+
+def predictor_spark():
+    """The predictor's session, with Arrow on for pandas -> Spark.
+
+    Without it a one-row frame is shipped through Python worker tasks, one per default
+    partition: 13 of the 13.9 seconds a warm prediction took (P-67). With it the frame
+    stays in the JVM and the same prediction, bit for bit, takes about 0.4 seconds.
+    """
+    spark = get_spark("what-if-predict")
+    spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
+    return spark
+
+
+def warm() -> None:
+    """Start Spark, load the model and fold the history, so the first answer is not the
+    slow one. The API calls this on start-up in the background."""
+    global _MODEL
+    from src.ml import serving
+
+    spark = predictor_spark()
+    if _MODEL is None:
+        _MODEL = serving.load_model()
+    facts = load_facts(spark)
+    if facts:
+        history_as_of(facts, {**facts[-1], "kind": "query", "leg_id": "warm-up"})
 
 
 def base_row(route_type: str, planned_min: float, planned_km: float, departure: datetime) -> dict:
@@ -110,7 +173,7 @@ def predict_delay(
     # The session and the model stay warm between answers. Starting a JVM and loading
     # 200 trees was most of every answer's wait; a what-if page in a live demo is used
     # several times in a row, and the process exiting is what stops Spark.
-    spark = get_spark("what-if-predict")
+    spark = predictor_spark()
     if _MODEL is None:
         _MODEL = serving.load_model()
     query = {
@@ -123,7 +186,9 @@ def predict_delay(
     scored = serving.score(spark, _MODEL, pd.DataFrame([row])).iloc[0]
 
     cold_flags = {p: bool(scored[f"{p}_is_cold"]) for p in HISTORY_PREFIXES}
-    return build_result(float(scored["predicted_gap_min"]), planned_min, cold_flags)
+    result = build_result(float(scored["predicted_gap_min"]), planned_min, cold_flags)
+    result["corridor_prior_legs"] = int(scored["corr_n_prior"])
+    return result
 
 
 def build_result(predicted_gap_min: float, planned_min: float, cold_flags: dict,
