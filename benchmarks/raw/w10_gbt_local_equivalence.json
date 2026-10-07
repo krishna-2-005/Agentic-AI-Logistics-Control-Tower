@@ -1,0 +1,29 @@
+{
+  "model": "v2_gbt_residual_absolute_step1",
+  "legs": 26369,
+  "trees": 200,
+  "nodes": 22166,
+  "summation_candidates": {
+    "sequential": {
+      "identical": 2009,
+      "max_abs_difference": 3.637978807091713e-12
+    },
+    "f2j_unroll5": {
+      "identical": 2009,
+      "max_abs_difference": 3.637978807091713e-12
+    },
+    "lanes4": {
+      "identical": 26369,
+      "max_abs_difference": 0.0
+    },
+    "lanes8": {
+      "identical": 4502,
+      "max_abs_difference": 1.3642420526593924e-12
+    }
+  },
+  "chosen_summation": "lanes4",
+  "identical_predictions": 26369,
+  "max_abs_difference_min": 0.0,
+  "identical_final_predictions": 26369,
+  "verified_through": "data/serving/v2_forest.json.gz (the file the public API reads)"
+}

@@ -93,14 +93,21 @@ root directory `web`, Hobby plan (100 GB/month against a site whose largest page
 - `dev` branch: <https://control-tower-git-dev-kuchurusaikrishnareddy-2388s-projects.vercel.app>
 
 **One thing left for you, when WP-04 lands:** Vercel → project → **Settings → Environment
-Variables → `NEXT_PUBLIC_API_URL`** = the Hugging Face Space URL. Nothing secret goes here; the
+Variables → `NEXT_PUBLIC_API_URL`** = `https://control-tower-api.onrender.com` (Production and Preview),
+then **Deployments → newest → ⋯ → Redeploy**. Nothing secret goes here; the
 frontend holds no credentials by construction (D-062).
 
 **Optional, 10 seconds:** to make pushes to `dev` update the *production* URL rather than the dev
 alias — **Settings → Git → Production Branch → `dev`**. There is no API for this field. Leave it on
 `main` if you prefer the public URL to move only at a release.
 
-### 2.2 Hugging Face account + write token · **[BLOCKED — needs you]** · WP-04
+### 2.2 Hugging Face account + write token · **NOT NEEDED** · WP-04 moved to Render (D-073)
+
+Hugging Face now charges for Docker Spaces (402 on create), so the API runs on Render's free plan,
+created with `RENDER_API_KEY` (in `.env`). The HF token is unused and can be deleted.
+
+<details><summary>The original steps, kept for the record</summary>
+
 
 1. <https://huggingface.co> → **Sign up** (free)
 2. **Settings → Access Tokens → New token** → name `control-tower-deploy`, role **Write** → copy
@@ -120,6 +127,8 @@ Agents, Assistant) and working in production. They are built and currently show 
 
 *How I verify:* `curl https://<space>.hf.space/health` returns 200, and a POST to a TMS route
 without the key returns 401.
+
+</details>
 
 ### 2.3 Regenerate `TMS_API_KEY` · **[BLOCKED — needs you]** · WP-04
 
@@ -244,7 +253,7 @@ I will generate the labelling sheet for 3.2 and the exact narration with click-b
 | Kaggle dataset | — | **DONE** |
 | `main` default + v1.0 release | WP-01 | **needs you** |
 | Branch protection on `dev` | WP-01 | **needs you** |
-| Hugging Face token (write) | WP-04 | **DONE** — the Space is created from it in WP-04 |
+| Render account + API key | WP-04 | **DONE** — API live at control-tower-api.onrender.com |
 | Strong `TMS_API_KEY` | WP-04 | **DONE** (43 characters) |
 | Telegram bot token + chat id | WP-06 | **DONE** — live alerts sent (D-071) |
 | UptimeRobot monitors | WP-06 | **needs you** |

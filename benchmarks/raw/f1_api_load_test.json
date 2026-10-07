@@ -1,0 +1,29 @@
+{
+  "generated_at": "2026-10-07T09:13:13+05:30",
+  "base_url": "https://control-tower-api.onrender.com",
+  "requests": 200,
+  "threads": 8,
+  "wall_s": 15.8,
+  "status_codes": {
+    "429": 127,
+    "200": 73
+  },
+  "by_route": {
+    "/api/predict": {
+      "429": 112,
+      "200": 8
+    },
+    "/api/alerts": {
+      "200": 60
+    },
+    "/api/ask": {
+      "200": 5,
+      "429": 15
+    }
+  },
+  "rate_limited_429": 127,
+  "server_errors_5xx": 0,
+  "transport_errors": 0,
+  "passed": true,
+  "note": "503 is the predictor saying it is warming, which the site renders; it is not counted as a failure"
+}

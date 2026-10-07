@@ -14,22 +14,26 @@ the stream, the what-if predictor and the stream-equals-batch validation:
 
 from __future__ import annotations
 
-from typing import cast
+from typing import TYPE_CHECKING, cast
 
 import numpy as np
 import pandas as pd
-from pyspark.ml import PipelineModel
-from pyspark.sql import SparkSession
 
 from src.ml.models_v2 import FEATURES_V2, prepare_serving
 from src.ml.models_v2_stepsize import MODEL_PATH
 from src.streaming.state import FEATURE_COLUMNS
+
+if TYPE_CHECKING:
+    from pyspark.ml import PipelineModel
+    from pyspark.sql import SparkSession
 
 #: The name the results use for this model (`w7_model_metrics_v2_stepsize.csv`).
 MODEL_ID = "v2_gbt_residual_absolute_step1"
 
 
 def load_model(path=MODEL_PATH) -> PipelineModel:
+    from pyspark.ml import PipelineModel
+
     if not path.exists():
         raise FileNotFoundError(
             f"No served model at {path} -- run `python -m src.ml.models_v2_stepsize` first."
@@ -37,20 +41,36 @@ def load_model(path=MODEL_PATH) -> PipelineModel:
     return PipelineModel.load(str(path))
 
 
+def prepare(frame: pd.DataFrame) -> pd.DataFrame:
+    # History arrives as Python values from the stream and the predictor, where a column
+    # can be all None in a small batch; as floats it means the same and prepares cleanly.
+    history = [c for c in FEATURE_COLUMNS if c in frame.columns]
+    return prepare_serving(frame.astype(dict.fromkeys(history, float))).reset_index(drop=True)
+
+
+def _finish(prepared: pd.DataFrame, correction) -> pd.DataFrame:
+    prepared["correction"] = correction
+    prepared["predicted_gap_min"] = prepared["baseline_median"].to_numpy() + np.asarray(correction)
+    return prepared
+
+
 def score(spark: SparkSession, model: PipelineModel, frame: pd.DataFrame) -> pd.DataFrame:
     """`frame` holds raw history columns as `features_v2` stores them (nulls and all).
 
     Returns it prepared, with `correction` and `predicted_gap_min` added, in input order.
     """
-    # History arrives as Python values from the stream and the predictor, where a column
-    # can be all None in a small batch; as floats it means the same and prepares cleanly.
-    history = [c for c in FEATURE_COLUMNS if c in frame.columns]
-    prepared = prepare_serving(frame.astype(dict.fromkeys(history, float))).reset_index(drop=True)
+    prepared = prepare(frame)
     features = prepared[FEATURES_V2].copy()
     # Spark does not promise `toPandas()` returns rows in the order they went in.
     features["_row"] = range(len(features))
     out = cast(pd.DataFrame, model.transform(spark.createDataFrame(features)).select("_row", "prediction").toPandas())
-    correction = out.sort_values("_row")["prediction"].to_numpy()
-    prepared["correction"] = correction
-    prepared["predicted_gap_min"] = prepared["baseline_median"].to_numpy() + np.asarray(correction)
-    return prepared
+    return _finish(prepared, out.sort_values("_row")["prediction"].to_numpy())
+
+
+def score_local(forest, frame: pd.DataFrame) -> pd.DataFrame:
+    """`score` without Spark: the same trees walked in numpy (`src.ml.gbt_local`), proven
+    identical to Spark on every leg (`w10_gbt_local_equivalence.json`). For hosts with no JVM."""
+    from src.ml import gbt_local
+
+    prepared = prepare(frame)
+    return _finish(prepared, gbt_local.predict(forest, prepared))

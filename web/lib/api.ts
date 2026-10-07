@@ -121,6 +121,10 @@ export interface LiveAlerts {
   }[];
   rollup?: { corridor_id: string; n: number }[];
   generated_at?: string;
+  /** "replay": the API releases a recorded stream run; it runs no live stream (D-072). */
+  mode?: "replay" | "live";
+  note?: string;
+  recorded_at?: string | null;
 }
 
 // ── calls ────────────────────────────────────────────────────────────────────

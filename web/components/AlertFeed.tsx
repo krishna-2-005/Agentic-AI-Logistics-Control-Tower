@@ -25,6 +25,8 @@ const SEVERITY_STYLE: Record<string, { color: string; precision: string }> = {
 export function AlertFeed({ sample }: { sample: AlertsSample }) {
   const [live, setLive] = useState<AlertRow[] | null>(null);
   const [isLive, setIsLive] = useState(false);
+  // Set when the API says its feed is a recorded run released live, not a running stream.
+  const [replayNote, setReplayNote] = useState<string | null>(null);
   const [visible, setVisible] = useState(12);
 
   useEffect(() => {
@@ -47,6 +49,7 @@ export function AlertFeed({ sample }: { sample: AlertsSample }) {
           }))
         );
         setIsLive(true);
+        setReplayNote(r.data.mode === "replay" ? r.data.note ?? "" : null);
       }
     }
 
@@ -66,6 +69,12 @@ export function AlertFeed({ sample }: { sample: AlertsSample }) {
 
   return (
     <>
+      {isLive && replayNote !== null && (
+        <Notice tone="replay" title="A recorded stream run, released live" className="mb-4">
+          {replayNote ||
+            "These alerts come from a recorded run of the stream, served by the API in the order they were raised."}
+        </Notice>
+      )}
       {!isLive && (
         <Notice tone="replay" title="Recorded run, not a live feed" className="mb-4">
           {sample.replay_note ||

@@ -22,7 +22,9 @@ the last week.
 from __future__ import annotations
 
 import argparse
+import os
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 
@@ -45,31 +47,138 @@ MODEL_ID = "v2_gbt_residual_absolute_step1"
 #: cost ~40 seconds an answer and bought nothing.
 _FACTS: list[dict] | None = None
 _MODEL = None
+#: The book folded over every fact, for departures after the last one -- which is every
+#: departure the public predictor asks about, since it predicts "today" (WP-04).
+_FULL_BOOK: tuple[int, HistoryBook] | None = None
+
+#: `spark` (the default) or `numpy`: which engine walks the trees. A host without a JVM sets
+#: `SERVING_ENGINE=numpy`; both give identical predictions (`w10_gbt_local_equivalence.json`).
+ENGINE = os.environ.get("SERVING_ENGINE", "spark")
+
+#: Aggregates-only history for a host with no data (the public API, D-073). When this
+#: file exists the predictor reads it instead of folding legs, and serves departures from
+#: its `valid_from` on -- which "today" always is. Written by `export_snapshot`.
+SNAPSHOT_FILE = config.DATA_DIR / "serving" / "history_snapshot.json.gz"
+_SNAPSHOT: dict | None = None
 
 
-def load_facts(spark) -> list[dict]:
+def snapshot() -> dict | None:
+    global _SNAPSHOT
+    if _SNAPSHOT is None and SNAPSHOT_FILE.exists():
+        from src.ml import history_snapshot
+
+        _SNAPSHOT = history_snapshot.load(SNAPSHOT_FILE)
+    return _SNAPSHOT
+
+
+def load_facts(spark=None) -> list[dict]:
     global _FACTS
     if _FACTS is None:
         from src.streaming.producer import load_legs
 
-        legs = load_legs(spark=spark)
+        legs = load_legs(spark=spark or get_spark("what-if-predict"))
         _FACTS = sorted((fact_event(row) for _, row in legs.iterrows()), key=sort_key)
     return _FACTS
+
+
+def export_snapshot(path: Path = SNAPSHOT_FILE) -> dict:
+    """Fold every leg, write the aggregates-only snapshot, and verify it against the fold.
+
+    Verified after a round trip through the file, at two departure times, on every leg's
+    own keys -- the snapshot is shipped only if it reads exactly what the fold reads.
+    """
+    from src.ml import history_snapshot
+
+    facts = load_facts()
+    built = history_snapshot.build(facts)
+    history_snapshot.write(built, path)
+    reloaded = history_snapshot.load(path)
+    check = history_snapshot.verify(facts, reloaded, [reloaded["valid_from"], "2026-10-04T09:00:00"])
+    if check["differing"]:
+        path.unlink()
+        raise ValueError(f"snapshot disagrees with the fold on {check['differing']} queries; not written")
+    return {"keys": {k: len(v) for k, v in built["keys"].items()}, "valid_from": built["valid_from"],
+            "facts_folded": built["facts_folded"], **check}
+
+
+def history_for(query: dict, spark=None) -> dict:
+    """History for a query: from the snapshot on a host that has one, else folded from legs."""
+    snap = snapshot()
+    if snap is not None:
+        from src.ml import history_snapshot
+
+        return history_snapshot.read(snap, query)
+    return history_as_of(load_facts(spark), query)
 
 
 def history_as_of(facts: list[dict], query: dict) -> dict:
     """The query's 26 history features from every leg finished by its event time.
 
     `facts` must be in `sort_key` order; folding stops at the first fact after the query,
-    which is also where a fact at the query's own instant stops counting (D-020).
+    which is also where a fact at the query's own instant stops counting (D-020). A query
+    after the last fact reads a book folded once and kept.
     """
+    global _FULL_BOOK
     cutoff = epoch_us(query["event_time"])
+    if facts and cutoff >= epoch_us(facts[-1]["event_time"]):
+        if _FULL_BOOK is None or _FULL_BOOK[0] != len(facts):
+            full = HistoryBook()
+            for fact in facts:
+                full.apply_fact(fact)
+            _FULL_BOOK = (len(facts), full)
+        return _FULL_BOOK[1].read(query)
     book = HistoryBook()
     for fact in facts:
         if epoch_us(fact["event_time"]) > cutoff:
             break
         book.apply_fact(fact)
     return book.read(query)
+
+
+def predictor_spark():
+    """The predictor's session, with Arrow on for pandas -> Spark.
+
+    Without it a one-row frame is shipped through Python worker tasks, one per default
+    partition: 13 of the 13.9 seconds a warm prediction took (P-67). With it the frame
+    stays in the JVM and the same prediction, bit for bit, takes about 0.4 seconds.
+    """
+    spark = get_spark("what-if-predict")
+    spark.conf.set("spark.sql.execution.arrow.pyspark.enabled", "true")
+    return spark
+
+
+def _load_model():
+    global _MODEL
+    if _MODEL is None:
+        from src.ml import serving
+
+        if ENGINE == "numpy":
+            from src.ml import gbt_local
+
+            forest_file = config.DATA_DIR / "serving" / "v2_forest.json.gz"
+            _MODEL = gbt_local.from_json(forest_file) if forest_file.exists() else gbt_local.load(serving.MODEL_PATH)
+        else:
+            _MODEL = serving.load_model()
+    return _MODEL
+
+
+def _score(frame: pd.DataFrame) -> pd.DataFrame:
+    from src.ml import serving
+
+    if ENGINE == "numpy":
+        return serving.score_local(_load_model(), frame)
+    return serving.score(predictor_spark(), _load_model(), frame)
+
+
+def warm() -> None:
+    """Load the model and fold the history (and start Spark, on the Spark engine), so the
+    first answer is not the slow one. The API calls this on start-up in the background."""
+    _load_model()
+    spark = None if ENGINE == "numpy" else predictor_spark()
+    if snapshot() is None:
+        facts = load_facts(spark)
+        if facts:
+            history_as_of(facts, {**facts[-1], "kind": "query", "leg_id": "warm-up"})
 
 
 def base_row(route_type: str, planned_min: float, planned_km: float, departure: datetime) -> dict:
@@ -104,26 +213,22 @@ def predict_delay(
     -- so the page can say "this corridor has no history yet" rather than silently
     predicting off zeros that look identical to "this corridor is normally on time."
     """
-    from src.ml import serving
-
-    global _MODEL
-    # The session and the model stay warm between answers. Starting a JVM and loading
-    # 200 trees was most of every answer's wait; a what-if page in a live demo is used
-    # several times in a row, and the process exiting is what stops Spark.
-    spark = get_spark("what-if-predict")
-    if _MODEL is None:
-        _MODEL = serving.load_model()
+    # The model (and, on the Spark engine, the session) stays warm between answers.
+    # Starting a JVM and loading 200 trees was most of every answer's wait; a what-if page
+    # in a live demo is used several times in a row, and the process exiting ends it.
     query = {
         "kind": "query", "leg_id": "what-if", "event_time": departure.isoformat(),
         "corridor_id": corridor_id, "source_center": source_center,
         "destination_center": destination_center,
         "route_type": route_type, **base_row(route_type, planned_min, planned_km, departure),
     }
-    row = {**query, **history_as_of(load_facts(spark), query)}
-    scored = serving.score(spark, _MODEL, pd.DataFrame([row])).iloc[0]
+    row = {**query, **history_for(query, None if ENGINE == "numpy" else predictor_spark())}
+    scored = _score(pd.DataFrame([row])).iloc[0]
 
     cold_flags = {p: bool(scored[f"{p}_is_cold"]) for p in HISTORY_PREFIXES}
-    return build_result(float(scored["predicted_gap_min"]), planned_min, cold_flags)
+    result = build_result(float(scored["predicted_gap_min"]), planned_min, cold_flags)
+    result["corridor_prior_legs"] = int(scored["corr_n_prior"])
+    return result
 
 
 def build_result(predicted_gap_min: float, planned_min: float, cold_flags: dict,
