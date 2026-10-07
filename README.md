@@ -53,7 +53,8 @@ invoices, each measured against a trivial policy.
 | **Demo** | [`docs/demo_script.md`](docs/demo_script.md) — ten minutes, with what to do when each beat fails |
 | **Public site** | **[control-tower-mu-rouge.vercel.app](https://control-tower-mu-rouge.vercel.app)** — Next.js, static, on Vercel; rebuilt from GitHub on every push ([`docs/deploy_web.md`](docs/deploy_web.md)) |
 | **Work on the site** | `python -m src.report.export_web` then `cd web && pnpm install && pnpm dev` |
-| **Still open** | the four live pages need the API Space (W-01); extraction rows 21-40 (daily LLM quota) |
+| **Public API** | **[control-tower-api.onrender.com](https://control-tower-api.onrender.com/health)** — the v2 model, alerts, traces and the assistant behind the site's four live pages; free plan, no JVM, no raw data (D-072, D-073, [`deploy/api/`](deploy/api/README.md)); warm predict p95 345 ms, 200-request burst: 127 × 429, 0 × 5xx ([`f1_api_latency.json`](benchmarks/raw/f1_api_latency.json), [`f1_api_load_test.json`](benchmarks/raw/f1_api_load_test.json)) |
+| **Still open** | the site's live pages switch on when `NEXT_PUBLIC_API_URL` is set in Vercel; extraction rows 21-40 (daily LLM quota) |
 
 ---
 

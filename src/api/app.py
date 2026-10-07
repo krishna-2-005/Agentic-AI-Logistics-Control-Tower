@@ -50,7 +50,9 @@ log = logging.getLogger("api")
 MAX_BODY_BYTES = 4096
 CORS_ORIGINS = [o.strip() for o in os.environ.get(
     "API_CORS_ORIGINS",
-    "https://control-tower-mu-rouge.vercel.app,http://localhost:3000,http://127.0.0.1:3000",
+    "https://control-tower-mu-rouge.vercel.app,"
+    "https://control-tower-git-dev-kuchurusaikrishnareddy-2388s-projects.vercel.app,"
+    "http://localhost:3000,http://127.0.0.1:3000",
 ).split(",") if o.strip()]
 TRACE_PATH = config.DATA_DIR / "traces" / "agent_calls.jsonl"
 

@@ -2520,6 +2520,8 @@ memory and no JVM to spare. Two things had to change, and both were proved, not 
 
 **Measured locally in the host's configuration** (numpy engine, snapshot, no parquet): no
 JVM process, ready 1 s after start, about 0.3 s a prediction, 366 MB with the assistant's
-index loaded. Deployment evidence (`f1_api_latency.json`, `f1_api_load_test.json`) is
-measured from the public URL once the service exists.
+index loaded. **Measured from the public URL** (control-tower-api.onrender.com, free plan,
+Singapore): `/health` 200; every TMS write route 404; 20 warm predictions p50 292 ms, p95 345 ms
+(`f1_api_latency.json`); 200 requests from one client in 16 s gave 127 × 429 and 0 × 5xx
+(`f1_api_load_test.json`).
 
