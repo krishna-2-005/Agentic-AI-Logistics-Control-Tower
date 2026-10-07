@@ -63,7 +63,7 @@ def test_no_tms_route_is_reachable(client, method, path):
 
 def test_only_the_documented_routes_exist():
     paths = {route.path for route in api.app.routes if not route.path.startswith(("/docs", "/redoc", "/openapi"))}
-    assert paths == {"/health", "/api/predict/status", "/api/predict", "/api/alerts", "/api/traces", "/api/ask"}
+    assert paths == {"/", "/health", "/api/predict/status", "/api/predict", "/api/alerts", "/api/traces", "/api/ask"}
 
 
 # ── predict ──────────────────────────────────────────────────────────────────
