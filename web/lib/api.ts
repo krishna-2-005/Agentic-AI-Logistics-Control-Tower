@@ -15,13 +15,17 @@
 /**
  * The public API (D-072, D-073). Built in as the default because it is a public
  * address, not a credential: the browser has to know it to call it. A deployment can
- * still override it with NEXT_PUBLIC_API_URL, and an empty value turns the live pages
- * off so they show the recorded evidence instead.
+ * still override it with NEXT_PUBLIC_API_URL. An *empty* value falls back to the
+ * default too: Vercel can hold a variable that exists but is blank, and that must not
+ * silently switch the live pages off (it did once, on the dev preview). Set it to
+ * "off" to build a site with no API on purpose.
  */
 export const DEFAULT_API_URL = "https://control-tower-api.onrender.com";
 
+const configured = (process.env.NEXT_PUBLIC_API_URL ?? "").trim();
+
 export const API_BASE = (
-  process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_URL
+  configured === "off" ? "" : configured || DEFAULT_API_URL
 ).replace(/\/$/, "");
 
 export const API_CONFIGURED = API_BASE.length > 0;

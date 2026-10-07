@@ -177,7 +177,7 @@ export function AssistantChat() {
           />
           Let the model phrase the answer
           <span className="text-[var(--ink-faint)]">
-            — capped server-side; the free tier allows 20 calls a day
+            — capped server-side at 10 model answers a day for everyone
           </span>
         </label>
       </div>
