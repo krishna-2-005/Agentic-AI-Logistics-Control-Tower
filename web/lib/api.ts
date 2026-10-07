@@ -12,8 +12,16 @@
  * result and every page renders the offline branch deliberately.
  */
 
+/**
+ * The public API (D-072, D-073). Built in as the default because it is a public
+ * address, not a credential: the browser has to know it to call it. A deployment can
+ * still override it with NEXT_PUBLIC_API_URL, and an empty value turns the live pages
+ * off so they show the recorded evidence instead.
+ */
+export const DEFAULT_API_URL = "https://control-tower-api.onrender.com";
+
 export const API_BASE = (
-  process.env.NEXT_PUBLIC_API_URL ?? ""
+  process.env.NEXT_PUBLIC_API_URL ?? DEFAULT_API_URL
 ).replace(/\/$/, "");
 
 export const API_CONFIGURED = API_BASE.length > 0;
