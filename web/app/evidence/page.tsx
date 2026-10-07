@@ -98,19 +98,27 @@ export default function EvidencePage() {
         </KpiRow>
       </Section>
 
-      {/* ── the served-model caveat, stated where the number appears ──── */}
+      {/* ── which model the live predictor runs, from the evidence file ── */}
       <Section>
-        <Notice
-          tone="warn"
-          title="The live predictor uses an earlier model than this one"
-        >
-          The model below needs a rolling view of each corridor&apos;s recent
-          history that the live service cannot build yet, so the{" "}
-          <a href="/predict/" className="underline">
-            delay predictor
-          </a>{" "}
-          runs an earlier, slightly weaker model and names it on every answer.
-        </Notice>
+        {model.data.headline.served_model === model.data.headline.model ? (
+          <Notice tone="info" title="The live predictor runs this model">
+            The{" "}
+            <a href="/predict/" className="underline">
+              delay predictor
+            </a>{" "}
+            and the stream score with the model below, and{" "}
+            {model.data.headline.stream_equals_batch?.identical ?? 0} of{" "}
+            {model.data.headline.stream_equals_batch?.legs ?? 0} sampled legs
+            score exactly as they do in the offline evaluation.
+          </Notice>
+        ) : (
+          <Notice
+            tone="warn"
+            title="The live predictor uses an earlier model than this one"
+          >
+            {model.data.headline.served_note}
+          </Notice>
+        )}
       </Section>
 
       <Section

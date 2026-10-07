@@ -92,7 +92,9 @@ root directory `web`, Hobby plan (100 GB/month against a site whose largest page
 - Production: **<https://control-tower-mu-rouge.vercel.app>**
 - `dev` branch: <https://control-tower-git-dev-kuchurusaikrishnareddy-2388s-projects.vercel.app>
 
-**One thing left for you, when WP-04 lands:** Vercel → project → **Settings → Environment
+**No longer needed:** the site now defaults to the public API (`web/lib/api.ts`, `DEFAULT_API_URL`),
+because Vercel's new screen refuses a `NEXT_PUBLIC_` variable marked Sensitive. To point the site
+elsewhere, Vercel → project → **Settings → Environment
 Variables → `NEXT_PUBLIC_API_URL`** = `https://control-tower-api.onrender.com` (Production and Preview),
 then **Deployments → newest → ⋯ → Redeploy**. Nothing secret goes here; the
 frontend holds no credentials by construction (D-062).
