@@ -29,7 +29,7 @@ import argparse
 import hashlib
 import json
 import zipfile
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from src.common import config
@@ -93,7 +93,7 @@ def plan() -> dict[str, dict]:
 def build(out_dir: Path) -> dict:
     out_dir.mkdir(parents=True, exist_ok=True)
     manifest = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "note": ("Attach these to the v1.0 GitHub release. The raw Delhivery CSV is not "
                  "redistributed here — see data/README.md for where to get it."),
         "bundles": {},

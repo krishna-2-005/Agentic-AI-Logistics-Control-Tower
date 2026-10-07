@@ -219,6 +219,14 @@ def _process_email(email: OrderEmail, prompt: Prompt, dry_run: bool) -> OrderOut
         log.info("#%s %-16s -> would file (dry run)", email.seq, email.variant)
         return outcome
 
+    # Unreachable with a None order: `validate_order(None)` returns
+    # "no order object returned", so the branch above has already returned.
+    # Stated here because that guarantee lives three branches away, and a POST
+    # of None would reach the TMS as a 422 rather than as this sentence.
+    if outcome.order is None:
+        outcome.error = "no order to post"
+        return outcome
+
     try:
         status, body = post_order(outcome.order, email.external_ref)
         outcome.http_status = status

@@ -157,7 +157,10 @@ def test_the_template_note_carries_every_finding():
 
 
 # ── end to end, no model, no TMS ────────────────────────────────────────────
-def test_a_batch_run_matches_the_seeded_truth(tmp_path):
+def test_a_batch_run_matches_the_seeded_truth(tmp_path, monkeypatch):
+    # `run` also writes the case file; without this the test rewrote the committed
+    # benchmark in `benchmarks/raw/` on every run.
+    monkeypatch.setattr(ia, "CASES_JSON", tmp_path / "cases.json")
     summary = ia.run(count=20, seed=7, draft=False, post=False, out_path=tmp_path / "runs.json")
     assert summary["cases"] == 20
     assert summary["correct_verdicts"] == 20

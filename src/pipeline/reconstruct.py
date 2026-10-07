@@ -38,7 +38,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pyspark.sql import DataFrame, SparkSession, Window
@@ -151,7 +151,7 @@ def reconstruct(spark: SparkSession, input_path: Path, output_path: Path) -> dic
         )
 
     report: dict = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "stage": "2-reconstruct",
         "input": str(input_path),
         "output": str(output_path),

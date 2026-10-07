@@ -129,10 +129,18 @@ class Investigation:
                 verdict = "statistically confirmed SLOWER than the network"
             else:
                 verdict = "statistically confirmed FASTER than the network"
-            rank = f", bottleneck rank {self.audit_bottleneck_rank}" if self.audit_bottleneck_rank else ""
+            # Named for what it is -- a formatted suffix, not a rank. It used to
+            # be `rank`, which the hub loop below rebinds to an int a few lines
+            # later: one name, two types, close enough together to mislead.
+            rank_note = (
+                f", bottleneck rank {self.audit_bottleneck_rank}"
+                if self.audit_bottleneck_rank
+                else ""
+            )
             lines.append(
                 f"- corridor audit over {self.audit_n_legs} legs: {verdict}, "
-                f"running {self.audit_excess_ratio:.2f}x the network's typical overrun{rank}"
+                f"running {self.audit_excess_ratio:.2f}x the network's typical "
+                f"overrun{rank_note}"
             )
         for label, rank in (("origin", self.source_friction_rank), ("destination", self.dest_friction_rank)):
             if rank is not None:
@@ -430,10 +438,16 @@ def run(limit: int = 10, dry_run: bool = False, draft: bool = True,
         log.info("no alerts in the sink -- run the producer and the streaming job first")
         return {"alerts": 0, "processed": 0, "filed": 0}
 
-    client = TMSClient()
-    if not client.is_up():
-        log.warning("TMS is not answering at %s -- investigating and drafting only", client.base_url)
-        client = None
+    # Probed first, then held as optional. With the TMS down the agent still
+    # investigates and drafts; it just cannot file. Splitting the probe from the
+    # handle keeps one name from being both "a client" and "maybe a client".
+    probe = TMSClient()
+    client: TMSClient | None = probe if probe.is_up() else None
+    if client is None:
+        log.warning(
+            "TMS is not answering at %s -- investigating and drafting only",
+            probe.base_url,
+        )
     prompt = load_prompt("exception_triage") if draft else None
 
     handled = load_state(state_path)

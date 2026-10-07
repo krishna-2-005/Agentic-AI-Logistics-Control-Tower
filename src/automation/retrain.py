@@ -38,7 +38,7 @@ import shutil
 import subprocess
 import sys
 import time
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from src.common import config
@@ -190,7 +190,7 @@ def promote_challenger(report: dict, models_dir: Path) -> dict:
                     "test_mae_by_model": report["test_mae"],
                     "n_train": report["n_train"],
                     "n_test": report["n_test"],
-                    "promoted_at": datetime.now(timezone.utc).isoformat(),
+                    "promoted_at": datetime.now(UTC).isoformat(),
                 },
                 indent=2,
             ),

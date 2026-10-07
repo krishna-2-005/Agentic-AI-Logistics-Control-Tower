@@ -61,6 +61,7 @@ from src.agents.exception_agent import (
 )
 from src.agents.order_agent import process_email, validate_order
 from src.agents.order_corpus import OrderEmail
+from src.agents.order_rules import extract_order_rules
 from src.agents.prompts.registry import load_prompt
 from src.agents.tms_client import TMSClient, TMSError
 from src.agents.tracing import traced
@@ -85,6 +86,7 @@ class LifecycleState(TypedDict, total=False):
     email_body: str
     expected_fields: dict
     use_llm: bool
+    no_llm_route: str
     dry_run: bool
 
     action: str | None            # "file" | "clarify"
@@ -116,14 +118,35 @@ def intake(state: LifecycleState) -> LifecycleState:
     """Order Entry Agent: read the email, decide file or clarify."""
     steps = [*state.get("steps", []), "intake"]
     if not state.get("use_llm"):
-        # Demonstration mode: the case's own ground truth stands in for extraction.
-        order = dict(state["expected_fields"])
-        problems = validate_order(order)
-        action = "file" if not problems else "clarify"
+        # Two ways to run without a model, and they measure different things.
+        #
+        # `truth` hands intake the case's own expected fields. Nothing is read,
+        # so the routing decision cannot be wrong and the lifecycle exercises the
+        # graph rather than the agent. That is what Week 6's "10 emails, 3
+        # distinct paths" was run in, and it is kept so that result stays
+        # reproducible -- but it is a demonstration, not an evaluation.
+        #
+        # `rules` reads the email with the deterministic extractor, which is a
+        # real intake that can and does get things wrong, still at zero API cost.
+        if state.get("no_llm_route", "truth") == "truth":
+            order = dict(state["expected_fields"])
+            problems = validate_order(order)
+            action = "file" if not problems else "clarify"
+            return {
+                **state, "steps": steps, "action": action, "order": order,
+                "missing_field": problems[0].split()[0] if problems else None,
+                "question": "; ".join(problems) if problems else None,
+            }
+
+        decided = extract_order_rules(state["email_subject"], state["email_body"])
+        order = decided.get("order") or {}
+        problems = validate_order(order) if decided.get("action") == "file" else []
+        action = "file" if decided.get("action") == "file" and not problems else "clarify"
         return {
             **state, "steps": steps, "action": action, "order": order,
-            "missing_field": problems[0].split()[0] if problems else None,
-            "question": "; ".join(problems) if problems else None,
+            "missing_field": decided.get("missing_field")
+            or (problems[0].split()[0] if problems else None),
+            "question": decided.get("question") or ("; ".join(problems) or None),
         }
 
     email = OrderEmail(
@@ -158,8 +181,17 @@ def book(state: LifecycleState) -> LifecycleState:
     """File the order and book a shipment against it."""
     steps = [*state.get("steps", []), "book"]
     order = state["order"]
+
+    # `route_after_intake` only routes here when the order is truthy, so this
+    # cannot fire. It is written down because the guarantee lives in a routing
+    # function rather than in this one, and a future edge into `book` would
+    # otherwise fail on a KeyError rather than saying what went wrong.
+    if not order:
+        return {**state, "steps": steps, "error": "routed to book with no order"}
+
     if state.get("dry_run"):
-        return {**state, "steps": steps, "corridor_id": f"{order['origin_centre']}>{order['dest_centre']}"}
+        return {**state, "steps": steps,
+                "corridor_id": f"{order['origin_centre']}>{order['dest_centre']}"}
 
     client = _client()
     if client is None:
@@ -291,7 +323,8 @@ def build_graph():
     return graph.compile(checkpointer=MemorySaver())
 
 
-def run_case(case: OrderEmail, use_llm: bool = True, dry_run: bool = False) -> dict:
+def run_case(case: OrderEmail, use_llm: bool = True, dry_run: bool = False,
+             no_llm_route: str = "truth") -> dict:
     """One email through the whole lifecycle. Returns the final state. Traced; the agents
     it calls write their own traces, so one lifecycle shows as the parent and its steps."""
     app = build_graph()
@@ -301,6 +334,7 @@ def run_case(case: OrderEmail, use_llm: bool = True, dry_run: bool = False) -> d
         "email_body": case.body,
         "expected_fields": case.expected_fields,
         "use_llm": use_llm,
+        "no_llm_route": no_llm_route,
         "dry_run": dry_run,
         "steps": [],
     }
@@ -313,14 +347,15 @@ def run_case(case: OrderEmail, use_llm: bool = True, dry_run: bool = False) -> d
 
 
 def run(cases: int = 1, start: int = 0, use_llm: bool = True, dry_run: bool = False,
-        out_path: Path = RUNS_JSON) -> dict:
+        out_path: Path = RUNS_JSON, no_llm_route: str = "truth") -> dict:
     eval_set = load_eval_set()
     selected = eval_set[start:start + cases]
-    results = [run_case(case, use_llm, dry_run) for case in selected]
+    results = [run_case(case, use_llm, dry_run, no_llm_route) for case in selected]
 
     summary = {
         "cases": len(results),
         "used_llm": use_llm,
+        "no_llm_route": None if use_llm else no_llm_route,
         "dry_run": dry_run,
         "reached_clarify": sum(1 for r in results if "clarify" in r["steps"]),
         "booked": sum(1 for r in results if r.get("shipment_ref")),
@@ -345,14 +380,27 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Run the order-to-exception lifecycle")
     parser.add_argument("--cases", type=int, default=1, help="how many eval cases to run")
     parser.add_argument("--start", type=int, default=0, help="index into the eval set")
-    parser.add_argument("--no-llm", action="store_true", help="demonstration mode: no model call anywhere")
+    parser.add_argument("--no-llm", action="store_true", help="no model call anywhere")
+    parser.add_argument(
+        "--route",
+        choices=["truth", "rules"],
+        default="truth",
+        help=(
+            "what --no-llm means. 'truth' hands intake the case's expected "
+            "fields, so nothing is read and no case can route wrongly -- a "
+            "demonstration that the wiring holds, and what the Week 6 result was "
+            "produced with. 'rules' reads the email with the deterministic "
+            "extractor and can get it wrong. Default stays 'truth' so re-running "
+            "this does not quietly rewrite a reported number with a different one."
+        ),
+    )
     parser.add_argument("--dry-run", action="store_true", help="decide everything, post nothing")
     # See P-51: boot writes its demonstration runs to logs/, not over the cited artefact.
     parser.add_argument("--out", type=Path, default=RUNS_JSON)
     args = parser.parse_args()
 
     summary = run(cases=args.cases, start=args.start, use_llm=not args.no_llm,
-                  dry_run=args.dry_run, out_path=args.out)
+                  dry_run=args.dry_run, out_path=args.out, no_llm_route=args.route)
     for result, path in zip(summary["runs"], summary["paths"], strict=True):
         print(f"\ncase {result['case_seq']}: {path}")
         for label, key in (("order", "order_ref"), ("shipment", "shipment_ref"),

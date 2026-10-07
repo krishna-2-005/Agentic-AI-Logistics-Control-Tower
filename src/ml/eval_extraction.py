@@ -55,7 +55,7 @@ from src.common import config
 
 try:
     from rapidfuzz import fuzz
-except ImportError:  # keep the script runnable without the optional dep
+except ImportError:  # handled at scoring time, deliberately not here
     fuzz = None
 
 
@@ -214,7 +214,23 @@ def values_match(kind: str, truth: Any, pred: Any) -> bool:
     if t == p:
         return True
     if fuzz is None:
-        return False
+        # Deliberately a crash, not a False.
+        #
+        # Returning False here meant that on a machine without rapidfuzz every
+        # near-miss counted as a wrong answer, and the run still produced a
+        # report. Facility names come off a scan with a character or two
+        # changed -- `Pnchlght` for `Pnchight` -- so the accuracy this file
+        # publishes would drop by several points with nothing in the output
+        # saying the matcher was missing. That is P-58 again: an evaluation
+        # harness must distinguish "the agent was wrong" from "the harness was
+        # not installed", and if it cannot, its worst numbers are reports about
+        # the machine.
+        raise RuntimeError(
+            "rapidfuzz is not installed, so text fields can only be compared "
+            "exactly and the accuracy this run reports would be understated. "
+            "Install it (pip install rapidfuzz) and re-run; it is in "
+            "requirements.txt."
+        )
     return fuzz.ratio(t, p) >= TEXT_SIMILARITY_THRESHOLD
 
 

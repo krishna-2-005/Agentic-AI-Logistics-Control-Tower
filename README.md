@@ -3,8 +3,20 @@
 **A multi-agent digital workforce operating on a distributed big-data delay-prediction pipeline,
 built on real Delhivery network data.**
 
+[![tests](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/actions/workflows/tests.yml/badge.svg?branch=dev)](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/actions/workflows/tests.yml)
+[![web](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/actions/workflows/web.yml/badge.svg?branch=dev)](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/actions/workflows/web.yml)
+[![license: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![python 3.11–3.13](https://img.shields.io/badge/python-3.11–3.13-blue.svg)](requirements.txt)
+
 > Big Data Analytics · Transportation & Logistics · Machine Learning · Agentic AI
 > 8-week team project · Sai Krishna (AI Agents & Automation) · Lahari (ML & Evaluation) · Mounika (Data & Systems)
+
+### ▶ **[Open the control tower](https://control-tower-mu-rouge.vercel.app)** — `control-tower-mu-rouge.vercel.app`
+
+The network map, the corridor audit, the agent workforce and every frozen number, live.
+Eight of its ten pages need no backend at all: the site reads JSON written from
+`benchmarks/raw/` by `python -m src.report.export_web` and committed beside the code, so a
+number on screen and a number in the paper cannot drift apart (D-059).
 
 ---
 
@@ -20,6 +32,14 @@ invoices, each measured against a trivial policy.
 > has seen it is not a fair comparison. Every model result is reported against the per-corridor
 > median, the baseline an MAE table should use (D-048).
 
+> **The model was wrong once, and the correction is part of the result.** Week 4's Random Forest
+> reached 36.9 min and *lost* to a corridor-mean lookup. Two defects, found by diagnosing rather
+> than retuning: the reported baseline was the mean when MAE is minimised by the median (33.04,
+> not 36.13), and the gradient-booster chosen for absolute loss ran at a step size where its
+> corrective trees could move a prediction by at most 9.95 minutes in total — the objective it was
+> picked for was barely switched on. Fixing the step size gives **30.90 min**, beating the median
+> baseline on all fourteen slices (D-048 → D-050).
+
 ## Project status and where everything is
 
 | | |
@@ -31,8 +51,10 @@ invoices, each measured against a trivial policy.
 | **Figures** | [`docs/figures/`](docs/figures/) — nine, png and vector pdf, each from a `benchmarks/raw/` file |
 | **Final numbers** | [`benchmarks/final_tables.md`](benchmarks/final_tables.md), [`benchmarks/agent_evaluation.md`](benchmarks/agent_evaluation.md), [`benchmarks/experiments_appendix.md`](benchmarks/experiments_appendix.md) |
 | **Demo** | [`docs/demo_script.md`](docs/demo_script.md) — ten minutes, with what to do when each beat fails |
-| **Public dashboard** | bundle ready in `deploy/hf_space/`, verified in a clean environment; publishing needs a Hugging Face write token ([`docs/deploy_dashboard.md`](docs/deploy_dashboard.md)) |
-| **Still open** | G-07 real alert channel (needs a credential); extraction rows 21-40 (daily LLM quota); serving the reported model in the stream (D-053, Phase 3) |
+| **Public site** | **[control-tower-mu-rouge.vercel.app](https://control-tower-mu-rouge.vercel.app)** — Next.js, static, on Vercel; rebuilt from GitHub on every push ([`docs/deploy_web.md`](docs/deploy_web.md)) |
+| **Work on the site** | `python -m src.report.export_web` then `cd web && pnpm install && pnpm dev` |
+| **Public API** | **[control-tower-api.onrender.com](https://control-tower-api.onrender.com/health)** — the v2 model, alerts, traces and the assistant behind the site's four live pages; free plan, no JVM, no raw data (D-072, D-073, [`deploy/api/`](deploy/api/README.md)); warm predict p95 345 ms, 200-request burst: 127 × 429, 0 × 5xx ([`f1_api_latency.json`](benchmarks/raw/f1_api_latency.json), [`f1_api_load_test.json`](benchmarks/raw/f1_api_load_test.json)) |
+| **Still open** | the site's live pages switch on when `NEXT_PUBLIC_API_URL` is set in Vercel; extraction rows 21-40 (daily LLM quota) |
 
 ---
 
@@ -296,7 +318,7 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) — **met**. The Week 4 model was superseded in Week 7 (D-050) and extraction accuracy recorded at 98.0% on the first 11 of 40 rows (G-01) |
 | 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` — **met** |
 | 6 | Full lifecycle runs agent-to-agent with no human in the loop | `week6-complete` — **met** |
-| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` — **met**; G-05 (live broker) closed in Week 8 without Docker, G-07 (a real alert channel) still carried: it needs a credential, and none is faked |
+| 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` — **met**; G-05 (live broker) closed in Week 8 without Docker, G-07 (a real alert channel) carried, then closed post-v1.0 by WP-06 (D-071) |
 | 8 | Demo rehearsed twice; paper outline + figure set complete | `v1.0` |
 
 ---
@@ -315,12 +337,13 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | Best model MAE vs OSRM MAE | v2 GBT on the corridor-median residual **30.90 min** vs OSRM 107.1 min — 71% lower, and 6.5% under the corridor-median baseline (33.04 min) it is judged against, winning on all 14 slices (D-050). Week 4's Random Forest (36.9 min) is now an ablation row | [`benchmarks/raw/w7_model_metrics_v2_stepsize.csv`](benchmarks/raw/w7_model_metrics_v2_stepsize.csv), [`w4_model_metrics.csv`](benchmarks/raw/w4_model_metrics.csv) |
 | Sustained streaming throughput | all 52,738 replayed events scored, nothing dropped: **886 events/sec** produced, **740 events/sec** of saturated scoring, event-to-alert **p50 28.9 s** | [`benchmarks/raw/w5_stream_throughput_full.json`](benchmarks/raw/w5_stream_throughput_full.json) |
 | Stream equals batch | **500 of 500** predictions bit-identical across the batch and event paths | [`benchmarks/raw/w5_stream_validation_report.json`](benchmarks/raw/w5_stream_validation_report.json) |
+| Stream serves the reported model | **500 of 500** sampled legs (26,369 of 26,369 overall) scored by the running v2 stream identically to batch; stream test MAE 30.90 | [`benchmarks/raw/w10_stream_validation_v2.json`](benchmarks/raw/w10_stream_validation_v2.json) |
 | Delay-threshold sensitivity | 2.00× holds: the best classifier's MCC barely moves across thresholds (0.507→0.536) while the alert volume falls from 98% of legs to 49%. The stream's own flag is the weakest real classifier (MCC 0.477) | [`benchmarks/raw/w5_threshold_sensitivity.csv`](benchmarks/raw/w5_threshold_sensitivity.csv) |
 | Order Entry Agent evaluation | **50 of 50** authored cases run, **50 correct**; 0 orders filed on invented values, 0 needless questions | [`benchmarks/raw/w5_order_eval_summary.json`](benchmarks/raw/w5_order_eval_summary.json) |
 | Lifecycle, end to end (Gate 6) | 10 emails, 3 distinct paths, no human in the middle: 5 stopped at a question, 3 booked and unflagged, 2 booked → flagged → notified → ticketed | [`benchmarks/raw/w6_orchestrator_runs.json`](benchmarks/raw/w6_orchestrator_runs.json) |
 | Freight Invoice Auditor v1 | **20 of 20** verdicts matched the seeded ground truth; no clean invoice disputed. Band is the corpus's own rate model — exact here, circular as a pricing claim (D-043) | [`benchmarks/raw/w6_invoice_audit_runs.json`](benchmarks/raw/w6_invoice_audit_runs.json) |
-| Agent evaluation summary | _pending W7_ | `benchmarks/agent_evaluation.md` |
-| Scale appendix (50M+ rows) | _pending W7_ | `benchmarks/scale_appendix.md` |
+| Agent evaluation summary | Every agent beside the trivial policy on its own set. Exception agent notification precision **58.6%** as-of against 54.1% for alerting on every leg — the first published 72.1% came from a replay that leaked future history (D-054). Invoice auditor dispute precision/recall **100% / 82.2%** on 60 seeded invoices. Order entry **50 of 50**, 0 invented orders. Document extraction **98.7%** per-field on clean PDFs, 96.9% on noisy scans. Assistant route accuracy **93.3%**, refusal recall 6 of 6 | [`benchmarks/agent_evaluation.md`](benchmarks/agent_evaluation.md), [`w8_replay_leakage.json`](benchmarks/raw/w8_replay_leakage.json) |
+| Scale appendix (50M+ rows) | The **same two functions** (`network_baseline`, `corridor_aggregate`), imported unchanged, on **56,353,613** NYC TLC rows → 51,515 corridors in **14.32 s** (3.9M rows/sec) on one 20-core laptop. 2,138× the Delhivery row count | [`benchmarks/scale_appendix.md`](benchmarks/scale_appendix.md), [`w7_scale_benchmark.json`](benchmarks/raw/w7_scale_benchmark.json) |
 
 ---
 
@@ -341,14 +364,19 @@ runs with `--no-llm` or `--no-draft` and no API call at all (D-041). That is a d
 agents are less "agentic" than the word suggests, and in exchange every verdict is reproducible and
 therefore measurable.
 
-**What has never run here, stated plainly.** The alert bot's Telegram and email channels are
-implemented and unconfigured, so only the file channel has sent anything (D-039); the steps to
-configure one are in `docs/W7_krishna_rag_assistant.md`. **Kafka has now run against a live
+**What has run live, and where the proof is.** The alert bot has sent real stream alerts
+through both of its human channels: the three most severe of 1,347 replayed alerts went to a
+Telegram chat and to an inbox, every send acknowledged by the provider (Telegram `message_id`,
+SMTP with no refused recipient), recorded with identifiers masked in
+`benchmarks/raw/f2_alert_channel_live.json` (D-071, closing G-07). **Kafka has now run against a live
 broker** — Apache Kafka 4.1.2, natively on the JVM, no Docker (`scripts/kafka_native.ps1`) —
 and alerted on exactly the same 1,347 legs as the file source (`benchmarks/raw/
 w7_kafka_source_equivalence.json`). The MCP server has been driven by a real client over
 stdio — 13 tools, 8 calls, 0 errors (`benchmarks/raw/w7_mcp_stdio_transcript.json`). The
-adopted Week 7 model is reported but not yet served by the stream (D-053).
+stream and the what-if predictor now serve the reported v2 model on event-time state (D-070,
+closing D-053). The cost is throughput: about 74 events/s of busy time on this laptop against
+the Week 4 path's 740, which is enough for the real event rate but not for a 60-second replay
+of the whole window.
 
 ---
 
@@ -367,4 +395,11 @@ weekly doc; then PR → `dev`. Nobody commits to `main`.
 
 ## License
 
-Academic coursework. Delhivery dataset used under its original Kaggle license.
+Code: **MIT** ([`LICENSE`](LICENSE)) — so anyone may actually run it.
+
+Data: not redistributed here. The Delhivery records carry their own Kaggle terms and the NYC TLC
+records their own; both, plus what this project generates synthetically, are set out in
+[`DATA_LICENSE.md`](DATA_LICENSE.md).
+
+Citing this work: [`CITATION.cff`](CITATION.cff) — GitHub renders it as a *Cite this repository*
+button. Please cite the Delhivery dataset separately.

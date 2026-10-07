@@ -34,8 +34,9 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -100,7 +101,12 @@ def judge_median(frame: pd.DataFrame) -> dict:
     return {"warm_legs_compared": len(warm), "agreement": agree}
 
 
-def prepare(frame: pd.DataFrame) -> pd.DataFrame:
+def prepare_serving(frame: pd.DataFrame) -> pd.DataFrame:
+    """Everything the model reads, plus the median it corrects -- no target needed.
+
+    Split out of `prepare` so the stream and the predictor, which score legs that have
+    not finished yet, build their input with the same code training did (WP-11).
+    """
     out = prepare_model_features(frame)
     for column, indicator in V2_INDICATORS.items():
         out[indicator] = out[column].isna().astype(int)
@@ -108,6 +114,11 @@ def prepare(frame: pd.DataFrame) -> pd.DataFrame:
         out[column] = out[column].fillna(0.0)
     cold = out["corr_n_prior"] == 0
     out["baseline_median"] = np.where(cold, 0.0, out["corr_median_gap_min"])
+    return out
+
+
+def prepare(frame: pd.DataFrame) -> pd.DataFrame:
+    out = prepare_serving(frame)
     out["residual"] = out[TARGET] - out["baseline_median"]
     return out
 
@@ -122,7 +133,7 @@ def fit_residual(spark, train: pd.DataFrame, estimator) -> PipelineModel:
 def predict(spark, model: PipelineModel, frame: pd.DataFrame, columns: list[str]) -> np.ndarray:
     """Predictions in `frame`'s order -- Spark does not promise `toPandas()` keeps it."""
     sdf = spark.createDataFrame(frame[columns].assign(_row=np.arange(len(frame))))
-    out = model.transform(sdf).select("_row", "prediction").toPandas().sort_values("_row")
+    out = cast(pd.DataFrame, model.transform(sdf).select("_row", "prediction").toPandas()).sort_values("_row")
     return out["prediction"].to_numpy()
 
 
@@ -243,7 +254,7 @@ def run(metrics_csv: Path = METRICS_CSV, report_json: Path = REPORT_JSON) -> dic
     overall = table[table["dimension"] == "overall"].set_index("model")["mae_min"].to_dict()
     decision = adoption_outcome(table, "v2_gbt_residual_absolute")
     report = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "features": {"v1": len(FEATURES), "v2": len(FEATURES_V2)},
         "n_train": len(train), "n_test": len(test), "split_cutoff": str(cutoff),
         "judge_median_check": judge,

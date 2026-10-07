@@ -152,7 +152,7 @@ def run(use_llm: bool = False, budget: int | None = None, questions_path: Path =
     }
     summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     log.info("%d of %d answered: route %.1f%%, source %.1f%%", len(rows), len(questions),
-             100 * (summary["route_accuracy"] or 0), 100 * (summary["source_accuracy"] or 0))
+             100 * (summary["route_accuracy"] or 0), 100 * (summary["source_accuracy"] or 0))  # type: ignore[operator]  # summary is a heterogeneous dict, so mypy cannot narrow this key to a float
     return summary
 
 

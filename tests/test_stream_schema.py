@@ -125,3 +125,16 @@ def test_the_delay_label_follows_config_rather_than_a_hardcoded_two():
 def test_the_stale_column_is_not_even_loaded():
     # Not reading it is what stops it being used by accident.
     assert "is_delayed" not in schema.EXAMPLE_COLUMNS
+
+
+# ── WP-11: what the stateful stream needs from a fact ────────────────────────
+def test_fact_event_carries_its_dwell_and_creation_hour(json_schema):
+    event = schema.fact_event(_row(dwell_min=42.5, created_hour=14))
+    schema.validate_event(event, json_schema)
+    assert (event["dwell_min"], event["created_hour"]) == (42.5, 14)
+
+
+def test_a_fact_without_a_scan_span_omits_dwell_rather_than_sending_null(json_schema):
+    event = schema.fact_event(_row(dwell_min=float("nan")))
+    schema.validate_event(event, json_schema)
+    assert "dwell_min" not in event

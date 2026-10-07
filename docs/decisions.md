@@ -2117,7 +2117,7 @@ outline exists (G-09, this week).
 
 Evidence: `https://iccci.org/sub.html` (read 2026-09-18).
 
-## D-053 · Serving the adopted model needs rolling state, not a lookup; it moves to Phase 3 — `DECIDED`
+## D-053 · Serving the adopted model needs rolling state, not a lookup; it moves to Phase 3 — `CLOSED by D-070`
 **Week 8 · Mounika · execution plan v3.1 §3, following D-050**
 
 D-050 left the serving champion on the Week 4 model and called wiring the adopted model
@@ -2257,3 +2257,271 @@ what moved since that point. Extraction accuracy will move again when rows 21-40
 the freeze working, and the row count beside it says why.
 
 Evidence: `benchmarks/results_freeze_v3.json`, `docs/RESULTS_SUMMARY.md`.
+
+## D-057 · The frontend is rebuilt on Next.js and statically exported to Vercel — `DECIDED`
+**v4.0 Phase F1 · Krishna · execution plan v4.0 §3**
+
+`src/dashboard/app.py` was 1,004 lines, one file, nine pages behind a sidebar radio
+button. It was honest and correct and it was a Week 1 skeleton that grew a page a week.
+What a first-time visitor saw was a build-status checklist, captions citing D-009 and
+P-24, three chart libraries on one site, and four pages that print "needs the local Spark
+session" on any host but the author's laptop.
+
+**Decided: Next.js 15 + React 19 + TypeScript + Tailwind, `output: 'export'`, on Vercel.**
+Observable Framework was the named fallback if the Overview page was not reading real JSON
+by the end of D2. It was, so path A stands.
+
+**Why static export is the right shape here and not just the fashionable one.** The public
+dashboard is read-only by decision (D-009 — the dashboard reads only cached artefacts).
+Eight of the ten routes therefore need nothing at runtime but JSON committed beside the
+code. That removes the entire class of problem the Streamlit deployment had: no container
+to sleep, no cold start, no "the URL is dead when someone clicks it from a CV".
+
+**What was kept rather than redesigned.** The eight severity cut points (D-058), the
+placement rule that position comes from the centre code and only the label from the name
+(D-019, P-21, P-24), and the caveats — D-053's served-vs-reported split and D-054's as-of
+precision — which are now asserted by `tests/test_web_numbers.py` rather than trusted to
+survive a redesign.
+
+Evidence: `web/`, `benchmarks/raw/` unchanged, `docs/deploy_web.md`.
+
+## D-058 · One chart library and one map library for the whole site — `DECIDED`
+**v4.0 Phase F1 · Krishna · execution plan v4.0 §3.3**
+
+**Decided: ECharts for every chart, MapLibre GL + deck.gl for the map.** The Streamlit app
+mixed `st.bar_chart`, Plotly and Folium, and mixed styling is most of why a dashboard reads
+as amateur. Every chart goes through one wrapper (`web/components/Chart.tsx`) that resolves
+the theme's own CSS variables, so a chart cannot keep dark-mode axis colours on a white
+background.
+
+**The eight severity cut points are carried over unchanged.** They were tuned against the
+real bottleneck distribution — median 1.39, p75 1.78, p95 3.42 — so the bins hold
+50 / 113 / 86 / 24 rather than piling 110 of 273 bottlenecks into one shade. Redesigning
+them for the web would have been a visual decision overriding a measured one.
+`test_severity_bins_are_the_tuned_ones` pins them.
+
+**The map basemap needs no API key.** CARTO's styles are served publicly, which matters
+because a key would have to be committed into a public bundle (D-062). The arcs are a
+deck.gl overlay rather than part of the style, so tiles failing degrades the map to arcs on
+a blank ground rather than to nothing.
+
+**The Chart wrapper is hand-written, not `echarts-for-react`.** That package's peer ranges
+had not caught up with React 19. Forty lines is cheaper than a dependency that blocks an
+upgrade.
+
+## D-059 · The site reads only generated JSON, and its numbers are tested against the freeze — `DECIDED`
+**v4.0 Phase F1 · Mounika · execution plan v4.0 §5.1**
+
+**Decided: `src/report/export_web.py` is the only writer of `web/public/data/`.** It reads
+`benchmarks/raw/` and the committed reference CSVs — no Spark, no `data/` — so it runs in
+CI on a fresh clone. Every file it writes carries its source path, generation time and
+freeze version, which is what makes the Evidence link on screen generated rather than typed.
+
+**Pre-aggregation is not an optimisation, it is the contract.** `w1_leg_summary.csv` is
+10.9 MB; the Overview needs a 40-bin histogram and four scalars, which is 1 KB. The whole
+site's data is 790 KB, 74 KB of it the corridor table after gzip.
+
+**The guard that matters.** `tests/test_web_numbers.py` diffs the exported JSON against
+`results_freeze_v3.json`, and `.github/workflows/web.yml` re-runs the export in CI and fails
+if the committed output differs. A number on the site and the same number in the paper
+therefore cannot drift apart without something going red. Four claims are pinned
+explicitly because they are the ones a redesign would quietly lose: the 10-leg and 30-leg
+top-20 lists stay disjoint (D-018), every corridor stays drawable (P-24), severity always
+carries a word and not only a hue (W-11), and the exception agent reports 58.6% and never
+the leaked 72.1% (D-054).
+
+## D-060 · The predictor names the model that scored the request — `DECIDED`
+**v4.0 Phase F1 · Lahari (copy) / Mounika (`model_id`) · W-05**
+
+D-053 left the project reporting one model and serving another. On a page with a form and
+a number, that gap is invisible unless the page says so.
+
+**Decided: every `/api/predict` response carries `model_id`, and the result card prints
+it.** The Predict page also carries the split in its own words above the form. A test
+(`test_the_served_model_is_named_as_not_the_reported_one`) fails if the served model ever
+equals the reported one without the note being updated, so the caveat cannot rot into a
+false claim once the stream does serve the adopted model.
+
+The scikit-learn serving twin from the plan's fallback was not needed: the decision is only
+reached if a cold-start measurement forces it, and no API is deployed yet to measure.
+
+## D-061 · The web app is the public artefact; Streamlit is retired at v1.1-web — `DECIDED`
+**v4.0 Phase F2 · Lahari · execution plan v4.0 §8**
+
+**Decided: `docs/deploy_dashboard.md` is superseded by `docs/deploy_web.md`, and
+G-08 closes on the Vercel URL rather than a Hugging Face Space.**
+
+**`src/dashboard/` is not deleted yet.** The plan retires it at the F2 gate, after the demo
+script is rewritten and the user test passes. Deleting it now would break
+`boot --dashboard` and the current demo script, and the Streamlit app is still the only
+surface for the pages that need a local Spark session. It stays until the API Space exists.
+
+## D-062 · Secrets exist only on the API Space; the web build is secret-free by construction — `DECIDED`
+**v4.0 Phase F1 · Mounika · W-16**
+
+A static bundle is published the moment it deploys, so anything committed under `web/` is
+public. **Decided: no credential ever enters `web/`.** The map needs no key by choice of
+basemap (D-058); the assistant's key will live as a Space secret and the browser will ask
+the API, which asks the model.
+
+Checked rather than asserted: the CI job greps the built bundle for Google, OpenAI and
+GitHub token patterns and fails on a hit.
+
+## D-063 · The public assistant defaults to the no-LLM route — `DECIDED`
+**v4.0 Phase F2 · Mounika · W-04**
+
+The free tier is 20 requests a day (`docs/cost.md`), which a public ask box can exhaust in
+an hour — during a demo, by a stranger.
+
+**Decided: `use_llm=false` is the default, LLM phrasing is capped server-side at 10 a day,
+and the UI shows the quota state rather than an error.** This costs less than it sounds:
+the assistant's routing and retrieval are code either way (D-041), so the extractive route
+returns the same facts in blunter prose. The frontend's checkbox is opt-in and labelled
+with the cap.
+
+## D-070 · The stream serves the reported model on event-time state; D-053 closes — `DECIDED`
+**Post-v1.0 (WP-11) · Mounika · closes D-053**
+
+D-053 scoped serving the v2 model as two pieces: a `hub|bucket` history the job did not
+join, and stateful windowed aggregation for the 7-day pair. Both are built. It went further
+than that scope in one respect, deliberately.
+
+**Decided:**
+
+1. **All history is event-time state, not only the two pieces D-053 named.** Every event is
+   keyed five ways (corridor, source hub, destination hub, and both hub-and-part-of-day
+   pairs) and folded through `applyInPandasWithState`. A fact updates the state of the keys
+   it belongs to; a query reads that state as of its own event time. Keeping the other 21
+   history features on a snapshot would have left D-054's replay leak in the served path,
+   and a model scored half on as-of history and half on end-of-data history reproduces
+   nothing.
+2. **One implementation, three callers.** The state is plain Python
+   (`src/streaming/state.py`). The stream, the what-if predictor and the tests all fold
+   events through it. It repeats Spark's arithmetic order (sequential sums, the
+   `CentralMomentAgg` update for the sample std, Spark's percentile interpolation, the
+   7-day RANGE frame over whole seconds) so that it equals the batch tables bit for bit,
+   not approximately.
+3. **v2 is the default; the champion path stays behind `--model champion`.** The W5 and W7
+   throughput files were measured on it, and `src.streaming.throughput` pins it so re-runs
+   still measure what those files describe.
+4. **Facts carry two optional fields** (`created_hour`, `dwell_min`). The schema change is
+   additive, and events and alerts written before WP-11 still validate. Alerts gain an
+   optional `model_id`.
+5. **The predictor is strictly as-of the departure asked about.** This replaces the Week 4
+   simplification of reading each key's newest snapshot whatever the date.
+
+**Evidence** (`benchmarks/raw/w10_stream_validation_v2.json`, from
+`python -m src.streaming.validate_v2`). The full 52,738-event replay went through the running
+job in two runs over one checkpoint, so the second half could score correctly only from state
+restored out of the state store:
+
+| check | result |
+|---|---|
+| sampled legs identical to batch (the acceptance test) | **500 of 500**, max difference 0.0 |
+| all legs identical to batch | **26,369 of 26,369** |
+| history features differing from `features_v2`, any leg, any of 26 columns | **0** |
+| test-split MAE from the stream's own predictions | **30.90** (30.9048), the reported figure |
+| facts dropped / events out of order | 0 / 0 |
+
+**The cost, stated.** The stateful stage runs every micro-batch. On this laptop the resumed
+run scored about 74 events/s of busy time, where the champion path managed 740 on the full
+replay (`w5_stream_throughput_full.json`). The replay offers about 880 events/s, so the v2
+stream does not keep up with a 60-second replay of the whole window. It keeps up with the real
+one: 26 days of events arrive at well under one event per second. Both numbers stay in the
+record; neither replaces the other.
+
+## D-071 · Alerts reach people: Telegram and email run live, receipts kept; G-07 closes — `DECIDED`
+**Post-v1.0 (WP-06) · Mounika · closes G-07, D-039's channel caveat**
+
+G-07 has been open since Week 5: the bot's Telegram and email channels were written and
+import-checked, but no credential existed, so only the file channel had ever sent anything.
+The credentials now exist. An alert channel is proved by a message arriving, not by the
+code calling the API, so this is what was decided about the run that closes it.
+
+**Decided:**
+
+1. **The proof is the provider's answer, kept.** Each send now returns a receipt
+   (Telegram's `message_id` and HTTP status; for SMTP, the generated `Message-ID` and the
+   server's report of zero refused recipients), and `--record` appends them to
+   `benchmarks/raw/f2_alert_channel_live.json`. A send the provider did not acknowledge
+   counts as a failure. A Telegram reply with `ok: false` used to pass silently and now raises.
+2. **Identifiers are masked in the committed record.** The chat id keeps its last four digits
+   and the address keeps two letters and its domain: enough to tell two destinations apart,
+   not enough to reach anyone. A scan of the file against every value in `.env` found none.
+3. **Real alerts, from a real replay, under D-039's own policy.** 2,000 legs went through the
+   producer and the streaming job, which raised 1,347 alerts, the W6 count. The bot sent the
+   three most severe by excess over their own threshold, on each channel, each channel with
+   its own sent-state so neither suppresses the other. No hand-written test message counts.
+4. **Three per channel, not more.** The cap is the bot's existing `--top`. The run proves
+   the channel; it does not page a person 1,347 times to do it.
+
+**Evidence:** `f2_alert_channel_live.json`: telegram 3 sent, 0 failed; email 3 sent, 0 failed.
+
+**Also fixed while proving it.** Two tests had silently depended on this machine having no
+credentials and on nobody noticing a rewritten file. `test_an_unconfigured_channel_refuses…`
+read the real `.env` through `config` and stopped refusing the moment a bot existed, and
+`test_a_batch_run_matches_the_seeded_truth` rewrote the committed
+`w6_invoice_cases.json` on every run. Both now set their own state.
+
+## D-072 · The public API: six routes, no TMS, limits in-process — `DECIDED`
+**Post-v1.0 (WP-04) · Mounika · the work order's D-064, renumbered: D-064 to D-069 were reserved by it, unwritten**
+
+`src/api/app.py` is the API behind the site's four live pages. What it is, and the choices
+with a trade-off:
+
+1. **Six routes and nothing else** (`/health`, predict and its status, alerts, traces,
+   ask). A test asserts the route table, so a seventh cannot arrive unnoticed.
+2. **The TMS is absent, not guarded.** The work order allowed binding it to localhost or
+   keying its routes. Neither is needed: the public container imports no TMS route, so
+   every TMS path is a 404 and there is no write route for a key to protect. The agents
+   that need the TMS run from the repository, where it does.
+3. **Limits written here, not taken from `slowapi`.** 30 predictions a minute per client
+   and two in flight at once, 5 questions a minute, 120 reads a minute, 10 model answers a
+   day in total, bounded inputs, 4 KB bodies. That is about forty lines
+   (`src/api/limits.py`), keyed on the first `X-Forwarded-For` hop (the visitor, not the
+   proxy) and hashed, so neither the limiter nor the logs hold an address. A refusal is a
+   429 with `Retry-After`, which the site renders as "busy".
+4. **Alerts are a recorded run, served live and labelled.** No stream runs in a free
+   container. The API releases the v2 stream's 13,626 recorded alerts in order, a few per
+   poll; every response carries `mode: "replay"`, and the Alerts page shows that label.
+   Severity is the exception agent's own (`severity_for` after `investigate`), so the word
+   means the same on the page and in a ticket.
+5. **Traces never echo inputs.** The console needs agent, time, outcome; a public route
+   that returned what one visitor typed to the next would be a leak by design.
+
+**Evidence:** `tests/test_api.py` (29 tests). Measured on the local server: warm predict
+p95 665 ms over 20 requests; 200 requests from one client gave 127 × 429 and 0 × 5xx.
+
+## D-073 · Served from a free host with no JVM and no data — `DECIDED`
+**Post-v1.0 (WP-04) · Mounika · follows D-072**
+
+The plan was a free Hugging Face Docker Space. Creating it returned **402 Payment
+Required**: Docker and Gradio Spaces on free CPU now need a paid subscription. The work
+order rules out paid infrastructure, so the API moved to Render's free plan: 512 MB of
+memory and no JVM to spare. Two things had to change, and both were proved, not assumed.
+
+1. **The model runs without Spark.** MLlib saves a GBT as two small parquet files: the
+   nodes and the tree weights. `src/ml/gbt_local.py` reads them and walks the 200 trees in
+   numpy. On all 26,369 legs it is **identical to Spark, bit for bit**
+   (`benchmarks/raw/w10_gbt_local_equivalence.json`), but only with the right summation:
+   Spark adds the tree outputs with a BLAS dot product that accumulates in four lanes, and
+   a plain left-to-right sum matched on only 2,009 legs, the rest off in the last bit. The
+   verification compares four groupings and records them all, and it runs through the JSON
+   file the host reads, not the parquet original.
+2. **The host carries no Delhivery record.** `DATA_LICENSE.md` says the dataset is not
+   redistributed. The predictor's history is a fold over every leg's outcome, but the public
+   predictor only predicts *today*, and for a departure that late every feature depends
+   only on per-key aggregates. `src/ml/history_snapshot.py` stores those aggregates: counts,
+   means, the median and p90, the last value and its time. It reads exactly what the fold
+   reads on **52,738 of 52,738** checks, and refuses a departure early enough that it would
+   not. The alert feed carries corridor, predicted gap and severity, with no time and no id.
+   `scripts/build_api_bundle.py` refuses to finish if any file contains a trip id, a leg id
+   or an event time.
+
+**Measured locally in the host's configuration** (numpy engine, snapshot, no parquet): no
+JVM process, ready 1 s after start, about 0.3 s a prediction, 366 MB with the assistant's
+index loaded. **Measured from the public URL** (control-tower-api.onrender.com, free plan,
+Singapore): `/health` 200; every TMS write route 404; 20 warm predictions p50 292 ms, p95 345 ms
+(`f1_api_latency.json`); 200 requests from one client in 16 s gave 127 × 429 and 0 × 5xx
+(`f1_api_load_test.json`).
+

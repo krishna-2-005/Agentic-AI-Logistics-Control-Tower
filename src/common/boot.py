@@ -42,6 +42,7 @@ import sys
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
+from typing import Any
 
 import httpx
 from sqlalchemy.dialects.sqlite import dialect as sqlite_dialect
@@ -210,7 +211,7 @@ class Service:
         handle = self.log_path.open("w", encoding="utf-8")
         # New process group so a Ctrl-C in the parent does not race the child's own
         # handler -- boot stops its children deliberately, in order, in `stop_all`.
-        kwargs = {"stdout": handle, "stderr": subprocess.STDOUT}
+        kwargs: dict[str, Any] = {"stdout": handle, "stderr": subprocess.STDOUT}
         if sys.platform == "win32":
             kwargs["creationflags"] = subprocess.CREATE_NEW_PROCESS_GROUP
         else:

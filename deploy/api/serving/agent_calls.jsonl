@@ -1,0 +1,459 @@
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:03.964+05:30", "duration_ms": 4.7, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:03.974+05:30", "duration_ms": 1.9, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:03.978+05:30", "duration_ms": 1.5, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:03.982+05:30", "duration_ms": 1.3, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:03.982+05:30", "duration_ms": 8.7, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:03.994+05:30", "duration_ms": 1.9, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:03.994+05:30", "duration_ms": 1076.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:05.075+05:30", "duration_ms": 158.8, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:05.244+05:30", "duration_ms": 175.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:05.433+05:30", "duration_ms": 154.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:05.589+05:30", "duration_ms": 176.9, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:05.768+05:30", "duration_ms": 166.9, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:05.936+05:30", "duration_ms": 176.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:06.113+05:30", "duration_ms": 178.9, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:06.294+05:30", "duration_ms": 155.4, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:06.446+05:30", "duration_ms": 179.6, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:06.630+05:30", "duration_ms": 192.8, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:06.824+05:30", "duration_ms": 154.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:06.979+05:30", "duration_ms": 171.4, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:07.152+05:30", "duration_ms": 161.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:07.307+05:30", "duration_ms": 171.7, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:07.491+05:30", "duration_ms": 174.2, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:07.663+05:30", "duration_ms": 175.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:07.842+05:30", "duration_ms": 164.1, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:07.997+05:30", "duration_ms": 178.5, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:08.178+05:30", "duration_ms": 171.2, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:08.356+05:30", "duration_ms": 178.8, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:08.535+05:30", "duration_ms": 167.7, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:08.709+05:30", "duration_ms": 157.5, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T10:42:08.867+05:30", "duration_ms": 157.7, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:32:11.873+05:30", "duration_ms": 15380.2, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:32:27.267+05:30", "duration_ms": 10802.0, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:32:38.079+05:30", "duration_ms": 15336.5, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:32:53.410+05:30", "duration_ms": 26547.2, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:33:19.965+05:30", "duration_ms": 12691.7, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:33:32.659+05:30", "duration_ms": 27342.8, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:34:00.011+05:30", "duration_ms": 12363.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:34:12.378+05:30", "duration_ms": 7686.6, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:34:20.061+05:30", "duration_ms": 7876.1, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:34:27.952+05:30", "duration_ms": 5937.4, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:34:33.894+05:30", "duration_ms": 7473.6, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:34:41.358+05:30", "duration_ms": 11269.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:34:52.639+05:30", "duration_ms": 17088.6, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:35:09.730+05:30", "duration_ms": 3687.6, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:35:13.424+05:30", "duration_ms": 10334.6, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:35:23.762+05:30", "duration_ms": 7676.4, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:35:31.443+05:30", "duration_ms": 16688.8, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-18T12:35:48.133+05:30", "duration_ms": 3482.0, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:30:40.148+05:30", "duration_ms": 25194.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:05.376+05:30", "duration_ms": 7725.4, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:13.105+05:30", "duration_ms": 11039.2, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:24.146+05:30", "duration_ms": 7174.2, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:31.340+05:30", "duration_ms": 11584.0, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:42.951+05:30", "duration_ms": 4916.9, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:47.897+05:30", "duration_ms": 899.2, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:48.799+05:30", "duration_ms": 935.3, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:49.738+05:30", "duration_ms": 7387.2, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:57.130+05:30", "duration_ms": 898.5, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:58.031+05:30", "duration_ms": 953.9, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:31:58.988+05:30", "duration_ms": 4880.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:32:07.474+05:30", "duration_ms": 16228.9, "error": null, "outputs": {}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:32:24.639+05:30", "duration_ms": 16202.5, "error": null, "outputs": {}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:32:41.264+05:30", "duration_ms": 15726.9, "error": null, "outputs": {}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:32:57.038+05:30", "duration_ms": 20449.9, "error": null, "outputs": {}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:33:17.929+05:30", "duration_ms": 33107.8, "error": null, "outputs": {}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:33:51.083+05:30", "duration_ms": 9517.6, "error": null, "outputs": {}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:19.527+05:30", "duration_ms": 33.2, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:19.561+05:30", "duration_ms": 1.9, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:19.563+05:30", "duration_ms": 8.3, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:19.572+05:30", "duration_ms": 1.3, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:19.574+05:30", "duration_ms": 21.0, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:19.596+05:30", "duration_ms": 1.7, "error": null, "outputs": {"route": "table"}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:34:00.981+05:30", "duration_ms": 18672.4, "error": "error", "outputs": {}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:19.598+05:30", "duration_ms": 1345.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:20.944+05:30", "duration_ms": 203.2, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:21.148+05:30", "duration_ms": 205.0, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:21.354+05:30", "duration_ms": 217.4, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:21.571+05:30", "duration_ms": 193.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:21.766+05:30", "duration_ms": 191.0, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:21.958+05:30", "duration_ms": 422.7, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:22.384+05:30", "duration_ms": 890.9, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:23.277+05:30", "duration_ms": 934.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:24.214+05:30", "duration_ms": 924.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:25.140+05:30", "duration_ms": 924.1, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:34:19.671+05:30", "duration_ms": 6947.7, "error": null, "outputs": {}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:26.067+05:30", "duration_ms": 1002.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:27.069+05:30", "duration_ms": 928.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:28.018+05:30", "duration_ms": 939.1, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:28.957+05:30", "duration_ms": 904.6, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:29.864+05:30", "duration_ms": 917.6, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:30.784+05:30", "duration_ms": 918.2, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:31.704+05:30", "duration_ms": 932.6, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:32.639+05:30", "duration_ms": 881.6, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:33.522+05:30", "duration_ms": 1134.8, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:34.658+05:30", "duration_ms": 883.1, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:35.542+05:30", "duration_ms": 871.6, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:36.415+05:30", "duration_ms": 911.5, "error": null, "outputs": {"route": "refused"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:34:37.328+05:30", "duration_ms": 897.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:34:27.233+05:30", "duration_ms": 35786.9, "error": null, "outputs": {}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:35:03.067+05:30", "duration_ms": 10699.5, "error": null, "outputs": {}}
+{"agent": "document_extraction", "started_at": "2026-09-19T18:35:14.075+05:30", "duration_ms": 2805.0, "error": "error", "outputs": {}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:40:35.800+05:30", "duration_ms": 4.7, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:40:35.821+05:30", "duration_ms": 1.9, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:40:35.823+05:30", "duration_ms": 1.4, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:40:35.824+05:30", "duration_ms": 1.3, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:40:35.826+05:30", "duration_ms": 9.2, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:40:35.835+05:30", "duration_ms": 1028.9, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:40:36.865+05:30", "duration_ms": 179.9, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:40:37.045+05:30", "duration_ms": 172.4, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:26.962+05:30", "duration_ms": 1004.0, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:27.966+05:30", "duration_ms": 153.1, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:28.136+05:30", "duration_ms": 189.1, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:28.325+05:30", "duration_ms": 164.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:28.490+05:30", "duration_ms": 157.5, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:28.648+05:30", "duration_ms": 152.9, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:28.802+05:30", "duration_ms": 163.1, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:28.981+05:30", "duration_ms": 159.1, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:29.141+05:30", "duration_ms": 157.0, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:29.298+05:30", "duration_ms": 156.0, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:29.455+05:30", "duration_ms": 692.2, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-09-19T18:41:30.148+05:30", "duration_ms": 868.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "orchestrator", "started_at": "2026-09-19T23:25:20.092+05:30", "duration_ms": 8963.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-19T23:25:29.062+05:30", "duration_ms": 8895.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-19T23:25:37.964+05:30", "duration_ms": 8943.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-19T23:25:46.911+05:30", "duration_ms": 8916.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-19T23:25:55.835+05:30", "duration_ms": 8857.2, "error": null, "outputs": {}}
+{"agent": "analytics_assistant", "started_at": "2026-09-23T09:18:01.178+05:30", "duration_ms": 10389.9, "error": null, "outputs": {"route": "table"}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.544+05:30", "duration_ms": 16.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.570+05:30", "duration_ms": 10.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.588+05:30", "duration_ms": 11.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.607+05:30", "duration_ms": 24.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.639+05:30", "duration_ms": 21.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.667+05:30", "duration_ms": 9.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.683+05:30", "duration_ms": 9.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.699+05:30", "duration_ms": 9.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.716+05:30", "duration_ms": 19.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.742+05:30", "duration_ms": 8.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.758+05:30", "duration_ms": 18.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.783+05:30", "duration_ms": 9.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.799+05:30", "duration_ms": 9.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.815+05:30", "duration_ms": 9.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.832+05:30", "duration_ms": 9.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.847+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.857+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.866+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.876+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.885+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.895+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.904+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.914+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.923+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.932+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.941+05:30", "duration_ms": 4.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.953+05:30", "duration_ms": 3.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.963+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.972+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.982+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:15.991+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.001+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.011+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.020+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.030+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.039+05:30", "duration_ms": 9.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.056+05:30", "duration_ms": 8.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.071+05:30", "duration_ms": 10.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.089+05:30", "duration_ms": 18.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.114+05:30", "duration_ms": 20.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.142+05:30", "duration_ms": 9.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.159+05:30", "duration_ms": 8.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.174+05:30", "duration_ms": 9.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.190+05:30", "duration_ms": 9.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.207+05:30", "duration_ms": 8.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.223+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.234+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.244+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.254+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.263+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.273+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.282+05:30", "duration_ms": 3.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.292+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.301+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.310+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.320+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.333+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.342+05:30", "duration_ms": 3.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.352+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.361+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.371+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.380+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.390+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.400+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.409+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.422+05:30", "duration_ms": 9.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.438+05:30", "duration_ms": 9.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.455+05:30", "duration_ms": 8.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.474+05:30", "duration_ms": 8.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.490+05:30", "duration_ms": 9.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.506+05:30", "duration_ms": 8.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.521+05:30", "duration_ms": 9.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.537+05:30", "duration_ms": 8.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.553+05:30", "duration_ms": 10.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.571+05:30", "duration_ms": 9.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.588+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.597+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.607+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.616+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.625+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.634+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.643+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.652+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.661+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.670+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.679+05:30", "duration_ms": 9.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.695+05:30", "duration_ms": 9.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.712+05:30", "duration_ms": 16.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.735+05:30", "duration_ms": 9.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.752+05:30", "duration_ms": 8.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.767+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.776+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.785+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.795+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.804+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.812+05:30", "duration_ms": 9.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.829+05:30", "duration_ms": 8.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.844+05:30", "duration_ms": 16.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.868+05:30", "duration_ms": 8.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:16.884+05:30", "duration_ms": 9.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:36.826+05:30", "duration_ms": 20.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:36.857+05:30", "duration_ms": 9.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:36.873+05:30", "duration_ms": 8.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:36.888+05:30", "duration_ms": 17.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:36.912+05:30", "duration_ms": 17.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:36.937+05:30", "duration_ms": 8.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:36.953+05:30", "duration_ms": 9.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:36.969+05:30", "duration_ms": 8.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:36.984+05:30", "duration_ms": 16.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.008+05:30", "duration_ms": 8.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.024+05:30", "duration_ms": 17.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.047+05:30", "duration_ms": 8.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.063+05:30", "duration_ms": 9.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.079+05:30", "duration_ms": 8.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.095+05:30", "duration_ms": 8.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.110+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.119+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.128+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.137+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.146+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.155+05:30", "duration_ms": 3.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.165+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.173+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.182+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.192+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.202+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.212+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.222+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.231+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.241+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.250+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.259+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.268+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.278+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.287+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.296+05:30", "duration_ms": 10.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.313+05:30", "duration_ms": 8.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.329+05:30", "duration_ms": 8.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.344+05:30", "duration_ms": 17.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.368+05:30", "duration_ms": 16.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.392+05:30", "duration_ms": 8.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.407+05:30", "duration_ms": 8.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.422+05:30", "duration_ms": 9.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.438+05:30", "duration_ms": 9.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.454+05:30", "duration_ms": 8.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.469+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.478+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.488+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.497+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.506+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.515+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.524+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.533+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.542+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.551+05:30", "duration_ms": 3.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.561+05:30", "duration_ms": 4.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.573+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.582+05:30", "duration_ms": 3.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.592+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.602+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.611+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.621+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.630+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.641+05:30", "duration_ms": 3.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.651+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.660+05:30", "duration_ms": 9.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.677+05:30", "duration_ms": 9.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.693+05:30", "duration_ms": 10.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.711+05:30", "duration_ms": 9.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.727+05:30", "duration_ms": 10.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.745+05:30", "duration_ms": 9.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.761+05:30", "duration_ms": 9.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.778+05:30", "duration_ms": 9.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.795+05:30", "duration_ms": 9.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.811+05:30", "duration_ms": 9.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.828+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.838+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.847+05:30", "duration_ms": 3.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.858+05:30", "duration_ms": 3.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.869+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.878+05:30", "duration_ms": 3.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.888+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.898+05:30", "duration_ms": 2.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.907+05:30", "duration_ms": 3.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.917+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.927+05:30", "duration_ms": 9.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.944+05:30", "duration_ms": 9.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.960+05:30", "duration_ms": 18.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:37.985+05:30", "duration_ms": 9.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.002+05:30", "duration_ms": 9.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.017+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.027+05:30", "duration_ms": 3.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.037+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.047+05:30", "duration_ms": 3.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.057+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.067+05:30", "duration_ms": 10.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.085+05:30", "duration_ms": 9.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.102+05:30", "duration_ms": 18.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.127+05:30", "duration_ms": 9.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:38.144+05:30", "duration_ms": 9.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.112+05:30", "duration_ms": 15.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.135+05:30", "duration_ms": 17.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.159+05:30", "duration_ms": 8.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.174+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.183+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.192+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.200+05:30", "duration_ms": 2.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.209+05:30", "duration_ms": 8.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.225+05:30", "duration_ms": 18.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.250+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.259+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.268+05:30", "duration_ms": 2.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.277+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.287+05:30", "duration_ms": 8.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.303+05:30", "duration_ms": 8.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.318+05:30", "duration_ms": 2.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.327+05:30", "duration_ms": 2.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.335+05:30", "duration_ms": 17.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.360+05:30", "duration_ms": 2.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:37:48.368+05:30", "duration_ms": 8.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:33.995+05:30", "duration_ms": 30.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.033+05:30", "duration_ms": 11.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.052+05:30", "duration_ms": 12.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.072+05:30", "duration_ms": 23.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.103+05:30", "duration_ms": 20.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.132+05:30", "duration_ms": 10.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.150+05:30", "duration_ms": 10.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.168+05:30", "duration_ms": 10.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.187+05:30", "duration_ms": 21.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.215+05:30", "duration_ms": 10.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.234+05:30", "duration_ms": 20.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.262+05:30", "duration_ms": 10.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.280+05:30", "duration_ms": 15.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.303+05:30", "duration_ms": 11.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.322+05:30", "duration_ms": 10.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.340+05:30", "duration_ms": 3.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.351+05:30", "duration_ms": 3.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.361+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.371+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.381+05:30", "duration_ms": 7.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.396+05:30", "duration_ms": 3.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.405+05:30", "duration_ms": 2.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.415+05:30", "duration_ms": 2.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.425+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.436+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.448+05:30", "duration_ms": 3.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.459+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.470+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.482+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.493+05:30", "duration_ms": 4.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.506+05:30", "duration_ms": 3.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.518+05:30", "duration_ms": 3.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.529+05:30", "duration_ms": 3.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.539+05:30", "duration_ms": 3.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.551+05:30", "duration_ms": 3.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.561+05:30", "duration_ms": 11.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.580+05:30", "duration_ms": 10.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.598+05:30", "duration_ms": 9.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.615+05:30", "duration_ms": 20.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.643+05:30", "duration_ms": 20.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.670+05:30", "duration_ms": 11.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.689+05:30", "duration_ms": 9.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.706+05:30", "duration_ms": 10.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.725+05:30", "duration_ms": 11.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.744+05:30", "duration_ms": 10.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.762+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.774+05:30", "duration_ms": 3.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.785+05:30", "duration_ms": 3.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.798+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.809+05:30", "duration_ms": 3.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.820+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.832+05:30", "duration_ms": 3.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.843+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.855+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.866+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.878+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.890+05:30", "duration_ms": 3.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.902+05:30", "duration_ms": 4.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.915+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.928+05:30", "duration_ms": 3.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.940+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.951+05:30", "duration_ms": 3.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.963+05:30", "duration_ms": 3.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.975+05:30", "duration_ms": 3.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.987+05:30", "duration_ms": 3.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:34.998+05:30", "duration_ms": 11.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.020+05:30", "duration_ms": 13.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.043+05:30", "duration_ms": 13.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.065+05:30", "duration_ms": 12.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.087+05:30", "duration_ms": 12.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.108+05:30", "duration_ms": 11.9, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.128+05:30", "duration_ms": 12.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.149+05:30", "duration_ms": 11.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.169+05:30", "duration_ms": 11.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.189+05:30", "duration_ms": 11.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.210+05:30", "duration_ms": 3.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.222+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.233+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.245+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.257+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.269+05:30", "duration_ms": 3.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.281+05:30", "duration_ms": 3.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.293+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.304+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.316+05:30", "duration_ms": 3.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.328+05:30", "duration_ms": 11.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.347+05:30", "duration_ms": 10.7, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.366+05:30", "duration_ms": 22.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.396+05:30", "duration_ms": 10.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.414+05:30", "duration_ms": 9.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.430+05:30", "duration_ms": 3.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.440+05:30", "duration_ms": 3.5, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.450+05:30", "duration_ms": 3.3, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.461+05:30", "duration_ms": 3.4, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.472+05:30", "duration_ms": 3.0, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.482+05:30", "duration_ms": 10.8, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.501+05:30", "duration_ms": 13.1, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.522+05:30", "duration_ms": 20.2, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.550+05:30", "duration_ms": 10.6, "error": null, "outputs": {}}
+{"agent": "orchestrator", "started_at": "2026-09-27T13:39:35.568+05:30", "duration_ms": 11.1, "error": null, "outputs": {}}
+{"agent": "analytics_assistant", "started_at": "2026-10-03T23:18:04.191+05:30", "duration_ms": 43.0, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-03T23:18:04.296+05:30", "duration_ms": 7.5, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-03T23:18:04.309+05:30", "duration_ms": 5.7, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-03T23:18:04.325+05:30", "duration_ms": 12.4, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-03T23:18:04.324+05:30", "duration_ms": 10.9, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-03T23:26:09.056+05:30", "duration_ms": 7.4, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-03T23:26:09.056+05:30", "duration_ms": 9.2, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-03T23:26:09.057+05:30", "duration_ms": 10.3, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-03T23:26:09.421+05:30", "duration_ms": 2.0, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-04T00:13:28.339+05:30", "duration_ms": 56.8, "error": null, "outputs": {"route": "table"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-04T00:21:42.928+05:30", "duration_ms": 4417.3, "error": null, "outputs": {"route": "retrieval"}}
+{"agent": "analytics_assistant", "started_at": "2026-10-04T00:21:47.613+05:30", "duration_ms": 1508.7, "error": null, "outputs": {"route": "refused"}}
