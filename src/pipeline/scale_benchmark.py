@@ -36,7 +36,7 @@ import json
 import multiprocessing
 import time
 import urllib.request
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pyspark.sql import DataFrame, SparkSession
@@ -159,7 +159,7 @@ def run(months: int, cores: int | None, include_delhivery: bool = True) -> dict:
         spark.stop()
 
     report = {
-        "generated_at": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "generated_at": datetime.now(UTC).isoformat(timespec="seconds"),
         "code_under_test": ["src.ml.audit.network_baseline", "src.ml.audit.corridor_aggregate"],
         "identical_code": True,
         "parameters_changed": {"spark.sql.shuffle.partitions": f"max(8, cores*2) instead of the usual 8, "

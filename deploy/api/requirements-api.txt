@@ -1,0 +1,20 @@
+# What the public API container imports (WP-04), pinned to requirements.lock so the
+# container runs the versions the test suite ran. Derived by importing the API's modules
+# and listing what came in, plus the two imported lazily: chromadb (the assistant's
+# retrieval route) and langchain-google-genai (only when a visitor opts into the model).
+fastapi==0.141.1
+uvicorn==0.54.0
+pydantic==2.13.5
+python-multipart==0.0.32
+pandas==2.3.3
+numpy==2.5.3
+pyarrow==25.0.1
+pyspark==4.0.4
+scikit-learn==1.9.1
+scipy==1.18.1
+httpx==0.28.1
+python-dotenv==1.2.3
+jsonschema==4.26.0
+langchain-core==1.6.5
+langchain-google-genai==4.4.0
+chromadb==1.5.9

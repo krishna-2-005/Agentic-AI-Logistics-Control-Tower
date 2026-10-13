@@ -154,7 +154,7 @@ def test_ocr_confusion_flips_exactly_one_documented_character_class():
     corrupted = seed_errors._corrupt_one_char("IND282002AAD", random.Random(1))
     assert corrupted is not None
     assert len(corrupted) == len("IND282002AAD")
-    diffs = [(a, b) for a, b in zip("IND282002AAD", corrupted) if a != b]
+    diffs = [(a, b) for a, b in zip("IND282002AAD", corrupted, strict=True) if a != b]
     assert len(diffs) == 1
     original, new = diffs[0]
     assert seed_errors._CONFUSIONS[original] == new

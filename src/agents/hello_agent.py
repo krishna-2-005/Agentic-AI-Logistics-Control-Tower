@@ -201,7 +201,7 @@ def build_graph() -> StateGraph:
     graph.add_edge("answer", END)
     graph.add_edge("refuse", END)
 
-    return graph.compile(checkpointer=MemorySaver())
+    return graph.compile(checkpointer=MemorySaver())  # type: ignore[return-value]  # langgraph's compile() returns CompiledStateGraph, which its own annotation does not admit
 
 
 DEFAULT_QUESTIONS = [
@@ -226,7 +226,7 @@ def main() -> int:
 
     log.info("LLM config: %s", describe())
     app = build_graph()
-    log.info("Graph compiled: nodes=%s", sorted(app.get_graph().nodes))
+    log.info("Graph compiled: nodes=%s", sorted(app.get_graph().nodes))  # type: ignore[attr-defined]  # same langgraph annotation gap
 
     if args.dry_run:
         log.info("Dry run — graph wiring is valid, no API call made.")
@@ -234,7 +234,7 @@ def main() -> int:
 
     questions = args.question or DEFAULT_QUESTIONS
     for i, question in enumerate(questions, start=1):
-        result = app.invoke(
+        result = app.invoke(  # type: ignore[attr-defined]  # same langgraph annotation gap
             {"question": question, "trace": []},
             config={"configurable": {"thread_id": f"hello-{i}"}},
         )

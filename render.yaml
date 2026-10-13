@@ -1,0 +1,22 @@
+# The public API on Render's free plan (WP-04, D-073). Render reads this file when the
+# service is created as a Blueprint from this repository.
+services:
+  - type: web
+    name: control-tower-api
+    runtime: docker
+    plan: free
+    region: singapore
+    branch: dev
+    dockerfilePath: ./deploy/api/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: SERVING_ENGINE
+        value: numpy
+      # Only used when a visitor opts into a model-written answer, capped at 10 a day.
+      # Set in the Render dashboard; never committed.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: LLM_MODEL
+        sync: false

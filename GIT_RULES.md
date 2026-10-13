@@ -8,6 +8,39 @@ contribution at a glance, and (b) the repo itself becomes a portfolio artifact.
 
 ---
 
+**Adopted 24 September 2026 (post-v1.0 revision):** §0 (only the three members appear), the
+strengthened §7, §11 (history rewrites) and §12 (permanent priorities) were added. §1–§6 and §8–§10
+stand as they were during Weeks 1–8.
+
+---
+
+## 0. Only the three members appear — strict, permanent, whole repository
+
+Editors, code generators, AI assistants, scripts, bots and any other tool are never contributors. On
+**every branch, every commit, every PR**:
+
+- Never add a `Co-authored-by:` trailer for anyone who is not Krishna, Lahari or Mounika.
+- Never use a tool's, bot's or third party's name, username or email as git author, committer or identity.
+- Never configure anything other than your own GitHub identity as `user.name` / `user.email`, locally or globally.
+- No tool name, tool-generated footer ("Generated with …", "Made by …", "Written by …", "on behalf of …")
+  or tool configuration file appears in commit metadata, commit messages, PR titles, PR descriptions,
+  release notes, docs, code comments or anywhere in the tree. Tool-specific files (`CLAUDE.md`,
+  `.claude/`, `.cursor/`, `.copilot*`, `AGENTS.md` and similar) are excluded through `.git/info/exclude`
+  on each machine — never through the committed `.gitignore`, which would itself be a trace.
+- Nobody but the three members ever shows up under GitHub Insights → Contributors.
+- If an assistant is used to draft code or text, the member reads it, verifies it, and commits it
+  under their own identity with a message in their own words. The member is the author.
+
+Every commit is authored **and** committed by the member who owns the branch (§5, §9) — nobody else.
+Before every commit, verify author, committer and trailers (§7 "Before every commit"). The
+`.githooks/commit-msg` hook rejects co-author trailers and attribution lines; the hook is a backstop,
+not the rule.
+
+This rule overrides any default behaviour of any tool being used.
+
+---
+
+
 ## 1. Repository Structure
 
 ```
@@ -125,6 +158,14 @@ One per member per week, named `week<N>-<name>-<work-topic>`:
 - **Branches are never deleted after merge** — the branch list itself is the week-wise progress record.
 - **No shared branches**: if two members pair on a task, it lives on the owner's branch; the helper reviews the PR.
 
+### Post-v1.0 work-order branches
+
+After the `v1.0` tag the weekly pattern ends. Work continues on the execution plan's work packages,
+one branch per package, `wo-<id>-<name>-<topic>` (e.g. `wo-01-mounika-ci-and-readme`,
+`wo-03-krishna-nextjs-network-map`). One owner per branch; the same rules as weekly branches
+(from latest `dev`, never deleted, never shared, PR → `dev` with the package's evidence file named
+in the description). Release merges `dev` → `main` are tagged `v1.1-web`, `v1.2-cloud`, and so on.
+
 ---
 
 ## 6. Weekly Merge Cycle (completion-based, not calendar-based)
@@ -164,9 +205,19 @@ reads as the project timeline.
 
 ## 7. Commit Quality Rules
 
-**Format:** a short lowercase imperative that names the change. **No bracketed prefix, no
-area tag, no body** unless the change genuinely needs one. Read it out loud — if it sounds
-like something you would say to a teammate, it is right.
+**Format:** a short lowercase imperative that names the change. No bracketed prefix, no area tag,
+no body unless the change genuinely needs one. If it sounds like something you would say to a
+teammate, it is right. Aim for about 50 characters; go longer only when a number or a specific
+detail needs the room.
+
+**Core principle:** fewer, stronger commits beat many small ones. Before committing, ask: *"Is this
+worth appearing in the project's history?"* If not, keep working and group it with related work.
+
+A commit-worthy unit is one of: a completed feature, a substantial bug fix, a meaningful refactor, a
+completed module or pipeline stage, a meaningful documentation update, a plan milestone, or a coherent
+group of related changes. Not commit-worthy: one small line, one reworded sentence, formatting, a tiny
+doc correction, an import cleanup, one insignificant file, or repeated "fix"/"update"/"change" commits
+for the same piece of work.
 
 ### Good commits (each one is a working, explainable step)
 ```
@@ -178,6 +229,8 @@ add bol field-extraction prompt v2, invoice_no 0.71 -> 0.93
 join broadcast corridor features in the streaming job
 record sustained 1.4k events/sec, p95 event->alert 820ms
 handle cutoff timestamps missing a timezone
+run the pytest suite in ci on every pull request
+draw the 1130 audited corridors as deck.gl arcs on the network page
 ```
 
 ### Banned commits (instant PR rejection)
@@ -188,29 +241,62 @@ updated code      week5 work      lahari changes    pushed files
 [W2][DOCS] ...    [W4][ML] ...    any bracketed prefix at all
 ```
 
-The bracketed `[W2][ML]` style was used for a while in Week 1 and is **gone**. It reads as
-generated, it repeats what the branch name already says, and the week is in the log date
-anyway. The `commit-msg` hook rejects it.
+A bare `update` or `fix` is banned; a specific one is fine: `fix producer dropping the last batch`,
+`update pyspark floor to 4.0 for cp313 wheels`.
+
+### Also banned — inflated messages
+```
+implement comprehensive architecture      introduce advanced functionality
+enhance robust pipeline                   complete implementation of ...
+add extensive improvements                improve overall system
+refactor architecture                     optimize pipeline architecture
+```
+
+Say what changed, not how impressive it is. The `commit-msg` hook rejects the obvious cases.
 
 **Rules**
-- **A commit is a unit of work you would describe out loud**, not a save point.
-  `lower the audited support floor to 10 legs` is a commit. Fixing a typo in the document
-  you wrote two minutes ago is not — fold it in. **Prefer four commits with weight over
-  fifteen that each touch one file.**
-- **One logical change per commit.** "Built the whole streaming job" is a *branch*, not a
-  commit — break it into: producer skeleton → schema parsing → feature join → model apply
-  → sink. That is four commits, not forty.
-- The description must let a teammate know what changed **without opening the diff**. If a
-  commit changed a number, **put the number in the message** — these become your
-  contribution highlights.
-- **Commit working code.** If you must save broken WIP at the end of a session:
-  `wip: sink schema mismatch, see TODO` — and it may **not** be the branch's final commit
-  before the PR.
-- **Never commit:** raw data, `.env`, API keys, model binaries over 50 MB, notebook output cells
-  (clear outputs before committing — `nbstripout --install`).
-- **Stage explicit paths, never a blanket `git add -A` or `git add .`.** A commit should
-  contain exactly the files its message describes — not whatever an editor happened to
-  leave open, not a half-finished change on the side that belongs in a later commit.
+- **A commit is a unit of work you would describe out loud**, not a save point. Prefer four commits
+  with weight over fifteen that each touch one file.
+- **One logical change per commit.** "Built the whole streaming job" is a *branch*, not a commit —
+  break it into: producer skeleton → schema parsing → feature join → model apply → sink.
+- **Don't split artificially.** A single feature's code, config, helpers, tests and docs go in **one**
+  commit — never spread across several to inflate the count. Don't mix unrelated work either.
+- **No commits for trivia.** Fold a one-line tweak, a reworded sentence, formatting or an import
+  cleanup into the next meaningful commit on the same work.
+- **Don't leave finished work uncommitted.** When a meaningful piece of work is complete: (1) finish
+  the implementation, (2) verify the project still works, (3) review the changed files, (4) check only
+  intended changes are included, (5) create one focused commit, (6) push it, (7) then start the next task.
+- **Commit messages are written by the member, in their own words**, describing what actually
+  changed — never exaggerated, never generated boilerplate.
+- The message must let a teammate know what changed **without opening the diff**. If a commit changed
+  a number, **put the number in the message** — these become contribution highlights.
+- **Commit working code.** Broken WIP at end of session: `wip: sink schema mismatch, see TODO` — and
+  it may **not** be the branch's final commit before the PR.
+- **Never commit:** raw data, `.env`, API keys, `*.db`, model binaries over 50 MB, notebook output
+  cells (`nbstripout --install`), or any tool-specific file listed in §0.
+- **If a secret is ever committed:** rotate the key immediately, add an entry in `problems.md`, and do
+  **not** try to hide it with a force-push (§11).
+
+### Before every commit
+
+Never blindly `git add -A` or `git add .`. Stage explicit paths and check each item:
+
+1. `git status` — only intended files; nothing unrelated.
+2. `git diff --cached` — read the actual diff, not just the file list.
+3. No secrets, `.env`, `*.db`, raw data, model binaries, notebook outputs or tool files (§0).
+4. The project still runs / tests pass where practical.
+5. `git config user.name` and `git config user.email` are the **branch owner's** (§9). One laptop may
+   be shared, so check every session.
+6. Only a member identity in author, committer, message or trailers (§0). After committing, verify:
+   `git log -1 --format='%an <%ae> | %cn <%ce>%n%B'`.
+
+### Pushing
+
+- Push to the existing remote `origin` only. Never create another repository and never change the
+  remote without the whole team agreeing.
+- Push with the branch owner's own GitHub account; never switch to another account.
+- Push to the branch you committed on, right after the commit.
+- Never force-push (see §11 for the one exception).
 
 ---
 
@@ -260,16 +346,53 @@ exactly why vague bulk commits are banned.
 - **If a member's week slips:** the PR still opens when the team closes the week, with whatever is
   done **plus the doc stating what's missing**; the gap moves to next week's branch. An honest
   partial PR beats a silent missing week.
-- **Force-push is never automatic.** A `--force-with-lease` (or `--force`) rejection means the
-  remote moved — someone else's push or merge landed — and that means **stop and look**, never
-  retry after a quick fetch. Force-pushing needs a stated reason, applies only to the one branch
-  that reason concerns, and is never the default way past a rejection.
-- **Rewriting history** (rebase, amend, `filter-branch`) is rare and deliberate, not a default way
-  to "tidy up." When it genuinely happens: preserve the original commit structure and every
-  original author/committer date — a rewrite corrects metadata, it does not make an old commit
-  look like it was made today (`CONTRIBUTING.md` §5's real-timestamps rule, extended to edits as
-  well as new work). Scope it to only the commits that actually need it; never rewrite a commit
-  that predates the change being made, without asking first.
+- **Force-push and history rewrites** are governed by §11. A `--force-with-lease` rejection means the
+  remote moved — stop and look, never retry after a quick fetch.
+
+---
+
+## 11. History Rewrites
+
+Default: **never**. A rewrite happens only to fix commit metadata (wrong author, committer, or a
+non-member identity/trailer), and pushing it needs explicit approval from the branch owner — plus the
+whole team if the branch is `main` or `dev`.
+
+When a rewrite is approved:
+
+- Change metadata only. File contents and code stay exactly as they were.
+- Keep the same commits in the same order, with the same messages.
+- Keep the original author **and** committer dates. Rewritten commits must not look like they were
+  made today.
+- Remove the unwanted author, committer or co-author data. Never add a non-member identity while doing it.
+- Scope it to only the commits that need it; never rewrite a commit that predates the change without asking.
+- Verify before pushing: `git log --format='%h %an <%ae> %ad | %cn <%ce> %cd'`, and
+  `git diff <old-tip> <new-tip>` must be empty.
+- Force-push only after that approval, with `--force-with-lease`, and log it in `problems.md`.
+
+The objective of any approved rewrite: **same project content + same commit timeline + corrected
+metadata.** Nothing else changes.
+
+A leaked secret is **not** a reason to rewrite. Rotate the key instead (§7).
+
+---
+
+## 12. Permanent Priorities — apply to everything, every branch, every task
+
+These rules apply to the entire repository and all future work unless all three members change them.
+
+1. **Only the three members appear anywhere in git metadata** (§0).
+2. **Meaningful commits only** (§7).
+3. **Group related work instead of creating tiny commits** (§7).
+4. **Keep the history clean, natural and professional** (§7, §8).
+5. **Verify changes before committing** (§7 "Before every commit").
+6. **Use only your own git identity** (§9).
+7. **Push meaningful completed work to the existing repository only** (§7 "Pushing").
+8. **Every number traces to a file in `benchmarks/raw/`** (§4).
+
+### Most important rule
+
+> **Never let anyone or anything other than Krishna, Lahari or Mounika appear as contributor, author,
+> co-author, committer or trailer — and never create meaningless commits just to increase the count.**
 
 ---
 

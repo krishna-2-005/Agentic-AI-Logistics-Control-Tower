@@ -36,7 +36,7 @@ from __future__ import annotations
 
 import argparse
 import json
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import numpy as np
@@ -169,7 +169,7 @@ def run(out_path: Path = OUT_JSON) -> dict:
 
     best_baseline = min(rows["corridor_mean"], rows["corridor_median"])
     report = {
-        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "generated_at": datetime.now(UTC).isoformat(),
         "legs": len(legs),
         "n_train": len(train), "n_test": len(test), "split_cutoff": str(cutoff),
         "test_cold_corridor_share": round(float(cold_test.mean()), 4),

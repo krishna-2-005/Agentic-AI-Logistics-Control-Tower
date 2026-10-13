@@ -1,0 +1,50 @@
+# Line endings.
+#
+# The project is written on Windows and runs in CI on Linux, and several source
+# files carry CRLF while their neighbours carry LF. That produces diffs where
+# every line appears changed, which hides the one line that actually did.
+#
+# Text is stored LF in the repository and checked out however the platform
+# wants it. Shell scripts are pinned to LF regardless: a `.sh` with CRLF fails
+# on Linux with `bad interpreter: /bin/sh^M`, which is an unhelpful way to find
+# out about a line ending.
+
+* text=auto eol=lf
+
+*.sh            text eol=lf
+*.py            text eol=lf
+*.ts            text eol=lf
+*.tsx           text eol=lf
+*.json          text eol=lf
+*.yml           text eol=lf
+*.yaml          text eol=lf
+*.md            text eol=lf
+*.cff           text eol=lf
+*.toml          text eol=lf
+*.css           text eol=lf
+
+# Windows-only scripts keep CRLF; PowerShell tolerates LF but batch files do
+# not, and these are never run on Linux.
+*.ps1           text eol=crlf
+*.bat           text eol=crlf
+*.cmd           text eol=crlf
+
+# Binaries: never touched, never diffed as text.
+*.png           binary
+*.jpg           binary
+*.jpeg          binary
+*.pdf           binary
+*.docx          binary
+*.xlsx          binary
+*.zip           binary
+*.parquet       binary
+*.sqlite3       binary
+*.bin           binary
+*.pickle        binary
+*.traineddata   binary
+
+# Generated. Collapsed in diffs and excluded from language statistics so the
+# repository is not reported as mostly lock file.
+web/pnpm-lock.yaml      linguist-generated=true -diff
+web/public/data/*.json  linguist-generated=true
+benchmarks/raw/*        linguist-generated=true

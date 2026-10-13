@@ -29,7 +29,11 @@ def test_every_frozen_entry_names_a_source():
     assert rf.ENTRIES
     for entry_id, week, label, _unit, source, _extract in rf.ENTRIES:
         assert entry_id and label and source.endswith((".json", ".csv"))
-        assert 1 <= week <= 8
+        # Was `<= 8` while the project ran on the weekly cadence. The post-v1.0
+        # work packages produce numbers too, and grouping those under week 8
+        # would put them beside results they did not come from. 9 is the WP-02
+        # agent evaluations; a later package that adds a value widens this again.
+        assert 1 <= week <= 9
 
 
 def test_entry_ids_are_unique():

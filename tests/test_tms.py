@@ -12,7 +12,7 @@ which is why they are asserted rather than left to the demo.
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 from fastapi.testclient import TestClient
@@ -240,7 +240,7 @@ def test_cancelled_order_cannot_be_shipped(client):
 
 def test_arrival_before_departure_is_rejected(client):
     ref = client.post("/orders", json=order_payload()).json()["order_ref"]
-    depart = datetime(2018, 9, 20, 8, 0, tzinfo=timezone.utc)
+    depart = datetime(2018, 9, 20, 8, 0, tzinfo=UTC)
     response = client.post(
         "/shipments",
         json={

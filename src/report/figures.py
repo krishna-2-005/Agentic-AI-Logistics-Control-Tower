@@ -84,7 +84,7 @@ def _finish(fig, name: str, caption: str) -> dict:
 def _bar_labels(ax, bars, values, fmt="{:.2f}", pad=0.01, inside=False):
     """Every bar labelled: the palette's low-contrast slots need text to be readable."""
     span = max(values) if values else 1
-    for bar, value in zip(bars, values):
+    for bar, value in zip(bars, values, strict=True):
         x = bar.get_width()
         ax.text(x - span * pad if inside else x + span * pad,
                 bar.get_y() + bar.get_height() / 2, fmt.format(value),
@@ -244,10 +244,10 @@ def fig6_mae_by_support() -> dict:
     b1 = ax.bar(x - 0.2, median, width=0.36, color=BLUE, label="corridor median")
     b2 = ax.bar(x + 0.2, model, width=0.36, color=ORANGE, label="v2 GBT residual")
     for bars, values in ((b1, median), (b2, model)):
-        for bar, value in zip(bars, values):
+        for bar, value in zip(bars, values, strict=True):
             ax.text(bar.get_x() + bar.get_width() / 2, value + 1.5, f"{value:.1f}",
                     ha="center", fontsize=8, color=INK)
-    ax.set_xticks(x, [f"{s}\n({int(c):,} legs)" for s, c in zip(order, n)], fontsize=8)
+    ax.set_xticks(x, [f"{s}\n({int(c):,} legs)" for s, c in zip(order, n, strict=True)], fontsize=8)
     ax.set_xlabel("legs on this corridor in the training split")
     ax.set_ylabel("test MAE (minutes)")
     ax.set_title("The model's gain is concentrated on corridors with no history")
@@ -359,7 +359,7 @@ def fig9_severity_precision() -> dict:
     ax.scatter(x, [replayed[r["severity"]] * 100 for r in rows], marker="D", s=46,
                facecolors="white", edgecolors=INK, linewidths=1.2, zorder=3,
                label="replay with end-of-data history (superseded)")
-    for bar, r in zip(bars, rows):
+    for bar, r in zip(bars, rows, strict=True):
         ax.text(bar.get_x() + bar.get_width() / 2, r["precision"] * 100 / 2,
                 f"{r['precision'] * 100:.1f}%\n({r['notified']:,})", ha="center", va="center",
                 fontsize=8, color="white" if r["severity"] == "critical" else INK)

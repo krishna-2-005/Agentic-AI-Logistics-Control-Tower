@@ -18,7 +18,7 @@ to be runnable on Day 1 of Week 1, before every member has a JDK installed. Ever
 from __future__ import annotations
 
 import argparse
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -133,7 +133,7 @@ def render_markdown(df: pd.DataFrame, prof: pd.DataFrame, source: Path) -> str:
     except ValueError:
         shown = source.name
     out.append(f"Source: `{shown}`  ")
-    out.append(f"Generated: {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}\n")
+    out.append(f"Generated: {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}\n")
 
     out.append("## Shape\n")
     out.append("| Property | Value |")

@@ -24,12 +24,11 @@ How this corpus maps onto the template
   rendered PDF and as a degraded scan. `clean` extracts from the PDF's text layer (no OCR
   noise at all); `noisy` OCRs the scan with Tesseract. The difference between the two
   rows is therefore the cost of OCR, with the extraction prompt held constant -- which is
-  also exactly the comparison the Week 11 Textract benchmark needs.
+  also the comparison any second OCR engine would be scored on.
 * **A stratified subsample, because of quota.** Extraction is one Gemini call per
   document per split: the full corpus is 480 calls against a 20-a-day free tier (D-032),
   24 days. `--consignments N` draws N consignments keeping the corpus's clean/seeded-
-  error ratio, deterministically, and the report states the N. The v3.1 plan's own
-  Textract benchmark samples for the same reason.
+  error ratio, deterministically, and the report states the N.
 * **Cached, and a quota refusal is never a score.** Every extraction is appended to the
   cache before it is scored, keyed by document, split, engine and prompt version, so a run
   spread over several days never pays for a document twice. A 429 stops the run and the
@@ -55,7 +54,7 @@ from src.common import config
 
 try:
     from rapidfuzz import fuzz
-except ImportError:  # keep the script runnable without the optional dep
+except ImportError:  # handled at scoring time, deliberately not here
     fuzz = None
 
 
@@ -214,7 +213,23 @@ def values_match(kind: str, truth: Any, pred: Any) -> bool:
     if t == p:
         return True
     if fuzz is None:
-        return False
+        # Deliberately a crash, not a False.
+        #
+        # Returning False here meant that on a machine without rapidfuzz every
+        # near-miss counted as a wrong answer, and the run still produced a
+        # report. Facility names come off a scan with a character or two
+        # changed -- `Pnchlght` for `Pnchight` -- so the accuracy this file
+        # publishes would drop by several points with nothing in the output
+        # saying the matcher was missing. That is P-58 again: an evaluation
+        # harness must distinguish "the agent was wrong" from "the harness was
+        # not installed", and if it cannot, its worst numbers are reports about
+        # the machine.
+        raise RuntimeError(
+            "rapidfuzz is not installed, so text fields can only be compared "
+            "exactly and the accuracy this run reports would be understated. "
+            "Install it (pip install rapidfuzz) and re-run; it is in "
+            "requirements.txt."
+        )
     return fuzz.ratio(t, p) >= TEXT_SIMILARITY_THRESHOLD
 
 
@@ -393,7 +408,7 @@ def document_text(path: Path, engine: str) -> str:
 
         return "\n".join(page.extract_text() or "" for page in PdfReader(str(path)).pages).strip()
     if engine != "tesseract":
-        raise ValueError(f"engine {engine!r} is not wired yet -- only tesseract (Week 11 adds textract)")
+        raise ValueError(f"engine {engine!r} is not supported -- only tesseract")
     from src.agents.document_agent import ocr_image
 
     return ocr_image(path)

@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-10-07T09:11:21+05:30",
+  "base_url": "https://control-tower-api.onrender.com",
+  "health_status": 200,
+  "health": {
+    "status": "ok",
+    "predictor": "ready",
+    "alerts_recorded": 13626
+  },
+  "ready_after_s": 0.1,
+  "tms_write_routes": {
+    "/orders": 404,
+    "/shipments": 404,
+    "/exceptions": 404
+  },
+  "tms_unreachable": true,
+  "requests": 20,
+  "status_codes": {
+    "200": 20
+  },
+  "p50_ms": 291.5,
+  "p95_ms": 345.0,
+  "max_ms": 2281.6,
+  "mean_ms": 373.2,
+  "model_id": "v2_gbt_residual_absolute_step1"
+}

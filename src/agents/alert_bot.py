@@ -4,6 +4,8 @@
     python -m src.agents.alert_bot --channel telegram   # when a token exists
     python -m src.agents.alert_bot --dry-run --top 5    # show, send nothing
     python -m src.agents.alert_bot --reset              # forget what has been sent
+    python -m src.agents.alert_bot --channel telegram --top 3 \
+        --record benchmarks/raw/f2_alert_channel_live.json   # keep the API's receipts
 
 Reads the streaming job's alert sink (`src.dashboard.alerts`, the same reader the Live
 alerts panel uses -- one way to read the sink, not two), decides which alerts are worth
@@ -29,15 +31,18 @@ rather than an emergent one (D-039):
 
 Channels, and which one actually ran
 ------------------------------------
-* ``file``     -- appends to `data/stream/alert_messages.log`. **This is the channel
-  that runs on this machine**, and it runs by default.
+* ``file``     -- appends to `data/stream/alert_messages.log`. The default, and the
+  only channel that needs no credential.
 * ``telegram`` -- a real `sendMessage` call against the Bot API. Needs
-  `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`; there is no bot account for this project,
-  so this path is written and import-checked and **has never been run against the live
-  API**. Same honesty D-035 applies to the Kafka sink: the choice is one flag, and the
-  documentation says which flag was actually pulled.
+  `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID`. **Run live since WP-06** (G-07 closed).
 * ``email``    -- SMTP via `SMTP_HOST`/`SMTP_USER`/`SMTP_PASSWORD` to `ALERT_EMAIL_TO`.
-  Unconfigured here for the same reason, and unrun for the same reason.
+  **Run live since WP-06.**
+
+Every send returns a **receipt** -- Telegram's `message_id`, the SMTP server's verdict on
+each recipient -- and `--record` writes them with the messages to a JSON file. "The bot
+sent it" is then something the provider said, not something the bot believed.
+Identifiers in the record are masked: it is committed, and a chat id or an address is a
+way to reach a person.
 
 A channel that is selected but unconfigured refuses at start-up with the variable it
 needs, rather than failing per-message halfway through a send loop.
@@ -51,6 +56,7 @@ import smtplib
 from dataclasses import dataclass, field
 from datetime import datetime
 from email.message import EmailMessage
+from email.utils import make_msgid
 from pathlib import Path
 
 import pandas as pd
@@ -81,6 +87,8 @@ class SendResult:
     suppressed_cap: int = 0
     failed: int = 0
     messages: list[str] = field(default_factory=list)
+    #: One per successful send: the alert id plus whatever the provider answered.
+    receipts: list[dict] = field(default_factory=list)
 
     def summary(self) -> dict:
         return {
@@ -176,14 +184,14 @@ class FileChannel:
     def check(self) -> None:
         return None
 
-    def send(self, message: str) -> None:
+    def send(self, message: str) -> dict:
         with self.path.open("a", encoding="utf-8") as handle:
             handle.write(message + "\n\n")
+        return {"path": str(self.path)}
 
 
 class TelegramChannel:
-    """`sendMessage` against the Bot API. Never run against the live API here (D-035's
-    honesty rule, applied to the second unexercised path in this project)."""
+    """`sendMessage` against the Bot API."""
 
     name = "telegram"
 
@@ -200,7 +208,7 @@ class TelegramChannel:
         if missing:
             raise RuntimeError(f"telegram channel needs {', '.join(missing)} in .env")
 
-    def send(self, message: str) -> None:
+    def send(self, message: str) -> dict:
         import httpx
 
         response = httpx.post(
@@ -209,10 +217,21 @@ class TelegramChannel:
             timeout=15.0,
         )
         response.raise_for_status()
+        body = response.json()
+        if not body.get("ok"):
+            raise RuntimeError(f"telegram refused the message: {body.get('description')}")
+        sent = body["result"]
+        return {
+            "http_status": response.status_code,
+            "message_id": sent["message_id"],
+            "date": datetime.fromtimestamp(sent["date"]).astimezone().isoformat(),
+            "chat": mask(str(sent["chat"]["id"])),
+            "chat_type": sent["chat"].get("type"),
+        }
 
 
 class EmailChannel:
-    """One SMTP message per alert. Unconfigured and unrun here."""
+    """One SMTP message per alert."""
 
     name = "email"
 
@@ -233,19 +252,60 @@ class EmailChannel:
         if missing:
             raise RuntimeError(f"email channel needs {', '.join(missing)} in .env")
 
-    def send(self, message: str) -> None:
+    def send(self, message: str) -> dict:
         email = EmailMessage()
         email["Subject"] = message.splitlines()[0]
         email["From"] = self.user
         email["To"] = self.to
+        email["Message-ID"] = make_msgid(domain="control-tower.local")
         email.set_content(message)
         with smtplib.SMTP(self.host, self.port, timeout=20) as server:
             server.starttls()
-            server.login(self.user, self.password)
-            server.send_message(email)
+            # App passwords are shown in groups of four; the spaces are not part of it.
+            server.login(self.user, self.password.replace(" ", ""))
+            refused = server.send_message(email)
+        if refused:
+            raise RuntimeError(f"the SMTP server refused {len(refused)} recipient(s)")
+        return {
+            "smtp_host": self.host,
+            "message_id": email["Message-ID"],
+            "to": mask(self.to),
+            "recipients_refused": 0,
+        }
 
 
 CHANNELS = {"file": FileChannel, "telegram": TelegramChannel, "email": EmailChannel}
+
+
+def mask(value: str) -> str:
+    """Enough of an identifier to tell two apart, not enough to reach anyone with it."""
+    if "@" in value:
+        local, _, domain = value.partition("@")
+        return f"{local[:2]}***@{domain}"
+    return f"***{value[-4:]}" if len(value) > 4 else "***"
+
+
+def record_run(result: SendResult, path: Path) -> dict:
+    """Append one run to `path`: what was sent, and what the provider said back.
+
+    Appended rather than overwritten, so sending on a second channel adds to the record
+    of the first instead of replacing it.
+    """
+    existing = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {"runs": []}
+    run_record = {
+        "recorded_at": datetime.now().astimezone().isoformat(timespec="seconds"),
+        **result.summary(),
+        "receipts": result.receipts,
+        "messages": result.messages,
+    }
+    existing["runs"].append(run_record)
+    existing["channels_delivered"] = sorted({
+        r["channel"] for r in existing["runs"] if r["sent"] and r["failed"] == 0
+    })
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(existing, indent=2), encoding="utf-8")
+    log.info("recorded %d receipt(s) -> %s", len(result.receipts), path)
+    return existing
 
 
 def make_channel(name: str):
@@ -286,15 +346,19 @@ def run(
     for position, (_, row) in enumerate(picked.iterrows(), start=1):
         message = format_message(row, position, total)
         result.messages.append(message)
-        if dry_run:
+        if dry_run or channel is None:
+            # `channel` is None only when dry_run, so this is the same branch
+            # said once instead of twice -- and it stops a future caller
+            # reaching send() with nothing to send on.
             continue
         try:
-            channel.send(message)
+            receipt = channel.send(message)
         except Exception as exc:  # noqa: BLE001 -- one failed send must not lose the rest
             result.failed += 1
             log.warning("send failed for %s: %s", row["alert_id"], exc)
             continue
         result.sent += 1
+        result.receipts.append({"alert_id": row["alert_id"], **(receipt or {})})
         seen.add(row["alert_id"])
 
     if not dry_run:
@@ -316,6 +380,8 @@ def main() -> int:
     parser.add_argument("--alerts", type=Path, default=None, help="alert sink directory")
     parser.add_argument("--state", type=Path, default=STATE_PATH)
     parser.add_argument("--reset", action="store_true", help="forget which alerts have been sent")
+    parser.add_argument("--record", type=Path, default=None,
+                        help="append this run's messages and provider receipts to a JSON file")
     args = parser.parse_args()
 
     if args.reset and args.state.exists():
@@ -333,6 +399,8 @@ def main() -> int:
 
     for message in result.messages:
         print(message + "\n")
+    if args.record and not args.dry_run:
+        record_run(result, args.record)
     if result.candidates and not result.messages:
         log.info("nothing to send")
     return 0

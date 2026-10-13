@@ -36,7 +36,7 @@ import hashlib
 import json
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -192,6 +192,46 @@ ENTRIES: list[tuple[str, int, str, str, str, Callable[[], Any]]] = [
     ("fresh_clone_rebuild_s", 8, "Full rebuild from the raw CSV on a fresh clone", "seconds",
      "w8_fresh_clone_rebuild.json",
      lambda: _json("w8_fresh_clone_rebuild.json")["total_seconds"]),
+
+    # ── WP-02: the agents re-measured at n >= 150, with intervals ───────────
+    #
+    # Week 9 rather than a week number, because the weekly cadence ended at
+    # v1.0 and these come from the post-release work packages.
+    #
+    # The order-entry value frozen here is the **held-out** one: the rule route
+    # met this corpus once before anything it revealed was fixed, and that run
+    # is the only score on it that is independent. The post-fix 100% is in the
+    # file beside it and is deliberately not frozen -- freezing it would put a
+    # number in the paper that a reader would take for evidence.
+    ("order_eval_scale_heldout", 9, "Order entry, 200 cases, held-out first run", "share",
+     "w9_order_eval.json",
+     lambda: _json("w9_order_eval.json")["held_out_first_run"]["overall"]["rate"]),
+    ("order_eval_scale_adversarial_heldout", 9,
+     "Order entry, adversarial half, held-out first run", "share", "w9_order_eval.json",
+     lambda: _json("w9_order_eval.json")["held_out_first_run"]["adversarial"]["rate"]),
+    ("order_eval_scale_cases", 9, "Order entry evaluation cases", "cases",
+     "w9_order_eval.json",
+     lambda: _json("w9_order_eval.json")["n_cases"]),
+
+    ("invoice_eval_scale_accuracy", 9, "Invoice auditor, stratified, verdict correct", "share",
+     "w9_invoice_eval.json",
+     lambda: _json("w9_invoice_eval.json")["accuracy"]["rate"]),
+    ("invoice_eval_scale_cases", 9, "Invoice auditor evaluation cases", "invoices",
+     "w9_invoice_eval.json",
+     lambda: _json("w9_invoice_eval.json")["n_cases"]),
+    ("invoice_eval_scale_false_disputes", 9, "Correct invoices wrongly disputed", "invoices",
+     "w9_invoice_eval.json",
+     lambda: _json("w9_invoice_eval.json")["false_disputes"]),
+
+    ("lifecycle_eval_scale_paths", 9, "Orchestrator graph paths exercised", "of 3",
+     "w9_lifecycle_eval.json",
+     lambda: _json("w9_lifecycle_eval.json")["path_coverage"]["exercised"]),
+    ("lifecycle_eval_scale_routing", 9, "Orchestrator routed as the email deserved", "share",
+     "w9_lifecycle_eval.json",
+     lambda: _json("w9_lifecycle_eval.json")["routing_correct"]["rate"]),
+    ("lifecycle_eval_scale_cases", 9, "Orchestrator lifecycles run", "lifecycles",
+     "w9_lifecycle_eval.json",
+     lambda: _json("w9_lifecycle_eval.json")["n_cases"]),
 ]
 
 
@@ -222,7 +262,7 @@ def freeze(out_path: Path = FREEZE_JSON) -> dict:
     values, problems = collect()
     sources = sorted({f.source for f in values} | {p["source"] for p in problems})
     snapshot = {
-        "frozen_at": datetime.now(timezone.utc).isoformat(),
+        "frozen_at": datetime.now(UTC).isoformat(),
         "layer": 1,
         "n_values": len(values),
         "values": [asdict(f) for f in values],
@@ -259,7 +299,7 @@ def verify(path: Path = FREEZE_JSON) -> dict:
     touched = [name for name, digest in snapshot["source_hashes"].items() if hashes_now.get(name) != digest]
 
     report = {
-        "verified_at": datetime.now(timezone.utc).isoformat(),
+        "verified_at": datetime.now(UTC).isoformat(),
         "frozen_at": snapshot["frozen_at"],
         "values_checked": len(current),
         "changed": changed,

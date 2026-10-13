@@ -1,0 +1,11 @@
+{
+  "alerts": 13626,
+  "recorded_at": "2026-10-04T00:30:17+05:30",
+  "recorded_from": "src.streaming.validate_v2: the v2 stream over the full replay (WP-11)",
+  "by_severity": {
+    "low": 4765,
+    "medium": 3044,
+    "high": 3317,
+    "critical": 2500
+  }
+}

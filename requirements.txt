@@ -60,6 +60,10 @@ pdf2image>=1.17             # needs poppler installed separately
 reportlab>=4.2              # synthetic BOL / invoice PDF generation
 pypdf>=4.2
 Pillow>=10.3
+# Not optional, despite the try/except around its import in eval_extraction.py:
+# without it every text field falls back to exact string matching and the
+# reported extraction accuracy silently drops. See P-64.
+rapidfuzz>=3.9
 
 # ── Dashboard (Krishna) ──────────────────────────────────────────────────────
 streamlit>=1.36

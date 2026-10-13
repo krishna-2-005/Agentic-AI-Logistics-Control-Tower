@@ -56,4 +56,18 @@ for f in $staged; do
   esac
 done
 
+# ── 4. the wider checks, when they are installed ─────────────────────────────
+# `core.hooksPath` points at this directory, so git never runs what
+# `pre-commit install` writes into .git/hooks. Rather than have two hook
+# systems compete, this one calls the other.
+#
+# The checks above are the floor and need no tooling: everyone gets them from a
+# clone. `.pre-commit-config.yaml` adds ruff, a full gitleaks ruleset and
+# nbstripout on top for anyone who has run `pip install pre-commit`. If it is
+# not installed the commit proceeds -- CI runs the same config, so nothing is
+# skipped silently, it is only deferred.
+if command -v pre-commit >/dev/null 2>&1; then
+  pre-commit run --hook-stage pre-commit || exit 1
+fi
+
 exit 0

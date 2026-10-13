@@ -117,13 +117,15 @@ def render_bol_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
     _kv(c, left, y, "LR No.:", _text(label["document_number"]))
     _kv(c, right, y, "Date:", _text(label["document_date"]))
     y -= row_h * 1.6
-    _rule(c, y); y -= row_h
+    _rule(c, y)
+    y -= row_h
 
     _kv(c, left, y, "Consignor:", _text(label["shipper_name"]))
     y -= row_h
     _kv(c, left, y, "Consignee:", _text(label["consignee_name"]))
     y -= row_h * 1.6
-    _rule(c, y); y -= row_h
+    _rule(c, y)
+    y -= row_h
 
     _kv(c, left, y, "Origin:", _text(label["origin_facility"]))
     y -= row_h
@@ -133,7 +135,8 @@ def render_bol_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
     y -= row_h
     _kv(c, left, y, "Destination centre code:", _text(label["destination_centre_code"]))
     y -= row_h * 1.6
-    _rule(c, y); y -= row_h
+    _rule(c, y)
+    y -= row_h
 
     _kv(c, left, y, "Vehicle No.:", rec.vehicle_number)
     _kv(c, right, y, "Route type:", rec.route_type)
@@ -144,7 +147,8 @@ def render_bol_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
     _kv(c, left, y, "Freight charges:", _money(label["freight_charge"], label["currency"]))
     _kv(c, right, y, "Terms:", "Paid" if rec.route_type == "FTL" else "To-Pay")
     y -= row_h * 2.5
-    _rule(c, y); y -= row_h * 2
+    _rule(c, y)
+    y -= row_h * 2
 
     c.setFont("Helvetica", 9)
     c.drawString(left, y, f"For {label['shipper_name']}")
@@ -170,7 +174,8 @@ def render_invoice_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
     _kv(c, left, y, "Consignment (LR) No.:", rec.bol_number)
     _kv(c, right, y, "Vehicle No.:", rec.vehicle_number)
     y -= row_h * 1.6
-    _rule(c, y); y -= row_h
+    _rule(c, y)
+    y -= row_h
 
     _kv(c, left, y, "Supplier:", _text(label["shipper_name"]))
     _kv(c, right, y, "GSTIN:", rec.shipper_gstin)
@@ -182,7 +187,8 @@ def render_invoice_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
     tax_note = "IGST applicable" if rec.source_state != rec.dest_state else "CGST + SGST applicable"
     _kv(c, right, y, "Tax treatment:", tax_note)
     y -= row_h * 1.6
-    _rule(c, y); y -= row_h
+    _rule(c, y)
+    y -= row_h
 
     _kv(c, left, y, "Origin:", _text(label["origin_facility"]))
     _kv(c, right, y, "Origin code:", _text(label["origin_centre_code"]))
@@ -196,7 +202,8 @@ def render_invoice_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
     _kv(c, left, y, "Pieces:", _text(label["pieces"]))
     _kv(c, right, y, "Weight (kg):", _text(label["weight_kg"]))
     y -= row_h * 1.6
-    _rule(c, y); y -= row_h
+    _rule(c, y)
+    y -= row_h
 
     _kv(c, left, y, "Freight charges:", _money(label["freight_charge"], label["currency"]))
     y -= row_h
@@ -206,7 +213,8 @@ def render_invoice_pdf(rec: ConsignmentRecord, label: dict, path: Path) -> None:
     c.drawString(left, y, "Total amount:")
     c.drawString(left + 55 * mm, y, _money(label["total_amount"], label["currency"]))
     y -= row_h * 2.5
-    _rule(c, y); y -= row_h * 2
+    _rule(c, y)
+    y -= row_h * 2
 
     c.setFont("Helvetica", 9)
     c.drawString(left, y, f"For {label['shipper_name']}, Authorised Signatory")

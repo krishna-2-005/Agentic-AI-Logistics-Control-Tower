@@ -111,3 +111,68 @@ For each model-phrased answer in `benchmarks/raw/w7_assistant_answers_llm.jsonl`
 | Invoice Auditor | `benchmarks/raw/w6_invoice_eval.json`, `w6_invoice_eval_cases.csv`; D-043 |
 | Orchestrator | `benchmarks/raw/w6_orchestrator_runs.json` |
 | Analytics Assistant | `benchmarks/raw/w7_assistant_run_llm.json`, `w7_assistant_run_no_llm.json`, `w7_groundedness_verdicts.csv`, `w7_groundedness_summary.json`; P-56, P-60, P-61 |
+
+<!-- section: agent-eval-at-scale -->
+### At scale, with intervals (WP-02)
+
+Every number above rests on 20 to 50 cases. A perfect score on twenty is consistent with a true rate of 84%; on two hundred it is not. These runs are larger, stratified so the hard cases are a named share rather than whatever the sampler happened to draw, and every rate carries a Wilson 95% interval. All three cost **zero API calls**.
+
+#### Order Entry — 200 emails, 100 of them adversarial
+
+| | rate | 95% interval |
+|---|---|---|
+| **Held out** (first run, before any fix) | 85.0% | 79.4%–89.3% |
+| — adversarial half | 70.0% | 60.4%–78.1% |
+| After fixing what it found | 100.0% | 98.1%–100.0% |
+| — straightforward half | 100.0% | 96.3%–100.0% |
+| — adversarial half | 100.0% | 96.3%–100.0% |
+
+**The 85.0% is the number with evidential weight.** The rule route was committed before a line of this corpus existed, so its first score here was a genuine held-out measurement. 30 orders were filed on values the email never stated, and three templates scored zero: `contradiction`, `two_consignments`, `zero_pieces`. All three failed the same way — filing confidently on something unestablished.
+
+The 100.0% below it is after those three were fixed, and is **not** held out: a score on the set that motivated a fix cannot also be independent confirmation of it. Both are reported because the arc is the finding. For the next honest measurement this set is spent.
+
+The model route is **not scored here**. 200 cases is 200 calls against a free tier of 20 a day, so the rules-versus-model comparison is WP-07 work. What can be said already: on the Week 5 set of 50, the rule route and the model route both score 50 of 50, so that set does not separate them.
+
+#### Invoice Auditor — 200 invoices, 20 of each kind
+
+- Verdict correct **90.0%** [85.1%–93.4%] (180/200)
+- Dispute recall **85.7%** [79.0%–90.6%] (120/140)
+- Right reason on a dispute **85.7%** [79.0%–90.6%] (120/140)
+- Correct invoices wrongly disputed: **0**
+- Problems missed: **20**, all `overcharge_hidden`, all missed by design
+
+| kind | expects | correct | 95% interval |
+|---|---|---|---|
+| `clean` | approve | 20/20 | 84%–100% |
+| `duplicate_number` | dispute | 20/20 | 84%–100% |
+| `excessive_other` | dispute | 20/20 | 84%–100% |
+| `foreign_currency` | dispute | 20/20 | 84%–100% |
+| `other_at_edge` | approve | 20/20 | 84%–100% |
+| `overcharge_gross` | dispute | 20/20 | 84%–100% |
+| `overcharge_hidden` *(by design)* | dispute | 0/20 | 0%–16% |
+| `rounding_total` | approve | 20/20 | 84%–100% |
+| `total_mismatch` | dispute | 20/20 | 84%–100% |
+| `undercharge` | dispute | 20/20 | 84%–100% |
+
+Stratified, so the overall rate describes this design and not a real invoice run, which is overwhelmingly clean. The per-kind rates are the comparable numbers. Trivial policies on the same set: dispute everything 70.0%, approve everything 30.0%.
+
+**`overcharge_hidden` is 0 of 20 on purpose.** It sits 10% over the band top, inside the auditor's 15% tolerance (D-047). The tolerance was a sentence; this is what it costs — a supplier overcharging by that much passes every time.
+
+#### Orchestrator — 100 lifecycles, with path coverage
+
+- Graph paths exercised **3 of 3**
+- Routed as the email deserved **100.0%** [96.3%–100.0%] (100/100)
+- Completed without error **100.0%** [96.3%–100.0%] (100/100)
+
+| path | times taken |
+|---|---|
+| `intake -> clarify` | 55 |
+| `intake -> book -> monitor -> done` | 37 |
+| `intake -> book -> monitor -> triage -> done` | 8 |
+
+**This replaces the wiring caveat above.** Week 6's ten lifecycles ran in a mode where intake was handed the case's own expected fields, so nothing was read and no case could route wrongly — it demonstrated that the graph holds together, which is worth knowing and is not evidence about the agent. These 100 run on `--route rules`: the email is read by the deterministic extractor and the graph routes on what it found. The old mode is still reachable as `--route truth` and remains the default, so the Week 6 number stays reproducible.
+
+Path coverage is enumerated from the graph rather than discovered from the run, so a path nothing reaches appears as a gap instead of simply never appearing.
+
+**Evidence.** `benchmarks/raw/w9_order_eval.json`, `w9_invoice_eval.json`, `w9_lifecycle_eval.json`. Regenerate with `python -m src.ml.order_eval_scale --run`, `python -m src.ml.invoice_eval_scale`, `python -m src.ml.lifecycle_eval_scale --cases 100`.
+<!-- /section: agent-eval-at-scale -->

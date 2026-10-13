@@ -1,5 +1,33 @@
 # Demo script — 10 minutes, one laptop, no internet required
 
+## Review day: the live version (no setup)
+
+Open these before the review, in this order, and leave them in tabs:
+
+| Tab | Address | What to show |
+|---|---|---|
+| 1 | <https://control-tower-mu-rouge.vercel.app> | Overview: the premise numbers |
+| 2 | …/network | the India map: 1,130 audited corridors drawn as arcs |
+| 3 | …/predict | pick a corridor, predict: answers in under a second and names the **v2** model |
+| 4 | …/alerts | the v2 stream's alerts, labelled as a recorded run |
+| 5 | …/assistant | ask "which corridors are the worst bottlenecks?" (a table answer), then "what is the capital of France?" (refused) |
+| 6 | <https://control-tower-api.onrender.com/docs> | the API itself, for anyone who asks what runs behind the pages |
+| 7 | Telegram + Gmail on a phone | the real delay alerts the bot sent (D-071) |
+
+**Ten minutes before:** open <https://control-tower-api.onrender.com/health>. It should say
+`"predictor":"ready"`. If the page takes up to a minute, the free host was asleep; it is awake
+after that one load. If the API is unreachable, the four live pages fall back to recorded
+evidence and say so, so nothing on screen breaks; switch to the offline script below.
+
+**If asked "what is still open":** the three things that need people, not code. A second
+labeller for the LLM decision (WP-07), real phone photos for the document agent (WP-08), and
+a three-person user test (WP-05). Plus extraction rows 21–40, frozen at 20 by the daily LLM
+quota. No AWS by decision (D-074).
+
+---
+
+## Offline version (the original script)
+
 **Owner: Krishna** (execution plan v3.1 W8 D1-D2). Rehearsed twice before the demo; every
 number said aloud is in `benchmarks/` and every command below has been run.
 

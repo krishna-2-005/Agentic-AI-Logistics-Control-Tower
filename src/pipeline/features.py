@@ -73,7 +73,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from pyspark.sql import DataFrame, SparkSession, Window
@@ -464,7 +464,7 @@ def main() -> int:
 
         report = summarise(features, report)
         features.write.mode("overwrite").partitionBy("route_type").parquet(str(args.output))
-        report["generated_at"] = datetime.now(timezone.utc).isoformat()
+        report["generated_at"] = datetime.now(UTC).isoformat()
         (args.output / "_feature_report.json").write_text(
             json.dumps(report, indent=2), encoding="utf-8"
         )

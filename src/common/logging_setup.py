@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import logging
 import sys
 from pathlib import Path
@@ -27,10 +28,9 @@ def _console() -> Console:
     keeps the message and costs a `?`.
     """
     stream = sys.stdout
-    try:
-        stream.reconfigure(errors="replace")
-    except (AttributeError, ValueError, OSError):
-        pass  # not a reconfigurable text stream (pytest capture, a pipe)
+    # Not a reconfigurable text stream under pytest capture or behind a pipe.
+    with contextlib.suppress(AttributeError, ValueError, OSError):
+        stream.reconfigure(errors="replace")  # type: ignore[union-attr]  # TextIO has no reconfigure in typeshed; the suppress above exists precisely because not every stream has it
     return Console(file=stream)
 
 

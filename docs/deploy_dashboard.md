@@ -1,7 +1,7 @@
 # Deploying the dashboard (G-08)
 
-**Owner: Krishna** (execution plan v3.1 W8 D3-D4). Streamlit Community Cloud is the
-interim host; Phase 3 moves it to AWS.
+**Owner: Krishna** (execution plan v3.1 W8 D3-D4). Superseded by `docs/deploy_web.md` (D-061):
+the public site is the Next.js app on Vercel, and the Streamlit dashboard runs locally.
 
 ## What gets deployed, and what cannot
 

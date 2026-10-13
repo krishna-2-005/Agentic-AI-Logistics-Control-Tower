@@ -147,14 +147,20 @@ class KafkaSink:
         self.producer.close()
 
 
-def load_legs(limit: int | None = None) -> pd.DataFrame:
-    """The frozen Stage 4 cache, oldest legs first. Spark is used for the read only."""
-    spark = get_spark("stream-producer")
+def load_legs(limit: int | None = None, spark=None) -> pd.DataFrame:
+    """The frozen Stage 4 cache, oldest legs first. Spark is used for the read only.
+
+    Pass `spark` to read inside a session the caller owns (the what-if predictor does);
+    otherwise one is started and stopped here.
+    """
+    owns = spark is None
+    spark = spark or get_spark("stream-producer")
     try:
         sdf = spark.read.parquet(str(config.FEATURES_V1)).select(*EXAMPLE_COLUMNS)
         pdf = require_od_end_time(with_od_end_time(spark, sdf).toPandas())
     finally:
-        stop_spark(spark)
+        if owns:
+            stop_spark(spark)
     pdf = pdf.sort_values("trip_creation_time").reset_index(drop=True)
     return pdf.head(limit) if limit else pdf
 

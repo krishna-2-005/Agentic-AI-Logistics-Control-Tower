@@ -145,6 +145,7 @@ def test_a_record_in_the_jobs_own_shape_validates_against_the_alert_schema():
         "corr_is_cold": 0,
         "src_is_cold": 0,
         "dst_is_cold": 0,
+        "model_id": "v2_gbt_residual_absolute_step1",
         "emit_time": "2026-09-09T15:47:26.000000+05:30",
         "alert_time": "2026-09-09T15:47:27.382715+05:30",
         "latency_ms": 1382.7,

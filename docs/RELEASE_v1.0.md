@@ -80,5 +80,6 @@ The raw Delhivery CSV is not redistributed.
 
 ## Phase 2 and 3
 
-The paper draft is in `docs/paper_draft.md` (ICCCI 2027, D-052). Phase 3 moves the dashboard to
-AWS and adds event-time state to the stream so the reported model can be served.
+The paper draft is in `docs/paper_draft.md` (ICCCI 2027, D-052). After v1.0 the stream gained
+event-time state so it serves the reported model (D-070), and the public site and API went live on
+free hosts. The AWS phase was dropped (D-074): the project runs on no cloud account at all.

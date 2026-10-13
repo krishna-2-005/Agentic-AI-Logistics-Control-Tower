@@ -54,3 +54,11 @@ def test_saturday_is_seven_and_sunday_is_one():
     assert base_row("Carting", 1.0, 1.0, datetime(2018, 9, 15))["created_dayofweek"] == 7
     sunday = base_row("Carting", 1.0, 1.0, datetime(2018, 9, 16))
     assert (sunday["created_dayofweek"], sunday["created_is_weekend"], sunday["is_ftl"]) == (1, 1, 0)
+
+
+# ── WP-11: every answer names the model that produced it ─────────────────────
+def test_every_answer_names_the_served_v2_model():
+    from src.ml import serving
+
+    result = build_result(predicted_gap_min=10.0, planned_min=100.0, cold_flags={})
+    assert result["model_id"] == serving.MODEL_ID == "v2_gbt_residual_absolute_step1"
