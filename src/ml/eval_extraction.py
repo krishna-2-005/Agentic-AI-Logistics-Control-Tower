@@ -24,12 +24,11 @@ How this corpus maps onto the template
   rendered PDF and as a degraded scan. `clean` extracts from the PDF's text layer (no OCR
   noise at all); `noisy` OCRs the scan with Tesseract. The difference between the two
   rows is therefore the cost of OCR, with the extraction prompt held constant -- which is
-  also exactly the comparison the Week 11 Textract benchmark needs.
+  also the comparison any second OCR engine would be scored on.
 * **A stratified subsample, because of quota.** Extraction is one Gemini call per
   document per split: the full corpus is 480 calls against a 20-a-day free tier (D-032),
   24 days. `--consignments N` draws N consignments keeping the corpus's clean/seeded-
-  error ratio, deterministically, and the report states the N. The v3.1 plan's own
-  Textract benchmark samples for the same reason.
+  error ratio, deterministically, and the report states the N.
 * **Cached, and a quota refusal is never a score.** Every extraction is appended to the
   cache before it is scored, keyed by document, split, engine and prompt version, so a run
   spread over several days never pays for a document twice. A 429 stops the run and the
@@ -409,7 +408,7 @@ def document_text(path: Path, engine: str) -> str:
 
         return "\n".join(page.extract_text() or "" for page in PdfReader(str(path)).pages).strip()
     if engine != "tesseract":
-        raise ValueError(f"engine {engine!r} is not wired yet -- only tesseract (Week 11 adds textract)")
+        raise ValueError(f"engine {engine!r} is not supported -- only tesseract")
     from src.agents.document_agent import ocr_image
 
     return ocr_image(path)

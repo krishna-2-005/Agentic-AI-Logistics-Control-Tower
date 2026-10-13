@@ -33,7 +33,7 @@ function friendlyModel(id: string): string {
 /**
  * The one page that needs a model in the loop.
  *
- * The free container sleeps and a cold SparkSession takes 20-40 seconds, so the
+ * The free API host sleeps when idle and takes up to a minute to wake, so the
  * warming state is a first-class thing the UI shows rather than a spinner that
  * looks like a hang. If the API never answers, the page says so plainly instead
  * of pretending.

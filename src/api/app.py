@@ -188,6 +188,18 @@ async def guard_and_log(request: Request, call_next):
     return response
 
 
+@app.get("/")
+def root() -> dict:
+    """What a person who opens the bare URL needs: this is an API, and where the site is."""
+    return {
+        "service": "Agentic AI Logistics Control Tower: public API",
+        "website": "https://control-tower-mu-rouge.vercel.app",
+        "try_it": "/docs",
+        "routes": ["/health", "/api/predict", "/api/predict/status", "/api/alerts", "/api/traces", "/api/ask"],
+        "source": "https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower",
+    }
+
+
 @app.get("/health")
 def health() -> dict:
     return {"status": "ok", "predictor": predictor.state, "alerts_recorded": len(alert_replay.rows)}

@@ -1,7 +1,7 @@
 # What this build has cost (execution plan v3.1 W8 D5)
 
-**Owner: Mounika.** Written down because Phase 3 proposes moving to AWS, and a cost table
-needs a baseline to be a comparison rather than a number.
+**Owner: Mounika.** Written down so the project's cost is a stated number, not an assumption.
+The AWS phase the v3.1 plan proposed was dropped (D-074); the project runs on free tiers only.
 
 ## Direct spend to date: **$0.00**
 
@@ -35,11 +35,10 @@ shaped the work:
   out to be softer than it looked: Kafka runs natively on the JDK the machine already had,
   and G-05 closed that way (D-055).
 
-## The baseline for Phase 3
+## What money would buy, if it were ever spent
 
-If the cloud phase is priced against this, the comparison is not "cloud costs $X" but
-"cloud costs $X to remove these three constraints". Phase 3's own budget is a $40 credit,
-and the three things worth spending it on, in order:
+No paid service is used, and none is planned (D-074). If one were, the comparison is not
+"this costs $X" but "this costs $X to remove these three constraints", in this order:
 
 1. **A multi-node broker** — G-05 is closed on a single local broker; a cluster is what turns
    the throughput figure into a capacity figure.
@@ -48,5 +47,5 @@ and the three things worth spending it on, in order:
 3. **A machine with more than one disk** — the scale appendix's ceiling is IO, so the next
    scale number needs storage that is not one laptop SSD.
 
-Hosting the dashboard is deliberately *not* on that list: the free tier already serves a
-read-only dashboard, and paying for it buys a nicer URL rather than a better result.
+Hosting is deliberately *not* on that list: the site runs on Vercel's free plan and the API on
+Render's free plan (D-073), and paying for either buys a nicer URL rather than a better result.
