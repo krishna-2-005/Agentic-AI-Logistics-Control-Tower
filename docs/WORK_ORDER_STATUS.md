@@ -1,5 +1,7 @@
 # Work order status — WP-01 to WP-12
 
+**Cloud week: dropped (D-074).** No AWS anywhere; site on Vercel and API on Render, both free.
+
 Updated at the end of every package. Companion to `docs/HUMAN_ACTIONS.md`.
 
 A package is **done** only when the evidence named in its Acceptance row exists in the repository.
@@ -10,9 +12,9 @@ A package is **done** only when the evidence named in its Acceptance row exists 
 | 01 | Foundation — README, main, license, CI, secret scan | **code done; release blocked** | v1.0 release + branch protection need repo-owner rights (HUMAN_ACTIONS §1.1, §1.2) | `.github/workflows/tests.yml`, `tests/test_readme_numbers.py` (20 green), `LICENSE`, `DATA_LICENSE.md`, `CITATION.cff`, `.pre-commit-config.yaml`, `.gitattributes` |
 | 02 | Agent evaluation at scale (n ≥ 150, Wilson intervals) | **done** | label review by Lahari still owed (HUMAN_ACTIONS §3.1) | all three `w9_*` files, `results_freeze_v4.json`, `agent_evaluation.md` section, 427 tests |
 | 03 | Public site phase 1 — export, scaffold, Overview, Network, Corridors, About | **done, ahead of order** | — | `src/report/export_web.py`, `web/`, production URL, `tests/test_web_numbers.py` (21 green) |
-| 04 | Public API — read-only API, TMS isolation, rate limits, predict | **done** (on Render, not HF: D-073) | Vercel `NEXT_PUBLIC_API_URL` to connect the site (HUMAN_ACTIONS §2.1) | `src/api/app.py`, live at control-tower-api.onrender.com; `f1_api_latency.json` (p95 345 ms, TMS routes 404), `f1_api_load_test.json` (127 × 429, 0 × 5xx), `w10_gbt_local_equivalence.json` (26,369/26,369 = Spark), D-072, D-073 |
+| 04 | Public API — read-only API, TMS isolation, rate limits, predict | **done** (on Render, not HF: D-073) | — | live at control-tower-api.onrender.com; `f1_api_latency.json` (p95 345 ms, TMS routes 404), `f1_api_load_test.json` (127 × 429, 0 × 5xx), `w10_gbt_local_equivalence.json` (26,369/26,369 = Spark); the site defaults to it, so Vercel needs no setting; D-072, D-073 |
 | 05 | Public site phase 2 — live pages, Playwright, Lighthouse | **partly done** | WP-04 for the live half; user test needs three people | pages built; `web/e2e/` and Lighthouse CI outstanding |
-| 06 | Real alert channel + monitoring | **alert channel done; monitoring waits** | UptimeRobot needs the WP-04 API URL to watch | `f2_alert_channel_live.json`: 3 real stream alerts on Telegram + 3 by email, 0 failures, provider receipts kept; D-071 closes G-07 |
+| 06 | Real alert channel + monitoring | **alert channel done**; monitoring is the keep-alive Action | `API_URL` repo variable turns the keep-alive pings on | `f2_alert_channel_live.json`: 3 real stream alerts on Telegram + 3 by email, 0 failures; `.github/workflows/api-keepalive.yml`; D-071 |
 | 07 | One measured LLM decision + approval queue + cost traces | not started | 2 labellers × 2 h (HUMAN_ACTIONS §3.2) | `benchmarks/raw/w9_llm_decision_eval.json`, D-065, D-067 |
 | 08 | Real documents for the doc agent | not started | 10 phone photos (HUMAN_ACTIONS §3.4) | `benchmarks/raw/w9_doc_eval_real.json` |
 | 09 | Code hygiene — ruff, mypy, LF, lock file | **mostly done** | `docker compose` needs Docker Desktop; module splitting deferred | `requirements.lock`, `scripts/lock_requirements.sh`, ruff + mypy + locked-install CI jobs, all green |

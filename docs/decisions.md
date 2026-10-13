@@ -2525,3 +2525,27 @@ Singapore): `/health` 200; every TMS write route 404; 20 warm predictions p50 29
 (`f1_api_latency.json`); 200 requests from one client in 16 s gave 127 × 429 and 0 × 5xx
 (`f1_api_load_test.json`).
 
+## D-074 · No AWS: the cloud week is dropped, and the project runs on no cloud account — `DECIDED`
+**Post-v1.0 · Mounika · supersedes execution plan v3.1 §5 and v4.0 §11.2**
+
+The plans carried a one-week AWS phase on a $40 credit: S3, Glue and Athena under a read-only
+`run_sql` tool, a Textract-versus-Tesseract OCR comparison, and optionally Bedrock. None of it
+had been built, no AWS account or key was ever configured, and the work order's own rule already
+kept hosting off AWS.
+
+**Decided: the project does not use AWS anywhere.** The site stays on Vercel, the API on Render
+(D-073), both on free plans, and every result is reproduced on one laptop with no cloud
+credentials. What that gives up, stated rather than implied:
+
+* **No second OCR engine.** Document extraction is scored with Tesseract alone; the
+  comparison stays future work (`eval_extraction.py` refuses any other engine by name).
+* **No SQL-backed assistant answers.** The assistant answers from its ranked tables and its
+  vector index, as measured (`w7_assistant_run_no_llm.json`, `w7_assistant_run_llm.json`); there
+is no `run_sql` tool.
+* **No independent recount of the audit in a second engine.** The audit counts
+  (273 / 512 / 1,130) are reproduced by Spark and by the fresh-clone rebuild, not by Athena.
+
+Text that described the AWS phase as upcoming (`docs/cost.md`, `docs/RELEASE_v1.0.md`,
+`docs/deploy_dashboard.md`, a docstring) now says it was dropped. **Spend to date and planned:
+$0.**
+
