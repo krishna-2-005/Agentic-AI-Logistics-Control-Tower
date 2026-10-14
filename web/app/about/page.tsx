@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 import { Card, PageHeader, Section } from "@/components/ui";
-import { getEvidence, getOverview } from "@/lib/data";
+import { getEvidence, getOverview, repoFileUrl } from "@/lib/data";
 import { num } from "@/lib/format";
 
 export const metadata: Metadata = {
@@ -213,6 +213,38 @@ export default function AboutPage() {
             </p>
           </div>
         </Card>
+      </Section>
+
+      {/* ── model and data cards ─────────────────────────────────────── */}
+      <Section
+        title="Model and data cards"
+        description="The two documents a reviewer reads first: what the model is for and how it fails, and what the data is and cannot support."
+      >
+        <div className="grid gap-4 md:grid-cols-2">
+          {[
+            {
+              title: "Model card",
+              file: "docs/model_card.md",
+              body: "Intended use, training split, the 38 features, error by slice, the proof that the served model is the reported one, and six failure modes.",
+            },
+            {
+              title: "Data card",
+              file: "docs/data_card.md",
+              body: "Source, the 144,867 records and what cleaning did to them, what a leg is, and what three weeks of one carrier's data cannot support.",
+            },
+          ].map((c) => (
+            <a
+              key={c.file}
+              href={repoFileUrl(c.file)}
+              target="_blank"
+              rel="noreferrer"
+              className="block rounded-xl border border-[var(--line)] bg-[var(--surface-raised)] p-4 transition-colors hover:border-[var(--accent)]"
+            >
+              <p className="text-sm font-semibold text-[var(--accent)]">{c.title} →</p>
+              <p className="mt-1.5 text-sm leading-relaxed text-[var(--ink-muted)]">{c.body}</p>
+            </a>
+          ))}
+        </div>
       </Section>
 
       {/* ── glossary ─────────────────────────────────────────────────── */}

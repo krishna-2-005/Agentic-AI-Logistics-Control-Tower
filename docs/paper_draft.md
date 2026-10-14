@@ -1,6 +1,6 @@
 # Where is the planner wrong? Corridor-level localisation of systematic routing error in a national logistics network
 
-*Draft v0.1 for ICCCI 2027 (D-052). Authors withheld for double-blind review. Every number
+*Draft v0.2 for ICCCI 2027 (D-052); v0.2 adds the model and data cards, the agent ablation, related work with verified citations and threats to validity (WP-10). Authors withheld for double-blind review. Every number
 below is read from a file in `benchmarks/raw/`; `benchmarks/experiments_appendix.md` maps
 each file to the command that regenerates it. Figures are in `docs/figures/`.*
 
@@ -60,30 +60,56 @@ fair comparison. OSRM is reported as context throughout.
 
 ## 2 · Related work
 
-**Residual prediction over a routing engine.** Uber's DeepETA predicts the residual between
-a routing engine's estimate and the observed outcome, with an asymmetric Huber loss chosen
-because mean absolute error is the reported metric. Our formulation in §5 was arrived at
-independently and is the same in structure; we differ in aim — we use the model as secondary
-to localising *where* the engine is wrong — and in reporting the residual model's behaviour
-by slice.
+**Route engines as the thing measured.** The planned times in our data come from OSRM, an
+open-source route planner built on contraction hierarchies over OpenStreetMap [9]. A route
+engine estimates the travel time of the best route from per-road-class speed profiles; it has
+no notion of hub dwell, loading or a particular corridor's history. Our audit treats its
+estimate as a measurement to be checked against outcomes, corridor by corridor, rather than
+as a feature to be improved in isolation.
 
-**Delivery time and route prediction.** Wen et al. survey route and time prediction for
-instant delivery, organising the field by task, architecture and learning paradigm. By that
-taxonomy this work is time-only, supervised and non-deep, on line-haul freight (hours,
-inter-city) rather than instant delivery (minutes, urban). Deep models for pick-up route
-prediction (DRL4Route) and for timely-rate prediction under anomalies (DeepSTA) address
-adjacent problems with far richer trajectory data.
+**Residual prediction over a route engine.** DeeprETA [2] post-processes a route planner's
+ETA with a deep residual network and reports lower mean and median absolute error than
+competitive regression baselines, at the highest query volume of any model at its company.
+Our formulation in §5 was arrived at independently and has the same structure: predict the
+correction, not the total. We differ in aim, using the model as secondary to localising
+*where* the engine is wrong, in scale (a gradient-boosted model on 26,369 legs), and in
+reporting the correction's behaviour by slice, which shows that most of its gain is on
+corridors with no history.
+
+**Delivery-time prediction.** Gradient boosting is a strong, cheap baseline for delivery
+times: on postal data, LightGBM and CatBoost were the most accurate and efficient of the
+models compared [10]. Wen et al. survey route and time prediction for instant delivery [3];
+by their taxonomy this work is time-only, supervised and non-deep, on line-haul freight
+(hours, inter-city) rather than instant delivery (minutes, urban). Deep models for pick-up
+route prediction [4] and for timely-rate prediction under anomalies [5] address adjacent
+problems with far richer trajectory data.
 
 **Corridor-level travel-time reliability.** Transport research measures freight corridors
-with descriptive reliability indices — planning-time and buffer indices, percentile spreads,
-fitted distributions — typically from GPS probe data. We share the unit of analysis and add
-significance testing with multiplicity control, which turns "this corridor looks unreliable"
-into "this corridor is slower than the network at a 5% false discovery rate".
+with descriptive reliability indices (planning-time and buffer indices, percentile spreads,
+fitted distributions), typically from GPS probe data [6]. We share the unit of analysis and
+add significance testing with multiplicity control [7, 8], which turns "this corridor looks
+unreliable" into "this corridor is slower than the network at a 5% false discovery rate".
 
-**On this dataset.** A search in September 2026 found feature-engineering notebooks and
-repositories using the Delhivery records, and no peer-reviewed study. There is therefore no
-published baseline on these data; we report every result beside a trivial policy computed on
-the same set instead.
+**Language-model agents for operations.** Agents that interleave reasoning with tool calls
+[11] are now surveyed as a field [12], and the Model Context Protocol [14] standardises how
+such agents reach tools and data. Closest to our design position is OptiGuide [13], where a
+language model answers supply-chain questions by editing an optimiser's input and explaining
+its output, while the optimiser makes the decision. Our agents make the same division more
+strictly: every verdict is computed by code, and the model writes only the sentence a person
+reads (§7).
+
+**Control towers.** In supply-chain practice a *control tower* is a central point of
+visibility and coordination over shipments; Trzuskawska-Grzesińska collects business cases
+and argues that whole-chain visibility needs control towers to be integrated with one
+another [15]. Our system takes the name for the same role — one view of the network's
+corridors, live alerts and the agents acting on them — and contributes an evaluated
+prototype rather than a business case.
+
+**On this dataset.** Searches in September and October 2026 found feature-engineering
+notebooks and case studies using the Delhivery records, comparing actual against OSRM time,
+and **no peer-reviewed study**. There is therefore no published result on these data to put
+in a comparison row; we report every result beside a trivial policy computed on the same
+set instead; if published, ours would be the first baseline on the dataset.
 
 ## 3 · Data and preparation
 
@@ -223,16 +249,23 @@ and a Spark Structured Streaming job joins each query to the corridor and hub hi
 it with the batch model, and writes an alert when the prediction crosses twice the planned
 time.
 
-**Equivalence.** The same leg scored in batch and through the event path gives
-**bit-identical predictions on 500 of 500 legs** for both the served and the reported model
-`[w5_stream_validation_report.json]`, `[w8_stream_validation_v2.json]`. Replaying the same
+**Equivalence.** The reported model is the one the stream serves. Its history features —
+including seven-day windows over event time and dwell keyed by hub and part of the day —
+are kept as event-time state per corridor and hub, and folded with the same arithmetic order
+Spark uses in batch. Through the running job, over the full 52,738-event replay and across a
+restart from the state store, **26,369 of 26,369 legs score bit-identically to batch**
+(500 of 500 in the acceptance sample), no history feature differs on any leg, and the stream's
+own test-split predictions give the reported 30.90 minutes `[w10_stream_validation_v2.json]`. Replaying the same
 2,000 legs through a live Kafka broker and through the file source produces **the same 1,347
 alerts on the same legs with the same predicted gaps** (maximum difference 0.0)
 `[w7_kafka_source_equivalence.json]`.
 
-**Throughput.** Over the full 52,738-event replay, the producer sustained 886 events/s and the
-job scored at 740 events/s, with event-to-alert latency p50 28.9 s and p95 38.0 s on one
-20-core machine `[w5_stream_throughput_full.json]`.
+**Throughput.** Over the full 52,738-event replay with a stateless history join, the producer
+sustained 886 events/s and the job scored at 740 events/s, with event-to-alert latency p50
+28.9 s and p95 38.0 s on one 20-core machine `[w5_stream_throughput_full.json]`. Keeping
+event-time state costs throughput: the stateful job scored 74 events/s of busy time on the
+same machine `[w10_stream_validation_v2.json]`, ample for the real event rate and too slow
+for a one-minute replay of three weeks.
 
 **Alerting is a workload decision.** For the best classifier, raising the delay threshold
 from 1.15× to 2.0× moves the Matthews correlation only from 0.507 to 0.536 while the share of
@@ -258,6 +291,16 @@ seeded kind that falls inside the auditor's own tolerance; document extraction s
 20 of 40 planned rows; the analytics assistant's model-written answers were judged grounded
 in **17 of 18** cases, and its two refusal layers together refused **all six** out-of-scope
 questions.
+
+These sets are small: a perfect score on twenty cases is consistent with a true rate of 84%.
+Re-run at scale, stratified so the hard cases are a named share, with Wilson 95% intervals
+and no model calls `[w9_order_eval.json]`, `[w9_invoice_eval.json]`, `[w9_lifecycle_eval.json]`:
+order entry scored **85.0% [79.4–89.3%] on 200 emails held out**, falling to 70.0% on the
+adversarial half, where every error was an order filed on a value the email never stated;
+invoice audit was correct on **90.0% [85.1–93.4%] of 200 invoices with no correct invoice
+disputed**, the misses being the one kind that falls inside the auditor's tolerance; and the
+orchestrator routed **100 of 100 lifecycles** as the email deserved [96.3–100%], exercising all
+three paths through its graph.
 
 The one groundedness failure is worth describing: asked how many corridors are
 statistically slower, the model counted the three slower corridors among its five retrieved
@@ -287,6 +330,41 @@ every join inside it is as-of the event being replayed.** Our stream-equals-batc
 not catch this, because both of its paths read the same feature row; it proved the event
 format lossless, not the running job's history correct.
 
+### 7.3 What the language model adds: an ablation
+
+The design position in §7.1 makes a direct question answerable: what does each agent lose
+or gain when the language model is removed, or given the decision? Table 2 sets the
+measured configurations side by side. A dash is a configuration not measured, not an
+assumed result.
+
+**Table 2.** Agent configurations. *Rules*: deterministic code decides and templates write.
+*+ LLM phrasing*: the same decision, worded by the model. *LLM decides*: the model makes the
+decision. *Human*: a second person's labels.
+
+| agent (set) | rules | rules + LLM phrasing | LLM decides | human |
+|---|---|---|---|---|
+| Order entry (Week 5, 50 emails) | **50 / 50** | — | **50 / 50** | — |
+| Order entry (200 emails, held out) | **85.0%** [79.4–89.3] | — | — | — |
+| Analytics assistant (30 questions): route accuracy | 90.0% | **93.3%** | — | — |
+| Analytics assistant: out-of-scope refused | 3 / 6 | 4 / 6 by the model layer, **6 / 6** with both layers | — | — |
+| Analytics assistant: answers grounded | extractive by construction | **17 / 18** | — | — |
+| Exception agent: notification precision (as-of) | **58.6%** (verdict computed; wording does not change it) | same verdicts | — | — |
+| Document extraction (20 rows) | — | — | **97.9%** of fields | — |
+
+Sources: `[w5_order_eval_summary.json]`, `[w9_order_eval.json]`, `[w7_assistant_run_no_llm.json]`,
+`[w7_assistant_run_llm.json]`, `[w8_replay_leakage.json]`, `[w7_doc_extraction_eval.json]`;
+the assistant's groundedness was judged by hand on the saved answers.
+
+Three readings. First, on the 50-email set the model deciding and the rules deciding are
+indistinguishable, so that set cannot separate them; separating them needs the 200-email set
+scored with the model deciding, which the free tier's daily budget of 20 calls has not yet
+allowed. Second, where the model only phrases, its measurable contribution is at the edges:
+three more points of route accuracy and one more refusal, with one ungrounded answer in
+eighteen (§7.1). Third, document extraction is the one agent where the model decides and no
+rule baseline exists; it is also the one result resting on 20 of 40 planned rows. The empty
+*human* column is the clearest gap: no agent decision has yet been compared against a second
+labeller.
+
 ## 8 · Scale
 
 The audit's two aggregation functions, imported unchanged, were run on NYC taxi trip records
@@ -297,16 +375,43 @@ unflattering and belong here: at this project's own size the runtime is Spark's 
 26,369 legs and 2.9 million trips both take 2.4 s — and five times the cores bought only
 1.24× the speed, because 914 MB from one disk is IO-bound.
 
-## 9 · Limitations and threats to validity
+## 9 · Threats to validity
 
-One operator, one country, and just over three weeks of data (legs created 12 September to 3 October 2018, 22 calendar days). The support-floor
-result applies to our own rankings. The agent evaluations use synthetic and templated corpora
-we generated, so they measure the pipeline rather than the world; the invoice auditor's rate
-band is the corpus's own pricing model and says nothing about real freight rates. The
-reported model is not yet the one the streaming job serves: two of its features are
-seven-day windows over event time and two are keyed by hub and hour, which a stateless
-history lookup cannot supply. Language-model results come from one free-tier model and a
-daily call budget, which bounded sample sizes.
+**External validity: one carrier, three weeks.** Every network result is about one operator's
+network in one country over 22 days of leg creation (12 September to 3 October 2018). The
+audit, the model and the support-floor result describe that network; whether the corridors
+the audit flags are stable over months, or across carriers, is untested. The data card
+(`docs/data_card.md`) lists what these data cannot support.
+
+**Construct validity: synthetic scaffolding.** The agents read documents, emails and invoices
+generated by this project, and post to a mock transport management system. Their scores
+therefore measure the pipeline against our own generator, not the world; the invoice
+auditor's rate band is the corpus's own pricing model and says nothing about real freight
+rates. Only the network data is real.
+
+**Internal validity: replay evaluations.** A streaming replay joined every query to history
+from the end of the data and inflated an alert precision from 58.6% to 72.1% (§7.2). The
+served model now uses event-time state, which is as-of by construction, and the evaluation
+that matters was re-run as-of; but any further replay-based measurement inherits this risk,
+and our stream-equals-batch test alone would not catch it.
+
+**Statistical conclusion validity: set sizes.** Agent evaluations range from 20 to 200 cases.
+Small sets are reported with their size beside the rate, and the 200-case runs carry Wilson
+95% intervals (§7.1). Document extraction rests on 20 of 40 planned rows, the assistant's
+groundedness on 18 judged answers. On the model, the validation cut favoured the median
+baseline (29.89 against 30.17) while the test split favoured the model (33.04 against 30.90);
+both are reported, and adoption followed a rule fixed before the test split was scored
+(§5.3).
+
+**Evaluator independence.** Each agent's evaluation set was authored by someone other than its
+builder, but no agent decision has been labelled by a second person to measure agreement
+(Table 2, *human*). The groundedness judgements were made by one reader.
+
+**Serving conditions.** The public system runs on free tiers: the API on a 512 MB host that
+sleeps when idle, the language model under a daily cap of 20 calls. These bound sample sizes
+for model-written results and the latency a first visitor sees, not the measurements above,
+which were taken on one 20-core machine. The public predictor answers for "today" from each
+corridor's history as it stood at the end of the data.
 
 ## 10 · Conclusion
 
@@ -316,19 +421,48 @@ support floor changes which ones. A residual model over a per-corridor median im
 prediction most where history is absent. Two of our findings are about evaluation rather
 than the network — an optimiser default that disabled the chosen loss, and a replay that
 leaked the future into alert scoring — and both were found only by comparing a number with
-the same number computed another way. Future work: serving the reported model with
-event-time windows, a live-deployment evaluation of alert precision, and extending the audit
-to a longer period to test whether the corridors it flags are stable.
+the same number computed another way. The reported model is now served on event-time state with predictions identical to batch on
+every leg. Future work: scoring the agents with the model deciding at scale and against a
+second human labeller (Table 2), a live-deployment evaluation of alert precision, and
+extending the audit to a longer period to test whether the corridors it flags are stable.
 
 ---
 
-## References (to be completed to venue format — see `docs/references.md`)
+## References
 
-1. Delhivery logistics trip records, public release.
-2. Uber Engineering, "DeepETA: How Uber Predicts Arrival Times Using Deep Learning," engineering blog, 2022. *[author list to be taken from the post before submission]*
-3. H. Wen et al., "A Survey on Service Route and Time Prediction in Instant Delivery: Taxonomy, Progress, and Prospects," arXiv:2309.01194, 2023.
-4. "DRL4Route: A Deep Reinforcement Learning Framework for Pick-up and Delivery Route Prediction," arXiv:2307.16246, 2023. *[authors and venue to confirm]*
-5. "DeepSTA: A Spatial-Temporal Attention Network for Logistics Delivery Timely Rate Prediction in Anomaly Conditions," arXiv:2505.00402. *[authors and venue to confirm]*
-6. FHWA, "Freight Performance Measurement: Travel Time in Freight-Significant Corridors." *[to read in full]*
-7. B. L. Welch, "The generalization of Student's problem when several different population variances are involved," *Biometrika* 34, 1947.
-8. Y. Benjamini and Y. Hochberg, "Controlling the false discovery rate," *J. R. Stat. Soc. B* 57, 1995.
+*Verification status per entry is in `docs/references.md`; metadata below was checked against
+the source's own listing on 14 October 2026. Format to the venue before submission.*
+
+1. Delhivery logistics trip records, public release on Kaggle.
+   <https://www.kaggle.com/datasets/devarajv88/delhivery-logistics-dataset>
+2. X. Hu, T. Binaykiya, E. Frank and O. Cirit, "DeeprETA: An ETA Post-processing System at
+   Scale," arXiv:2206.02127, 2022.
+3. H. Wen et al., "A Survey on Service Route and Time Prediction in Instant Delivery: Taxonomy,
+   Progress, and Prospects," arXiv:2309.01194, 2023.
+4. "DRL4Route: A Deep Reinforcement Learning Framework for Pick-up and Delivery Route
+   Prediction," arXiv:2307.16246, 2023. *[authors and venue to confirm]*
+5. "DeepSTA: A Spatial-Temporal Attention Network for Logistics Delivery Timely Rate
+   Prediction in Anomaly Conditions," arXiv:2505.00402. *[authors and venue to confirm]*
+6. FHWA, "Freight Performance Measurement: Travel Time in Freight-Significant Corridors."
+   *[to read in full]*
+7. B. L. Welch, "The generalization of Student's problem when several different population
+   variances are involved," *Biometrika* 34(1–2), 28–35, 1947.
+8. Y. Benjamini and Y. Hochberg, "Controlling the false discovery rate: a practical and powerful
+   approach to multiple testing," *J. R. Stat. Soc. B* 57(1), 289–300, 1995.
+9. D. Luxen and C. Vetter, "Real-time routing with OpenStreetMap data," in *Proc. 19th ACM
+   SIGSPATIAL Int. Conf. on Advances in Geographic Information Systems (GIS '11)*, Chicago,
+   pp. 513–516, 2011.
+10. J. Khiari and C. Olaverri-Monreal, "Boosting Algorithms for Delivery Time Prediction in
+    Transportation Logistics," in *2020 Int. Conf. on Data Mining Workshops (ICDMW)*, IEEE,
+    2020. doi:10.1109/ICDMW51313.2020.00043. arXiv:2009.11598.
+11. S. Yao, J. Zhao, D. Yu, N. Du, I. Shafran, K. Narasimhan and Y. Cao, "ReAct: Synergizing
+    Reasoning and Acting in Language Models," in *Proc. ICLR*, 2023. arXiv:2210.03629.
+12. L. Wang, C. Ma, X. Feng et al., "A survey on large language model based autonomous
+    agents," *Frontiers of Computer Science* 18(6), 186345, 2024.
+    doi:10.1007/s11704-024-40231-1.
+13. B. Li, K. Mellou, B. Zhang, J. Pathuri and I. Menache, "Large Language Models for Supply
+    Chain Optimization," arXiv:2307.03875, 2023.
+14. Anthropic, "Model Context Protocol," open standard announced 25 November 2024.
+    *[cite the specification's own page before submission]*
+15. A. Trzuskawska-Grzesińska, "Control towers in supply chain management – past and future,"
+    *Journal of Economics and Management* 27(1), 114–133, 2017. doi:10.22367/jem.2017.27.07.

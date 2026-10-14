@@ -25,13 +25,16 @@ of the plan forbids the other two headlines, and for good reasons repeated below
 | 2 | **The support threshold decides the answer.** Top-20 lists at a 10-leg and a 30-leg floor share **no corridor**, and the 30-leg list is far milder | `w2_corridor_audit_support30.csv` | fig4 |
 | 3 | Alerting is **threshold-insensitive in quality, sensitive in workload**: the logistic classifier holds MCC 0.507→0.540 while alert volume falls 98%→49% of legs. The stream's own flag is the weaker classifier at every threshold (0.315→0.477) | `w5_threshold_sensitivity.csv` | fig7 |
 | 4 | A learned **residual correction over a strong per-corridor baseline** reaches 30.90 min MAE against the median baseline's 33.04, winning on all 14 slices — with the gain concentrated on corridors with no history | `w7_model_metrics_v2_stepsize.csv` | fig5, fig6 |
-| 5 | Streaming serves the batch model with **bit-identical predictions** (500/500) at 886 events/sec, p50 28.9 s event-to-alert | `w5_stream_validation_report.json`, `w5_stream_throughput_full.json` | — |
-| 6 | A **deterministic-core agent architecture**: verdicts computed, prose generated, so every decision is reproducible and scored — five agents, each against a trivial policy | `benchmarks/agent_evaluation.md`, `final_tables.md` | fig9 |
+| 5 | The stream **serves the reported model** on event-time state with **bit-identical predictions on 26,369 of 26,369 legs** (500/500 acceptance sample), across a restart; stateless path 886 events/s, stateful 74 events/s | `w10_stream_validation_v2.json`, `w5_stream_throughput_full.json` | — |
+| 6 | A **deterministic-core agent architecture**: verdicts computed, prose generated, so every decision is reproducible and scored — five agents, each against a trivial policy, at 200 cases with Wilson intervals, and an **ablation of what the model adds (Table 2, §7.3)** | `benchmarks/agent_evaluation.md`, `w9_order_eval.json`, `w9_invoice_eval.json`, `w9_lifecycle_eval.json`, `w7_assistant_run_no_llm.json`, `w7_assistant_run_llm.json` | fig9, Table 2 |
 | 7 | Document extraction with a **clean-vs-degraded split and a hallucination rate** (0 of 153 fields) | `w7_doc_extraction_eval.json` | — |
 | 8 | The corridor-aggregation code runs **unchanged at 56.4M rows**, with the runtime table and its ceiling | `w7_scale_benchmark.json` | fig8 |
 
 **Claim 5 is now complete** — the live-broker run happened on a native Kafka broker, with
-alerts identical to the file source (D-055). **Claim 7 rests on 20 of 40 planned rows**; the
+alerts identical to the file source (D-055), and since WP-11 the stream serves the reported
+model rather than the Week 4 champion (D-070). **Claim 6's ablation (Table 2) has two empty
+columns** — the model deciding at 200 cases, and a second human labeller — which are WP-07
+work and are stated as gaps, not filled. **Claim 7 rests on 20 of 40 planned rows**; the
 rest run on the daily LLM quota, and the draft says so beside the number.
 
 ---

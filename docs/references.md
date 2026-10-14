@@ -5,9 +5,11 @@ is *for*, because a reference list sorted alphabetically tells a reader nothing 
 anything is in it.
 
 **Verification status is marked on every entry.** `[read]` means someone opened the source
-and can quote it; `[listed]` means it came from a search result or an abstract and still
-needs its full text and a proper citation before submission. Nothing here is cited in the
-paper until it is `[read]`.
+and can quote it; `[metadata checked]` means title, authors, venue and identifier were
+confirmed against the source's own listing (14 October 2026, WP-10) but the full text still
+needs reading; `[listed]` means it came from a search result or an abstract and still needs
+its full text and a proper citation before submission. **Before submission every cited entry
+must be `[read]` — Lahari's pass (WP-10).**
 
 ---
 
@@ -33,6 +35,10 @@ beside a trivial policy instead.
 
 Full table with "how we differ" in `docs/paper_outline.md`.
 
+- **Hu, X., Binaykiya, T., Frank, E. & Cirit, O., "DeeprETA: An ETA Post-processing System at
+  Scale"**, arXiv:2206.02127 (2022). The paper behind the DeepETA blog post below: a deep
+  residual network correcting a route planner's ETA; lower mean and median absolute error than
+  regression baselines. **Cite this, not the blog.** `[metadata checked]`
 - **DeepETA: How Uber Predicts Arrival Times Using Deep Learning** (Uber Engineering, 2022).
   Predicts the **residual between a routing engine's ETA and the observed outcome**;
   asymmetric Huber loss, chosen because MAE is the reported metric. The closest precedent
@@ -49,6 +55,39 @@ Full table with "how we differ" in `docs/paper_outline.md`.
 - **DeepSTA: A Spatial-Temporal Attention Network for Logistics Delivery Timely Rate
   Prediction in Anomaly Conditions**, arXiv:2505.00402. Adjacent motivation — systematic
   disruption — with a learned model where ours is statistical. `[listed]`
+
+- **Khiari, J. & Olaverri-Monreal, C., "Boosting Algorithms for Delivery Time Prediction in
+  Transportation Logistics"**, 2020 Int. Conf. on Data Mining Workshops (ICDMW), IEEE,
+  doi:10.1109/ICDMW51313.2020.00043; arXiv:2009.11598. Postal delivery times; LightGBM and
+  CatBoost most accurate and efficient. Supports gradient boosting as the method of choice.
+  `[metadata checked]`
+
+## 2b · The route engine being audited
+
+- **Luxen, D. & Vetter, C., "Real-time routing with OpenStreetMap data"**, Proc. 19th ACM
+  SIGSPATIAL GIS (GIS '11), Chicago, pp. 513–516, 2011 (DBLP: conf/gis/LuxenV11). The OSRM
+  paper; OSRM produced the planned times in the data. `[metadata checked]`
+
+## 2c · Language-model agents for operations
+
+- **Yao, S. et al., "ReAct: Synergizing Reasoning and Acting in Language Models"**, ICLR 2023,
+  arXiv:2210.03629. Reasoning interleaved with tool actions. `[metadata checked]`
+- **Wang, L., Ma, C., Feng, X. et al., "A survey on large language model based autonomous
+  agents"**, *Frontiers of Computer Science* 18(6), 186345, 2024,
+  doi:10.1007/s11704-024-40231-1. `[metadata checked]`
+- **Li, B., Mellou, K., Zhang, B., Pathuri, J. & Menache, I., "Large Language Models for
+  Supply Chain Optimization"** (OptiGuide), arXiv:2307.03875, 2023. The model edits an
+  optimiser's input and explains its output; the optimiser decides. The closest published
+  precedent for "verdicts computed, prose generated". `[metadata checked]`
+- **Anthropic, Model Context Protocol**, open standard announced 25 November 2024. Our MCP
+  server exposes 13 tools. Cite the specification page, not news coverage. `[listed]`
+
+## 2d · Control towers
+
+- **Trzuskawska-Grzesińska, A., "Control towers in supply chain management – past and
+  future"**, *Journal of Economics and Management* 27(1), 114–133, 2017,
+  doi:10.22367/jem.2017.27.07. Business cases; argues whole-chain visibility needs
+  integrated control towers. `[metadata checked]`
 
 ## 3 · Corridor-level travel time and reliability
 
