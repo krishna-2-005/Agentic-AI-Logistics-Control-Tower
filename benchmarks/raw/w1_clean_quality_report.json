@@ -1,0 +1,97 @@
+{
+  "generated_at": "2026-08-14T17:31:47.073122+00:00",
+  "stage": "1-clean",
+  "rows_in": 144867,
+  "null_sentinels_converted": {
+    "source_name": 293,
+    "destination_name": 261
+  },
+  "cast_failures": {
+    "trip_creation_time": 0,
+    "od_start_time": 0,
+    "od_end_time": 0,
+    "cutoff_timestamp": 0
+  },
+  "names_backfilled": 0,
+  "states_inferred_from_pin": 551,
+  "exact_duplicates_dropped": 0,
+  "dropped_by_reason": {
+    "null_trip_uuid": 0,
+    "null_centre_code": 0,
+    "unparseable_od_window": 0,
+    "inverted_od_window": 0,
+    "nonpositive_osrm_time": 0,
+    "nonpositive_actual_time": 0
+  },
+  "rows_out": 144867,
+  "rows_dropped_total": 0,
+  "quality_flags": {
+    "is_negative_segment": 1973,
+    "is_zero_osrm_segment": 2347,
+    "is_suspect": 2600
+  },
+  "distinct": {
+    "trip_uuid": 14817,
+    "od_legs": 26369,
+    "corridor_id": 2783,
+    "source_center": 1508,
+    "destination_center": 1481
+  },
+  "time_range": {
+    "min_od_start": "2018-09-12 00:00:16.535741",
+    "max_od_end": "2018-10-08 03:00:24.353479"
+  },
+  "split_counts": {
+    "test": 40009,
+    "training": 104858
+  },
+  "route_type_counts": {
+    "Carting": 45207,
+    "FTL": 99660
+  },
+  "source_row_index_unique": true,
+  "columns_out": [
+    "actual_distance_to_destination",
+    "actual_time",
+    "corridor_id",
+    "cutoff_factor",
+    "cutoff_timestamp",
+    "data",
+    "dest_city",
+    "dest_state",
+    "destination_center",
+    "destination_name",
+    "factor",
+    "is_cutoff",
+    "is_negative_segment",
+    "is_suspect",
+    "is_zero_osrm_segment",
+    "name_backfilled",
+    "od_duration_min",
+    "od_end_time",
+    "od_start_time",
+    "osrm_distance",
+    "osrm_time",
+    "route_schedule_uuid",
+    "route_type",
+    "segment_actual_time",
+    "segment_factor",
+    "segment_osrm_distance",
+    "segment_osrm_time",
+    "source_center",
+    "source_city",
+    "source_name",
+    "source_row_index",
+    "source_state",
+    "start_scan_to_end_scan",
+    "state_from_pin",
+    "trip_creation_time",
+    "trip_uuid"
+  ],
+  "schema": {
+    "dataset": "clean_v1",
+    "version": 1,
+    "columns": 36
+  },
+  "copied_from": "data/processed/clean_v1/_quality_report.json (local, gitignored); absolute paths removed"
+}

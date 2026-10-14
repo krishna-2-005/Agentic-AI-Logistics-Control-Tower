@@ -12,6 +12,10 @@ The API behind the four live pages of [the project site](https://control-tower-m
 | `GET /api/traces` | the newest agent calls (timing and outcome only, never what a visitor typed) |
 | `POST /api/ask` | the analytics assistant. Extractive by default; a model-written answer is opt-in and capped at **10 a day** for everyone. |
 
+**The model behind `/api/predict`:** see the [model card](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/blob/main/docs/model_card.md)
+(intended use, error by slice, failure modes) and the
+[data card](https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower/blob/main/docs/data_card.md).
+
 **Not here:** the mock TMS and anything that writes. Every TMS route is a 404.
 
 **Limits:** 30 predictions a minute per visitor and 2 running at once, 5 questions a minute,

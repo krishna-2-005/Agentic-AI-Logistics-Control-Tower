@@ -1,0 +1,23 @@
+{
+  "generated_at": "2026-08-14T17:32:37.855367+00:00",
+  "stage": "2-reconstruct",
+  "segments_in": 144867,
+  "legs_out": 26369,
+  "trips": 14817,
+  "corridors": 2783,
+  "schema": {
+    "dataset": "trips_v1",
+    "version": 1,
+    "columns": 32
+  },
+  "metrics": {
+    "median_gap_ratio": 2.0,
+    "mean_gap_ratio": 2.5586,
+    "median_gap_min": 42.0,
+    "mean_gap_min": 110.004,
+    "median_dwell_min": 49.0,
+    "frac_over_plan": 0.983,
+    "frac_delayed": 0.9362
+  },
+  "copied_from": "data/processed/trips_v1/_reconstruction_report.json (local, gitignored); absolute paths removed"
+}
