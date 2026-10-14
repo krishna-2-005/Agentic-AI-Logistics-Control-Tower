@@ -46,22 +46,33 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
   const [routeType, setRouteType] = useState("FTL");
   const [hour, setHour] = useState(9);
 
-  const [status, setStatus] = useState<"unknown" | "ready" | "warming" | "down">(
-    "unknown"
-  );
+  const [status, setStatus] = useState<
+    "unknown" | "waking" | "ready" | "warming" | "down" | "unconfigured"
+  >("unknown");
   const [result, setResult] = useState<PredictResponse | null>(null);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!API_CONFIGURED) {
-      setStatus("down");
+      setStatus("unconfigured");
       return;
     }
+    let cancelled = false;
+    // The free host sleeps; the first call wakes it and is answered once it has
+    // booted. Say so after a few seconds instead of leaving a silent wait.
+    const slow = setTimeout(() => {
+      if (!cancelled) setStatus((s) => (s === "unknown" ? "waking" : s));
+    }, 3000);
     getPredictStatus().then((r) => {
+      if (cancelled) return;
       if (r.ok) setStatus(r.data.state === "ready" ? "ready" : "warming");
-      else setStatus("down");
+      else setStatus(r.reason === "unconfigured" ? "unconfigured" : "down");
     });
+    return () => {
+      cancelled = true;
+      clearTimeout(slow);
+    };
   }, []);
 
   // Seed the form from the corridor's own measured distance, so the default is
@@ -104,7 +115,7 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
       setStatus("ready");
     } else {
       setError(r.message);
-      if (r.reason !== "unconfigured") setStatus("down");
+      setStatus(r.reason === "unconfigured" ? "unconfigured" : "down");
     }
   }
 
@@ -214,6 +225,12 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
           {pending ? "Scoring…" : "Predict the delay"}
         </button>
 
+        {status === "waking" && (
+          <p className="mt-2 text-center font-mono text-[11px] text-amber-400">
+            waking the prediction service — the free server sleeps when idle and
+            takes up to a minute to start; you can press predict, it will wait
+          </p>
+        )}
         {status === "warming" && (
           <p className="mt-2 text-center font-mono text-[11px] text-amber-400">
             warming up — the first prediction after a quiet spell is slower
@@ -275,17 +292,21 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
           </Card>
         ) : (
           <Notice
-            tone={status === "down" ? "replay" : "info"}
+            tone={status === "down" || status === "unconfigured" ? "replay" : "info"}
             title={
-              status === "down"
+              status === "unconfigured"
                 ? "The prediction service is not attached to this build"
-                : "Set the leg up and press predict"
+                : status === "down"
+                  ? "The prediction service is not answering right now"
+                  : "Set the leg up and press predict"
             }
           >
-            {status === "down" ? (
+            {status === "down" || status === "unconfigured" ? (
               <>
-                {error ??
-                  "This static site has no API URL configured, so nothing can score a leg right now."}{" "}
+                {status === "unconfigured"
+                  ? "This build has no API address, so nothing can score a leg here."
+                  : (error ?? "It did not answer within 90 seconds.") +
+                    " Reload the page in a minute to try again."}{" "}
                 The model itself and every number measured from it are on the{" "}
                 <a href="/evidence/" className="text-[var(--accent)] underline">
                   results page
@@ -302,7 +323,7 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
           </Notice>
         )}
 
-        {error && result === null && status !== "down" && (
+        {error && result === null && status !== "down" && status !== "unconfigured" && (
           <Notice tone="warn" title="That request did not come back">
             {error}
           </Notice>

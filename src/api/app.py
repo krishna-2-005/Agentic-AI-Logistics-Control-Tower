@@ -117,6 +117,75 @@ class Predictor:
 
 
 predictor = Predictor()
+
+#: The assistant page's suggested questions (`web/components/AssistantChat.tsx`). Answered
+#: once at start-up so a visitor who clicks one is not the first to pay for it.
+SUGGESTED_QUESTIONS = (
+    "Which corridors are the worst bottlenecks?",
+    "Which hub has the longest dwell time?",
+    "How many corridors are significantly slower?",
+    "What is the GST rate on road freight?",
+)
+
+
+class AnswerCache:
+    """Extractive answers by question, so a repeated question costs nothing.
+
+    Only no-model answers are kept: they are a pure function of the question and the
+    committed data, so a cached one is exactly what a fresh call would return. On the free
+    host's fraction of a CPU, embedding one question for retrieval takes about seven
+    seconds; the second visitor to ask it should not wait for that again.
+    """
+
+    def __init__(self, size: int = 512) -> None:
+        self.size = size
+        self._rows: dict[str, dict] = {}
+        self._lock = threading.Lock()
+
+    @staticmethod
+    def key(question: str) -> str:
+        return " ".join(question.lower().split()).rstrip("?.! ")
+
+    def get(self, question: str) -> dict | None:
+        with self._lock:
+            return self._rows.get(self.key(question))
+
+    def put(self, question: str, row: dict) -> None:
+        with self._lock:
+            if len(self._rows) >= self.size:
+                self._rows.pop(next(iter(self._rows)))
+            self._rows[self.key(question)] = row
+
+
+answer_cache = AnswerCache()
+
+
+def _extractive(question: str, traced: bool = True) -> dict:
+    """One no-model answer as the route returns it, through the cache."""
+    cached = answer_cache.get(question)
+    if cached is not None:
+        return cached
+    from src.agents import analytics_assistant as assistant
+
+    if traced:
+        result = assistant.answer(question, use_llm=False)
+    else:
+        result = assistant._answer(question, False, 5)
+    row = {"answer": result.answer, "route": result.route,
+           "sources": [{"label": s} for s in result.sources], "used_llm": False}
+    answer_cache.put(question, row)
+    return row
+
+
+def warm_assistant() -> None:
+    """Load the retrieval index and answer the suggested questions, untraced: the agent log
+    shows what visitors asked, not what the server did to get ready."""
+    for question in SUGGESTED_QUESTIONS:
+        try:
+            _extractive(question, traced=False)
+        except Exception:  # noqa: BLE001 -- a warm-up failure must not stop the server
+            log.exception("assistant warm-up failed on %r", question)
+            return
 alert_replay = AlertReplay()
 limits = {
     "predict": RateLimiter(PREDICT_PER_MIN),
@@ -155,6 +224,7 @@ async def lifespan(_: FastAPI):
     logging.basicConfig(level=logging.INFO, format="%(message)s")
     if os.environ.get("API_WARM_ON_START", "1") == "1":
         predictor.warm_in_background()
+        threading.Thread(target=warm_assistant, name="assistant-warm", daemon=True).start()
     yield
 
 
@@ -280,14 +350,20 @@ def ask(body: AskRequest, request: Request):
     from src.agents.analytics_assistant import answer
 
     use_llm = body.use_llm and llm_quota.take()
+    if not use_llm:
+        try:
+            row = _extractive(body.question)
+        except Exception as exc:
+            log.exception("assistant failed")
+            raise HTTPException(status_code=500, detail="the assistant failed on this question") from exc
+        return {**row, "llm_requested": body.use_llm, "quota_remaining": llm_quota.remaining()}
     try:
-        result = answer(body.question, use_llm=use_llm)
+        result = answer(body.question, use_llm=True)
     except Exception as exc:
-        if use_llm:
-            llm_quota.give_back()
+        llm_quota.give_back()
         log.exception("assistant failed")
         raise HTTPException(status_code=500, detail="the assistant failed on this question") from exc
-    if use_llm and result.draft_source != "llm":
+    if result.draft_source != "llm":
         llm_quota.give_back()  # the model was not reached; the extractive route answered
     return {
         "answer": result.answer,

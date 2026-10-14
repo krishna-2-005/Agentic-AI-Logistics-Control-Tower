@@ -14,23 +14,29 @@ import { cx } from "@/lib/format";
  * says plainly when the answer is "no".
  */
 export function StatusStrip({ freeze }: { freeze: string }) {
-  const [state, setState] = useState<"checking" | "up" | "down" | "static">(
+  const [state, setState] = useState<"checking" | "waking" | "up" | "down" | "static">(
     API_CONFIGURED ? "checking" : "static"
   );
 
   useEffect(() => {
     if (!API_CONFIGURED) return;
     let cancelled = false;
+    // A quick answer means the service was awake; a slow one means it is booting.
+    const slow = setTimeout(() => {
+      if (!cancelled) setState((s) => (s === "checking" ? "waking" : s));
+    }, 3000);
     getHealth().then((r) => {
       if (!cancelled) setState(r.ok ? "up" : "down");
     });
     return () => {
       cancelled = true;
+      clearTimeout(slow);
     };
   }, []);
 
   const dot = {
     checking: "bg-[var(--ink-faint)]",
+    waking: "bg-amber-400 animate-pulse",
     up: "bg-emerald-400",
     down: "bg-amber-400",
     static: "bg-[var(--accent)]",
@@ -42,6 +48,7 @@ export function StatusStrip({ freeze }: { freeze: string }) {
   // underneath -- one line that makes the rest of the site legible.
   const liveNote = {
     checking: null,
+    waking: "waking the live service, up to a minute",
     up: "live predictions available",
     down: null,
     static: null,

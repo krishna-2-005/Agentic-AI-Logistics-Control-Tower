@@ -40,6 +40,7 @@ def client(monkeypatch):
         "read": RateLimiter(api.READ_PER_MIN)})
     monkeypatch.setattr(api, "predict_gate", ConcurrencyGate(api.PREDICT_CONCURRENCY))
     monkeypatch.setattr(api, "llm_quota", DailyQuota(api.LLM_PER_DAY))
+    monkeypatch.setattr(api, "answer_cache", api.AnswerCache())
     monkeypatch.setattr(api.predictor, "state", "ready")
     import src.ml.predict as predict_module
 
@@ -217,3 +218,48 @@ def test_rate_limiter_window_slides():
     assert limiter.check("k", now=0) == 0 and limiter.check("k", now=1) == 0
     assert limiter.check("k", now=2) == pytest.approx(8)
     assert limiter.check("k", now=10.5) == 0
+
+
+# ── the answer cache and the warm-up ─────────────────────────────────────────
+def test_a_repeated_question_is_answered_from_the_cache(client, monkeypatch):
+    from src.agents import analytics_assistant as assistant
+
+    calls = []
+
+    def fake_answer(question, use_llm):
+        calls.append(question)
+        return assistant.AssistantAnswer(question, "refused", "I don't have that.", [], 0.9, "none")
+
+    monkeypatch.setattr(assistant, "answer", fake_answer)
+    first = client.post("/api/ask", json={"question": "What is the capital of France?"}).json()
+    again = client.post("/api/ask", json={"question": "what is the capital of  france"}).json()
+    assert calls == ["What is the capital of France?"]
+    assert first["answer"] == again["answer"] and again["route"] == "refused"
+
+
+def test_a_model_answer_is_never_served_from_the_cache(client, monkeypatch):
+    from src.agents import analytics_assistant as assistant
+
+    calls = []
+    monkeypatch.setattr(assistant, "answer", lambda q, use_llm: calls.append(use_llm) or assistant.AssistantAnswer(
+        q, "retrieval", "x", [], 0.4, "llm" if use_llm else "extractive"))
+    client.post("/api/ask", json={"question": "why?", "use_llm": True})
+    client.post("/api/ask", json={"question": "why?", "use_llm": True})
+    assert calls == [True, True]
+
+
+def test_the_warm_up_answers_every_suggestion_without_tracing(monkeypatch):
+    from src.agents import analytics_assistant as assistant
+
+    monkeypatch.setattr(api, "answer_cache", api.AnswerCache())
+    monkeypatch.setattr(assistant, "answer", lambda *a, **k: pytest.fail("the warm-up must not trace"))
+    monkeypatch.setattr(assistant, "_answer", lambda q, use_llm, k: assistant.AssistantAnswer(q, "table", "a", [], None, "extractive"))
+    api.warm_assistant()
+    assert all(api.answer_cache.get(q) for q in api.SUGGESTED_QUESTIONS)
+
+
+def test_the_suggestions_are_the_ones_the_site_shows():
+    from pathlib import Path
+
+    chat = Path("web/components/AssistantChat.tsx").read_text(encoding="utf-8")
+    assert all(f'"{q}"' in chat for q in api.SUGGESTED_QUESTIONS)

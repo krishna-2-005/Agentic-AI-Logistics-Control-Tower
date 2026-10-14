@@ -141,10 +141,18 @@ export interface LiveAlerts {
 
 // ── calls ────────────────────────────────────────────────────────────────────
 
-export const getHealth = () => call<{ status: string }>("/health", { timeoutMs: 6000 });
+/**
+ * The free API host sleeps after 15 idle minutes. The first request after that is
+ * held while it boots (30-60 s) and then answered, so these wait long enough for
+ * that to finish. Six seconds was too short: a sleeping server read as a missing one.
+ */
+export const WAKE_TIMEOUT_MS = 90_000;
+
+export const getHealth = () =>
+  call<{ status: string }>("/health", { timeoutMs: WAKE_TIMEOUT_MS });
 
 export const getPredictStatus = () =>
-  call<PredictStatus>("/api/predict/status", { timeoutMs: 6000 });
+  call<PredictStatus>("/api/predict/status", { timeoutMs: WAKE_TIMEOUT_MS });
 
 export const postPredict = (body: PredictRequest) =>
   call<PredictResponse>("/api/predict", {
@@ -159,7 +167,8 @@ export const getAlerts = (since?: number) =>
 
 export const getTraces = (agent?: string, limit = 50) =>
   call<{ traces: TraceRow[] }>(
-    `/api/traces?limit=${limit}${agent ? `&agent=${encodeURIComponent(agent)}` : ""}`
+    `/api/traces?limit=${limit}${agent ? `&agent=${encodeURIComponent(agent)}` : ""}`,
+    { timeoutMs: WAKE_TIMEOUT_MS }
   );
 
 export const postAsk = (question: string, useLlm = false) =>
