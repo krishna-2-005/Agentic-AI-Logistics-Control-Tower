@@ -2117,6 +2117,11 @@ outline exists (G-09, this week).
 
 Evidence: `https://iccci.org/sub.html` (read 2026-09-18).
 
+**Update, 14 October 2026 (WP-10): the ICCCI 2027 call for papers is not yet published.**
+Searched the conference site and EasyChair. Past deadlines: 1 February 2024, 15 February 2025,
+15 March 2026, so the 2027 deadline is likely February–March 2027. That is an inference, not
+a date; confirm on <https://iccci.pwr.edu.pl> when the CFP appears and write it here.
+
 ## D-053 · Serving the adopted model needs rolling state, not a lookup; it moves to Phase 3 — `CLOSED by D-070`
 **Week 8 · Mounika · execution plan v3.1 §3, following D-050**
 
