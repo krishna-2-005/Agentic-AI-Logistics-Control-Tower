@@ -31,6 +31,7 @@ import json
 import math
 import re
 import shutil
+from collections import Counter
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
@@ -39,11 +40,32 @@ import numpy as np
 import pandas as pd
 
 from src.common import config
+from src.ml.stats import wilson
 
 # ── where things come from and go ────────────────────────────────────────────
 
 RAW = config.BENCHMARKS_RAW_DIR
-FREEZE_PATH = config.BENCHMARKS_DIR / "results_freeze_v3.json"
+
+
+def latest_freeze_path(bench_dir: Path | None = None) -> Path:
+    """The newest `results_freeze_v<N>.json`, by N, so a v5 is picked up with no edit.
+
+    The version is never hardcoded: the site, the paper and the README must quote the
+    same freeze, and "the same" has to mean "the latest" without anyone remembering to
+    change a constant. Sorted numerically, because v10 sorts before v9 as a string.
+    """
+    folder = bench_dir or config.BENCHMARKS_DIR
+    found = []
+    for path in folder.glob("results_freeze_v*.json"):
+        match = re.fullmatch(r"results_freeze_v(\d+)\.json", path.name)
+        if match:
+            found.append((int(match.group(1)), path))
+    if not found:
+        raise FileNotFoundError(f"no results_freeze_v*.json under {folder}")
+    return max(found)[1]
+
+
+FREEZE_PATH = latest_freeze_path()
 COORDS_PATH = config.REPO_ROOT / "src" / "dashboard" / "reference" / "centre_coords.csv"
 CITY_COORDS_PATH = (
     config.REPO_ROOT / "src" / "dashboard" / "reference" / "india_city_coords.csv"
@@ -54,7 +76,8 @@ PROMPTS_DIR = config.REPO_ROOT / "src" / "agents" / "prompts"
 DEFAULT_OUT = config.REPO_ROOT / "web" / "public" / "data"
 DEFAULT_FIGURES_OUT = config.REPO_ROOT / "web" / "public" / "figures"
 
-FREEZE_VERSION = "v3"
+FREEZE_VERSION = "v" + FREEZE_PATH.stem.rsplit("_v", 1)[1]
+FREEZE_FILE = f"benchmarks/{FREEZE_PATH.name}"
 
 # ── the severity ramp, carried over unchanged from the Streamlit map ─────────
 # D-058 is explicit that these cut points are not redesigned: they were tuned
@@ -112,10 +135,9 @@ def _data_timestamp() -> str:
     a provenance envelope is asked — "how old is this number?" — since it dates
     the benchmark rather than the person who last ran an export.
     """
-    if FREEZE_PATH.exists():
-        frozen_at = _read_json(FREEZE_PATH).get("frozen_at")
-        if frozen_at:
-            return str(frozen_at)
+    frozen_at = _read_json(FREEZE_PATH).get("frozen_at")
+    if frozen_at:
+        return str(frozen_at)
     return datetime.fromtimestamp(0, UTC).isoformat()
 
 
@@ -172,10 +194,44 @@ def _read_json(path: Path) -> Any:
 
 def _load_freeze() -> dict[str, dict]:
     """The frozen values, keyed by id, so any exporter can quote one."""
-    if not FREEZE_PATH.exists():
-        return {}
     doc = _read_json(FREEZE_PATH)
-    return {v["id"]: v for v in doc.get("values", [])}
+    return {v["id"]: v for v in doc["values"]}
+
+
+def _need(freeze: dict, key: str) -> Any:
+    """A frozen value, or an error that names the missing key.
+
+    There is deliberately no default. A number that falls back to a typed-in
+    constant when its key goes missing is how a stale 0.9 stayed on the site next to a
+    93.3% in the README; a missing key must stop the export instead.
+    """
+    if key not in freeze:
+        raise KeyError(
+            f"freeze {FREEZE_VERSION} has no value '{key}'; the site will not guess one"
+        )
+    return freeze[key]["value"]
+
+
+def _req(mapping: dict, *path: str) -> Any:
+    """Strict nested lookup into a benchmark file: raises, naming the path, if absent."""
+    node: Any = mapping
+    for part in path:
+        if not isinstance(node, dict) or part not in node:
+            raise KeyError(f"benchmark file has no '{'.'.join(path)}' (stopped at '{part}')")
+        node = node[part]
+    return node
+
+
+def _prop(successes: int, total: int) -> dict[str, Any]:
+    """A count with its Wilson 95% interval, computed here from the counts."""
+    w = wilson(int(successes), int(total))
+    return {
+        "successes": w.successes,
+        "total": w.total,
+        "rate": round(w.point, 4),
+        "ci_low": round(w.lower, 4),
+        "ci_high": round(w.upper, 4),
+    }
 
 
 def _coords() -> pd.DataFrame:
@@ -282,17 +338,13 @@ def export_overview(out: Path, freeze: dict) -> tuple[str, int]:
     ]
 
     payload = {
-        "legs": int(freeze.get("legs_total", {}).get("value", len(legs))),
-        "corridors": int(
-            freeze.get("corridors_total", {}).get("value", legs["corridor_id"].nunique())
-        ),
-        "corridors_tested": int(freeze.get("corridors_tested", {}).get("value", 0)),
-        "bottlenecks": int(freeze.get("bottlenecks", {}).get("value", 0)),
-        "faster_corridors": int(freeze.get("faster_corridors", {}).get("value", 0)),
+        "legs": int(_need(freeze, "legs_total")),
+        "corridors": int(_need(freeze, "corridors_total")),
+        "corridors_tested": int(_need(freeze, "corridors_tested")),
+        "bottlenecks": int(_need(freeze, "bottlenecks")),
+        "faster_corridors": int(_need(freeze, "faster_corridors")),
         "share_over_plan": _num(float((ratio > 1.0).mean()), 4),
-        "median_ratio": _num(
-            freeze.get("median_gap_ratio", {}).get("value", float(ratio.median())), 2
-        ),
+        "median_ratio": _num(_need(freeze, "median_gap_ratio"), 2),
         "median_gap_min": _num(float(legs["gap_min"].median()), 1),
         "share_above_clip": _num(float((ratio > 8.0).mean()), 4),
         "histogram": histogram,
@@ -304,7 +356,72 @@ def export_overview(out: Path, freeze: dict) -> tuple[str, int]:
     )
 
 
-def _corridor_records(csv_path: Path, coords: pd.DataFrame) -> list[dict]:
+ROBUST_CSV = "b3_audit_robust_corridors.csv"
+EB_CSV = "b4_eb_corridors.csv"
+
+# The robustness and empirical-Bayes files are written by other modules. Their column
+# names are matched against these candidates, so the export does not depend on one
+# spelling; a file with none of them is ignored rather than guessed at.
+_ROBUST_COLUMNS = ("robust", "is_robust", "robust_flag", "survives", "robust_significant")
+_EB_RANK_COLUMNS = ("eb_rank", "rank_eb", "eb_bottleneck_rank", "shrunk_rank")
+
+
+def _first_column(df: pd.DataFrame, candidates: tuple[str, ...]) -> str | None:
+    return next((c for c in candidates if c in df.columns), None)
+
+
+def load_corridor_extras(raw_dir: Path | None = None) -> dict[str, dict[str, Any]]:
+    """Optional per-corridor columns: B3 `robust` flag and B4 `eb_rank`.
+
+    Returns {corridor_id: {"robust": bool, "eb_rank": int}}. A file that is absent
+    contributes nothing; the page then has no such column at all, instead of a column
+    of dashes.
+    """
+    folder = raw_dir or RAW
+    extras: dict[str, dict[str, Any]] = {}
+
+    robust_path = folder / ROBUST_CSV
+    if robust_path.exists():
+        df = pd.read_csv(robust_path)
+        col = _first_column(df, _ROBUST_COLUMNS)
+        if col is not None and "corridor_id" in df.columns:
+            for cid, flag in zip(df["corridor_id"], df[col], strict=True):
+                if not pd.isna(flag):
+                    extras.setdefault(str(cid), {})["robust"] = (
+                        str(flag).strip().lower() in ("1", "true", "yes", "1.0")
+                    )
+
+    eb_path = folder / EB_CSV
+    if eb_path.exists():
+        df = pd.read_csv(eb_path)
+        col = _first_column(df, _EB_RANK_COLUMNS)
+        if col is not None and "corridor_id" in df.columns:
+            for cid, rank in zip(df["corridor_id"], df[col], strict=True):
+                if not pd.isna(rank):
+                    extras.setdefault(str(cid), {})["eb_rank"] = int(rank)
+    return extras
+
+
+def _route_label(src: dict, dst: dict) -> str:
+    """`Kanpur → Kanpur`, built from names or, failing that, centre codes: never `nan`."""
+    def end(place: dict) -> str:
+        return place.get("city") or place.get("facility") or place["code"]
+    return f"{end(src)} → {end(dst)}"
+
+
+def _sig(value: Any, digits: int = 3) -> float | None:
+    """Significant figures rather than decimal places: q-values run to 1e-12."""
+    number = _num(value)
+    if number is None:
+        return None
+    return float(f"{number:.{digits}g}")
+
+
+def _corridor_records(
+    csv_path: Path,
+    coords: pd.DataFrame,
+    extras: dict[str, dict[str, Any]] | None = None,
+) -> list[dict]:
     """One record per audited corridor, with both ends placed.
 
     Placement follows the dashboard exactly (P-21, P-24): **position comes from
@@ -334,6 +451,7 @@ def _corridor_records(csv_path: Path, coords: pd.DataFrame) -> list[dict]:
         df[f"{end}_label"] = canon.fillna(df[parsed_col])
         df[f"{end}_state"] = df[parsed_col].map(cities["state"])
 
+    extras = extras or {}
     records: list[dict] = []
     for _, r in df.iterrows():
         direction = str(r.get("direction") or "")
@@ -365,7 +483,7 @@ def _corridor_records(csv_path: Path, coords: pd.DataFrame) -> list[dict]:
             "excess_ratio": excess,
             "direction": direction,
             "is_significant": bool(r.get("is_significant")),
-            "q_value": _num(r.get("q_value"), 8),
+            "q_value": _sig(r.get("q_value")),
             "median_gap_min": _num(r.get("median_gap_min"), 1),
             "mean_gap_min": _num(r.get("mean_gap_min"), 1),
             "median_gap_ratio": _num(r.get("median_gap_ratio"), 2),
@@ -378,6 +496,9 @@ def _corridor_records(csv_path: Path, coords: pd.DataFrame) -> list[dict]:
             ),
             "severity": sev,
         })
+        record = records[-1]
+        record["route"] = _route_label(record["src"], record["dst"])
+        record.update(extras.get(str(r["corridor_id"]), {}))
     return records
 
 
@@ -391,12 +512,14 @@ def export_corridors(out: Path) -> list[tuple[str, int]]:
     coords = _coords()
     written = []
 
-    ten = _corridor_records(RAW / "w2_corridor_audit.csv", coords)
+    extras = load_corridor_extras()
+    ten = _corridor_records(RAW / "w2_corridor_audit.csv", coords, extras)
     written.append(_write(out, "corridors.json", _envelope(
         ["benchmarks/raw/w2_corridor_audit.csv",
          "src/dashboard/reference/centre_coords.csv"],
         ten,
         support_floor=10,
+        optional_columns=sorted({k for e in extras.values() for k in e}),
         located=sum(1 for c in ten if c["src"]["lat"] and c["dst"]["lat"]),
         legend={"worse": [
             {"upto": b[0], "color": b[1], "label": b[3], "range": b[4]}
@@ -407,7 +530,7 @@ def export_corridors(out: Path) -> list[tuple[str, int]]:
         ]},
     )))
 
-    thirty = _corridor_records(RAW / "w2_corridor_audit_support30.csv", coords)
+    thirty = _corridor_records(RAW / "w2_corridor_audit_support30.csv", coords, extras)
     written.append(_write(out, "corridors_support30.json", _envelope(
         "benchmarks/raw/w2_corridor_audit_support30.csv",
         thirty,
@@ -473,10 +596,16 @@ def export_model(out: Path, freeze: dict) -> tuple[str, int]:
     proven = bool(served) and served.get("identical_predictions") == served.get("legs")
     headline = {
         "model": "v2_gbt_residual_absolute_step1",
-        "mae_min": _num(freeze.get("model_v2_mae", {}).get("value"), 2),
-        "baseline_mae_min": _num(freeze.get("median_bar_mae", {}).get("value"), 2),
-        "osrm_mae_min": _num(freeze.get("mae_osrm", {}).get("value"), 2),
+        "mae_min": _num(_need(freeze, "model_v2_mae"), 2),
+        "baseline_mae_min": _num(_need(freeze, "median_bar_mae"), 2),
+        "osrm_mae_min": _num(_need(freeze, "mae_osrm"), 2),
+        "mean_baseline_mae_min": _num(_need(freeze, "mae_corridor_mean"), 2),
     }
+    # The hierarchical back-off baseline lands in a later freeze. The key is optional
+    # on purpose and only this one: when it exists the Evidence page shows the bar,
+    # when it does not the page says nothing about it.
+    if "backoff_mae_min" in freeze:
+        headline["backoff_mae_min"] = _num(freeze["backoff_mae_min"]["value"], 2)
     if proven:
         headline.update({
             "served_model": "v2_gbt_residual_absolute_step1",
@@ -499,10 +628,297 @@ def export_model(out: Path, freeze: dict) -> tuple[str, int]:
             ),
         })
     payload = {"headline": headline, "slices": slices}
-    sources = ["benchmarks/raw/w7_model_metrics_v2_stepsize.csv", "benchmarks/results_freeze_v3.json"]
+    sources = ["benchmarks/raw/w7_model_metrics_v2_stepsize.csv", FREEZE_FILE]
     if proven:
         sources.append("benchmarks/raw/w10_stream_validation_v2.json")
     return _write(out, "model.json", _envelope(sources, payload))
+
+
+def _assistant_trivial_route(answers_path: Path) -> dict[str, Any]:
+    """Always answering with the most common expected route, on the same 30 questions."""
+    routes = [
+        json.loads(line)["expected_route"]
+        for line in answers_path.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    top, count = Counter(routes).most_common(1)[0]
+    return {"route": top, **_prop(count, len(routes))}
+
+
+def _first(arm: dict, keys: tuple[str, ...]) -> Any:
+    return next((arm[k] for k in keys if k in arm and arm[k] is not None), None)
+
+
+def ablation_panel(raw_dir: Path | None = None) -> dict[str, Any] | None:
+    """The optional "LLM decides" ablation (B7), or None when its file is absent.
+
+    The result file is written by another module and its schema is read defensively:
+    arms may be a list of objects or a mapping name -> object, and each arm may state
+    accuracy as a bare rate, as `successes`/`total`, or as an object with a Wilson
+    interval. Whatever it states is carried through; what it does not state is left
+    out, never invented.
+    """
+    path = (raw_dir or RAW) / "b7_agent_ablation.json"
+    if not path.exists():
+        return None
+    doc = _read_json(path)
+    raw_arms = doc.get("arms", doc.get("results", doc.get("conditions")))
+    if isinstance(raw_arms, dict):
+        arms_in = [
+            {"name": k, **(v if isinstance(v, dict) else {"accuracy": v})}
+            for k, v in raw_arms.items()
+        ]
+    elif isinstance(raw_arms, list):
+        arms_in = [a for a in raw_arms if isinstance(a, dict)]
+    else:
+        return None
+
+    cost_keys = ("cost_usd", "cost", "tokens", "total_tokens", "llm_calls", "calls")
+    arms = []
+    for arm in arms_in:
+        acc = _first(arm, ("accuracy", "acc", "correct_rate", "rate"))
+        entry: dict[str, Any] = {
+            "name": str(_first(arm, ("name", "arm", "condition", "label")) or "arm"),
+        }
+        if isinstance(acc, dict):
+            entry["accuracy"] = _num(_first(acc, ("rate", "value", "point")), 4)
+            entry["ci_low"] = _num(_first(acc, ("ci_low", "lower", "low")), 4)
+            entry["ci_high"] = _num(_first(acc, ("ci_high", "upper", "high")), 4)
+            entry["n"] = _first(acc, ("total", "n"))
+        else:
+            entry["accuracy"] = _num(acc, 4)
+            entry["ci_low"] = _num(_first(arm, ("ci_low", "accuracy_ci_low")), 4)
+            entry["ci_high"] = _num(_first(arm, ("ci_high", "accuracy_ci_high")), 4)
+            entry["n"] = _first(arm, ("n", "n_cases", "total", "cases"))
+            ok, total = arm.get("successes"), arm.get("total")
+            if entry["ci_low"] is None and ok is not None and total:
+                w = _prop(ok, total)
+                entry["ci_low"], entry["ci_high"] = w["ci_low"], w["ci_high"]
+                if entry["accuracy"] is None:
+                    entry["accuracy"] = w["rate"]
+        unanimity = _first(arm, ("unanimity", "unanimous", "unanimity_rate", "agreement"))
+        if isinstance(unanimity, dict):
+            unanimity = _first(unanimity, ("rate", "value"))
+        entry["unanimity"] = _num(unanimity, 4)
+        cost = _first(arm, cost_keys)
+        entry["cost"] = cost if isinstance(cost, (int, float, str)) else None
+        entry["cost_unit"] = next((k for k in cost_keys if k in arm), None)
+        arms.append(entry)
+    if not arms:
+        return None
+    return {
+        "file": "benchmarks/raw/b7_agent_ablation.json",
+        "note": str(_first(doc, ("note", "description", "question")) or ""),
+        "arms": arms,
+    }
+
+
+def _agree(computed: float, frozen_value: Any, what: str) -> None:
+    """A card recomputed from counts must round to the number the freeze holds."""
+    if abs(float(computed) - float(frozen_value)) > 6e-4:
+        raise ValueError(
+            f"{what}: counts give {computed} but the freeze holds {frozen_value}"
+        )
+
+
+def _agent_cards(freeze: dict, raw_dir: Path) -> list[dict[str, Any]]:
+    """One card per agent: metric, n, Wilson interval and the trivial policy beside it.
+
+    Every proportion is recomputed from its counts with `src.ml.stats.wilson`, and
+    each value that the freeze also holds is checked against it, so the card and the
+    paper cannot quote different numbers for one measurement.
+    """
+
+    def rj(name: str) -> dict:
+        return _read_json(raw_dir / name)
+
+    # Document extraction: fields, not documents.
+    doc = _req(rj("w7_doc_extraction_eval.json"), "overall")
+    doc_p = _prop(doc["correct"], doc["fields_in_truth"])
+    _agree(doc_p["rate"], _need(freeze, "doc_extraction_accuracy"), "document accuracy")
+
+    # Order entry: the held-out first run is the number with evidential weight.
+    order = rj("w9_order_eval.json")
+    held = _req(order, "held_out_first_run", "overall")
+    _agree(held["rate"], _need(freeze, "order_eval_scale_heldout"), "order held-out")
+    order_n = int(_need(freeze, "order_eval_scale_cases"))
+    fixed = _req(order, "overall")
+    always_file = _req(order, "trivial_policy_always_file")
+    order50 = rj("w5_order_eval_summary.json")
+    n50 = int(_need(freeze, "order_eval_run"))
+    order50_p = _prop(round(float(_need(freeze, "order_eval_success")) * n50), n50)
+    invented_first = _req(order, "held_out_first_run", "orders_filed_on_invented_values")
+
+    # Exception agent, scored as-of (D-054).
+    exc = rj("w8_replay_leakage.json")
+    exc_as = _req(exc, "exception_agent_as_of")
+    notified = int(_req(exc_as, "alerts_scored"))
+    hits = sum(int(r["truly_delayed"]) for r in exc_as["by_severity"])
+    exc_p = _prop(hits, notified)
+    _agree(exc_p["rate"], _need(freeze, "exception_precision_as_of"), "exception precision")
+    legs_replayed = int(_req(exc, "legs"))
+    delayed_legs = int(_req(rj("w6_exception_eval.json"), "legs_truly_delayed"))
+    exc_base = _prop(delayed_legs, legs_replayed)
+
+    # Invoice auditor: the stratified 200 is the headline, the 60 seeded run is history.
+    inv = rj("w9_invoice_eval.json")
+    inv_p = _req(inv, "accuracy")
+    _agree(inv_p["rate"], _need(freeze, "invoice_eval_scale_accuracy"), "invoice accuracy")
+    inv_n = int(_need(freeze, "invoice_eval_scale_cases"))
+    inv60 = rj("w6_invoice_eval.json")
+    n60 = int(_req(inv60, "cases"))
+    should_dispute = sum(int(k["n"]) for k in inv60["by_kind"] if k["expected"] == "dispute")
+    inv60_recall = _prop(should_dispute - int(inv60["missed_problems"]), should_dispute)
+    inv60_acc = _prop(round(float(inv60["accuracy"]) * n60), n60)
+
+    # Assistant: route accuracy with and without the model, both on the same 30.
+    llm = rj("w7_assistant_run_llm.json")
+    nollm = rj("w7_assistant_run_no_llm.json")
+    q_llm, q_no = int(llm["questions"]), int(nollm["questions"])
+    route_llm = _prop(round(float(llm["route_accuracy"]) * q_llm), q_llm)
+    route_no = _prop(round(float(nollm["route_accuracy"]) * q_no), q_no)
+    _agree(route_no["rate"], _need(freeze, "assistant_route_accuracy"), "assistant route (no model)")
+    ground = rj("w7_groundedness_summary.json")
+    g_n = int(ground["model_written_in_scope"])
+    g_p = _prop(round(float(ground["groundedness_rate_model_written"]) * g_n), g_n)
+    _agree(g_p["rate"], _need(freeze, "assistant_groundedness"), "assistant groundedness")
+    trivial_route = _assistant_trivial_route(raw_dir / "w7_assistant_answers_llm.jsonl")
+
+    return [
+        {
+            "id": "document", "name": "Document Intelligence",
+            "role": "Reads BOLs and invoices",
+            "one_liner": "OCR plus a language model pull structured fields out of "
+                         "scanned freight paperwork.",
+            "score": {
+                "value": doc_p["rate"], "label": "per-field accuracy",
+                "unit": "fields", **doc_p,
+                "note": f"{doc['correct']} of {doc['fields_in_truth']} fields on "
+                        f"{_need(freeze, 'doc_extraction_rows')} of 40 planned documents; the "
+                        "rest wait on the daily LLM quota. Fields from one document are not "
+                        "independent, so the interval is optimistic.",
+                "file": "benchmarks/raw/w7_doc_extraction_eval.json",
+            },
+            "baseline": {"label": "extract nothing", "value": 0.0,
+                         "note": "a blank answer gets no field right"},
+            "prompt_version": "doc_extraction/v2",
+            "deterministic": "Field comparison and error detection are rules; the "
+                             "model only reads the page.",
+        },
+        {
+            "id": "order", "name": "Order Entry",
+            "role": "Turns customer emails into TMS orders",
+            "one_liner": "Reads a booking email, validates it, and either files the "
+                         "order or asks exactly one question.",
+            "score": {
+                "value": held["rate"], "label": "cases correct, held-out first run",
+                "unit": "emails", **_prop(held["successes"], held["total"]),
+                "note": f"{order_n} authored emails, half adversarial. The first run, before "
+                        f"any fix, filed {invented_first} orders on values the email never stated.",
+                "file": "benchmarks/raw/w9_order_eval.json",
+            },
+            "baseline": {"label": "always file", "value": _req(always_file, "rate"),
+                         "note": "never asks a question"},
+            "also": [
+                {"label": "after fixing what the first run found (not held out)",
+                 "unit": "emails", **_prop(fixed["successes"], fixed["total"])},
+                {"label": "earlier 50-email set", "unit": "emails", **order50_p,
+                 "note": f"{order50['invented_orders']} orders filed on invented values"},
+            ],
+            "prompt_version": "order_entry/v1",
+            "deterministic": "Validation and the decision to ask are arithmetic; "
+                             "the model writes the question.",
+        },
+        {
+            "id": "exception", "name": "Tracking & Exception",
+            "role": "Watches live shipments",
+            "one_liner": "Takes a delay alert off the stream, grades its severity, "
+                         "notifies the customer and files a ticket.",
+            "score": {
+                "value": exc_p["rate"], "label": "notification precision (as-of)",
+                "unit": "alerts", **exc_p,
+                "note": "An earlier measurement said 72.1% and was wrong: it scored "
+                        "early journeys using information that only existed later.",
+                "file": "benchmarks/raw/w8_replay_leakage.json",
+            },
+            "baseline": {"label": "notify on every leg", "value": exc_base["rate"],
+                         "note": f"{delayed_legs} of {legs_replayed} replayed legs were truly delayed"},
+            "prompt_version": "exception_triage/v1",
+            "deterministic": "Severity is computed from the predicted gap; the model "
+                             "writes the customer sentence.",
+        },
+        {
+            "id": "invoice", "name": "Freight Invoice Auditor",
+            "role": "Approves or disputes invoices",
+            "one_liner": "Checks a freight invoice against the order and the "
+                         "corridor's own measured rate band.",
+            "score": {
+                "value": inv_p["rate"], "label": "verdicts correct, stratified set",
+                "unit": "invoices", **_prop(inv_p["successes"], inv_p["total"]),
+                "note": f"{inv_n} invoices, 20 of each of 10 kinds, so the rate describes "
+                        "the design, not a real (mostly clean) invoice stream. "
+                        f"{_need(freeze, 'invoice_eval_scale_false_disputes')} correct invoices "
+                        "were wrongly disputed; all 20 misses are the one kind sitting inside "
+                        "the 15% tolerance, by design. The rate band comes from the same "
+                        "model that generated the test invoices.",
+                "file": "benchmarks/raw/w9_invoice_eval.json",
+            },
+            "baseline": {
+                "label": "dispute everything",
+                "value": _req(inv, "trivial_policy_dispute_everything", "rate"),
+                "note": "approve everything scores "
+                        f"{_req(inv, 'trivial_policy_approve_everything', 'rate'):.1%}",
+            },
+            "also": [
+                {"label": "dispute recall", "unit": "invoices that should be disputed",
+                 **_prop(inv["dispute_recall"]["successes"], inv["dispute_recall"]["total"])},
+                {"label": "dispute precision", "unit": "disputes raised",
+                 **_prop(inv["dispute_precision"]["successes"], inv["dispute_precision"]["total"])},
+                {"label": "historical 60-invoice seeded run: verdict correct",
+                 "historical": True, "unit": "invoices", **inv60_acc,
+                 "note": f"precision {inv60['precision']:.1%}, recall {inv60['recall']:.1%} "
+                         f"({inv60['missed_problems']} problems missed). The first "
+                         f"{_need(freeze, 'invoice_cases')}-invoice development run scored "
+                         f"{_need(freeze, 'invoice_correct')} of {_need(freeze, 'invoice_cases')}; "
+                         "both are superseded by the 200-invoice set."},
+                {"label": "historical 60-invoice run: dispute recall", "historical": True,
+                 "unit": "invoices that should be disputed", **inv60_recall},
+            ],
+            "prompt_version": "invoice_audit/v1",
+            "deterministic": "The verdict is arithmetic against a rate band; the "
+                             "model writes the dispute note.",
+        },
+        {
+            "id": "assistant", "name": "Analytics Assistant",
+            "role": "Answers questions about the network",
+            "one_liner": "Retrieval over the project's own corridor, hub and "
+                         "document index, and a refusal when the answer is not in it.",
+            "score": {
+                "value": route_llm["rate"], "label": "route accuracy, model phrases the answer",
+                "unit": "questions", **route_llm,
+                "note": f"{route_llm['successes']} of {q_llm} fixed questions. Without the "
+                        f"model the route is {route_no['rate']:.1%} "
+                        f"({route_no['successes']} of {q_no}).",
+                "file": "benchmarks/raw/w7_assistant_run_llm.json",
+            },
+            "baseline": {"label": f"always route to '{trivial_route['route']}'",
+                         "value": trivial_route["rate"],
+                         "note": "the most common expected route among the 30 questions"},
+            "also": [
+                {"label": "route accuracy, no model (rules only)", "unit": "questions",
+                 **route_no},
+                {"label": "groundedness of model-written answers", "unit": "answers", **g_p,
+                 "note": f"hand-judged; {ground['extractive_fallbacks']} provider-error "
+                         "fallbacks excluded"},
+                {"label": "out-of-scope questions refused", "unit": "questions",
+                 **_prop(ground["out_of_scope_refused"], ground["out_of_scope_total"]),
+                 "note": "refusing nothing scores 0 of 6"},
+            ],
+            "prompt_version": "analytics_assistant/v1",
+            "deterministic": "Routing and retrieval are code; the model phrases the "
+                             "answer, and can be switched off entirely.",
+        },
+    ]
 
 
 def export_agents(out: Path, freeze: dict) -> list[tuple[str, int]]:
@@ -511,110 +927,40 @@ def export_agents(out: Path, freeze: dict) -> list[tuple[str, int]]:
     Every agent is reported beside the trivial policy on its own set, because
     that is the only way a number like "20 of 20" means anything.
     """
-    def g(key: str, default: Any = None) -> Any:
-        return freeze.get(key, {}).get("value", default)
+    agents = _agent_cards(freeze, RAW)
 
-    agents = [
-        {
-            "id": "document",
-            "name": "Document Intelligence",
-            "role": "Reads BOLs and invoices",
-            "one_liner": "OCR plus a language model pull structured fields out of "
-                         "scanned freight paperwork.",
-            "score": {
-                "value": _num(g("doc_extraction_accuracy"), 4),
-                "label": "per-field accuracy",
-                "note": "on 20 of 40 planned rows — the rest wait on the daily "
-                        "LLM quota",
-                "file": "benchmarks/raw/w7_doc_extraction_eval.json",
-            },
-            "prompt_version": "doc_extraction/v2",
-            "deterministic": "Field comparison and error detection are rules; the "
-                             "model only reads the page.",
-        },
-        {
-            "id": "order",
-            "name": "Order Entry",
-            "role": "Turns customer emails into TMS orders",
-            "one_liner": "Reads a booking email, validates it, and either files the "
-                         "order or asks exactly one question.",
-            "score": {
-                "value": _num(g("order_eval_success"), 3),
-                "label": "cases correct",
-                "note": f"{g('order_eval_run', 50)} of 50 authored cases, "
-                        f"{g('order_eval_invented', 0)} orders filed on invented values",
-                "file": "benchmarks/raw/w5_order_eval_summary.json",
-            },
-            "prompt_version": "order_entry/v1",
-            "deterministic": "Validation and the decision to ask are arithmetic; "
-                             "the model writes the question.",
-        },
-        {
-            "id": "exception",
-            "name": "Tracking & Exception",
-            "role": "Watches live shipments",
-            "one_liner": "Takes a delay alert off the stream, grades its severity, "
-                         "notifies the customer and files a ticket.",
-            "score": {
-                "value": _num(g("exception_precision_as_of"), 4),
-                "label": "notification precision (as-of)",
-                "note": "against 54.1% for notifying on every single journey. An "
-                        "earlier measurement said 72.1% and was wrong: it scored "
-                        "early journeys using information that only existed later.",
-                "file": "benchmarks/raw/w8_replay_leakage.json",
-            },
-            "prompt_version": "exception_triage/v1",
-            "deterministic": "Severity is computed from the predicted gap; the model "
-                             "writes the customer sentence.",
-        },
-        {
-            "id": "invoice",
-            "name": "Freight Invoice Auditor",
-            "role": "Approves or disputes invoices",
-            "one_liner": "Checks a freight invoice against the order and the "
-                         "corridor's own measured rate band.",
-            "score": {
-                "value": _num(g("invoice_correct"), 0),
-                "label": "of 20 verdicts matched",
-                "note": "no correct invoice was wrongly disputed. The rate band "
-                        "comes from the same model that generated the test "
-                        "invoices, so this measures the checking, not the pricing.",
-                "file": "benchmarks/raw/w6_invoice_audit_runs.json",
-            },
-            "prompt_version": "invoice_audit/v1",
-            "deterministic": "The verdict is arithmetic against a rate band; the "
-                             "model writes the dispute note.",
-        },
-        {
-            "id": "assistant",
-            "name": "Analytics Assistant",
-            "role": "Answers questions about the network",
-            "one_liner": "Retrieval over the project's own corridor, hub and "
-                         "document index — and a refusal when the answer is not in it.",
-            "score": {
-                "value": _num(g("assistant_groundedness"), 4),
-                "label": "groundedness of model-written answers",
-                "note": f"route accuracy {g('assistant_route_accuracy', 0.9)} on the "
-                        "fixed question set; all out-of-scope questions refused",
-                "file": "benchmarks/raw/w7_groundedness_summary.json",
-            },
-            "prompt_version": "analytics_assistant/v1",
-            "deterministic": "Routing and retrieval are code; the model phrases the "
-                             "answer, and can be switched off entirely.",
-        },
-    ]
-
+    life = _read_json(RAW / "w9_lifecycle_eval.json")
+    routed = life["routing_correct"]
+    top_path, top_n = max(life["path_coverage"]["distribution"].items(), key=lambda kv: kv[1])
+    n_life = int(_need(freeze, "lifecycle_eval_scale_cases"))
+    _agree(routed["rate"], _need(freeze, "lifecycle_eval_scale_routing"), "orchestrator routing")
     orchestrator = {
-        "cases": int(g("lifecycle_cases", 10) or 10),
-        "booked": int(g("lifecycle_booked", 5) or 5),
-        "ticketed": int(g("lifecycle_ticketed", 2) or 2),
-        "file": "benchmarks/raw/w6_orchestrator_runs.json",
-        "note": "Ten emails, three distinct paths, no human in the middle.",
+        "cases": n_life,
+        "routed": _prop(routed["successes"], routed["total"]),
+        "paths_exercised": int(_need(freeze, "lifecycle_eval_scale_paths")),
+        "baseline": {
+            "label": f"always take the most common path ({top_path})",
+            "value": round(top_n / n_life, 4),
+            "note": f"{top_n} of {n_life} emails deserved it",
+        },
+        "distribution": life["path_coverage"]["distribution"],
+        "earlier_booked": int(_need(freeze, "lifecycle_booked")),
+        "earlier_ticketed": int(_need(freeze, "lifecycle_ticketed")),
+        "earlier_cases": int(_need(freeze, "lifecycle_cases")),
+        "file": "benchmarks/raw/w9_lifecycle_eval.json",
+        "note": "100 emails read by the rule extractor, the graph routing on what it "
+                "found. The earlier ten-email run handed intake the true fields, so it "
+                "showed the wiring, not the routing.",
     }
 
+    data: dict[str, Any] = {"agents": agents, "orchestrator": orchestrator}
+    ablation = ablation_panel()
+    if ablation is not None:
+        data["ablation"] = ablation
+
     written = [_write(out, "agents.json", _envelope(
-        ["benchmarks/agent_evaluation.md", "benchmarks/results_freeze_v3.json"],
-        {"agents": agents, "orchestrator": orchestrator},
+        ["benchmarks/agent_evaluation.md", FREEZE_FILE],
+        data,
     ))]
 
     # The MCP transcript ships as-is: it is already small and already evidence.
@@ -640,13 +986,15 @@ def export_assistant_eval(out: Path) -> tuple[str, int]:
     payload: dict[str, Any] = {}
     for mode, fname in (("no_llm", "w7_assistant_run_no_llm.json"),
                         ("llm", "w7_assistant_run_llm.json")):
-        path = RAW / fname
-        if not path.exists():
-            continue
-        d = _read_json(path)
+        d = _read_json(RAW / fname)
+        n_q = int(_req(d, "questions"))
+        route = _prop(round(float(_req(d, "route_accuracy")) * n_q), n_q)
         payload[mode] = {
             "answered": d.get("answered"),
-            "questions": d.get("questions"),
+            "questions": n_q,
+            "route_correct": route["successes"],
+            "route_ci_low": route["ci_low"],
+            "route_ci_high": route["ci_high"],
             "route_accuracy": _num(d.get("route_accuracy"), 4),
             "source_accuracy": _num(d.get("source_accuracy"), 4),
             "refusal_recall": _num(d.get("refusal_recall"), 4),
@@ -655,22 +1003,21 @@ def export_assistant_eval(out: Path) -> tuple[str, int]:
             "misses": d.get("misses"),
         }
 
-    gpath = RAW / "w7_groundedness_summary.json"
-    if gpath.exists():
-        g = _read_json(gpath)
-        payload["groundedness"] = {
-            "judged": g.get("judged"),
-            "grounded": g.get("grounded"),
-            "partly_grounded": g.get("partly_grounded"),
-            "not_grounded": g.get("not_grounded"),
-            "rate_model_written": _num(g.get("groundedness_rate_model_written"), 4),
-            "out_of_scope_refused": g.get("out_of_scope_refused"),
-            "out_of_scope_total": g.get("out_of_scope_total"),
-            "extractive_fallbacks": g.get("extractive_fallbacks"),
-            "method": g.get("method"),
-        }
+    g = _read_json(RAW / "w7_groundedness_summary.json")
+    payload["groundedness"] = {
+        "judged": g.get("judged"),
+        "grounded": g.get("grounded"),
+        "partly_grounded": g.get("partly_grounded"),
+        "not_grounded": g.get("not_grounded"),
+        "rate_model_written": _num(g.get("groundedness_rate_model_written"), 4),
+        "out_of_scope_refused": g.get("out_of_scope_refused"),
+        "out_of_scope_total": g.get("out_of_scope_total"),
+        "extractive_fallbacks": g.get("extractive_fallbacks"),
+        "method": g.get("method"),
+    }
     return _write(out, "assistant_eval.json", _envelope(
         ["benchmarks/raw/w7_assistant_run_no_llm.json",
+         "benchmarks/raw/w7_assistant_run_llm.json",
          "benchmarks/raw/w7_groundedness_summary.json"],
         payload,
     ))
@@ -680,50 +1027,74 @@ def export_alerts_sample(out: Path) -> tuple[str, int]:
     """A recorded run, so the Alerts page is never empty.
 
     W-03: the live feed reads a local sink that does not exist in a deployment.
-    This is the labelled fallback — the UI must say "replay", never imply live.
+    This is the labelled fallback: the UI says "replay", never "live".
     """
-    src = RAW / "w7_kafka_live.json"
-    live = _read_json(src) if src.exists() else {}
+    live = _read_json(RAW / "w7_kafka_live.json")
+    coords = _coords()
+    records = _corridor_records(RAW / "w2_corridor_audit.csv", coords)
+    by_id = {r["id"]: r for r in records}
 
+    audit = pd.read_csv(RAW / "w2_corridor_audit.csv")
+    worst = audit[audit["direction"] == "worse"].nlargest(60, "excess_ratio")
     alerts: list[dict] = []
-    corridors_path = RAW / "w2_corridor_audit.csv"
-    if corridors_path.exists():
-        df = pd.read_csv(corridors_path)
-        worst = df[df["direction"] == "worse"].nlargest(60, "excess_ratio")
-        for i, (_, r) in enumerate(worst.iterrows()):
-            gap = _num(r.get("median_gap_min"), 0) or 0
-            severity = (
-                "critical" if gap >= 240 else
-                "high" if gap >= 120 else
-                "medium" if gap >= 60 else "low"
-            )
-            alerts.append({
-                "seq": i + 1,
-                "corridor_id": r["corridor_id"],
-                "route": f"{r.get('source_city')} → {r.get('dest_city')}",
-                "predicted_gap_min": gap,
-                "excess_ratio": _num(r.get("excess_ratio"), 2),
-                "severity": severity,
-                "n_legs": int(r["n_legs"]),
-            })
+    for i, (_, r) in enumerate(worst.iterrows()):
+        gap = _num(r.get("median_gap_min"), 0) or 0
+        severity = (
+            "critical" if gap >= 240 else
+            "high" if gap >= 120 else
+            "medium" if gap >= 60 else "low"
+        )
+        rec = by_id.get(r["corridor_id"])
+        if rec is not None:
+            route = rec["route"]
+        else:
+            route = f"{r['source_center']} → {r['destination_center']}"
+        alerts.append({
+            "seq": i + 1,
+            "corridor_id": r["corridor_id"],
+            "route": route,
+            "predicted_gap_min": gap,
+            "excess_ratio": _num(r.get("excess_ratio"), 2),
+            "severity": severity,
+            "n_legs": int(r["n_legs"]),
+        })
 
+    n_alerts = int(_req(live, "alerts"))
+    channel = _read_json(RAW / "f2_alert_channel_live.json")
+    delivery = [
+        {
+            "channel": run["channel"],
+            "recorded_at": run["recorded_at"],
+            "candidates": run["candidates"],
+            "sent": run["sent"],
+            "failed": run["failed"],
+            "suppressed_by_cap": run["suppressed_cap"],
+        }
+        for run in channel["runs"]
+    ]
     payload = {
         "recorded_at": live.get("generated_at"),
         "source": live.get("source", "kafka"),
         "is_replay": True,
-        "replay_note": (
-            "A recorded run rather than a live feed."
+        "replay_note": "A recorded run rather than a live feed.",
+        "sample_note": (
+            f"The table lists the {len(alerts)} worst corridors by overrun as examples "
+            f"of what an alert says. It is a sample, not the {n_alerts:,} alerts the "
+            "recorded run raised: those are summarised above and are not all listed here."
         ),
         "run": {
             "events": live.get("events"),
-            "alerts": live.get("alerts"),
+            "alerts": n_alerts,
             "events_per_second": _num(live.get("events_per_second"), 1),
             "scoring_rate_eps": _num(live.get("scoring_rate_eps"), 1),
         },
+        "delivery": delivery,
+        "delivered_channels": channel["channels_delivered"],
         "alerts": alerts,
     }
     return _write(out, "alerts_sample.json", _envelope(
-        "benchmarks/raw/w7_kafka_live.json", payload,
+        ["benchmarks/raw/w7_kafka_live.json", "benchmarks/raw/f2_alert_channel_live.json"],
+        payload,
     ))
 
 
@@ -744,7 +1115,7 @@ def export_evidence_index(out: Path) -> tuple[str, int]:
     } for v in doc.get("values", [])]
 
     return _write(out, "evidence_index.json", _envelope(
-        "benchmarks/results_freeze_v3.json",
+        FREEZE_FILE,
         {
             "frozen_at": doc.get("frozen_at"),
             "n_values": doc.get("n_values"),
@@ -784,38 +1155,162 @@ def export_prompts(out: Path) -> tuple[str, int]:
 
 
 def export_figures(figures_out: Path) -> int:
-    """Copy the nine paper figures next to the site (W-12).
-
-    They are the project's best content and were invisible in the old UI.
-    """
+    """Copy the paper figures (PNG for the page, PDF for the paper link) next to the site."""
     if not FIGURES_DIR.exists():
         return 0
     figures_out.mkdir(parents=True, exist_ok=True)
     n = 0
     for png in sorted(FIGURES_DIR.glob("*.png")):
         shutil.copy2(png, figures_out / png.name)
+        pdf = png.with_suffix(".pdf")
+        if pdf.exists():
+            shutil.copy2(pdf, figures_out / pdf.name)
         n += 1
     return n
 
 
+def figure_captions(readme_text: str) -> dict[str, str]:
+    """`fig1_name` -> caption, from the figures README table. One source for caption and alt text."""
+    captions: dict[str, str] = {}
+    for line in readme_text.splitlines():
+        m = re.match(r"\|\s*\[`(fig[^`]+)`\]\([^)]*\)\s*\|\s*(.+?)\s*\|\s*$", line)
+        if m:
+            captions[m.group(1)] = m.group(2)
+    return captions
+
+
 def export_figure_index(out: Path) -> tuple[str, int]:
-    """Captions for the Evidence page, read from the figures README."""
+    """Captions for the Evidence and Paper pages, read from the figures README."""
     captions_path = FIGURES_DIR / "README.md"
-    figures = []
-    for png in sorted(FIGURES_DIR.glob("*.png")):
-        figures.append({
-            "file": f"/figures/{png.name}",
-            "id": png.stem,
-            "title": png.stem.replace("_", " ").replace("fig", "Figure ").strip(),
-        })
     caption_text = (
         captions_path.read_text(encoding="utf-8")
         if captions_path.exists() else ""
     )
+    captions = figure_captions(caption_text)
+    figures = []
+    for png in sorted(FIGURES_DIR.glob("*.png")):
+        figures.append({
+            "file": f"/figures/{png.name}",
+            "pdf": f"/figures/{png.stem}.pdf" if png.with_suffix(".pdf").exists() else None,
+            "id": png.stem,
+            "title": png.stem.replace("_", " ").replace("fig", "Figure ").strip(),
+            "caption": captions.get(png.stem, ""),
+        })
     # The README lists each figure with its source file; keep it verbatim so the
     # page can render it rather than re-describing nine figures by hand.
     return _write(out, "figures.json", _envelope(
         "docs/figures/", {"figures": figures, "readme": caption_text},
+    ))
+
+
+PAPER_ABSTRACT_PATH = config.REPO_ROOT / "paper" / "abstract.txt"
+CITATION_PATH = config.REPO_ROOT / "CITATION.cff"
+PLACEHOLDER_ABSTRACT = (
+    "The abstract is added here when the paper is finalised. Until then the numbers "
+    "on every other page of this site are the ones the paper will report, each linked "
+    "to the file it came from."
+)
+
+
+def parse_citation(text: str) -> dict[str, Any]:
+    """The few CITATION.cff fields a BibTeX entry needs, without a YAML dependency.
+
+    Handles the shapes this file uses: `key: value`, folded `key: >-` blocks and the
+    `authors` list of family-names / given-names pairs.
+    """
+    out: dict[str, Any] = {"authors": []}
+    lines = text.splitlines()
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        m = re.match(r"^([a-z-]+):\s*(.*)$", line)
+        if m and not line.startswith(" "):
+            key, val = m.group(1), m.group(2).strip()
+            if val in (">-", ">", "|", "|-"):
+                folded = []
+                i += 1
+                while i < len(lines) and (lines[i].startswith(" ") or not lines[i].strip()):
+                    folded.append(lines[i].strip())
+                    i += 1
+                out[key] = " ".join(x for x in folded if x)
+                continue
+            if val:
+                out[key] = val.strip("'\"")
+        elif re.match(r"^\s+-?\s*family-names:\s*(.+)$", line):
+            fam = re.match(r"^\s+-?\s*family-names:\s*(.+)$", line).group(1).strip()  # type: ignore[union-attr]
+            given = ""
+            if i + 1 < len(lines):
+                g = re.match(r"^\s+given-names:\s*(.+)$", lines[i + 1])
+                if g:
+                    given = g.group(1).strip()
+            out["authors"].append((fam, given))
+        i += 1
+    return out
+
+
+def bibtex_from_citation(cff: dict[str, Any]) -> str:
+    """A BibTeX entry built from the CITATION.cff fields, never typed into the page."""
+    year = str(cff.get("date-released", ""))[:4] or "n.d."
+    authors = " and ".join(f"{fam}, {given}" for fam, given in cff["authors"])
+    first = cff["authors"][0][0].lower() if cff["authors"] else "anon"
+    lines = [
+        f"@software{{{first}{year}controltower,",
+        f"  title   = {{{cff['title']}}},",
+        f"  author  = {{{authors}}},",
+        f"  year    = {{{year}}},",
+    ]
+    if cff.get("version"):
+        lines.append(f"  version = {{{cff['version']}}},")
+    if cff.get("repository-code"):
+        lines.append(f"  url     = {{{cff['repository-code']}}},")
+    lines.append("}")
+    return "\n".join(lines)
+
+
+def export_paper(out: Path, freeze: dict) -> tuple[str, int]:
+    """Everything the Paper page shows, so the page itself holds no typed claim.
+
+    The abstract comes from `paper/abstract.txt` when it exists; otherwise a plainly
+    marked placeholder is shipped and the page says so. The preprint link stays null
+    until a preprint exists.
+    """
+    if PAPER_ABSTRACT_PATH.exists():
+        abstract = PAPER_ABSTRACT_PATH.read_text(encoding="utf-8").strip()
+        placeholder = False
+    else:
+        abstract, placeholder = PLACEHOLDER_ABSTRACT, True
+    cff = parse_citation(CITATION_PATH.read_text(encoding="utf-8"))
+    docs = [
+        ("Reproducibility guide", "REPRODUCIBILITY.md"),
+        ("Rebuild notes", "docs/W8_mounika_reproducibility.md"),
+        ("Data card", "docs/data_card.md"),
+        ("Model card", "docs/model_card.md"),
+        ("Decision log", "docs/decisions.md"),
+    ]
+    payload = {
+        "title": cff["title"],
+        "abstract": abstract,
+        "abstract_is_placeholder": placeholder,
+        "preprint_url": None,
+        "bibtex": bibtex_from_citation(cff),
+        "headline": {
+            "bottlenecks": _need(freeze, "bottlenecks"),
+            "faster_corridors": _need(freeze, "faster_corridors"),
+            "model_v2_mae": _need(freeze, "model_v2_mae"),
+            "median_bar_mae": _need(freeze, "median_bar_mae"),
+        },
+        "reproduce": {
+            "command": "bash scripts/rebuild_all.sh",
+            "links": [
+                {"label": label, "path": path}
+                for label, path in docs
+                if (config.REPO_ROOT / path).exists()
+            ],
+        },
+    }
+    return _write(out, "paper.json", _envelope(
+        ["CITATION.cff", "paper/abstract.txt" if not placeholder else "placeholder"],
+        payload,
     ))
 
 
@@ -836,6 +1331,7 @@ def run(out_dir: Path, figures_dir: Path) -> list[tuple[str, int]]:
     written.append(export_evidence_index(out_dir))
     written.append(export_prompts(out_dir))
     written.append(export_figure_index(out_dir))
+    written.append(export_paper(out_dir, freeze))
 
     n_figs = export_figures(figures_dir)
     print(f"\n  figures copied: {n_figs} -> {figures_dir}")
