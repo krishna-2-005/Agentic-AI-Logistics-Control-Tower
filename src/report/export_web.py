@@ -1201,7 +1201,7 @@ def figure_captions(readme_text: str) -> dict[str, str]:
     """`fig1_name` -> caption, from the figures README table. One source for caption and alt text."""
     captions: dict[str, str] = {}
     for line in readme_text.splitlines():
-        m = re.match(r"\|\s*\[`(fig[^`]+)`\]\([^)]*\)\s*\|\s*(.+?)\s*\|\s*$", line)
+        m = re.match(r"\|\s*\[`((?:fig|b\d)[^`]+)`\]\([^)]*\)\s*\|\s*(.+?)\s*\|\s*$", line)
         if m:
             captions[m.group(1)] = m.group(2)
     return captions

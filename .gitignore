@@ -94,3 +94,11 @@ desktop.ini
 # ── Kafka / Docker local volumes ──
 kafka-data/
 zookeeper-data/
+
+# LaTeX build products
+paper/**/*.aux
+paper/**/*.bbl
+paper/**/*.blg
+paper/**/*.log
+paper/**/*.out
+paper/**/*.toc

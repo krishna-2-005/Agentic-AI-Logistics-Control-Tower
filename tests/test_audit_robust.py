@@ -4,8 +4,11 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 from scipy import stats
 from statsmodels.stats.multitest import multipletests
+
+pytest.importorskip("pyspark")  # the fast job runs without PySpark: skip, do not error
 
 from src.ml import audit_robust as ar
 

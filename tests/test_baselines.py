@@ -17,6 +17,9 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
+
+pytest.importorskip("pyspark")  # the fast job runs without PySpark: skip, do not error
 
 from src.common import config
 from src.ml.baselines import (

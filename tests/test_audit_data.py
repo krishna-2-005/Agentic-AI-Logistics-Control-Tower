@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
+pytest.importorskip("pyspark")  # the fast job runs without PySpark: skip, do not error
+
 from src.ml import audit_data
 
 needs_data = pytest.mark.skipif(

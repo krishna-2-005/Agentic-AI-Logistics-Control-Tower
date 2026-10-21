@@ -107,6 +107,26 @@ def used_macros(root: Path = PAPER_DIR) -> dict[str, list[str]]:
     return out
 
 
+def plain_text(tex: str) -> str:
+    r"""A LaTeX fragment with `\fz...` macros expanded and the few markup commands we use removed."""
+    values: dict[str, str] = {}
+    for line in OUT.read_text(encoding="utf-8").splitlines():
+        m = re.match(r"\\providecommand\{\\(fz[A-Za-z]+)\}\{(.*?)\}( %|$)", line)
+        if m:
+            values[m.group(1)] = m.group(2)
+    out = re.sub(r"\\(fz[A-Za-z]+)\{\}", lambda m: values[m.group(1)], tex)
+    out = out.replace("{,}", ",").replace(r"\textminus{}", "\u2212").replace(r"\%", "%").replace("--", "\u2013")
+    out = re.sub(r"\\[A-Za-z]+\{([^}]*)\}", r"\1", out)
+    return re.sub(r"\s+", " ", out).strip()
+
+
+def write_abstract() -> Path:
+    target = PAPER_DIR / "abstract.txt"
+    text = plain_text((PAPER_DIR / "sections" / "abstract.tex").read_text(encoding="utf-8"))
+    target.write_text(text + "\n", encoding="utf-8")
+    return target
+
+
 def check() -> list[str]:
     problems = []
     expected = render()
@@ -125,6 +145,7 @@ def check() -> list[str]:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("--check", action="store_true")
+    parser.add_argument("--abstract", action="store_true", help="also write paper/abstract.txt (plain text, for the site)")
     args = parser.parse_args()
     if args.check:
         problems = check()
@@ -134,6 +155,8 @@ def main() -> int:
     PAPER_DIR.mkdir(parents=True, exist_ok=True)
     OUT.write_text(render(), encoding="utf-8")
     print(f"wrote {OUT} from {newest_freeze().name}")
+    if args.abstract:
+        print(f"wrote {write_abstract()}")
     return 0
 
 

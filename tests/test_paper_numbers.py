@@ -50,3 +50,10 @@ def test_no_manuscript_types_a_result_that_a_macro_holds():
         for number in typed:
             # a number may appear once inside a table cell as a validation companion; the main text uses macros
             assert text.count(number) <= 1, (tex.name, number)
+
+
+def test_the_plain_text_abstract_is_current_and_in_the_word_range():
+    text = (pn.PAPER_DIR / "abstract.txt").read_text(encoding="utf-8").strip()
+    assert text == pn.plain_text((pn.PAPER_DIR / "sections" / "abstract.tex").read_text(encoding="utf-8"))
+    assert 200 <= len(text.split()) <= 250
+

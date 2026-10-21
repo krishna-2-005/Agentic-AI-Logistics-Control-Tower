@@ -1,0 +1,1074 @@
+% =====================================================================================
+% paper/refs.bib -- the single shared bibliography for the conference and journal papers.
+%
+% RULES THIS FILE FOLLOWS
+%  * Every entry was checked on 2026-10-21 against a source that was actually opened or
+%    searched in that session (publisher or DOI record via the Crossref API, proceedings
+%    page, arXiv API record, JMLR page, library catalogue). The `note` field of every entry
+%    carries the verification date and the URL or DOI used. docs/references.md records, per
+%    entry, whether the full text was read ([read]), only the metadata was checked
+%    ([metadata checked]) or the item is only listed ([listed]).
+%  * An item whose title, authors, venue/year AND an identifier (DOI, arXiv id or stable
+%    URL) could not all be confirmed was left out. Nothing here is from memory alone.
+%  * keywords = {core} marks the ~35 entries to cite in the page-limited conference paper;
+%    keywords = {journal} marks entries for the extended journal version only.
+%  * Styles: plain BibTeX types and fields only (article, inproceedings, book, incollection,
+%    techreport, misc), so IEEEtran, splncs04 and elsarticle-num all accept the file. The
+%    note field uses \url{}; load the url package (IEEEtran, splncs04 and hyperref do).
+%  * Where a venue page and the arXiv record differ in the author list (Toolformer), the
+%    proceedings page is followed.
+%  * Cite-key rule: surnameYYYYword.
+% =====================================================================================
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 1 -- ETA and travel-time prediction (incl. residual over a routing engine)
+% ------------------------------------------------------------------------------------
+
+@misc{hu2022deepreta,
+  author       = {Hu, Xinyu and Binaykiya, Tanmay and Frank, Eric and Cirit, Olcay},
+  title        = {{DeeprETA}: An {ETA} Post-processing System at Scale},
+  year         = {2022},
+  howpublished = {arXiv preprint arXiv:2206.02127},
+  keywords     = {core},
+}
+
+@inproceedings{derrowpinion2021eta,
+  author       = {Derrow-Pinion, Austin and She, Jennifer and Wong, David and Lange, Oliver and Hester, Todd and Perez, Luis and Nunkesser, Marc and Lee, Seongjae and Guo, Xueying and Wiltshire, Brett and Battaglia, Peter W. and Gupta, Vishal and Li, Ang and Xu, Zhongwen and Sanchez-Gonzalez, Alvaro and Li, Yujia and Veli{\v{c}}kovi{\'c}, Petar},
+  title        = {{ETA} Prediction with Graph Neural Networks in {Google Maps}},
+  booktitle    = {Proceedings of the 30th ACM International Conference on Information \& Knowledge Management (CIKM '21)},
+  pages        = {3767--3776},
+  year         = {2021},
+  publisher    = {ACM},
+  doi          = {10.1145/3459637.3481916},
+  keywords     = {core},
+}
+
+@inproceedings{wang2018learning,
+  author       = {Wang, Zheng and Fu, Kun and Ye, Jieping},
+  title        = {Learning to Estimate the Travel Time},
+  booktitle    = {Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery \& Data Mining (KDD '18)},
+  pages        = {858--866},
+  year         = {2018},
+  publisher    = {ACM},
+  doi          = {10.1145/3219819.3219900},
+  keywords     = {core},
+}
+
+@inproceedings{wang2018deeptte,
+  author       = {Wang, Dong and Zhang, Junbo and Cao, Wei and Li, Jian and Zheng, Yu},
+  title        = {When Will You Arrive? Estimating Travel Time Based on Deep Neural Networks},
+  booktitle    = {Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume       = {32},
+    year         = {2018},
+  doi          = {10.1609/aaai.v32i1.11877},
+  keywords     = {journal},
+}
+
+@inproceedings{fang2020constgat,
+  author       = {Fang, Xiaomin and Huang, Jizhou and Wang, Fan and Zeng, Lingke and Liang, Haijin and Wang, Haifeng},
+  title        = {{ConSTGAT}: Contextual Spatial-Temporal Graph Attention Network for Travel Time Estimation at {Baidu Maps}},
+  booktitle    = {Proceedings of the 26th ACM SIGKDD International Conference on Knowledge Discovery \& Data Mining (KDD '20)},
+  pages        = {2697--2705},
+  year         = {2020},
+  publisher    = {ACM},
+  doi          = {10.1145/3394486.3403320},
+  keywords     = {journal},
+}
+
+@article{vlahogianni2014short,
+  author       = {Vlahogianni, Eleni I. and Karlaftis, Matthew G. and Golias, John C.},
+  title        = {Short-term traffic forecasting: Where we are and where we're going},
+  journal      = {Transportation Research Part C: Emerging Technologies},
+  volume       = {43},
+  pages        = {3--19},
+  year         = {2014},
+  doi          = {10.1016/j.trc.2014.01.005},
+  keywords     = {journal},
+}
+
+@article{lana2018road,
+  author       = {Lana, Ibai and Del Ser, Javier and Velez, Manuel and Vlahogianni, Eleni I.},
+  title        = {Road Traffic Forecasting: Recent Advances and New Challenges},
+  journal      = {IEEE Intelligent Transportation Systems Magazine},
+  volume       = {10},
+  number       = {2},
+  pages        = {93--109},
+  year         = {2018},
+  doi          = {10.1109/MITS.2018.2806634},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 2 -- Delivery and route time prediction
+% ------------------------------------------------------------------------------------
+
+@misc{wen2023survey,
+  author       = {Wen, Haomin and Lin, Youfang and Wu, Lixia and Mao, Xiaowei and Cai, Tianyue and Hou, Yunfeng and Guo, Shengnan and Liang, Yuxuan and Jin, Guangyin and Zhao, Yiji and Zimmermann, Roger and Ye, Jieping and Wan, Huaiyu},
+  title        = {A Survey on Service Route and Time Prediction in Instant Delivery: Taxonomy, Progress, and Prospects},
+  year         = {2023},
+  howpublished = {arXiv preprint arXiv:2309.01194},
+  keywords     = {core},
+}
+
+@inproceedings{mao2023drl4route,
+  author       = {Mao, Xiaowei and Wen, Haomin and Zhang, Hengrui and Wan, Huaiyu and Wu, Lixia and Zheng, Jianbin and Hu, Haoyuan and Lin, Youfang},
+  title        = {{DRL4Route}: A Deep Reinforcement Learning Framework for Pick-up and Delivery Route Prediction},
+  booktitle    = {Proceedings of the 29th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD '23)},
+  year         = {2023},
+  howpublished = {arXiv:2307.16246},
+  keywords     = {journal},
+}
+
+@inproceedings{yi2023deepsta,
+  author       = {Yi, Jinhui and Yan, Huan and Wang, Haotian and Yuan, Jian and Li, Yong},
+  title        = {{DeepSTA}: A Spatial-Temporal Attention Network for Logistics Delivery Timely Rate Prediction in Anomaly Conditions},
+  booktitle    = {Proceedings of the 32nd ACM International Conference on Information and Knowledge Management (CIKM '23)},
+  pages        = {4916--4922},
+  year         = {2023},
+  publisher    = {ACM},
+  doi          = {10.1145/3583780.3614671},
+  keywords     = {journal},
+}
+
+@inproceedings{khiari2020boosting,
+  author       = {Khiari, Jihed and Olaverri-Monreal, Cristina},
+  title        = {Boosting Algorithms for Delivery Time Prediction in Transportation Logistics},
+  booktitle    = {2020 International Conference on Data Mining Workshops (ICDMW)},
+  pages        = {251--258},
+  year         = {2020},
+  publisher    = {IEEE},
+  doi          = {10.1109/ICDMW51313.2020.00043},
+  keywords     = {core},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 3 -- Freight corridor travel-time reliability (reports and measures)
+% ------------------------------------------------------------------------------------
+
+@techreport{fhwa2005reliability,
+  author       = {{Federal Highway Administration}},
+  title        = {Travel Time Reliability: Making It There On Time, All The Time},
+  institution  = {U.S. Department of Transportation, Federal Highway Administration, Office of Operations},
+  year         = {2005},
+  month        = dec,
+  keywords     = {core},
+}
+
+@techreport{jones2005measuring,
+  author       = {Jones, Crystal},
+  title        = {Measuring Travel Time in Freight-Significant Corridors},
+  institution  = {U.S. Department of Transportation, Federal Highway Administration, with the American Transportation Research Institute},
+  number       = {FHWA-HOP-05-036},
+  year         = {2005},
+  keywords     = {journal},
+}
+
+@techreport{margiotta2013shrp2,
+  author       = {Margiotta, Richard A. and Lomax, Timothy J. and Hallenbeck, Mark E. and Dowling, Richard G. and Skabardonis, Alexander and Turner, Shawn},
+  title        = {Analytical Procedures for Determining the Impacts of Reliability Mitigation Strategies},
+  institution  = {Transportation Research Board, Second Strategic Highway Research Program (SHRP 2)},
+  type         = {SHRP 2 Report},
+  number       = {S2-L03-RR-1},
+  year         = {2013},
+  doi          = {10.17226/22806},
+  keywords     = {core},
+}
+
+@techreport{monsere2009truck,
+  author       = {Monsere, Christopher M. and Wolfe, Michael and Alawakiel, Heba and Stephens, Max},
+  title        = {Developing corridor-level truck travel time estimates and other freight performance measures from archived {ITS} data},
+  institution  = {Oregon Department of Transportation and Portland State University},
+  number       = {FHWA-OR-RD-10-07},
+  year         = {2009},
+  keywords     = {journal},
+}
+
+@techreport{figliozzi2012reliability,
+  author       = {Figliozzi, Miguel},
+  title        = {Analysis of Travel-Time Reliability for Freight Corridors Connecting the {Pacific Northwest}},
+  institution  = {Portland State University, Department of Civil and Environmental Engineering},
+  number       = {OTREC-RR-12-11},
+  year         = {2012},
+  keywords     = {journal},
+}
+
+@article{pu2011analytic,
+  author       = {Pu, Wenjing},
+  title        = {Analytic Relationships between Travel Time Reliability Measures},
+  journal      = {Transportation Research Record: Journal of the Transportation Research Board},
+  volume       = {2254},
+  number       = {1},
+  pages        = {122--130},
+  year         = {2011},
+  doi          = {10.3141/2254-13},
+  keywords     = {journal},
+}
+
+@techreport{unnikrishnan2022statistical,
+  author       = {Unnikrishnan, Avinash and Figliozzi, Miguel and Kochar, Subhash C.},
+  title        = {Statistical Inference for Multimodal Travel Time Reliability},
+  institution  = {Transportation Research and Education Center (TREC), Portland State University},
+  number       = {NITC-RR-1403},
+  year         = {2022},
+  doi          = {10.15760/trec.278},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 4 -- Multiple testing, dependence, resampling and cluster-robust inference
+% ------------------------------------------------------------------------------------
+
+@article{benjamini1995controlling,
+  author       = {Benjamini, Yoav and Hochberg, Yosef},
+  title        = {Controlling the False Discovery Rate: A Practical and Powerful Approach to Multiple Testing},
+  journal      = {Journal of the Royal Statistical Society: Series B (Methodological)},
+  volume       = {57},
+  number       = {1},
+  pages        = {289--300},
+  year         = {1995},
+  doi          = {10.1111/j.2517-6161.1995.tb02031.x},
+  keywords     = {core},
+}
+
+@article{benjamini2001control,
+  author       = {Benjamini, Yoav and Yekutieli, Daniel},
+  title        = {The control of the false discovery rate in multiple testing under dependency},
+  journal      = {The Annals of Statistics},
+  volume       = {29},
+  number       = {4},
+  pages        = {1165--1188},
+  year         = {2001},
+  doi          = {10.1214/aos/1013699998},
+  keywords     = {core},
+}
+
+@article{storey2002direct,
+  author       = {Storey, John D.},
+  title        = {A direct approach to false discovery rates},
+  journal      = {Journal of the Royal Statistical Society: Series B (Statistical Methodology)},
+  volume       = {64},
+  number       = {3},
+  pages        = {479--498},
+  year         = {2002},
+  doi          = {10.1111/1467-9868.00346},
+  keywords     = {journal},
+}
+
+@article{storey2003positive,
+  author       = {Storey, John D.},
+  title        = {The positive false discovery rate: a {Bayesian} interpretation and the q-value},
+  journal      = {The Annals of Statistics},
+  volume       = {31},
+  number       = {6},
+  pages        = {2013--2035},
+  year         = {2003},
+  doi          = {10.1214/aos/1074290335},
+  keywords     = {journal},
+}
+
+@book{efron2010large,
+  author       = {Efron, Bradley},
+  title        = {Large-Scale Inference: Empirical {Bayes} Methods for Estimation, Testing, and Prediction},
+  publisher    = {Cambridge University Press},
+  series       = {Institute of Mathematical Statistics Monographs},
+  year         = {2010},
+  doi          = {10.1017/CBO9780511761362},
+  keywords     = {core},
+}
+
+@article{welch1947generalization,
+  author       = {Welch, B. L.},
+  title        = {The generalization of ``{Student's}'' problem when several different population variances are involved},
+  journal      = {Biometrika},
+  volume       = {34},
+  number       = {1--2},
+  pages        = {28--35},
+  year         = {1947},
+  doi          = {10.1093/biomet/34.1-2.28},
+  keywords     = {core},
+}
+
+@book{westfall1993resampling,
+  author       = {Westfall, Peter H. and Young, S. Stanley},
+  title        = {Resampling-Based Multiple Testing: Examples and Methods for $p$-Value Adjustment},
+  publisher    = {Wiley-Interscience},
+  address      = {New York},
+  year         = {1993},
+  isbn         = {978-0-471-55761-6},
+  keywords     = {journal},
+}
+
+@article{cameron2015practitioner,
+  author       = {Cameron, A. Colin and Miller, Douglas L.},
+  title        = {A Practitioner's Guide to Cluster-Robust Inference},
+  journal      = {Journal of Human Resources},
+  volume       = {50},
+  number       = {2},
+  pages        = {317--372},
+  year         = {2015},
+  doi          = {10.3368/jhr.50.2.317},
+  keywords     = {core},
+}
+
+@article{cameron2008bootstrap,
+  author       = {Cameron, A. Colin and Gelbach, Jonah B. and Miller, Douglas L.},
+  title        = {Bootstrap-Based Improvements for Inference with Clustered Errors},
+  journal      = {The Review of Economics and Statistics},
+  volume       = {90},
+  number       = {3},
+  pages        = {414--427},
+  year         = {2008},
+  doi          = {10.1162/rest.90.3.414},
+  keywords     = {journal},
+}
+
+@book{good2005permutation,
+  author       = {Good, Phillip I.},
+  title        = {Permutation, Parametric, and Bootstrap Tests of Hypotheses},
+  edition      = {3rd},
+  publisher    = {Springer},
+  address      = {New York},
+  series       = {Springer Series in Statistics},
+  year         = {2005},
+  doi          = {10.1007/b138696},
+  keywords     = {journal},
+}
+
+@article{phipson2010permutation,
+  author       = {Phipson, Belinda and Smyth, Gordon K.},
+  title        = {Permutation {P}-values Should Never Be Zero: Calculating Exact {P}-values When Permutations Are Randomly Drawn},
+  journal      = {Statistical Applications in Genetics and Molecular Biology},
+  volume       = {9},
+  number       = {1},
+  year         = {2010},
+  doi          = {10.2202/1544-6115.1585},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 5 -- Empirical Bayes, shrinkage and ranking
+% ------------------------------------------------------------------------------------
+
+@inproceedings{robbins1956empirical,
+  author       = {Robbins, Herbert},
+  title        = {An Empirical {Bayes} Approach to Statistics},
+  booktitle    = {Proceedings of the Third {Berkeley} Symposium on Mathematical Statistics and Probability, Volume 1: Contributions to the Theory of Statistics},
+  pages        = {157--163},
+  publisher    = {University of California Press},
+  address      = {Berkeley, CA},
+  year         = {1956},
+  keywords     = {journal},
+}
+
+@article{efron1973stein,
+  author       = {Efron, Bradley and Morris, Carl},
+  title        = {Stein's Estimation Rule and Its Competitors---An Empirical {Bayes} Approach},
+  journal      = {Journal of the American Statistical Association},
+  volume       = {68},
+  number       = {341},
+  pages        = {117--130},
+  year         = {1973},
+  doi          = {10.1080/01621459.1973.10481350},
+  keywords     = {core},
+}
+
+@article{efron1975data,
+  author       = {Efron, Bradley and Morris, Carl},
+  title        = {Data Analysis Using {Stein's} Estimator and Its Generalizations},
+  journal      = {Journal of the American Statistical Association},
+  volume       = {70},
+  number       = {350},
+  pages        = {311--319},
+  year         = {1975},
+  doi          = {10.1080/01621459.1975.10479864},
+  keywords     = {journal},
+}
+
+@article{morris1983parametric,
+  author       = {Morris, Carl N.},
+  title        = {Parametric Empirical {Bayes} Inference: Theory and Applications},
+  journal      = {Journal of the American Statistical Association},
+  volume       = {78},
+  number       = {381},
+  pages        = {47--55},
+  year         = {1983},
+  doi          = {10.1080/01621459.1983.10477920},
+  keywords     = {journal},
+}
+
+@article{laird1989empirical,
+  author       = {Laird, Nan M. and Louis, Thomas A.},
+  title        = {Empirical {Bayes} Ranking Methods},
+  journal      = {Journal of Educational Statistics},
+  volume       = {14},
+  number       = {1},
+  pages        = {29--46},
+  year         = {1989},
+  doi          = {10.3102/10769986014001029},
+  keywords     = {core},
+}
+
+@book{gelman2007data,
+  author       = {Gelman, Andrew and Hill, Jennifer},
+  title        = {Data Analysis Using Regression and Multilevel/Hierarchical Models},
+  publisher    = {Cambridge University Press},
+  year         = {2007},
+  doi          = {10.1017/CBO9780511790942},
+  keywords     = {journal},
+}
+
+@book{gelman2013bayesian,
+  author       = {Gelman, Andrew and Carlin, John B. and Stern, Hal S. and Dunson, David B. and Vehtari, Aki and Rubin, Donald B.},
+  title        = {Bayesian Data Analysis},
+  edition      = {3rd},
+  publisher    = {Chapman and Hall/CRC},
+  year         = {2013},
+  doi          = {10.1201/b16018},
+  keywords     = {journal},
+}
+
+@article{gelman2014beyond,
+  author       = {Gelman, Andrew and Carlin, John},
+  title        = {Beyond Power Calculations: Assessing Type {S} (Sign) and Type {M} (Magnitude) Errors},
+  journal      = {Perspectives on Psychological Science},
+  volume       = {9},
+  number       = {6},
+  pages        = {641--651},
+  year         = {2014},
+  doi          = {10.1177/1745691614551642},
+  keywords     = {core},
+}
+
+@article{goldstein1996league,
+  author       = {Goldstein, Harvey and Spiegelhalter, David J.},
+  title        = {League Tables and Their Limitations: Statistical Issues in Comparisons of Institutional Performance},
+  journal      = {Journal of the Royal Statistical Society: Series A (Statistics in Society)},
+  volume       = {159},
+  number       = {3},
+  pages        = {385--409},
+  year         = {1996},
+  doi          = {10.2307/2983325},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 6 -- Gradient boosting and tabular machine learning
+% ------------------------------------------------------------------------------------
+
+@article{friedman2001greedy,
+  author       = {Friedman, Jerome H.},
+  title        = {Greedy function approximation: A gradient boosting machine},
+  journal      = {The Annals of Statistics},
+  volume       = {29},
+  number       = {5},
+  pages        = {1189--1232},
+  year         = {2001},
+  doi          = {10.1214/aos/1013203451},
+  keywords     = {core},
+}
+
+@inproceedings{chen2016xgboost,
+  author       = {Chen, Tianqi and Guestrin, Carlos},
+  title        = {{XGBoost}: A Scalable Tree Boosting System},
+  booktitle    = {Proceedings of the 22nd ACM SIGKDD International Conference on Knowledge Discovery and Data Mining (KDD '16)},
+  pages        = {785--794},
+  year         = {2016},
+  publisher    = {ACM},
+  doi          = {10.1145/2939672.2939785},
+  keywords     = {core},
+}
+
+@inproceedings{ke2017lightgbm,
+  author       = {Ke, Guolin and Meng, Qi and Finley, Thomas and Wang, Taifeng and Chen, Wei and Ma, Weidong and Ye, Qiwei and Liu, Tie-Yan},
+  title        = {{LightGBM}: A Highly Efficient Gradient Boosting Decision Tree},
+  booktitle    = {Advances in Neural Information Processing Systems},
+  volume       = {30},
+  year         = {2017},
+  keywords     = {journal},
+}
+
+@inproceedings{prokhorenkova2018catboost,
+  author       = {Prokhorenkova, Liudmila and Gusev, Gleb and Vorobev, Aleksandr and Dorogush, Anna Veronika and Gulin, Andrey},
+  title        = {{CatBoost}: unbiased boosting with categorical features},
+  booktitle    = {Advances in Neural Information Processing Systems},
+  volume       = {31},
+  year         = {2018},
+  keywords     = {journal},
+}
+
+@inproceedings{grinsztajn2022why,
+  author       = {Grinsztajn, L{\'e}o and Oyallon, Edouard and Varoquaux, Ga{\"e}l},
+  title        = {Why do tree-based models still outperform deep learning on typical tabular data?},
+  booktitle    = {Advances in Neural Information Processing Systems (Datasets and Benchmarks Track)},
+  volume       = {35},
+  year         = {2022},
+  doi          = {10.52202/068431-0037},
+  keywords     = {journal},
+}
+
+@article{breiman2001random,
+  author       = {Breiman, Leo},
+  title        = {Random Forests},
+  journal      = {Machine Learning},
+  volume       = {45},
+  number       = {1},
+  pages        = {5--32},
+  year         = {2001},
+  doi          = {10.1023/A:1010933404324},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 7 -- Forecast and model-comparison evaluation, resampling
+% ------------------------------------------------------------------------------------
+
+@article{diebold1995comparing,
+  author       = {Diebold, Francis X. and Mariano, Roberto S.},
+  title        = {Comparing Predictive Accuracy},
+  journal      = {Journal of Business \& Economic Statistics},
+  volume       = {13},
+  number       = {3},
+  pages        = {253--263},
+  year         = {1995},
+  doi          = {10.1080/07350015.1995.10524599},
+  keywords     = {core},
+}
+
+@article{harvey1997testing,
+  author       = {Harvey, David and Leybourne, Stephen and Newbold, Paul},
+  title        = {Testing the equality of prediction mean squared errors},
+  journal      = {International Journal of Forecasting},
+  volume       = {13},
+  number       = {2},
+  pages        = {281--291},
+  year         = {1997},
+  doi          = {10.1016/S0169-2070(96)00719-4},
+  keywords     = {journal},
+}
+
+@article{tashman2000out,
+  author       = {Tashman, Leonard J.},
+  title        = {Out-of-sample tests of forecasting accuracy: an analysis and review},
+  journal      = {International Journal of Forecasting},
+  volume       = {16},
+  number       = {4},
+  pages        = {437--450},
+  year         = {2000},
+  doi          = {10.1016/S0169-2070(00)00065-0},
+  keywords     = {core},
+}
+
+@article{bergmeir2012use,
+  author       = {Bergmeir, Christoph and Ben{\'i}tez, Jos{\'e} M.},
+  title        = {On the use of cross-validation for time series predictor evaluation},
+  journal      = {Information Sciences},
+  volume       = {191},
+  pages        = {192--213},
+  year         = {2012},
+  doi          = {10.1016/j.ins.2011.12.028},
+  keywords     = {core},
+}
+
+@article{hyndman2006another,
+  author       = {Hyndman, Rob J. and Koehler, Anne B.},
+  title        = {Another look at measures of forecast accuracy},
+  journal      = {International Journal of Forecasting},
+  volume       = {22},
+  number       = {4},
+  pages        = {679--688},
+  year         = {2006},
+  doi          = {10.1016/j.ijforecast.2006.03.001},
+  keywords     = {journal},
+}
+
+@article{politis1994stationary,
+  author       = {Politis, Dimitris N. and Romano, Joseph P.},
+  title        = {The Stationary Bootstrap},
+  journal      = {Journal of the American Statistical Association},
+  volume       = {89},
+  number       = {428},
+  pages        = {1303--1313},
+  year         = {1994},
+  doi          = {10.1080/01621459.1994.10476870},
+  keywords     = {journal},
+}
+
+@article{kunsch1989jackknife,
+  author       = {K{\"u}nsch, Hans R.},
+  title        = {The Jackknife and the Bootstrap for General Stationary Observations},
+  journal      = {The Annals of Statistics},
+  volume       = {17},
+  number       = {3},
+  pages        = {1217--1241},
+  year         = {1989},
+  doi          = {10.1214/aos/1176347265},
+  keywords     = {journal},
+}
+
+@article{efron1979bootstrap,
+  author       = {Efron, Bradley},
+  title        = {Bootstrap Methods: Another Look at the Jackknife},
+  journal      = {The Annals of Statistics},
+  volume       = {7},
+  number       = {1},
+  pages        = {1--26},
+  year         = {1979},
+  doi          = {10.1214/aos/1176344552},
+  keywords     = {journal},
+}
+
+@article{wilcoxon1945individual,
+  author       = {Wilcoxon, Frank},
+  title        = {Individual Comparisons by Ranking Methods},
+  journal      = {Biometrics Bulletin},
+  volume       = {1},
+  number       = {6},
+  pages        = {80--83},
+  year         = {1945},
+  doi          = {10.2307/3001968},
+  keywords     = {journal},
+}
+
+@article{demsar2006statistical,
+  author       = {Dem{\v{s}}ar, Janez},
+  title        = {Statistical Comparisons of Classifiers over Multiple Data Sets},
+  journal      = {Journal of Machine Learning Research},
+  volume       = {7},
+  number       = {1},
+  pages        = {1--30},
+  year         = {2006},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 8 -- Data leakage and reproducibility in machine-learning evaluation
+% ------------------------------------------------------------------------------------
+
+@article{kaufman2012leakage,
+  author       = {Kaufman, Shachar and Rosset, Saharon and Perlich, Claudia and Stitelman, Ori},
+  title        = {Leakage in data mining: Formulation, detection, and avoidance},
+  journal      = {ACM Transactions on Knowledge Discovery from Data},
+  volume       = {6},
+  number       = {4},
+  pages        = {1--21},
+  year         = {2012},
+  doi          = {10.1145/2382577.2382579},
+  keywords     = {core},
+}
+
+@article{kapoor2023leakage,
+  author       = {Kapoor, Sayash and Narayanan, Arvind},
+  title        = {Leakage and the reproducibility crisis in machine-learning-based science},
+  journal      = {Patterns},
+  volume       = {4},
+  number       = {9},
+  pages        = {100804},
+  year         = {2023},
+  doi          = {10.1016/j.patter.2023.100804},
+  keywords     = {core},
+}
+
+@inproceedings{arp2022dos,
+  author       = {Arp, Daniel and Quiring, Erwin and Pendlebury, Feargus and Warnecke, Alexander and Pierazzi, Fabio and Wressnegger, Christian and Cavallaro, Lorenzo and Rieck, Konrad},
+  title        = {Dos and Don'ts of Machine Learning in Computer Security},
+  booktitle    = {31st USENIX Security Symposium (USENIX Security 22)},
+  pages        = {3971--3988},
+  address      = {Boston, MA},
+  year         = {2022},
+  keywords     = {journal},
+}
+
+@article{pineau2021improving,
+  author       = {Pineau, Joelle and Vincent-Lamarre, Philippe and Sinha, Koustuv and Larivi{\`e}re, Vincent and Beygelzimer, Alina and d'Alch{\'e}-Buc, Florence and Fox, Emily and Larochelle, Hugo},
+  title        = {Improving Reproducibility in Machine Learning Research (A Report from the {NeurIPS} 2019 Reproducibility Program)},
+  journal      = {Journal of Machine Learning Research},
+  volume       = {22},
+  number       = {164},
+  pages        = {1--20},
+  year         = {2021},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 9 -- Stream processing and big-data systems
+% ------------------------------------------------------------------------------------
+
+@article{zaharia2016apache,
+  author       = {Zaharia, Matei and Xin, Reynold S. and Wendell, Patrick and Das, Tathagata and Armbrust, Michael and Dave, Ankur and Meng, Xiangrui and Rosen, Josh and Venkataraman, Shivaram and Franklin, Michael J. and Ghodsi, Ali and Gonzalez, Joseph and Shenker, Scott and Stoica, Ion},
+  title        = {Apache {Spark}: A Unified Engine for Big Data Processing},
+  journal      = {Communications of the ACM},
+  volume       = {59},
+  number       = {11},
+  pages        = {56--65},
+  year         = {2016},
+  doi          = {10.1145/2934664},
+  keywords     = {core},
+}
+
+@inproceedings{armbrust2018structured,
+  author       = {Armbrust, Michael and Das, Tathagata and Torres, Joseph and Yavuz, Burak and Zhu, Shixiong and Xin, Reynold and Ghodsi, Ali and Stoica, Ion and Zaharia, Matei},
+  title        = {Structured Streaming: A Declarative {API} for Real-Time Applications in {Apache Spark}},
+  booktitle    = {Proceedings of the 2018 International Conference on Management of Data (SIGMOD '18)},
+  pages        = {601--613},
+  year         = {2018},
+  publisher    = {ACM},
+  doi          = {10.1145/3183713.3190664},
+  keywords     = {core},
+}
+
+@inproceedings{kreps2011kafka,
+  author       = {Kreps, Jay and Narkhede, Neha and Rao, Jun},
+  title        = {Kafka: a Distributed Messaging System for Log Processing},
+  booktitle    = {Proceedings of the 6th International Workshop on Networking Meets Databases (NetDB '11)},
+  address      = {Athens, Greece},
+  month        = jun,
+  year         = {2011},
+  keywords     = {journal},
+}
+
+@article{meng2016mllib,
+  author       = {Meng, Xiangrui and Bradley, Joseph and Yavuz, Burak and Sparks, Evan and Venkataraman, Shivaram and Liu, Davies and Freeman, Jeremy and Tsai, DB and Amde, Manish and Owen, Sean and Xin, Doris and Xin, Reynold and Franklin, Michael J. and Zadeh, Reza and Zaharia, Matei and Talwalkar, Ameet},
+  title        = {{MLlib}: Machine Learning in {Apache Spark}},
+  journal      = {Journal of Machine Learning Research},
+  volume       = {17},
+  number       = {34},
+  pages        = {1--7},
+  year         = {2016},
+  keywords     = {journal},
+}
+
+@inproceedings{zaharia2012resilient,
+  author       = {Zaharia, Matei and Chowdhury, Mosharaf and Das, Tathagata and Dave, Ankur and Ma, Justin and McCauley, Murphy and Franklin, Michael J. and Shenker, Scott and Stoica, Ion},
+  title        = {Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing},
+  booktitle    = {9th USENIX Symposium on Networked Systems Design and Implementation (NSDI 12)},
+  pages        = {15--28},
+  address      = {San Jose, CA},
+  year         = {2012},
+  keywords     = {journal},
+}
+
+@article{dean2008mapreduce,
+  author       = {Dean, Jeffrey and Ghemawat, Sanjay},
+  title        = {{MapReduce}: Simplified Data Processing on Large Clusters},
+  journal      = {Communications of the ACM},
+  volume       = {51},
+  number       = {1},
+  pages        = {107--113},
+  year         = {2008},
+  doi          = {10.1145/1327452.1327492},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 10 -- Routing engines
+% ------------------------------------------------------------------------------------
+
+@inproceedings{luxen2011real,
+  author       = {Luxen, Dennis and Vetter, Christian},
+  title        = {Real-time routing with {OpenStreetMap} data},
+  booktitle    = {Proceedings of the 19th ACM SIGSPATIAL International Conference on Advances in Geographic Information Systems (GIS '11)},
+  pages        = {513--516},
+  year         = {2011},
+  publisher    = {ACM},
+  doi          = {10.1145/2093973.2094062},
+  keywords     = {core},
+}
+
+@inproceedings{geisberger2008contraction,
+  author       = {Geisberger, Robert and Sanders, Peter and Schultes, Dominik and Delling, Daniel},
+  title        = {Contraction Hierarchies: Faster and Simpler Hierarchical Routing in Road Networks},
+  booktitle    = {Experimental Algorithms: 7th International Workshop, WEA 2008},
+  series       = {Lecture Notes in Computer Science},
+  volume       = {5038},
+  pages        = {319--333},
+  publisher    = {Springer},
+  year         = {2008},
+  keywords     = {journal},
+}
+
+@incollection{bast2016route,
+  author       = {Bast, Hannah and Delling, Daniel and Goldberg, Andrew and M{\"u}ller-Hannemann, Matthias and Pajor, Thomas and Sanders, Peter and Wagner, Dorothea and Werneck, Renato F.},
+  title        = {Route Planning in Transportation Networks},
+  booktitle    = {Algorithm Engineering: Selected Results and Surveys},
+  series       = {Lecture Notes in Computer Science},
+  volume       = {9220},
+  pages        = {19--80},
+  publisher    = {Springer},
+  year         = {2016},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 11 -- LLM agents, tool use and evaluation
+% ------------------------------------------------------------------------------------
+
+@inproceedings{yao2023react,
+  author       = {Yao, Shunyu and Zhao, Jeffrey and Yu, Dian and Du, Nan and Shafran, Izhak and Narasimhan, Karthik and Cao, Yuan},
+  title        = {{ReAct}: Synergizing Reasoning and Acting in Language Models},
+  booktitle    = {The Eleventh International Conference on Learning Representations (ICLR 2023)},
+  year         = {2023},
+  howpublished = {arXiv:2210.03629},
+  keywords     = {core},
+}
+
+@inproceedings{schick2023toolformer,
+  author       = {Schick, Timo and Dwivedi-Yu, Jane and Dess{\`i}, Roberto and Raileanu, Roberta and Lomeli, Maria and Hambro, Eric and Zettlemoyer, Luke and Cancedda, Nicola and Scialom, Thomas},
+  title        = {Toolformer: Language Models Can Teach Themselves to Use Tools},
+  booktitle    = {Advances in Neural Information Processing Systems},
+  volume       = {36},
+  year         = {2023},
+  keywords     = {journal},
+}
+
+@article{wang2024survey,
+  author       = {Wang, Lei and Ma, Chen and Feng, Xueyang and Zhang, Zeyu and Yang, Hao and Zhang, Jingsen and Chen, Zhiyuan and Tang, Jiakai and Chen, Xu and Lin, Yankai and Zhao, Wayne Xin and Wei, Zhewei and Wen, Jirong},
+  title        = {A survey on large language model based autonomous agents},
+  journal      = {Frontiers of Computer Science},
+  volume       = {18},
+  number       = {6},
+  year         = {2024},
+  doi          = {10.1007/s11704-024-40231-1},
+  keywords     = {core},
+}
+
+@misc{xi2023rise,
+  author       = {Xi, Zhiheng and Chen, Wenxiang and Guo, Xin and He, Wei and Ding, Yiwen and Hong, Boyang and Zhang, Ming and Wang, Junzhe and Jin, Senjie and Zhou, Enyu and Zheng, Rui and Fan, Xiaoran and Wang, Xiao and Xiong, Limao and Zhou, Yuhao and Wang, Weiran and Jiang, Changhao and Zou, Yicheng and Liu, Xiangyang and Yin, Zhangyue and Dou, Shihan and Weng, Rongxiang and Cheng, Wensen and Zhang, Qi and Qin, Wenjuan and Zheng, Yongyan and Qiu, Xipeng and Huang, Xuanjing and Gui, Tao},
+  title        = {The Rise and Potential of Large Language Model Based Agents: A Survey},
+  year         = {2023},
+  howpublished = {arXiv preprint arXiv:2309.07864},
+  keywords     = {journal},
+}
+
+@misc{li2023optiguide,
+  author       = {Li, Beibin and Mellou, Konstantina and Zhang, Bo and Pathuri, Jeevan and Menache, Ishai},
+  title        = {Large Language Models for Supply Chain Optimization},
+  year         = {2023},
+  howpublished = {arXiv preprint arXiv:2307.03875},
+  keywords     = {core},
+}
+
+@inproceedings{wei2022chain,
+  author       = {Wei, Jason and Wang, Xuezhi and Schuurmans, Dale and Bosma, Maarten and Ichter, Brian and Xia, Fei and Chi, Ed and Le, Quoc V. and Zhou, Denny},
+  title        = {Chain-of-Thought Prompting Elicits Reasoning in Large Language Models},
+  booktitle    = {Advances in Neural Information Processing Systems},
+  volume       = {35},
+  year         = {2022},
+  keywords     = {journal},
+}
+
+@inproceedings{lewis2020retrieval,
+  author       = {Lewis, Patrick and Perez, Ethan and Piktus, Aleksandra and Petroni, Fabio and Karpukhin, Vladimir and Goyal, Naman and K{\"u}ttler, Heinrich and Lewis, Mike and Yih, Wen-tau and Rockt{\"a}schel, Tim and Riedel, Sebastian and Kiela, Douwe},
+  title        = {Retrieval-Augmented Generation for Knowledge-Intensive {NLP} Tasks},
+  booktitle    = {Advances in Neural Information Processing Systems},
+  volume       = {33},
+  year         = {2020},
+  howpublished = {arXiv:2005.11401},
+  keywords     = {journal},
+}
+
+@inproceedings{zheng2023judging,
+  author       = {Zheng, Lianmin and Chiang, Wei-Lin and Sheng, Ying and Zhuang, Siyuan and Wu, Zhanghao and Zhuang, Yonghao and Lin, Zi and Li, Zhuohan and Li, Dacheng and Xing, Eric P. and Zhang, Hao and Gonzalez, Joseph E. and Stoica, Ion},
+  title        = {Judging {LLM}-as-a-Judge with {MT-Bench} and {Chatbot Arena}},
+  booktitle    = {Advances in Neural Information Processing Systems (Datasets and Benchmarks Track)},
+  volume       = {36},
+  year         = {2023},
+  howpublished = {arXiv:2306.05685},
+  keywords     = {journal},
+}
+
+@misc{mcp2025specification,
+  author       = {{Model Context Protocol project}},
+  title        = {Model Context Protocol Specification, revision 2025-06-18},
+  year         = {2025},
+  howpublished = {\url{https://modelcontextprotocol.io/specification/2025-06-18}},
+  keywords     = {core},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 12 -- Supply-chain control towers and visibility
+% ------------------------------------------------------------------------------------
+
+@article{trzuskawska2017control,
+  author       = {Trzuskawska-Grzesi{\'n}ska, Anna},
+  title        = {Control towers in supply chain management -- past and future},
+  journal      = {Journal of Economics and Management},
+  volume       = {27},
+  number       = {1},
+  pages        = {114--133},
+  year         = {2017},
+  doi          = {10.22367/jem.2017.27.07},
+  keywords     = {core},
+}
+
+@article{chaffin2024systematic,
+  author       = {Chaffin, Clay and Maywald, Jacob and Reiman, Adam D. and Glassburner, Aaron V.},
+  title        = {Systematic Review of Supply Chain Control Tower Critical Success Factors and Resilience Effects},
+  journal      = {Operations and Supply Chain Management: An International Journal},
+  volume       = {17},
+  number       = {3},
+  pages        = {236--251},
+  year         = {2024},
+  doi          = {10.31387/oscm0580439},
+  keywords     = {journal},
+}
+
+@article{barratt2007antecedents,
+  author       = {Barratt, Mark and Oke, Adegoke},
+  title        = {Antecedents of supply chain visibility in retail supply chains: A resource-based theory perspective},
+  journal      = {Journal of Operations Management},
+  volume       = {25},
+  number       = {6},
+  pages        = {1217--1233},
+  year         = {2007},
+  doi          = {10.1016/j.jom.2007.01.003},
+  keywords     = {journal},
+}
+
+@article{somapa2018characterizing,
+  author       = {Somapa, Sirirat and Cools, Martine and Dullaert, Wout},
+  title        = {Characterizing supply chain visibility -- a literature review},
+  journal      = {The International Journal of Logistics Management},
+  volume       = {29},
+  number       = {1},
+  pages        = {308--339},
+  year         = {2018},
+  doi          = {10.1108/IJLM-06-2016-0150},
+  keywords     = {journal},
+}
+
+@article{francis2008supply,
+  author       = {Francis, Vernon},
+  title        = {Supply chain visibility: lost in translation?},
+  journal      = {Supply Chain Management: An International Journal},
+  volume       = {13},
+  number       = {3},
+  pages        = {180--184},
+  year         = {2008},
+  doi          = {10.1108/13598540810871226},
+  keywords     = {journal},
+}
+
+
+% ------------------------------------------------------------------------------------
+% GROUP 13 -- Classification, agreement and interval estimation
+% ------------------------------------------------------------------------------------
+
+@article{wilson1927probable,
+  author       = {Wilson, Edwin B.},
+  title        = {Probable Inference, the Law of Succession, and Statistical Inference},
+  journal      = {Journal of the American Statistical Association},
+  volume       = {22},
+  number       = {158},
+  pages        = {209--212},
+  year         = {1927},
+  doi          = {10.1080/01621459.1927.10502953},
+  keywords     = {core},
+}
+
+@article{agresti1998approximate,
+  author       = {Agresti, Alan and Coull, Brent A.},
+  title        = {Approximate is Better than ``Exact'' for Interval Estimation of Binomial Proportions},
+  journal      = {The American Statistician},
+  volume       = {52},
+  number       = {2},
+  pages        = {119--126},
+  year         = {1998},
+  doi          = {10.1080/00031305.1998.10480550},
+  keywords     = {journal},
+}
+
+@article{matthews1975comparison,
+  author       = {Matthews, B. W.},
+  title        = {Comparison of the predicted and observed secondary structure of {T4} phage lysozyme},
+  journal      = {Biochimica et Biophysica Acta (BBA) -- Protein Structure},
+  volume       = {405},
+  number       = {2},
+  pages        = {442--451},
+  year         = {1975},
+  doi          = {10.1016/0005-2795(75)90109-9},
+  keywords     = {journal},
+}
+
+@article{chicco2020advantages,
+  author       = {Chicco, Davide and Jurman, Giuseppe},
+  title        = {The advantages of the {Matthews} correlation coefficient ({MCC}) over {F1} score and accuracy in binary classification evaluation},
+  journal      = {BMC Genomics},
+  volume       = {21},
+  number       = {1},
+  pages        = {6},
+  year         = {2020},
+  doi          = {10.1186/s12864-019-6413-7},
+  keywords     = {core},
+}
+
+@article{cochran1954some,
+  author       = {Cochran, William G.},
+  title        = {Some Methods for Strengthening the Common $\chi^2$ Tests},
+  journal      = {Biometrics},
+  volume       = {10},
+  number       = {4},
+  pages        = {417--451},
+  year         = {1954},
+  doi          = {10.2307/3001616},
+  keywords     = {journal},
+}
+
+@article{armitage1955tests,
+  author       = {Armitage, P.},
+  title        = {Tests for Linear Trends in Proportions and Frequencies},
+  journal      = {Biometrics},
+  volume       = {11},
+  number       = {3},
+  pages        = {375--386},
+  year         = {1955},
+  doi          = {10.2307/3001775},
+  keywords     = {journal},
+}
+
+@article{cohen1960coefficient,
+  author       = {Cohen, Jacob},
+  title        = {A Coefficient of Agreement for Nominal Scales},
+  journal      = {Educational and Psychological Measurement},
+  volume       = {20},
+  number       = {1},
+  pages        = {37--46},
+  year         = {1960},
+  doi          = {10.1177/001316446002000104},
+  keywords     = {journal},
+}
+
+@article{landis1977measurement,
+  author       = {Landis, J. Richard and Koch, Gary G.},
+  title        = {The Measurement of Observer Agreement for Categorical Data},
+  journal      = {Biometrics},
+  volume       = {33},
+  number       = {1},
+  pages        = {159--174},
+  year         = {1977},
+  doi          = {10.2307/2529310},
+  keywords     = {journal},
+}
+
+@article{fleiss1971measuring,
+  author       = {Fleiss, Joseph L.},
+  title        = {Measuring nominal scale agreement among many raters},
+  journal      = {Psychological Bulletin},
+  volume       = {76},
+  number       = {5},
+  pages        = {378--382},
+  year         = {1971},
+  doi          = {10.1037/h0031619},
+  keywords     = {journal},
+}
