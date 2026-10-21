@@ -1,0 +1,15 @@
+dimension,slice,n,bar,bar_mae_min,old_median_mae_min,backoff_mae_min,shrunk_backoff_mae_min,v2_gbt_mae_min
+overall,all,5274,backoff,32.3932,33.0423,32.3932,32.9221,30.9048
+corridor_support_in_train,unseen,294,backoff,99.5374,111.1803,99.5374,97.8001,75.9199
+corridor_support_in_train,1-9,1548,backoff,31.7862,31.7862,31.7862,34.3128,31.7624
+corridor_support_in_train,10-29,2723,backoff,26.255,26.255,26.255,26.0663,26.0673
+corridor_support_in_train,>=30,709,backoff,29.4506,29.4506,29.4506,29.3139,28.9451
+route_type,FTL,2594,backoff,38.1642,39.0977,38.1642,39.1333,36.483
+route_type,Carting,2680,backoff,26.8075,27.1812,26.8075,26.9103,25.5056
+distance_band,short (<33 km),1960,backoff,18.4686,18.3013,18.4686,18.5524,18.1988
+distance_band,medium (33-67 km),1760,backoff,26.623,26.8693,26.623,26.7785,24.6283
+distance_band,long (>=67 km),1554,backoff,56.491,58.6258,56.491,58.0042,54.039
+departure_hour,night,1537,backoff,33.5638,33.9893,33.5638,34.001,31.5412
+departure_hour,morning,650,backoff,43.7408,43.7354,43.7408,43.8337,40.4279
+departure_hour,afternoon,647,backoff,36.7141,37.1584,36.7141,37.6721,36.3486
+departure_hour,evening,2440,backoff,27.4873,28.5057,27.4873,28.0762,26.5236
