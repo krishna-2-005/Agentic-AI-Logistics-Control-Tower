@@ -76,7 +76,7 @@ def _bar_labels(ax, bars, values, fmt="{:.2f}", pad=0.01, inside=False):
 
 # ── 1 · the premise ──────────────────────────────────────────────────────────
 def fig1_gap_ratio() -> dict:
-    """How far the production planner is from realised time, over every leg."""
+    """How far the recorded OSRM estimate is from realised time, over every leg."""
     legs = pd.read_csv(RAW / "w1_leg_summary.csv")
     ratio = (legs["actual_time"] / legs["osrm_time"]).replace([np.inf, -np.inf], np.nan).dropna()
     over = float((ratio > 1).mean())

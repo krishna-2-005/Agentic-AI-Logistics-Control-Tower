@@ -17,7 +17,7 @@ must be `[read]` — Lahari's pass (WP-10).**
 
 - **Delhivery logistics trip dataset**, public release. 144,867 scan-level segment rows,
   14,817 trips, reconstructed here into 26,369 origin-destination legs. Carries the
-  production routing engine's estimate (`osrm_time`) beside the realised time, which is
+  the OSRM estimate recorded in the dataset (`osrm_time`) beside the realised time, which is
   what makes the audit possible at all. `[read]` — used throughout; see `data/README.md`
   for provenance and `docs/W1_lahari_data_dictionary_and_eda.md` for the field-by-field
   reading.

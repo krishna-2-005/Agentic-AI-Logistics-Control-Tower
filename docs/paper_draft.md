@@ -8,10 +8,11 @@ each file to the command that regenerates it. Figures are in `docs/figures/`.*
 
 ## Abstract
 
-Production routing engines estimate how long a road-freight leg should take, and on the
-network studied here they are wrong in one direction almost every time: 98.3% of 26,369
-origin-destination legs run over plan, and the median leg takes 2.00× its planned time.
-One-sided error is systematic, and systematic error should be localisable. We test every
+Route-planning estimates are used to schedule road freight, and the OSRM estimate recorded in
+Delhivery's public trip data is wrong in one direction almost every time: 98.3% of 26,369
+origin-destination legs run over it, and the median leg takes 2.00× the estimate. A one-sided
+error is systematic; whether it is also concentrated by corridor is an empirical question, and
+the one this paper answers. We test every
 corridor with at least ten legs against the rest of the network, using Welch's t-test on
 log time ratios with Benjamini-Hochberg control at 5%, and find **273 corridors
 significantly slower and 512 significantly faster** than the network, covering 78.6% of
@@ -23,21 +24,23 @@ evaluation slices, with most of the gain on corridors that have no history. We r
 engineering findings that affect how such systems are evaluated: a default optimiser setting
 that silently disabled the loss function the model was chosen for, and a replay-based
 evaluation that scored early events against later history and inflated a reported alert
-precision from 58.6% to 72.1%. The pipeline runs unchanged on 56.4 million rows.
+precision from 58.6% to 72.1%. The audit's aggregation stage runs unchanged on 56.4 million proxy rows.
 
 ---
 
 ## 1 · Introduction
 
-A routing engine's estimate is a plan, and a plan that is consistently optimistic is still
+A route planner's estimate is a plan, and a plan that is consistently optimistic is still
 useful if the operator knows *where* it is optimistic. Delhivery's public trip records carry
-both the production engine's planned time (OSRM) and the realised time for every leg, which
-makes the question answerable directly rather than by simulation.
+both a planned time recorded from OSRM and the realised time for every leg, which makes the
+question answerable directly from operational data rather than by simulation.
 
 The premise is a single observation (**Figure 1**): across 26,369 legs, **98.3% exceed their
-planned time** and the **median leg runs at 2.00× plan** `[w1_leg_summary.csv]`. If the
-error were noise it would be centred on 1.0 and cancel across a corridor. It is not centred
-and it does not cancel, so it should concentrate somewhere.
+planned time** and the **median leg runs at 2.00× plan** `[w1_leg_summary.csv]`. That is
+one-sided bias: noise would centre on 1.0, so the error is systematic. A systematic error is not
+automatically localised: it could be spread evenly over the network, in which case a single
+correction factor would remove it. Whether it concentrates in particular corridors is an
+empirical question, and the audit in §4 is the test of it.
 
 This paper makes four claims, in order of importance:
 
@@ -55,7 +58,7 @@ This paper makes four claims, in order of importance:
 We also describe the surrounding system — a streaming path that serves the batch model with
 bit-identical predictions, and a small agent layer built on a deliberate design position —
 because the evaluation findings only make sense in context. We do not claim to "beat" the
-production planner: OSRM has no access to corridor history, and a model that does is not a
+planner: the OSRM estimate has no access to corridor history, and a model that does is not a
 fair comparison. OSRM is reported as context throughout.
 
 ## 2 · Related work
@@ -118,6 +121,14 @@ The raw records are 144,867 scan-level segment rows across 14,817 trips
 are reconstructed into **26,369 origin-destination legs** on **2,783 corridors**
 `[w2_audit_report.json]`, each carrying planned time, realised moving time and scan
 timestamps.
+
+**What the planned time is, and what we cannot know.** The planned time is the dataset's
+`osrm_time` column (and `osrm_distance`); its name says it comes from OSRM, an open-source route
+planner, and the dataset documents nothing more. We call it "the OSRM estimate recorded in the
+dataset". We cannot know how, or whether, Delhivery used it operationally, which OSRM version or
+speed profile produced it, or whether the carrier's own planning had access to corridor history.
+We therefore make no claim about the carrier's planning system: the error we measure is the
+error of this recorded estimate, against realised time, directly and not by simulation.
 
 **Dwell is separated from movement.** Realised `actual_time` is moving time; dwell at the hub
 is the scan-to-scan interval minus it. The median leg spends **49 minutes, 34.6% of its wall
@@ -415,7 +426,7 @@ corridor's history as it stood at the end of the data.
 
 ## 10 · Conclusion
 
-A production planner's error on this network is systematic and localisable: an FDR-controlled
+The recorded OSRM estimate's error on this network is systematic and localisable: an FDR-controlled
 audit identifies the corridors where it is wrong in either direction, and the choice of
 support floor changes which ones. A residual model over a per-corridor median improves
 prediction most where history is absent. Two of our findings are about evaluation rather

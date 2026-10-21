@@ -22,8 +22,8 @@ number on screen and a number in the paper cannot drift apart (D-059).
 
 ## The contribution in one sentence
 
-A big-data pipeline that **localises, corridor by corridor, where a production routing engine is
-systematically wrong** — 273 corridors significantly slower and 512 faster than the network, at a
+A big-data pipeline that **localises, corridor by corridor, where the OSRM route-planning estimate recorded in
+the data is systematically wrong** — 273 corridors significantly slower and 512 faster than the network, at a
 5% false discovery rate — wrapped in a team of **deterministic-core agents** that read logistics
 documents, enter orders into a TMS, watch live shipments, resolve exceptions and validate
 invoices, each measured against a trivial policy.
@@ -315,7 +315,7 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | 1 | Cleaned Parquet v1 exists; every member loads it in Spark; LLM API responds | `week1-complete` — **met** |
 | 2 | Bottleneck corridor audit + India map exist | `week2-complete` (`audit-v1`) — **met** |
 | 3 | Feature table frozen; baselines on the board; 100+ labelled synthetic documents | `week3-complete` — **met** |
-| 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) — **met**. The Week 4 model was superseded in Week 7 (D-050) and extraction accuracy recorded at 98.0% on the first 11 of 40 rows (G-01) |
+| 4 | Batch ML complete with the beat-OSRM headline; Doc Agent extracting with measured accuracy | `week4-complete` (`batch-complete`) — **met**. The Week 4 model was superseded in Week 7 (D-050) and extraction accuracy was recorded at 98.0% on the first 11 of 40 rows (G-01; historical, now 97.9% over 20 rows, see Results) |
 | 5 | Replayed event → live dashboard alert; Order Entry Agent posting real orders to the TMS | `week5-complete` — **met** |
 | 6 | Full lifecycle runs agent-to-agent with no human in the loop | `week6-complete` — **met** |
 | 7 | RAG assistant answers grounded questions; agent-eval report; scale appendix | `week7-complete` — **met**; G-05 (live broker) closed in Week 8 without Docker, G-07 (a real alert channel) carried, then closed post-v1.0 by WP-06 (D-071) |
@@ -341,9 +341,9 @@ streamlit run src/dashboard/app.py              # the dashboard on its own
 | Delay-threshold sensitivity | 2.00× holds: the best classifier's MCC barely moves across thresholds (0.507→0.536) while the alert volume falls from 98% of legs to 49%. The stream's own flag is the weakest real classifier (MCC 0.477) | [`benchmarks/raw/w5_threshold_sensitivity.csv`](benchmarks/raw/w5_threshold_sensitivity.csv) |
 | Order Entry Agent evaluation | **50 of 50** authored cases run, **50 correct**; 0 orders filed on invented values, 0 needless questions | [`benchmarks/raw/w5_order_eval_summary.json`](benchmarks/raw/w5_order_eval_summary.json) |
 | Lifecycle, end to end (Gate 6) | 10 emails, 3 distinct paths, no human in the middle: 5 stopped at a question, 3 booked and unflagged, 2 booked → flagged → notified → ticketed | [`benchmarks/raw/w6_orchestrator_runs.json`](benchmarks/raw/w6_orchestrator_runs.json) |
-| Freight Invoice Auditor v1 | **20 of 20** verdicts matched the seeded ground truth; no clean invoice disputed. Band is the corpus's own rate model — exact here, circular as a pricing claim (D-043) | [`benchmarks/raw/w6_invoice_audit_runs.json`](benchmarks/raw/w6_invoice_audit_runs.json) |
-| Agent evaluation summary | Every agent beside the trivial policy on its own set. Exception agent notification precision **58.6%** as-of against 54.1% for alerting on every leg — the first published 72.1% came from a replay that leaked future history (D-054). Invoice auditor dispute precision/recall **100% / 82.2%** on 60 seeded invoices. Order entry **50 of 50**, 0 invented orders. Document extraction **98.7%** per-field on clean PDFs, 96.9% on noisy scans. Assistant route accuracy **93.3%**, refusal recall 6 of 6 | [`benchmarks/agent_evaluation.md`](benchmarks/agent_evaluation.md), [`w8_replay_leakage.json`](benchmarks/raw/w8_replay_leakage.json) |
-| Scale appendix (50M+ rows) | The **same two functions** (`network_baseline`, `corridor_aggregate`), imported unchanged, on **56,353,613** NYC TLC rows → 51,515 corridors in **14.32 s** (3.9M rows/sec) on one 20-core laptop. 2,138× the Delhivery row count | [`benchmarks/scale_appendix.md`](benchmarks/scale_appendix.md), [`w7_scale_benchmark.json`](benchmarks/raw/w7_scale_benchmark.json) |
+| Freight Invoice Auditor v1 (Week 6 development corpus; larger sets are in the agent evaluation summary below) | **20 of 20** verdicts matched the seeded ground truth; no clean invoice disputed. Band is the corpus's own rate model — exact here, circular as a pricing claim (D-043) | [`benchmarks/raw/w6_invoice_audit_runs.json`](benchmarks/raw/w6_invoice_audit_runs.json) |
+| Agent evaluation summary | Every agent beside the trivial policy on its own set. Exception agent notification precision **58.6%** as-of against 54.1% for alerting on every leg — the first published 72.1% came from a replay that leaked future history (D-054). Invoice auditor dispute precision/recall **100% / 82.2%** on 60 seeded invoices, and **90.0% [85.1-93.4]** verdicts correct on 200 stratified invoices with no correct invoice disputed. Order entry **50 of 50** on the Week 5 set, 0 invented orders, and **85.0% [79.4-89.3]** on 200 held-out emails (70.0% on the adversarial half). Document extraction **97.9% [95.4-99.0]** per-field overall (274 of 280 fields, 20 of 40 planned rows; 98.7% on the clean split, 96.9% on the noisy split). Assistant route accuracy **93.3%** with model phrasing (90.0% without), n = 30 questions; out-of-scope refusal 6 of 6 with both refusal layers together (3 of 6 and 4 of 6 for the single layers) | [`benchmarks/agent_evaluation.md`](benchmarks/agent_evaluation.md), [`w8_replay_leakage.json`](benchmarks/raw/w8_replay_leakage.json) |
+| Scale appendix (50M+ rows) | The **same two functions** (`network_baseline`, `corridor_aggregate`), imported unchanged, on **56,353,613** NYC TLC proxy rows (the audit's aggregation stage only, not the whole pipeline) → 51,515 corridors in **14.32 s** (3.9M rows/sec) on one 20-core laptop. 2,138× the Delhivery row count | [`benchmarks/scale_appendix.md`](benchmarks/scale_appendix.md), [`w7_scale_benchmark.json`](benchmarks/raw/w7_scale_benchmark.json) |
 
 ---
 

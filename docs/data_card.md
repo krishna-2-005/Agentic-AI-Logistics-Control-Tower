@@ -21,9 +21,14 @@ support. Every number below is read from a committed file, named in brackets, an
 | **Window** | segments from 12 September to 8 October 2018 (by OD window); legs *created* 12 September to 3 October 2018 `[w1_clean_quality_report.json]` |
 | **Redistributed here?** | **No.** `data/` is gitignored. The public site and API carry aggregates and model output only (D-073). |
 
-**The field that makes the project possible.** Each row carries the production routing
-engine's planned time and distance (`osrm_time`, `osrm_distance`, from OSRM) beside the
-realised time. The planner's error is therefore measurable directly, not simulated.
+**The field that makes the project possible.** Each row carries a planned time and distance
+(`osrm_time`, `osrm_distance`) beside the realised time. We call this "the OSRM estimate recorded in
+the dataset": the column names say it comes from OSRM, an open-source route planner, and the
+dataset documents nothing more. **What we cannot know:** how (or whether) Delhivery used it
+operationally, which OSRM version and speed profile produced it, or whether the carrier's own
+planning had access to corridor history. We therefore make no claim about the carrier's actual
+planning system; the error we measure is the error of this recorded estimate, directly and not
+by simulation.
 
 ## What was done to it
 

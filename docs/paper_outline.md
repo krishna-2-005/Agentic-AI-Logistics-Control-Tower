@@ -21,14 +21,14 @@ of the plan forbids the other two headlines, and for good reasons repeated below
 
 | # | claim | evidence | figure |
 |---|---|---|---|
-| 1 | An FDR-corrected corridor audit localises where a production routing engine is systematically wrong: **273 slower and 512 faster of 1,130 corridors**, covering 78.6% of legs | `w2_corridor_audit.csv`, `w2_top20_bottlenecks.csv` | fig2, fig3 |
+| 1 | An FDR-corrected corridor audit localises where the OSRM estimate recorded in the data is systematically wrong: **273 slower and 512 faster of 1,130 corridors**, covering 78.6% of legs | `w2_corridor_audit.csv`, `w2_top20_bottlenecks.csv` | fig2, fig3 |
 | 2 | **The support threshold decides the answer.** Top-20 lists at a 10-leg and a 30-leg floor share **no corridor**, and the 30-leg list is far milder | `w2_corridor_audit_support30.csv` | fig4 |
 | 3 | Alerting is **threshold-insensitive in quality, sensitive in workload**: the logistic classifier holds MCC 0.507→0.540 while alert volume falls 98%→49% of legs. The stream's own flag is the weaker classifier at every threshold (0.315→0.477) | `w5_threshold_sensitivity.csv` | fig7 |
 | 4 | A learned **residual correction over a strong per-corridor baseline** reaches 30.90 min MAE against the median baseline's 33.04, winning on all 14 slices — with the gain concentrated on corridors with no history | `w7_model_metrics_v2_stepsize.csv` | fig5, fig6 |
 | 5 | The stream **serves the reported model** on event-time state with **bit-identical predictions on 26,369 of 26,369 legs** (500/500 acceptance sample), across a restart; stateless path 886 events/s, stateful 74 events/s | `w10_stream_validation_v2.json`, `w5_stream_throughput_full.json` | — |
 | 6 | A **deterministic-core agent architecture**: verdicts computed, prose generated, so every decision is reproducible and scored — five agents, each against a trivial policy, at 200 cases with Wilson intervals, and an **ablation of what the model adds (Table 2, §7.3)** | `benchmarks/agent_evaluation.md`, `w9_order_eval.json`, `w9_invoice_eval.json`, `w9_lifecycle_eval.json`, `w7_assistant_run_no_llm.json`, `w7_assistant_run_llm.json` | fig9, Table 2 |
 | 7 | Document extraction with a **clean-vs-degraded split and a hallucination rate** (0 of 153 fields) | `w7_doc_extraction_eval.json` | — |
-| 8 | The corridor-aggregation code runs **unchanged at 56.4M rows**, with the runtime table and its ceiling | `w7_scale_benchmark.json` | fig8 |
+| 8 | The corridor-aggregation stage runs **unchanged at 56.4M proxy rows**, with the runtime table and its ceiling | `w7_scale_benchmark.json` | fig8 |
 
 **Claim 5 is now complete** — the live-broker run happened on a native Kafka broker, with
 alerts identical to the file source (D-055), and since WP-11 the stream serves the reported
@@ -122,7 +122,7 @@ needs a proper citation and the arXiv entries need checking for a published venu
 
 ## What the paper must not claim (v3.1 §4.2, kept verbatim in spirit)
 
-1. **"Beats the production planner" as a headline.** OSRM has no access to corridor
+1. **"Beats the planner" as a headline.** OSRM has no access to corridor
    history. A model that has seen a corridor's past beating it is not a fair fight. OSRM is
    context; the median baseline is the comparator.
 2. **"Multi-agent AI" without the qualifier.** The agents are less agentic than the word

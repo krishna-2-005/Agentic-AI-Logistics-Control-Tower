@@ -25,6 +25,7 @@ import pandas as pd
 
 from src.common import config
 from src.common.logging_setup import get_logger
+from src.ml.stats import wilson
 
 log = get_logger("report.tables")
 
@@ -33,7 +34,7 @@ OUT = config.BENCHMARKS_DIR / "final_tables.md"
 
 #: Model key -> (display name, what it is). Order is the order of the table.
 MODEL_ROWS = [
-    ("OSRM", "OSRM plan", "the production routing engine's estimate, as a prediction"),
+    ("OSRM", "OSRM plan", "the OSRM estimate recorded in the data, as a prediction"),
     ("v1_rf_raw_target", "Random Forest (W4)", "MLlib, squared loss, raw target — Week 4's reported model"),
     ("corridor_mean", "corridor mean", "past-only mean gap per corridor (D-023)"),
     ("corridor_median", "**corridor median**", "**the bar**: MAE is minimised by the median (D-048)"),
@@ -113,11 +114,20 @@ def layer2() -> list[str]:
 
     doc = _json("w7_doc_extraction_eval.json")
     rows_scored = doc["documents_evaluated"]
+    # One overall number with its n and interval leads (the clean and noisy rows are splits of
+    # it, not alternative headlines): clean-only used to be quoted alone as 98.7% (UPGRADE A2).
+    overall = wilson(doc["overall"]["correct"], doc["overall"]["fields_in_truth"])
     lines += [
-        (f"| Document extraction | per-field accuracy, clean PDF | **{_pct(doc['by_split']['clean']['accuracy'])}** "
-        f"| predict nothing: 0.0% | {rows_scored} of {doc['rows_planned']} rows |"),
-        (f"| Document extraction | per-field accuracy, noisy scan | **{_pct(doc['by_split']['noisy']['accuracy'])}** "
-        f"| predict nothing: 0.0% | the same rows |"),
+        (f"| Document extraction | per-field accuracy, overall (clean + noisy) | "
+         f"**{overall.point:.1%}** [{overall.lower:.1%}–{overall.upper:.1%}] "
+         f"| predict nothing: 0.0% | {doc['overall']['correct']} of {doc['overall']['fields_in_truth']} fields, "
+         f"{rows_scored} of {doc['rows_planned']} rows |"),
+        (f"| Document extraction | per-field accuracy, clean PDF (split) | **{_pct(doc['by_split']['clean']['accuracy'])}** "
+        f"| predict nothing: 0.0% | {doc['by_split']['clean']['correct']} of "
+        f"{doc['by_split']['clean']['fields_in_truth']} fields |"),
+        (f"| Document extraction | per-field accuracy, noisy scan (split) | **{_pct(doc['by_split']['noisy']['accuracy'])}** "
+        f"| predict nothing: 0.0% | {doc['by_split']['noisy']['correct']} of "
+        f"{doc['by_split']['noisy']['fields_in_truth']} fields |"),
         (f"| Document extraction | hallucinated fields | **{_pct(doc['overall']['hallucination_rate'])}** "
         f"| — | {doc['overall']['fields_in_truth']} fields |"),
     ]
