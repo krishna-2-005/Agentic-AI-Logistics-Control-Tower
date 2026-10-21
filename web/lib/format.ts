@@ -1,8 +1,16 @@
-/** Number and label formatting, in one place so the whole site reads alike. */
+/**
+ * Number and label formatting, in one place so the whole site reads alike.
+ *
+ * Pure functions with no imports, so `tests/web_format.test.mjs` can run them
+ * directly under Node.
+ */
+
+/** The one locale for every number: international grouping, 56,353,613 not 5,63,53,613. */
+export const NUMBER_LOCALE = "en-US";
 
 export function num(value: number | null | undefined, digits = 0): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
-  return value.toLocaleString("en-IN", {
+  return value.toLocaleString(NUMBER_LOCALE, {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
   });
@@ -28,12 +36,25 @@ export function ratio(value: number | null | undefined, digits = 2): string {
   return `${value.toFixed(digits)}×`;
 }
 
-/** q-values run to 1e-7; exponent notation is the honest rendering. */
+/**
+ * A q-value that never prints a bare "0". Below one in a million the honest
+ * statement is a bound, because a float underflow or a rounded export is not zero.
+ */
 export function sci(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "—";
-  if (value === 0) return "0";
+  if (value < 1e-6) return "< 1e-6";
   if (value >= 0.001) return value.toFixed(4);
   return value.toExponential(1);
+}
+
+/** A Wilson interval as "85.1%–93.4%". */
+export function interval(
+  low: number | null | undefined,
+  high: number | null | undefined,
+  digits = 1
+): string {
+  if (low === null || low === undefined || high === null || high === undefined) return "—";
+  return `${(low * 100).toFixed(digits)}%–${(high * 100).toFixed(digits)}%`;
 }
 
 /** "IND208012AAA>IND209304AAA" -> "Kanpur → Kanpur", falling back to codes. */

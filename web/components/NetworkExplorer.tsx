@@ -111,6 +111,7 @@ export function NetworkExplorer({
         </label>
 
         <select
+          aria-label="Filter by state"
           value={state}
           onChange={(e) => setState(e.target.value)}
           className="rounded-lg border border-[var(--line)] bg-[var(--surface-raised)] px-3 py-1.5 text-sm"

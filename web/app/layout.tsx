@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { Nav } from "@/components/Nav";
 import { StatusStrip } from "@/components/StatusStrip";
 import { getOverview } from "@/lib/data";
+import { PROJECT_NAME, SITE_DESCRIPTION, SITE_URL } from "@/lib/site";
 
 import "./globals.css";
 
@@ -20,18 +21,26 @@ const mono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: {
-    default: "Agentic AI Logistics Control Tower",
-    template: "%s · Control Tower",
+    default: PROJECT_NAME,
+    template: `%s · ${PROJECT_NAME}`,
   },
-  description:
-    "Where is the planner wrong? A corridor-level audit of systematic routing error across 26,369 real freight legs, with an agent workforce built on top of it.",
+  description: SITE_DESCRIPTION,
   openGraph: {
-    title: "Agentic AI Logistics Control Tower",
-    description:
-      "273 corridors significantly slower and 512 faster than the network, at a 5% false discovery rate.",
+    title: PROJECT_NAME,
+    description: SITE_DESCRIPTION,
     type: "website",
+    siteName: PROJECT_NAME,
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: PROJECT_NAME }],
   },
+  twitter: {
+    card: "summary_large_image",
+    title: PROJECT_NAME,
+    description: SITE_DESCRIPTION,
+    images: ["/og.png"],
+  },
+  icons: { icon: "/icon.svg" },
 };
 
 export default function RootLayout({
@@ -46,7 +55,7 @@ export default function RootLayout({
       <body className={`${inter.variable} ${mono.variable} font-sans`}>
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-[var(--accent)] focus:px-4 focus:py-2 focus:text-white"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-[var(--accent-bg)] focus:px-4 focus:py-2 focus:text-white"
         >
           Skip to content
         </a>
@@ -61,9 +70,7 @@ export default function RootLayout({
         <footer className="mt-16 border-t border-[var(--line)] bg-[var(--surface-sunken)]">
           <div className="mx-auto flex max-w-content flex-col gap-4 px-4 py-8 text-sm text-[var(--ink-muted)] sm:flex-row sm:items-start sm:justify-between sm:px-6">
             <div className="max-w-md">
-              <p className="font-medium text-[var(--ink)]">
-                Agentic AI Logistics Control Tower
-              </p>
+              <p className="font-medium text-[var(--ink)]">{PROJECT_NAME}</p>
               <p className="mt-1.5 leading-relaxed">
                 Built on Delhivery&apos;s public trip records. Agents operate on
                 synthetic documents and a mock TMS, declared as scaffolding; the

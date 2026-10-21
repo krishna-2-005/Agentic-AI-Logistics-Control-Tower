@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 
+import { ApiDownNotice, WakingNotice, useSlow } from "@/components/ApiStates";
 import { Card, Notice, Pill } from "@/components/ui";
 import { API_CONFIGURED, postAsk, type AskResponse } from "@/lib/api";
 import { cx } from "@/lib/format";
@@ -32,11 +33,18 @@ export function AssistantChat() {
   const [useLlm, setUseLlm] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
 
-  async function ask(question: string) {
+  const anyPending = turns.some((t) => t.pending);
+  const slow = useSlow(anyPending);
+
+  async function ask(question: string, replaceIndex?: number) {
     if (!question.trim()) return;
     setInput("");
-    const index = turns.length;
-    setTurns((t) => [...t, { question, pending: true }]);
+    const index = replaceIndex ?? turns.length;
+    setTurns((t) =>
+      replaceIndex === undefined
+        ? [...t, { question, pending: true }]
+        : t.map((turn, i) => (i === replaceIndex ? { question, pending: true } : turn))
+    );
 
     const r = await postAsk(question, useLlm);
     setTurns((t) =>
@@ -88,6 +96,7 @@ export function AssistantChat() {
             <div key={i} className="animate-fade-up">
               <p className="text-sm font-medium">{t.question}</p>
 
+              {t.pending && slow && <WakingNotice className="mt-2" />}
               {t.pending && (
                 <div className="mt-2 flex gap-1">
                   {[0, 1, 2].map((d) => (
@@ -131,9 +140,11 @@ export function AssistantChat() {
               )}
 
               {t.error && (
-                <p className="mt-2 rounded-lg border border-amber-500/30 bg-amber-500/[0.07] px-3 py-2 text-xs text-[var(--ink-muted)]">
-                  {t.error}
-                </p>
+                <ApiDownNotice
+                  className="mt-2"
+                  message={t.error}
+                  onRetry={() => ask(t.question, i)}
+                />
               )}
             </div>
           ))}
@@ -162,7 +173,7 @@ export function AssistantChat() {
           <button
             onClick={() => ask(input)}
             disabled={!API_CONFIGURED || !input.trim()}
-            className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="rounded-lg bg-[var(--accent-bg)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             Ask
           </button>

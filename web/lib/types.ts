@@ -37,6 +37,12 @@ export interface Corridor {
   id: string;
   src: Place;
   dst: Place;
+  /** "Kanpur → Kanpur", built in the export from names or codes; never "nan". */
+  route: string;
+  /** B3: survives the dependence-aware audit. Present only when that file exists. */
+  robust?: boolean;
+  /** B4: empirical-Bayes rank. Present only when that file exists. */
+  eb_rank?: number;
   intra_city: boolean;
   n_legs: number;
   excess_ratio: number;
@@ -99,6 +105,9 @@ export interface ModelData {
     mae_min: number | null;
     baseline_mae_min: number | null;
     osrm_mae_min: number | null;
+    mean_baseline_mae_min: number | null;
+    /** The hierarchical back-off baseline; present only once a freeze holds it. */
+    backoff_mae_min?: number | null;
     served_model: string;
     served_note: string;
     /** Present once the running stream has reproduced the batch predictions (WP-11). */
@@ -107,30 +116,67 @@ export interface ModelData {
   slices: ModelSlice[];
 }
 
+/** A count out of a total with its Wilson 95% interval. */
+export interface Proportion {
+  successes: number;
+  total: number;
+  rate: number;
+  ci_low: number;
+  ci_high: number;
+}
+
+export interface AgentRow extends Proportion {
+  label: string;
+  unit: string;
+  note?: string;
+  historical?: boolean;
+}
+
 export interface AgentCard {
   id: string;
   name: string;
   role: string;
   one_liner: string;
-  score: {
-    value: number | null;
+  score: Proportion & {
+    value: number;
     label: string;
+    unit: string;
     note: string;
     file: string;
   };
+  baseline: { label: string; value: number; note?: string };
+  also?: AgentRow[];
   prompt_version: string;
   deterministic: string;
+}
+
+export interface AblationArm {
+  name: string;
+  accuracy: number | null;
+  ci_low: number | null;
+  ci_high: number | null;
+  n: number | string | null;
+  unanimity: number | null;
+  cost: number | string | null;
+  cost_unit: string | null;
 }
 
 export interface AgentsData {
   agents: AgentCard[];
   orchestrator: {
     cases: number;
-    booked: number;
-    ticketed: number;
+    routed: Proportion;
+    paths_exercised: number;
+    baseline: { label: string; value: number; note?: string };
+    distribution: Record<string, number>;
+    earlier_booked: number;
+    earlier_ticketed: number;
+    earlier_cases: number;
     file: string;
     note: string;
   };
+  /** Present only when benchmarks/raw/b7_agent_ablation.json exists. */
+  ablation?: { file: string; note: string; arms: AblationArm[] };
 }
 
 export interface EvidenceEntry {
@@ -140,6 +186,10 @@ export interface EvidenceEntry {
   unit: string;
   week: number | null;
   file: string;
+  /** Set for a share that is only meaningful beside its case count. */
+  n?: number;
+  /** True for a number from a model or run that a later one replaced. */
+  superseded?: boolean;
 }
 
 export interface EvidenceIndex {
@@ -176,6 +226,26 @@ export interface AlertsSample {
     scoring_rate_eps: number | null;
   };
   alerts: AlertRow[];
+  sample_note: string;
+  delivery: {
+    channel: string;
+    recorded_at: string;
+    candidates: number;
+    sent: number;
+    failed: number;
+    suppressed_by_cap: number;
+  }[];
+  delivered_channels: string[];
+}
+
+export interface PaperData {
+  title: string;
+  abstract: string;
+  abstract_is_placeholder: boolean;
+  preprint_url: string | null;
+  bibtex: string;
+  headline: Record<string, number>;
+  reproduce: { command: string; links: { label: string; path: string }[] };
 }
 
 export interface AssistantEval {
@@ -183,6 +253,9 @@ export interface AssistantEval {
     answered: number;
     questions: number;
     route_accuracy: number | null;
+    route_correct?: number;
+    route_ci_low?: number;
+    route_ci_high?: number;
     source_accuracy: number | null;
     refusal_recall: number | null;
     refusal_precision: number | null;
@@ -217,6 +290,12 @@ export interface McpTranscript {
 }
 
 export interface FiguresData {
-  figures: { file: string; id: string; title: string }[];
+  figures: {
+    file: string;
+    pdf: string | null;
+    id: string;
+    title: string;
+    caption: string;
+  }[];
   readme: string;
 }

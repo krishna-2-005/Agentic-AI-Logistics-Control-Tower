@@ -3,12 +3,10 @@ import type { Metadata } from "next";
 import { Card, PageHeader, Section } from "@/components/ui";
 import { getEvidence, getOverview, repoFileUrl } from "@/lib/data";
 import { num } from "@/lib/format";
+import { GLOSSARY } from "@/lib/glossary";
+import { pageMeta } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "About",
-  description:
-    "How this was built, what it does not claim, and what every term on the site means.",
-};
+export const metadata: Metadata = pageMeta("About", "How this was built, what it does not claim, and what every term on the site means.");
 
 const TEAM = [
   {
@@ -28,54 +26,6 @@ const TEAM = [
   },
 ];
 
-const GLOSSARY = [
-  {
-    term: "Leg",
-    definition:
-      "One origin-to-destination journey. The raw data is scan-level segments; a leg is all the segments of one journey collapsed into a single row.",
-  },
-  {
-    term: "Corridor",
-    definition:
-      "A named pair of facilities — everything that travels from A to B. Keyed by centre code rather than city name, because a code is never null and never spelled two ways.",
-  },
-  {
-    term: "Dwell",
-    definition:
-      "Time a shipment spends parked at a facility rather than moving. Measured as the scan-to-scan interval minus the realised moving time.",
-  },
-  {
-    term: "Support",
-    definition:
-      "How many legs a corridor's statistic rests on. A 13.9× overrun on 13 legs and a 1.5× on 100 are not equally trustworthy, so every ranked row prints it.",
-  },
-  {
-    term: "Excess ratio",
-    definition:
-      "How much more this corridor overruns its plan than the network typically does. 1.0 means exactly as much; above is worse, below is better.",
-  },
-  {
-    term: "FDR (false discovery rate)",
-    definition:
-      "Test 1,130 corridors at a 5% significance level and about 56 will look significant by luck alone. Benjamini–Hochberg control instead caps the share of false findings among those reported at 5%.",
-  },
-  {
-    term: "Residual",
-    definition:
-      "What is left after subtracting a baseline. This model predicts the residual over each corridor's own median, so learning nothing reproduces the strongest baseline rather than a weaker one.",
-  },
-  {
-    term: "MAE",
-    definition:
-      "Mean absolute error — the average size of a mistake in minutes. It is minimised by the median, which is why the median is the bar a model here has to beat.",
-  },
-  {
-    term: "As-of",
-    definition:
-      "A feature computed only from journeys that had already finished when the leg being predicted was created. The alternative leaks the future into the past.",
-  },
-];
-
 export default function AboutPage() {
   const o = getOverview().data;
   const evidence = getEvidence();
@@ -88,9 +38,10 @@ export default function AboutPage() {
         lede={
           <>
             An eight-week team project over Delhivery&apos;s public trip
-            records: a distributed pipeline that localises where a production
-            routing engine is wrong, and an agent layer that acts on what it
-            finds.
+            records: a distributed pipeline that localises where the OSRM
+            estimate recorded in the dataset is wrong, and an agent layer that
+            acts on what it finds. What the dataset cannot tell us is how
+            Delhivery itself used that estimate.
           </>
         }
       />
@@ -163,6 +114,21 @@ export default function AboutPage() {
                 Kafka has run against a live broker; the MCP server has been
                 driven by a real client over stdio.
               </li>
+              <li>
+                Real alerts have reached real people. The bot sent the three
+                most severe alerts of the recorded run to a Telegram chat and,
+                separately, to a mailbox, and the provider receipts are kept
+                (identifiers masked) in{" "}
+                <code className="font-mono text-xs">
+                  benchmarks/raw/f2_alert_channel_live.json
+                </code>
+                .
+              </li>
+              <li>
+                The delay model is the v2 residual gradient-boosted model, and
+                the stream and the predictor serve exactly that model on
+                event-time state.
+              </li>
             </ul>
           </Card>
           <Card>
@@ -177,10 +143,14 @@ export default function AboutPage() {
                 its 1,657 facility codes are the real ones.
               </li>
               <li>
-                No alert has ever been sent to a real person. The email and
-                messaging channels are built but switched off, because doing
-                otherwise would have meant storing a live account password
-                alongside the project.
+                The public API is a free-tier host that replays the stream&apos;s
+                recorded alerts. It does not run a live stream, and it sleeps
+                when idle. The live Telegram and email run happened once,
+                offline, with a cap of three alerts per channel.
+              </li>
+              <li>
+                Nothing runs on AWS or any other paid cloud: the site is on
+                Vercel and the API on Render, both on free plans.
               </li>
             </ul>
           </Card>
@@ -250,7 +220,7 @@ export default function AboutPage() {
       {/* ── glossary ─────────────────────────────────────────────────── */}
       <Section
         title="Glossary"
-        description="Every term this site uses, in plain English."
+        description="Every technical term this site uses, in plain English."
       >
         <div className="grid gap-3 md:grid-cols-2">
           {GLOSSARY.map((g) => (

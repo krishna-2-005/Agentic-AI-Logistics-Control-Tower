@@ -4,11 +4,9 @@ import { Predictor } from "@/components/Predictor";
 import { Notice, PageHeader, Section } from "@/components/ui";
 import { getCorridors, getModel } from "@/lib/data";
 import { num } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Delay predictor",
-  description: "Score a leg against the reported model the streaming pipeline serves.",
-};
+export const metadata: Metadata = pageMeta("Delay predictor", "Score a leg against the reported model the streaming pipeline serves.");
 
 export default function PredictPage() {
   const corridors = getCorridors();

@@ -47,24 +47,30 @@ async function call<T>(
     };
   }
 
-  const timeoutMs = init?.timeoutMs ?? 12_000;
+  const timeoutMs = init?.timeoutMs ?? WAKE_TIMEOUT_MS;
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const res = await fetch(`${API_BASE}${path}`, {
-      ...init,
-      signal: controller.signal,
-      headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
-    });
-    if (!res.ok) {
-      return {
-        ok: false,
-        reason: "error",
-        message: `The API answered ${res.status}.`,
-      };
+    // A host that is mid-boot can answer 502/503/504 before it is ready. That is
+    // the same "still waking" state as a held request, so keep trying until the
+    // deadline instead of reporting an error the visitor can do nothing about.
+    for (;;) {
+      const res = await fetch(`${API_BASE}${path}`, {
+        ...init,
+        signal: controller.signal,
+        headers: { "content-type": "application/json", ...(init?.headers ?? {}) },
+      });
+      if (res.ok) return { ok: true, data: (await res.json()) as T };
+      if (!WAKING_STATUSES.has(res.status)) {
+        return {
+          ok: false,
+          reason: "error",
+          message: `The API answered ${res.status}.`,
+        };
+      }
+      await sleep(WAKE_RETRY_MS, controller.signal);
     }
-    return { ok: true, data: (await res.json()) as T };
   } catch (err) {
     const aborted = err instanceof DOMException && err.name === "AbortError";
     return {
@@ -148,6 +154,29 @@ export interface LiveAlerts {
  */
 export const WAKE_TIMEOUT_MS = 90_000;
 
+/** Statuses a booting free host returns before it can serve. */
+export const WAKING_STATUSES = new Set([502, 503, 504]);
+const WAKE_RETRY_MS = 4_000;
+
+function sleep(ms: number, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const id = setTimeout(resolve, ms);
+    signal.addEventListener(
+      "abort",
+      () => {
+        clearTimeout(id);
+        reject(new DOMException("aborted", "AbortError"));
+      },
+      { once: true }
+    );
+  });
+}
+
+/** What the page says while it waits, and after it gave up. One wording, every page. */
+export const WAKING_TITLE = "Waking the free server (up to ~1 min)";
+export const WAKING_BODY =
+  "The live service runs on a free host that sleeps when idle. It is starting now and will answer on its own; nothing is wrong.";
+
 export const getHealth = () =>
   call<{ status: string }>("/health", { timeoutMs: WAKE_TIMEOUT_MS });
 
@@ -159,11 +188,13 @@ export const postPredict = (body: PredictRequest) =>
     method: "POST",
     body: JSON.stringify(body),
     // The first call after the container sleeps starts a SparkSession.
-    timeoutMs: 60_000,
+    timeoutMs: WAKE_TIMEOUT_MS,
   });
 
 export const getAlerts = (since?: number) =>
-  call<LiveAlerts>(`/api/alerts${since ? `?since=${since}` : ""}`);
+  call<LiveAlerts>(`/api/alerts${since ? `?since=${since}` : ""}`, {
+    timeoutMs: WAKE_TIMEOUT_MS,
+  });
 
 export const getTraces = (agent?: string, limit = 50) =>
   call<{ traces: TraceRow[] }>(
@@ -175,5 +206,5 @@ export const postAsk = (question: string, useLlm = false) =>
   call<AskResponse>("/api/ask", {
     method: "POST",
     body: JSON.stringify({ question, use_llm: useLlm }),
-    timeoutMs: 45_000,
+    timeoutMs: WAKE_TIMEOUT_MS,
   });

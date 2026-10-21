@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
 
+import { RetryButton, WakingNotice, useSlow } from "@/components/ApiStates";
 import { Card, Notice, Pill } from "@/components/ui";
 import {
   API_CONFIGURED,
@@ -53,12 +54,16 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [attempt, setAttempt] = useState(0);
+  const slowPending = useSlow(pending);
+
   useEffect(() => {
     if (!API_CONFIGURED) {
       setStatus("unconfigured");
       return;
     }
     let cancelled = false;
+    setStatus("unknown");
     // The free host sleeps; the first call wakes it and is answered once it has
     // booted. Say so after a few seconds instead of leaving a silent wait.
     const slow = setTimeout(() => {
@@ -73,7 +78,7 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
       cancelled = true;
       clearTimeout(slow);
     };
-  }, []);
+  }, [attempt]);
 
   // Seed the form from the corridor's own measured distance, so the default is
   // a plausible leg rather than an arbitrary one.
@@ -200,13 +205,14 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
             </div>
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium">
+            <label htmlFor="departure-hour" className="mb-1.5 block text-sm font-medium">
               Departure hour
               <span className="tabular ml-2 font-mono text-xs text-[var(--ink-faint)]">
                 {String(hour).padStart(2, "0")}:00
               </span>
             </label>
             <input
+              id="departure-hour"
               type="range"
               min={0}
               max={23}
@@ -220,16 +226,13 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
         <button
           onClick={submit}
           disabled={pending || !picked}
-          className="mt-5 w-full rounded-lg bg-[var(--accent)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+          className="mt-5 w-full rounded-lg bg-[var(--accent-bg)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
         >
           {pending ? "Scoring…" : "Predict the delay"}
         </button>
 
-        {status === "waking" && (
-          <p className="mt-2 text-center font-mono text-[11px] text-amber-400">
-            waking the prediction service — the free server sleeps when idle and
-            takes up to a minute to start; you can press predict, it will wait
-          </p>
+        {(status === "waking" || (pending && slowPending)) && (
+          <WakingNotice className="mt-3" />
         )}
         {status === "warming" && (
           <p className="mt-2 text-center font-mono text-[11px] text-amber-400">
@@ -305,13 +308,17 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
               <>
                 {status === "unconfigured"
                   ? "This build has no API address, so nothing can score a leg here."
-                  : (error ?? "It did not answer within 90 seconds.") +
-                    " Reload the page in a minute to try again."}{" "}
+                  : (error ?? "It did not answer within 90 seconds.")}{" "}
                 The model itself and every number measured from it are on the{" "}
                 <a href="/evidence/" className="text-[var(--accent)] underline">
                   results page
                 </a>
                 , which needs no backend at all.
+                {status === "down" && (
+                  <span className="mt-3 block">
+                    <RetryButton onClick={() => setAttempt((n) => n + 1)} />
+                  </span>
+                )}
               </>
             ) : (
               <>
@@ -348,11 +355,15 @@ function Field({
   min: number;
   max: number;
 }) {
+  const id = useId();
   return (
     <div>
-      <label className="mb-1.5 block text-sm font-medium">{label}</label>
+      <label htmlFor={id} className="mb-1.5 block text-sm font-medium">
+        {label}
+      </label>
       <div className="flex items-center rounded-lg border border-[var(--line)] bg-[var(--surface-sunken)] px-3">
         <input
+          id={id}
           type="number"
           value={value}
           min={min}

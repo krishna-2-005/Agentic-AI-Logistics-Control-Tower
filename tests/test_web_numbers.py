@@ -13,6 +13,7 @@ Run:  pytest tests/test_web_numbers.py
 from __future__ import annotations
 
 import json
+import re
 
 import pytest
 
@@ -21,7 +22,7 @@ from src.report import export_web
 
 WEB_DATA = config.REPO_ROOT / "web" / "public" / "data"
 RAW = config.BENCHMARKS_RAW_DIR
-FREEZE = config.BENCHMARKS_DIR / "results_freeze_v3.json"
+FREEZE = export_web.latest_freeze_path()
 
 pytestmark = pytest.mark.skipif(
     not WEB_DATA.exists(),
@@ -52,6 +53,9 @@ EXPECTED_FILES = [
     "prompts.json",
     "assistant_eval.json",
     "alerts_sample.json",
+    "paper.json",
+    "figures.json",
+    "assistant_eval.json",
 ]
 
 
@@ -181,14 +185,31 @@ def test_agent_scores_match_freeze(frozen) -> None:
     assert agents["exception"]["score"]["value"] == pytest.approx(
         frozen["exception_precision_as_of"], abs=1e-4
     )
+    # The order card leads with the held-out first run on 200 emails, not the earlier
+    # 50-of-50; the 50 stays on the card as a secondary row.
     assert agents["order"]["score"]["value"] == pytest.approx(
-        frozen["order_eval_success"], abs=1e-4
+        frozen["order_eval_scale_heldout"], abs=1e-4
     )
+    assert agents["order"]["score"]["total"] == frozen["order_eval_scale_cases"]
+    assert any(
+        row["total"] == frozen["order_eval_run"]
+        and row["rate"] == pytest.approx(frozen["order_eval_success"], abs=1e-4)
+        for row in agents["order"]["also"]
+    )
+    # The invoice card leads with the stratified 200, never "20 of 20" alone (A3).
     assert agents["invoice"]["score"]["value"] == pytest.approx(
-        frozen["invoice_correct"], abs=1e-4
+        frozen["invoice_eval_scale_accuracy"], abs=1e-4
     )
-    assert agents["assistant"]["score"]["value"] == pytest.approx(
-        frozen["assistant_groundedness"], abs=1e-4
+    assert agents["invoice"]["score"]["total"] == frozen["invoice_eval_scale_cases"]
+    # The assistant card leads with route accuracy (the model-phrasing run, n=30);
+    # the frozen groundedness and the frozen no-model route sit on the card beside it.
+    assert agents["assistant"]["score"]["total"] == 30
+    also = {r["label"]: r for r in agents["assistant"]["also"]}
+    assert also["groundedness of model-written answers"]["rate"] == pytest.approx(
+        frozen["assistant_groundedness"], abs=1e-3
+    )
+    assert also["route accuracy, no model (rules only)"]["rate"] == pytest.approx(
+        frozen["assistant_route_accuracy"], abs=1e-4
     )
     assert agents["document"]["score"]["value"] == pytest.approx(
         frozen["doc_extraction_accuracy"], abs=1e-4
@@ -217,3 +238,130 @@ def test_payload_stays_shippable() -> None:
 
     overview = (WEB_DATA / "overview.json").stat().st_size
     assert overview < 20_000, "overview.json should be a few KB, not a table"
+
+
+# ── freshness: nothing on the site may cite an older freeze (A6) ──────────────
+
+def test_every_exported_file_cites_the_newest_freeze() -> None:
+    newest = max(
+        int(p.stem.rsplit("_v", 1)[1])
+        for p in config.BENCHMARKS_DIR.glob("results_freeze_v*.json")
+    )
+    stale = {
+        p.name: _load(p.name).get("freeze")
+        for p in WEB_DATA.glob("*.json")
+        if _load(p.name).get("freeze") != f"v{newest}"
+    }
+    assert not stale, f"exported files cite an older freeze than v{newest}: {stale}"
+
+
+def test_no_exported_file_names_an_older_freeze_in_its_sources() -> None:
+    newest = export_web.FREEZE_FILE
+    for path in WEB_DATA.glob("*.json"):
+        source = _load(path.name).get("source")
+        sources = source if isinstance(source, list) else [source]
+        for s in sources:
+            if isinstance(s, str) and "results_freeze_v" in s:
+                assert s == newest, f"{path.name} cites {s}, newest is {newest}"
+
+
+# ── no placeholder text ever reaches a visitor (D1) ──────────────────────────
+
+_PLACEHOLDER = re.compile(r"(?<![A-Za-z0-9_])(nan|NaN|undefined|null|None)(?![A-Za-z0-9_])")
+
+
+def _strings(node):
+    if isinstance(node, str):
+        yield node
+    elif isinstance(node, dict):
+        for k, v in node.items():
+            yield from _strings(k)
+            yield from _strings(v)
+    elif isinstance(node, list):
+        for v in node:
+            yield from _strings(v)
+
+
+@pytest.mark.parametrize("name", [n for n in EXPECTED_FILES if n != "prompts.json"])
+def test_no_standalone_nan_or_placeholder_strings(name: str) -> None:
+    # prompts.json is the project's own prompt prose and may say "None" in an
+    # instruction to the model, so it is the one file not scanned for words.
+    bad = [s for s in _strings(_load(name)) if _PLACEHOLDER.search(s)]
+    assert not bad, f"{name} carries placeholder strings: {bad[:5]}"
+
+
+def test_prompts_file_has_no_nan_as_a_value() -> None:
+    bad = [s for s in _strings(_load("prompts.json")) if s.strip().lower() == "nan"]
+    assert not bad
+
+
+def test_alert_routes_are_names_not_nan() -> None:
+    for alert in _load("alerts_sample.json")["data"]["alerts"]:
+        assert " → " in alert["route"]
+        assert "nan" not in alert["route"].lower().split()
+
+
+def test_every_corridor_has_a_printable_route() -> None:
+    for c in _load("corridors.json")["data"]:
+        assert c["route"] and "nan" not in c["route"].lower().split()
+
+
+# ── agents: every card shows metric, n, interval and its trivial policy (D4) ─
+
+def test_every_agent_card_has_n_interval_and_baseline() -> None:
+    agents = _load("agents.json")["data"]["agents"]
+    assert {a["id"] for a in agents} == {"document", "order", "exception", "invoice", "assistant"}
+    for a in agents:
+        s = a["score"]
+        assert s["total"] > 0 and s["unit"], a["id"]
+        assert 0 <= s["ci_low"] <= s["rate"] <= s["ci_high"] <= 1, a["id"]
+        assert 0 <= a["baseline"]["value"] <= 1 and a["baseline"]["label"], a["id"]
+
+
+def test_orchestrator_card_is_the_100_lifecycle_run(frozen) -> None:
+    o = _load("agents.json")["data"]["orchestrator"]
+    assert o["cases"] == frozen["lifecycle_eval_scale_cases"] == 100
+    assert o["routed"]["successes"] == o["routed"]["total"] == 100
+    assert o["routed"]["rate"] == pytest.approx(frozen["lifecycle_eval_scale_routing"])
+    assert o["baseline"]["label"] and o["routed"]["ci_low"] < 1
+
+
+def test_invoice_card_states_the_sixty_invoice_history_not_20_of_20_alone() -> None:
+    inv = next(a for a in _load("agents.json")["data"]["agents"] if a["id"] == "invoice")
+    history = [r for r in inv["also"] if r.get("historical")]
+    assert history, "the 60-invoice seeded run must stay on the card, labelled historical"
+    text = " ".join(r["note"] for r in history if "note" in r)
+    assert "100.0%" in text and "82.2%" in text
+    assert inv["score"]["total"] == 200 and 0.85 < inv["score"]["ci_low"] < 0.86
+
+
+def test_assistant_route_accuracy_is_shown_both_ways_with_n_30() -> None:
+    a = next(a for a in _load("agents.json")["data"]["agents"] if a["id"] == "assistant")
+    assert a["score"]["total"] == 30 and a["score"]["rate"] == pytest.approx(0.9333, abs=1e-4)
+    no_model = next(r for r in a["also"] if "no model" in r["label"])
+    assert no_model["total"] == 30 and no_model["rate"] == pytest.approx(0.9, abs=1e-4)
+    ev = _load("assistant_eval.json")["data"]
+    assert ev["llm"]["questions"] == ev["no_llm"]["questions"] == 30
+    assert ev["llm"]["route_accuracy"] > ev["no_llm"]["route_accuracy"]
+
+
+def test_alert_page_data_explains_the_sample_and_names_the_full_count() -> None:
+    d = _load("alerts_sample.json")["data"]
+    assert d["is_replay"] is True
+    assert f"{d['run']['alerts']:,}" in d["sample_note"]
+    assert "sample" in d["sample_note"]
+    assert d["delivered_channels"], "the live Telegram/email delivery (D-071) must be recorded"
+
+
+def test_paper_data_is_complete_and_never_claims_a_preprint_that_does_not_exist() -> None:
+    p = _load("paper.json")["data"]
+    assert p["abstract"].strip() and p["bibtex"].startswith("@")
+    assert p["preprint_url"] is None or p["preprint_url"].startswith("http")
+    assert p["reproduce"]["command"] == "bash scripts/rebuild_all.sh"
+    assert p["abstract_is_placeholder"] == (not export_web.PAPER_ABSTRACT_PATH.exists())
+
+
+def test_every_figure_has_a_caption_for_its_alt_text() -> None:
+    figs = _load("figures.json")["data"]["figures"]
+    assert len(figs) >= 9
+    assert all(f["caption"] for f in figs)
