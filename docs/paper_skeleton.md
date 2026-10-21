@@ -1,3 +1,5 @@
+> **Historical.** This file predates the upgrade pass and the LaTeX manuscripts (`paper/`); its claims about the audit (273 confirmed bottlenecks) and the model margin (6.5%) were revised. See [`paper_draft.md`](paper_draft.md) for where the paper now lives.
+
 > **HISTORICAL planning document (written before WP-02, WP-10 and the upgrade work).** The numbers below are
 > what the evaluation said at the time; the current figures are in `benchmarks/final_tables.md`, `benchmarks/agent_evaluation.md`
 > and the LaTeX manuscripts under `paper/`.

@@ -2879,6 +2879,12 @@ bar. **No decision rule changes:** the paper's claim about the reported model re
 its day-block interval; this is the check on it. If the reported model fails to beat the bar in a majority
 of folds, the paper says so beside the headline.
 
+**Outcome (D-098, 2026-10-21).** `python -m src.ml.rolling_origin_zoo` (a few seconds, no Spark). The reported
+model beats the back-off bar in **4 of 4 folds**: fold MAE of the model against the bar was 34.0051 against 35.8746 (days 11-13); 28.3409 against 30.5641 (days 14-16); 28.5059 against 31.7161 (days 17-19); 29.2785 against 31.607 (days 20-22);
+the difference to the bar has mean -2.4079 and standard deviation 0.5698 over folds,
+the model's mean MAE is 30.0326 (sd 2.6797). The headline split's -2.74 is
+therefore not an outlier among folds. Each fold has three days of test legs, so no fold has an interval of its own.
+
 ## D-081 · Empirical-Bayes ranking and its stability across support floors — `DECIDED`
 **Post-v1.0 · Mounika · B4 · written before `src/ml/eb_ranking.py` is run**
 

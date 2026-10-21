@@ -449,6 +449,14 @@ ENTRIES: list[tuple[str, int, str, str, str, Callable[[], Any]]] = [
      "b3_audit_robust_1e6.json", lambda: _json("b3_audit_robust_1e6.json")["variants"]["bh_perm"]["significant_slower"]),
     ("audit_fine_p_below_five_pct", 10, "Corridors with permutation p below 0.05, 10^6 permutations", "corridors",
      "b3_audit_robust_1e6.json", lambda: _json("b3_audit_robust_1e6.json")["perm_p_below_0.05"]),
+    ("ro_zoo_delta_mean", 10, "Rolling origin: reported model minus bar, mean over folds", "min",
+     "b2_rolling_origin_zoo.json", lambda: _json("b2_rolling_origin_zoo.json")["summary"]["delta_vs_backoff"]["mean"]),
+    ("ro_zoo_delta_sd", 10, "Rolling origin: reported model minus bar, sd over folds", "min",
+     "b2_rolling_origin_zoo.json", lambda: _json("b2_rolling_origin_zoo.json")["summary"]["delta_vs_backoff"]["sd"]),
+    ("ro_zoo_beats_bar_folds", 10, "Rolling origin: folds in which the reported model beats the bar", "folds",
+     "b2_rolling_origin_zoo.json", lambda: _json("b2_rolling_origin_zoo.json")["summary"]["model_beats_backoff_in_folds"]),
+    ("ro_folds", 10, "Rolling-origin folds", "folds",
+     "b2_rolling_origin_zoo.json", lambda: _json("b2_rolling_origin_zoo.json")["summary"]["folds"]),
 ]
 
 

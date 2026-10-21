@@ -65,6 +65,7 @@ if [ "$QUICK" != "--quick" ]; then
   step "model zoo"          -m src.ml.model_zoo
   step "significance"       -m src.ml.significance
   step "rolling origin"     -m src.ml.rolling_origin
+  step "rolling origin zoo" -m src.ml.rolling_origin_zoo
   step "audit dependence"   -m src.ml.audit_data
   step "audit robust"       -m src.ml.audit_robust
   step "audit robust 1e6"   -m src.ml.audit_robust --permutations 1000000 --placebo 0 --suffix _1e6

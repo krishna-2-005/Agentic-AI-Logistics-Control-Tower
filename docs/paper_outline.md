@@ -1,3 +1,5 @@
+> **Historical.** This file predates the upgrade pass and the LaTeX manuscripts (`paper/`); its claims about the audit (273 confirmed bottlenecks) and the model margin (6.5%) were revised. See [`paper_draft.md`](paper_draft.md) for where the paper now lives.
+
 # Paper outline (G-09)
 
 **Owner: Lahari** (execution plan v3.1 W8 D3-D4, §4.1). Target: **ICCCI 2027, submission
@@ -92,7 +94,7 @@ Claim 8, figure 8, including the two unflattering readings: at this project's ow
 runtime is Spark's fixed cost, and 5× the cores bought 1.24× the speed on one disk.
 
 ### 9. Limitations and threats to validity
-One dataset, one country, one operator, 21 days. The support-threshold instability (claim 2)
+One dataset, one country, one operator, 22 calendar days. The support-threshold instability (claim 2)
 applies to our own top-20 list. The document and agent evaluations use synthetic corpora we
 generated, so they measure the pipeline, not the world. One local broker, not a cluster. OSRM is reported as
 context, never as a defeated competitor.
