@@ -2861,6 +2861,24 @@ before), 18 corridors below 0.01 and 82 below 0.05 (81 before). So the headline 
 resolution artefact: it holds at ten times the resolution. The paper says both facts: at 10^5 the
 strictest variant could not have rejected, and a ten-fold finer run changes nothing.
 
+## D-098 · Pre-registration: the same four rolling-origin folds for the reported single-node model — `DECIDED`
+**Post-v1.0 (upgrade B2/B6) · Mounika · written before the run, after the reported model was named**
+
+D-076 fixed four chronological folds and refit the two Spark configurations in each. When D-077 named a
+single-node LightGBM model as the reported one, the fold study did not cover it, which a reviewer would
+notice. This entry adds it on the same footing and adds nothing else.
+
+**Run.** `python -m src.ml.rolling_origin_zoo`. For each of the folds of D-076 (train through day 10, 13, 16,
+19; test days 11-13, 14-16, 17-19, 20-22; days are India-time calendar days, day 1 = 2018-09-12), the
+baselines are recomputed from that fold's training legs exactly as in `rolling_origin.py`, and LightGBM with
+L1 loss (200 trees, depth 6, learning rate **0.03, the value chosen on validation in D-077 and frozen**; no
+retuning in any fold) is fitted over the old median with the 38 v2 inputs, the reported model's setting.
+**Report** per fold the MAE of that model, of the back-off bar and of the old median, and the difference to
+the bar, and across folds their mean, standard deviation and the number of folds in which the model beats the
+bar. **No decision rule changes:** the paper's claim about the reported model rests on the headline split and
+its day-block interval; this is the check on it. If the reported model fails to beat the bar in a majority
+of folds, the paper says so beside the headline.
+
 ## D-081 · Empirical-Bayes ranking and its stability across support floors — `DECIDED`
 **Post-v1.0 · Mounika · B4 · written before `src/ml/eb_ranking.py` is run**
 
