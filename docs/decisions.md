@@ -2615,3 +2615,86 @@ result. If the reported model changes from v2, the stream, the numpy tree reader
 and the stream-equals-batch validation are re-run and must again be bit-identical; if that cannot
 be done in this pass, v2 stays served and the paper and README state which model is served and
 which is reported.
+
+## D-076 · Pre-registration: uncertainty for every model comparison, and a rolling-origin evaluation — `DECIDED`
+**Post-v1.0 (upgrade B2) · Mounika · written and committed before any interval or test was computed**
+
+*Status of knowledge when written:* the B1 back-off numbers and the v2 GBT's test MAE are known; no
+confidence interval, p-value or fold result exists yet. Nothing below was chosen after seeing one.
+
+**Quantity.** For model `f` and the bar `b` (D-075 rule 1), the per-leg difference
+`d_i = |y_i − f_i| − |y_i − b_i|`, with `y` the realised gap. Negative favours the model; the mean of
+`d` is the MAE difference.
+
+**Intervals (module `src/ml/significance.py`, output `b2_significance.json`).**
+1. *Paired bootstrap over legs,* 10,000 resamples, seed 20261021, 95% percentile interval. Reported,
+   but legs are not independent (shared trips, vehicles, days), so it is **not** the paper's interval.
+2. *Block bootstrap by calendar day (IST) of leg creation,* same resample count and seed: whole days
+   are resampled with replacement. **This is the paper's interval.** The test split spans only about
+   six calendar days, which makes this interval crude; the module also reports a **six-hour-block**
+   version as a sensitivity check, and the paper says how many blocks each rests on.
+3. *Wilcoxon signed-rank* on `d_i` (zero differences dropped), reported with the caveat that legs are
+   dependent, so its p-values are optimistic.
+4. *Diebold–Mariano* on `d_i` ordered by creation time, normal reference distribution, Bartlett-kernel
+   (Newey–West) long-run variance with bandwidth equal to the **median number of legs per day** (the
+   day-level dependence the plan names), and the conventional `floor(n^(1/3))` bandwidth as a second row.
+5. *Holm correction* across the 13 non-overall slices, separately for each test. A slice "wins with
+   interval excluding zero" if its block-bootstrap interval is entirely below zero; "wins after Holm"
+   if its Holm-adjusted block-bootstrap p-value is below 0.05.
+
+**Where applied.** Every model against the bar on: overall; cold legs (`corr_n_prior == 0`, as-of);
+warm legs; legs on corridors unseen in training; and each of the paper's slices (support, route type,
+distance band, departure hour; 14 including overall). Each model's own MAE also gets a block-bootstrap
+interval (for Table 1).
+
+**Rolling-origin evaluation (module `src/ml/rolling_origin.py`, output `b2_rolling_origin.csv`).**
+The 22 calendar days of leg creation (IST; day 1 = 2018-09-12) are cut into four chronological folds,
+fixed here: fold 1 trains on days 1–10 and tests on 11–13; fold 2 trains 1–13, tests 14–16; fold 3
+trains 1–16, tests 17–19; fold 4 trains 1–19, tests 20–22. In each fold the baselines are recomputed
+(as-of by construction; the distance-band cut points come from that fold's training legs) and the two
+residual GBT **configurations are refit with their hyperparameters frozen, no retuning**: v2 (over the
+old median, step 1.0) and v3 (over the back-off baseline, the step size D-075 chose). Report per-fold
+MAE and the per-fold difference to the bar, and their mean ± standard deviation over folds. A fold's
+training legs are those *created* before its test window, the same convention as the headline split;
+a leg created just before a window may finish inside it, so its label is not strictly known at the cut,
+which the paper states as a limit.
+
+**Decision rule.** Report every interval and every fold, whatever they show. "The model wins all
+fourteen slices" is replaced by "wins N of 14 with a block-bootstrap interval below zero, M after
+Holm", with N and M as the module computes them. If the model's advantage over the bar is not
+significant by the block interval, or loses in a fold, the paper says so in those words.
+
+## D-077 · Pre-registration: stronger single-node baselines, a feature-group ablation, and the reporting rule — `DECIDED`
+**Post-v1.0 (upgrade B6) · Mounika · written and committed before any of these models was fitted**
+
+**Why.** A single-node `HistGradientBoostingRegressor` (29.52 on test) beats the reported MLlib model
+(30.90), and the paper called it "not a candidate" without a reason. There was also no LightGBM or
+XGBoost. A reviewer will ask whether the headline model is simply the weak one.
+
+**Models (module `src/ml/model_zoo.py`, output `b6_model_zoo.json`).** All on the same split, the same
+residual target and the same 40 inputs as v3 (the 38 v2 inputs plus the baseline's level and prior-leg
+count): LightGBM with L1 loss; LightGBM with Huber loss (delta = the median absolute training
+residual, computed on the inner training legs); XGBoost with `reg:absoluteerror`; scikit-learn
+`HistGradientBoostingRegressor` with absolute loss; and a linear median (quantile 0.5) regression on
+standardised inputs. **Identical tuning budget:** each boosted model gets 200 trees, depth 6, and
+three learning rates {0.03, 0.1, 0.3} selected on the validation cut only (D-049's protocol: fit on
+the inner training legs, score on the validation cut, refit the chosen setting on the full training
+split, score once on test). The linear model has no hyperparameter. A secondary table repeats the
+four boosted models over the *old* median with the 38 v2 inputs, so the 29.52 question is settled on
+equal footing as well as on the new one.
+
+**Reporting rule (supersedes the special case in D-075 rule 3, which assumed only v2 and v3).** The
+paper's **reported model is the candidate with the lowest validation MAE regardless of library**:
+Spark v2, Spark v3 or any model above. Its test MAE is reported whatever it is. If the reported
+model is single-node, the paper says so, says what Spark serves (v2 or v3, the better of the two
+by validation), and does not claim they are the same model. No model is labelled "not a candidate":
+anything left out of the headline is listed in Table 1 with its validation and test MAE.
+
+**Feature-group ablation (same module, `b6_feature_ablation.json`).** With the best boosted
+single-node model's chosen settings, refit with one group removed at a time and report the change in
+test MAE with a block-bootstrap interval (D-076) against the full model. Groups: *plan and route*
+(`planned_min`, `is_ftl`); *distance* (`planned_km`); *time* (`created_hour`, `created_dayofweek`,
+`created_is_weekend`); *corridor history* (the 12 `corr_*` v1 inputs and the corridor cold flag);
+*hub history* (the 12 `src_*`/`dst_*` v1 inputs and their cold flags); *v2 dispersion and dwell* (the
+eight v2 columns and their three missing-value flags); *baseline descriptors* (level, prior-leg count).
+A group whose removal does not move test MAE by an interval excluding zero is reported as such.
