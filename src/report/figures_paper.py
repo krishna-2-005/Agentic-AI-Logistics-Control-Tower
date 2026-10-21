@@ -1,0 +1,112 @@
+"""Figures that only the upgraded manuscripts use: forest plot, rolling-origin folds, architecture.
+
+    python -m src.report.figures_paper
+
+The forest plot reads `b2_significance.json` (day-block 95% intervals of the MAE difference to the bar, by
+slice), the fold plot reads `b2_rolling_origin.csv`, and the architecture drawing is boxes and arrows with no
+data behind it. Style comes from `src.report.style`; each figure is written as vector PDF and PNG.
+"""
+
+from __future__ import annotations
+
+import json
+
+import matplotlib.pyplot as plt
+import pandas as pd
+from matplotlib.patches import FancyArrowPatch, FancyBboxPatch
+
+from src.common import config
+from src.report import style
+
+RAW = config.BENCHMARKS_RAW_DIR
+FOREST_MODELS = (("lightgbm_l1_oldbase", "Reported (LightGBM, L1)", style.BLUE),
+                 ("v2_gbt", "Served (Spark MLlib)", style.ORANGE))
+HEADLINE = ("overall", "cold_asof", "warm_asof", "unseen_in_train")
+NICE = {"overall": "all test legs", "cold_asof": "cold at query time", "warm_asof": "warm at query time",
+        "unseen_in_train": "corridor unseen in training"}
+
+
+def _label(key: str) -> str:
+    if key in NICE:
+        return NICE[key]
+    group, _, value = key.partition(": ")
+    return f"{group.replace('_', ' ')}: {value}"
+
+
+def forest() -> plt.Figure:
+    sig = json.loads((RAW / "b2_significance.json").read_text(encoding="utf-8"))["models"]
+    keys = [k for k in sig["v2_gbt"]["vs_bar"] if k not in HEADLINE[1:] and not k.endswith("unseen")]
+    fig, ax = plt.subplots(figsize=(style.COL_WIDTH_IN * 1.15, 0.26 * len(keys) + 0.9))
+    for offset, (model, name, colour) in zip((-0.16, 0.16), FOREST_MODELS, strict=True):
+        for row, key in enumerate(keys):
+            cell = sig[model]["vs_bar"][key]
+            lo, hi = cell["ci_block_day"]
+            ax.plot([lo, hi], [row + offset] * 2, color=colour, lw=1.4)
+            ax.plot(cell["delta_mae"], row + offset, "o", color=colour, ms=3.5, label=name if row == 0 else None)
+    ax.axvline(0, color=style.INK, lw=0.8)
+    ax.set_yticks(range(len(keys)), [_label(k) for k in keys])
+    ax.invert_yaxis()
+    ax.set_xlabel("MAE minus back-off bar (min); left of 0 = model better")
+    ax.legend(frameon=False, loc="lower center", bbox_to_anchor=(0.4, 1.0), ncol=2, fontsize=7)
+    fig.tight_layout()
+    return fig
+
+
+def folds() -> plt.Figure:
+    table = pd.read_csv(RAW / "b2_rolling_origin.csv")
+    fig, ax = plt.subplots(figsize=(style.COL_WIDTH_IN, 2.3))
+    x = table["fold"]
+    for column, label, colour, mark in (("mae_backoff", "back-off bar", style.GREY, "s"),
+                                        ("mae_v2_gbt", "Spark v2", style.ORANGE, "o"),
+                                        ("mae_v3_gbt", "Spark v3", style.BLUE, "^")):
+        ax.plot(x, table[column], marker=mark, color=colour, label=label, lw=1.3, ms=4)
+    ax.set_xticks(x, [f"{a}" for a in table["test_days"]])
+    ax.set_xlabel("test days (train on all earlier days)")
+    ax.set_ylabel("MAE (min)")
+    ax.legend(frameon=False, fontsize=7)
+    fig.tight_layout()
+    return fig
+
+
+def architecture() -> plt.Figure:
+    fig, ax = plt.subplots(figsize=(style.FULL_WIDTH_IN, 2.5))
+    ax.set_xlim(0, 100)
+    ax.set_ylim(0, 36)
+    ax.axis("off")
+
+    def box(x, y, w, h, text, colour):
+        ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle="round,pad=0.4,rounding_size=1.2", fc=colour, ec=style.INK, lw=0.8, alpha=0.9))
+        ax.text(x + w / 2, y + h / 2, text, ha="center", va="center", fontsize=6.2, color="black")
+
+    def arrow(x0, y0, x1, y1):
+        ax.add_patch(FancyArrowPatch((x0, y0), (x1, y1), arrowstyle="-|>", mutation_scale=8, lw=0.9, color=style.INK))
+
+    box(1, 24, 17, 9, "Public trip records\n144,867 scan rows", "#dfe8f5")
+    box(24, 24, 17, 9, "Spark: clean, legs,\nas-of features", "#dfe8f5")
+    box(47, 24, 19, 9, "Corridor audit\nWelch + BH/BY, permutation,\nempirical Bayes", "#fbe3c8")
+    box(72, 24, 26, 9, "Batch models: median, back-off,\nSpark GBT, LightGBM zoo\n(intervals, rolling origin)", "#fbe3c8")
+    box(24, 6, 17, 9, "Kafka replay of\nqueries and facts", "#dcefe9")
+    box(47, 6, 19, 9, "Structured Streaming:\nevent-time state, same\nfeatures as batch", "#dcefe9")
+    box(72, 6, 26, 9, "Agents: code decides, model\nwords it; alert, order, invoice,\nassistant; public API + site", "#efe6c8")
+    arrow(18.5, 28.5, 23.5, 28.5)
+    arrow(41.5, 28.5, 46.5, 28.5)
+    arrow(66.5, 28.5, 71.5, 28.5)
+    arrow(32.5, 23.5, 32.5, 15.5)
+    arrow(41.5, 10.5, 46.5, 10.5)
+    arrow(66.5, 10.5, 71.5, 10.5)
+    arrow(85, 23.5, 85, 15.5)
+    fig.tight_layout()
+    return fig
+
+
+def main() -> int:
+    style.apply_style()
+    style.save(forest(), "fig_forest_delta_mae")
+    style.save(architecture(), "fig_architecture")
+    if (RAW / "b2_rolling_origin.csv").exists():
+        style.save(folds(), "fig_rolling_origin")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
