@@ -2,7 +2,7 @@
 
 A route planner's estimate is a plan, and a plan that is consistently optimistic is still useful if the operator knows \emph{where} it is optimistic. The public trip records of Delhivery, an Indian road-freight carrier\footnote{Kaggle dataset ``Delhivery logistics dataset'' (user \texttt{devarajv88}); licence terms are in \texttt{DATA\_LICENSE.md} of the repository. We could not re-open the dataset page on the day of writing, so it is cited by this footnote and not in the bibliography.}, carry for every leg both a planned time recorded from OSRM~\cite{luxen2011real} and the realised time, so that question can be put to operational data directly rather than to a simulation.
 
-The starting observation is one-sided (Fig.~\ref{fig:premise}). Across \fzLegsTotal{} legs, 98.3\% exceed the recorded estimate and the median leg takes \fzMedianGapRatioDpOne{} times it. Noise would centre on one, so the error is systematic. A systematic error is not automatically \emph{localised}, though: it could be spread evenly, in which case a single correction factor removes it. This paper asks where it concentrates, how confidently that can be said, and what a model can do about it, and it reports the answers at the strength the data support rather than the strength a first analysis gave.
+The starting observation is one-sided\ifjournal{} (Fig.~\ref{fig:premise})\fi. Across \fzLegsTotal{} legs, 98.3\% exceed the recorded estimate and the median leg takes \fzMedianGapRatioDpOne{} times it. Noise would centre on one, so the error is systematic. A systematic error is not automatically \emph{localised}, though: it could be spread evenly, in which case a single correction factor removes it. This paper asks where it concentrates, how confidently that can be said, and what a model can do about it, and it reports the answers at the strength the data support rather than the strength a first analysis gave.
 
 That last clause matters because a first analysis of these data was more flattering than the one reported here. A Welch test with false-discovery control found \fzBottlenecks{} corridors significantly slower than the network; a test that respects the dependence between legs of one recurring service finds that the same procedure on meaningless corridor labels returns about \fzAuditPlaceboDiscoveriesDpOne{} ``bottlenecks'' (Section~\ref{sec:audit}). A residual model first beat its baseline by 6.5\%; against a baseline without an unfair cold-start fallback the margin is 4.6\% for the model that is served, and the validation cut did not favour the model at all (Section~\ref{sec:prediction}). We make five contributions:
 \begin{enumerate}
@@ -12,11 +12,13 @@ That last clause matters because a first analysis of these data was more flatter
 \item \textbf{A residual model over a hierarchical back-off baseline, with intervals.} Hard back-off beats the old median, becomes the bar, and the reported model beats it by \fzReportedVsBarDeltaDpTwo{} minutes (day-block 95\% interval [\fzReportedVsBarCiLowDpTwo{}, \fzReportedVsBarCiHighDpTwo{}]) with all zSlicesTotal{} slices of the slice table won. The gain is on corridors without history.
 \item \textbf{Two evaluation pitfalls and what they teach}: an optimiser default that disabled the loss the model was chosen for, and a replay that scored early events with later history (Section~\ref{sec:pitfalls}).
 \end{enumerate}
-We do not claim to beat the planner: the OSRM estimate has no access to corridor history, and a model that does is not a fair comparison. OSRM is reported as context throughout.
+We do not claim to beat the planner: the OSRM estimate has no access to corridor history, and a model that does is not a fair comparison. OSRM is reported as context throughout. The batch analyses sit inside a streaming serving path and a measured agent layer, which the journal version describes; both evaluation pitfalls arose there, and the agents' data are synthetic.
 
+\ifjournal
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.88\columnwidth]{fig1_gap_ratio_distribution.pdf}
 \caption{Distribution of realised over recorded planned time across \fzLegsTotal{} legs (source: \texttt{benchmarks/raw/w1\_*}). The mass sits well to the right of 1.0: 98.3\% of legs run over the estimate and the median ratio is \fzMedianGapRatioDpOne{}.}
 \label{fig:premise}
 \end{figure}
+\fi

@@ -7,8 +7,9 @@ t_c=\frac{\bar r_c-\bar r_{-c}}{\sqrt{s_c^2/n_c+s_{-c}^2/n_{-c}}},
 \end{equation}
 where the comparison group's sums come from subtracting the corridor's own from the network totals, so all \fzCorridorsTested{} tests need one pass over the data. The $p$-values are corrected for $m=\fzCorridorsTested{}$ tests by the Benjamini--Hochberg step-up procedure at level 0.05~\cite{benjamini1995controlling}, which controls the false discovery rate under independence or positive dependence, or by the Benjamini--Yekutieli procedure~\cite{benjamini2001control}, which is valid under arbitrary dependence at the price of the factor $\sum_{k\le m}1/k\approx 7.6$.
 
-\paragraph{The independence assumption fails, and by how much.} Welch's test treats legs as independent. Before choosing a remedy we measured the dependence (Table~\ref{tab:dependence}). Trips do not cluster a corridor's legs, because no trip visits a corridor twice, and the creation day is almost irrelevant. What clusters is the recurring \emph{service}: the same \texttt{route\_schedule\_uuid} repeats, \fzDepSingleServiceCorridors{} of the \fzCorridorsTested{} tested corridors run under exactly one service, and legs of one (corridor, service) cell are correlated (intraclass correlation \fzDepIccServiceCellDpTwo{}), giving a design effect of \fzDepDesignEffectMedianDpTwo{} at the median corridor: its 15 legs carry the information of about 7 independent ones. For those corridors a corridor effect and a service effect cannot be told apart.
+\paragraph{The independence assumption fails, and by how much.} Welch's test treats legs as independent. Before choosing a remedy we measured the dependence (the intraclass correlations are \ifjournal in Table~\ref{tab:dependence}\else 0.07 for a trip, under 0.01 for a day and \fzDepIccServiceCellDpTwo{} for a (corridor, service) cell\fi). Trips do not cluster a corridor's legs, because no trip visits a corridor twice, and the creation day is almost irrelevant. What clusters is the recurring \emph{service}: the same \texttt{route\_schedule\_uuid} repeats, \fzDepSingleServiceCorridors{} of the \fzCorridorsTested{} tested corridors run under exactly one service, and legs of one (corridor, service) cell are correlated (intraclass correlation \fzDepIccServiceCellDpTwo{}), giving a design effect of \fzDepDesignEffectMedianDpTwo{} at the median corridor: its 15 legs carry the information of about 7 independent ones. For those corridors a corridor effect and a service effect cannot be told apart.
 
+\ifjournal
 \begin{table}[t]
 \caption{Dependence among the legs of tested corridors (source: \texttt{b3\_dependence\_diagnostics.json}).}
 \label{tab:dependence}
@@ -23,6 +24,7 @@ Creation day & \fzDepIccDayDpTwo{} \\
 \bottomrule
 \end{tabular}
 \end{table}
+\fi
 
 \paragraph{Cell permutation test.} The exchangeable unit is therefore the (corridor, service) cell. Let $\bar y_b$ and $m_b$ be a cell's mean log ratio and leg count. Cells are stratified by size (1 to 8 exactly, then 9--11, 12--15, 16--22, 23 and over) and one permutation shuffles the cell means among cells of the same stratum, each position keeping its own size and corridor. The permuted corridor statistic is the corridor's weighted mean of permuted cell means minus the mean of the rest, and the $p$-value is two-sided,
 $p_c=(1+\#\{|D^{*}_c|\ge|D_c|\})/(B+1)$, with $B=100{,}000$ permutations~\cite{phipson2010permutation}. We report four variants on the same corridors: Welch or permutation $p$-values, each under BH or BY. A rule fixed in advance (decision D-080) names the \emph{headline} as the valid variant with the fewest significant slower corridors. We also measure the size of the standard test with a placebo: 200 datasets in which cell means are permuted among cells, destroying any corridor effect while keeping the cluster structure.
@@ -57,7 +59,7 @@ Pre-registered hypothesis: shrinkage removes the floor dependence. \textbf{It do
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{b4_eb_stability_heatmap.pdf}
+\includegraphics[width=0.85\columnwidth]{b4_eb_stability_heatmap.pdf}
 \caption{Top-20 overlap between support floors for the raw and the empirical-Bayes rankings (source: \texttt{b4\_eb\_ranking.json}). Neither ranking is stable across floors; the empirical-Bayes one is marginally less unstable.}
 \label{fig:eb}
 \end{figure}

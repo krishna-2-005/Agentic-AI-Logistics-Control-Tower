@@ -457,6 +457,14 @@ ENTRIES: list[tuple[str, int, str, str, str, Callable[[], Any]]] = [
      "b2_rolling_origin_zoo.json", lambda: _json("b2_rolling_origin_zoo.json")["summary"]["model_beats_backoff_in_folds"]),
     ("ro_folds", 10, "Rolling-origin folds", "folds",
      "b2_rolling_origin_zoo.json", lambda: _json("b2_rolling_origin_zoo.json")["summary"]["folds"]),
+    ("reported_wins_after_holm", 10, "Comparisons the reported model wins after Holm correction", "comparisons",
+     "b2_significance.json", lambda: _json("b2_significance.json")["models"]["lightgbm_l1_oldbase"]["summary"]["wins_after_holm_block"]),
+    ("served_wins_after_holm", 10, "Comparisons the served model wins after Holm correction", "comparisons",
+     "b2_significance.json", lambda: _json("b2_significance.json")["models"]["v2_gbt"]["summary"]["wins_after_holm_block"]),
+    ("served_wins_unadjusted", 10, "Comparisons the served model wins by the day-block interval, unadjusted", "comparisons",
+     "b2_significance.json", lambda: _json("b2_significance.json")["models"]["v2_gbt"]["summary"]["wins_block_ci_below_zero"]),
+    ("comparisons_total", 10, "Slice comparisons including the overall one", "comparisons",
+     "b2_significance.json", lambda: _json("b2_significance.json")["models"]["v2_gbt"]["summary"]["slices_total_including_overall"]),
 ]
 
 

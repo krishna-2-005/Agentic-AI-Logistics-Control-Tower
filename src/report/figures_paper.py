@@ -36,7 +36,7 @@ def _label(key: str) -> str:
 def forest() -> plt.Figure:
     sig = json.loads((RAW / "b2_significance.json").read_text(encoding="utf-8"))["models"]
     keys = [k for k in sig["v2_gbt"]["vs_bar"] if k not in HEADLINE[1:] and not k.endswith("unseen")]
-    fig, ax = plt.subplots(figsize=(style.COL_WIDTH_IN * 1.15, 0.26 * len(keys) + 0.9))
+    fig, ax = plt.subplots(figsize=(style.COL_WIDTH_IN * 1.15, 0.2 * len(keys) + 0.8))
     for offset, (model, name, colour) in zip((-0.16, 0.16), FOREST_MODELS, strict=True):
         for row, key in enumerate(keys):
             cell = sig[model]["vs_bar"][key]
@@ -53,14 +53,17 @@ def forest() -> plt.Figure:
 
 
 def folds() -> plt.Figure:
-    table = pd.read_csv(RAW / "b2_rolling_origin.csv")
+    """MAE by fold: the bar, the reported single-node model and, if its folds have run, the two Spark models."""
+    zoo = pd.read_csv(RAW / "b2_rolling_origin_zoo.csv")
     fig, ax = plt.subplots(figsize=(style.COL_WIDTH_IN, 2.3))
-    x = table["fold"]
-    for column, label, colour, mark in (("mae_backoff", "back-off bar", style.GREY, "s"),
-                                        ("mae_v2_gbt", "Spark v2", style.ORANGE, "o"),
-                                        ("mae_v3_gbt", "Spark v3", style.BLUE, "^")):
-        ax.plot(x, table[column], marker=mark, color=colour, label=label, lw=1.3, ms=4)
-    ax.set_xticks(x, [f"{a}" for a in table["test_days"]])
+    x = zoo["fold"]
+    ax.plot(x, zoo["mae_backoff"], marker="s", color=style.GREY, label="back-off bar", lw=1.3, ms=4)
+    ax.plot(x, zoo["mae_model"], marker="o", color=style.BLUE, label="reported (LightGBM)", lw=1.3, ms=4)
+    spark = RAW / "b2_rolling_origin.csv"
+    if spark.exists():
+        s = pd.read_csv(spark)
+        ax.plot(s["fold"], s["mae_v2_gbt"], marker="^", color=style.ORANGE, label="served (Spark)", lw=1.3, ms=4)
+    ax.set_xticks(x, [str(a) for a in zoo["test_days"]])
     ax.set_xlabel("test days (train on all earlier days)")
     ax.set_ylabel("MAE (min)")
     ax.legend(frameon=False, fontsize=7)
@@ -103,7 +106,7 @@ def main() -> int:
     style.apply_style()
     style.save(forest(), "fig_forest_delta_mae")
     style.save(architecture(), "fig_architecture")
-    if (RAW / "b2_rolling_origin.csv").exists():
+    if (RAW / "b2_rolling_origin_zoo.csv").exists():
         style.save(folds(), "fig_rolling_origin")
     return 0
 
