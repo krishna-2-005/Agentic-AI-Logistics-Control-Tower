@@ -2616,6 +2616,20 @@ and the stream-equals-batch validation are re-run and must again be bit-identica
 be done in this pass, v2 stays served and the paper and README state which model is served and
 which is reported.
 
+**Outcome (written after the runs, 2026-10-21).** Rule 1: on the 5,274 test legs the old median scores
+33.04 min, hard back-off 32.39 and shrunken back-off 32.92 (k = 1 chosen on validation; every larger k is
+worse, 31.41 rising to 69.29 at k = 100). Hard back-off is the bar, and it beats the old median, so the
+old median's 0.0-minute cold fallback was an unfair advantage to the model. The model's margin over the
+bar falls from 2.14 min (6.5%) to 1.49 min (4.6%). Where it sits: 204 cold legs (no prior leg on the
+corridor as of the query) score 132.97 under back-off against 100.16 for the v2 model, and warm legs
+28.35 against 28.12, so almost the whole gain is on cold legs. Rule 2: back-off has the lower validation
+MAE of the three (29.36), so it is the baseline under v3; step 1.0 won on validation (31.14 against 31.56
+and 32.52). Rule 3: validation MAE is 30.17 for v2 and 31.14 for v3, so **v2 stays the reported model**
+(v3 scores 31.40 on test, worse than v2's 30.90). Notably the back-off bar itself scores 29.36 on the
+validation cut, lower than either model, so on that cut the model does not beat the bar; the test split is
+where it does. The paper says both. Rule 4 (interval) is decided by D-076; the served model is
+unchanged because the reported model is unchanged, so the serving chain needs no re-validation.
+
 ## D-076 · Pre-registration: uncertainty for every model comparison, and a rolling-origin evaluation — `DECIDED`
 **Post-v1.0 (upgrade B2) · Mounika · written and committed before any interval or test was computed**
 
