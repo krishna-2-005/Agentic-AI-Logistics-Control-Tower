@@ -55,7 +55,7 @@ export function AgentConsole({
             className={cx(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               tab === v
-                ? "bg-[var(--accent)] text-white shadow-sm"
+                ? "bg-[var(--accent-bg)] text-white shadow-sm"
                 : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
             )}
           >

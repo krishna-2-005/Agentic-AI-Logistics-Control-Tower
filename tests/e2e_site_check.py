@@ -24,7 +24,7 @@ import sys
 import threading
 from pathlib import Path
 
-from playwright.async_api import Page, async_playwright
+from playwright.async_api import async_playwright
 
 OUT = Path(__file__).resolve().parents[1] / "web" / "out"
 PAGES = [

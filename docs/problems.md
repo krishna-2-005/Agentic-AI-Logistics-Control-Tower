@@ -1459,6 +1459,30 @@ aw\delhivery_data.csv -> download it — see
 - **What it cost.** Nothing was published, but only by luck, and that is the lesson. The
   licence check belongs in the script that publishes, not in someone remembering to look.
 
+### P-78 · The site said "20 of 20" and 0.9 while the README said 82.2% and 93.3%
+**Post-v1.0 (website phase) · Mounika · resolved**
+
+- **Symptom.** Invoice card "20 / 20"; assistant route 0.9; `nan` in two alert routes;
+  "5,63,53,613" rows; the Week 4 random forest labelled Champion.
+- **Cause.** `export_web.py` filled missing keys with typed defaults, read the first freeze it was
+  written against (v3), and built alert routes from raw CSV columns that are blank for 60 corridors.
+- **Fix.** D-090 to D-092, plus tests that scan every exported string and check the freeze version.
+
+### P-79 · The pages overflowed a 375 px phone
+**Post-v1.0 (website phase) · Mounika · resolved**
+
+- **Symptom.** 47 px sideways scroll on Home, 21 px on Predict.
+- **Cause.** Grid items defaulted to `min-width: auto`, so a long unbreakable label widened the track.
+- **Fix.** `.grid > * { min-width: 0 }`; `tests/e2e_site_check.py` now fails on any such scroll.
+
+### P-80 · The map and charts blocked a phone for seconds
+**Post-v1.0 (website phase) · Mounika · partly resolved**
+
+- **Symptom.** Mobile Lighthouse performance 27-40 on the map pages, 8 s total blocking time.
+- **Cause.** echarts, MapLibre and deck.gl loaded on every page start.
+- **Fix.** `Lazy` mounts them near the viewport. Home, Network and Assistant mobile scores are
+  still below 90 (see `docs/deploy_web.md`).
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27

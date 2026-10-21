@@ -78,7 +78,7 @@ function Segmented<T extends string | number>({
           className={cx(
             "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
             value === v
-              ? "bg-[var(--accent)] text-white shadow-sm"
+              ? "bg-[var(--accent-bg)] text-white shadow-sm"
               : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
           )}
         >

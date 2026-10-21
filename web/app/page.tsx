@@ -60,7 +60,7 @@ export default function HomePage() {
         <div className="mt-7 flex flex-wrap gap-3">
           <Link
             href="/network/"
-            className="rounded-lg bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
+            className="rounded-lg bg-[var(--accent-bg)] px-5 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90"
           >
             Open the map
           </Link>

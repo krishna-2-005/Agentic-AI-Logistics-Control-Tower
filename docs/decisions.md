@@ -2554,3 +2554,49 @@ Text that described the AWS phase as upcoming (`docs/cost.md`, `docs/RELEASE_v1.
 `docs/deploy_dashboard.md`, a docstring) now says it was dropped. **Spend to date and planned:
 $0.**
 
+## D-090 · One project name on the site, and the export reads the newest freeze — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+1. The browser title, the header and the footer all use the full name, "Agentic AI Logistics
+   Control Tower", from one constant (`web/lib/site.ts`). The old header said "Control Tower" and
+   the title template said "· Control Tower"; a visitor saw three spellings.
+2. `src.report.export_web` picks the highest `benchmarks/results_freeze_v<N>.json` by number.
+   No version is typed anywhere, so a v5 is picked up by re-running the export.
+3. A missing freeze key or benchmark field raises. Every `g('key', default)` and `.get(key, default)`
+   that supplied a number is gone (removed: `assistant_route_accuracy` 0.9, `order_eval_run` 50,
+   `order_eval_invented` 0, `lifecycle_cases/booked/ticketed` 10/5/2, and the overview defaults for
+   legs, corridors, tested, bottlenecks, faster, median ratio).
+
+## D-091 · Agent cards show metric, n, Wilson interval and trivial policy — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+Every card leads with the strongest evidence, not the friendliest number: Order Entry the
+held-out first run (170/200), Invoice Auditor the stratified 200 (180/200) with the 60-invoice seeded
+run (precision 100%, recall 82.2%) and the 20-invoice development run kept as labelled history,
+never "20 of 20" alone, and the Assistant route accuracy both ways on the same 30 questions
+(93.3% model-phrased, `w7_assistant_run_llm.json`; 90.0% rules only). Intervals are recomputed
+from counts with `src.ml.stats.wilson`, and the export raises if counts disagree with the freeze by
+more than 0.0006. The orchestrator card is the 100-lifecycle run. The B7 ablation panel and the B3 `robust`
+and B4 `EB rank` corridor columns render only when their result files exist.
+
+## D-092 · The alert page is a replay, and says what the table is — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+The page is titled "Alert replay". The table is the 60 worst corridors as examples, not the
+1,347 alerts the run raised, and the page says so. It also states D-071: three alerts per channel
+reached a real Telegram chat and mailbox, receipts kept with identifiers masked. No AWS (D-074).
+
+## D-093 · Cold start is a state, not an error — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+All four live surfaces wait up to 90 s (the keep-alive workflow's own limit), treat 502/503/504 as
+"still waking" and retry, show "Waking the free server (up to ~1 min)" after 3 s, and end in a
+notice with a Try again button, never a blank panel.
+
+## D-094 · Quality bar: what was fixed and what is recorded, not fixed — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+Charts and the hero map load when scrolled near (first-load JS 302 kB to 110 kB). Accessibility
+reached 96-100 on every page (contrast tokens raised, form labels). Mobile-throttled performance
+on the map pages stays below 90 and is recorded in `docs/deploy_web.md`; shipping less map was
+judged worse than the number.

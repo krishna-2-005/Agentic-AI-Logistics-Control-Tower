@@ -173,7 +173,7 @@ export function AssistantChat() {
           <button
             onClick={() => ask(input)}
             disabled={!API_CONFIGURED || !input.trim()}
-            className="rounded-lg bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
+            className="rounded-lg bg-[var(--accent-bg)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-40"
           >
             Ask
           </button>
