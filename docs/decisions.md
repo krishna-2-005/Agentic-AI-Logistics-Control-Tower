@@ -2599,3 +2599,79 @@ earliest legs by creation time, 1,290 of them corridor-cold, so this is the hard
 the model and not a typical day. I had read the counts (1,007 / 1,720 and 1,082 / 2,000)
 before writing this entry; the test choice follows from the sampling structure, not from the
 outcome.
+
+## D-086 · The deterministic-core vs LLM-decides ablation, pre-registered — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-041, D-028, D-043**
+
+D-041 says the agents decide with arithmetic and the model only writes the sentence. Nothing
+in the project has tested that position against the obvious alternative: let a language model
+make the decision. This entry fixes the experiment before any model call is made for it.
+
+**Agents and sets (existing sets, not new ones).**
+
+| agent | set | full size | LLM subset | stratified by |
+|---|---|---|---|---|
+| order entry | `w9_order_eval_set.json` | 200 emails, 20 templates | 40 | 2 per template |
+| invoice audit | `w9_invoice_eval_set.json` | 200 invoices, 10 kinds | 40 | 4 per kind |
+| exception severity | `w6_exception_eval_cases.csv` (superseded end-of-data replay alerts; only the decision rule is compared, so the history leak is common to both arms) | 1,347 alerts | 40 | 10 per deterministic grade |
+
+The deterministic arm is run on the full set and on the same subset, and the comparison uses
+the subset. Subsets are drawn with seed 8602, then ordered round-robin across strata, so any
+prefix is balanced. If provider quota binds, cases are completed in that order and the
+completed prefix is reported with its n; no case is half-run.
+
+**The LLM-decides variant.** The model receives exactly the inputs the code receives, plus
+the policy written out in prose (the rate card, the other-charge share, the tolerance, the
+severity cut-offs, the ask/file rules). The prose is written independently of the code and is
+versioned in `src/agents/prompts/<agent>/llm_verdict_v1.md`. Giving the policy to the model
+means the ablation isolates *who executes the policy*, not who knows it. It must answer in a
+strict JSON schema: order entry `file | ask | reject` plus fields; exception severity
+`low | medium | high | critical`; invoice `approve | dispute` plus a reason code. Parsing is
+strict (one JSON object, a closed vocabulary); anything else is an error and is counted, not
+repaired. An `ask` maps to the code's `clarify`; a `reject` is scored as wrong because the
+sets contain no non-orders. Invoice duplicate checking uses a ledger of 20 prior invoice
+numbers (the duplicate's source when one exists plus fixed decoys), identical for both arms,
+because the full history would not fit the provider's token limit.
+
+**Model.** The deployed prose model is a Gemini model with a free-tier cap of about 20 calls a
+day (D-032); this design needs about 900. The LLM arm therefore uses an open model through
+Groq's free tier: `openai/gpt-oss-120b`, the largest open model the key lists (the other
+models listed were gpt-oss-20b, qwen3.8-27b and allam-2-7b; no Llama model is available).
+Reasoning effort `low`, completion cap 600 tokens. **It is not the model that writes the
+project's prose**, and the paper must say so. A Gemini subset (order entry only, temperature 0,
+the first 20 subset cases) is attempted only if its daily cap allows, and reported separately,
+never merged.
+
+**Runs.** Per case: 5 calls at temperature 0.7 (a stochastic setting; the code's own default
+is 0.0, which would make "5 runs" one run repeated), plus 2 calls at temperature 0 (the
+determinism check). Every response is cached on disk by (agent, case, run, temperature,
+prompt hash, model), so a rerun costs nothing. A token, latency and call ledger is written.
+Rate limits are obeyed with backoff, never worked around.
+
+**Metrics, each with a Wilson 95% interval where it is a proportion.** Order entry: accuracy
+as `order_eval_scale` scores it (action, fields, and the field asked about), the invented-value
+rate (an order filed with a field the case never stated, or a centre code that does not appear
+verbatim in the email), clarification recall. Invoice: verdict accuracy, dispute recall,
+false-dispute count, right reason code. Exception: exact agreement with the code's grade,
+agreement within one grade, and the area under the ROC curve of grade against the leg really
+being late (reported for both arms, wide interval at this n). All agents: unanimity across the
+5 sampled runs, Fleiss' kappa across them, share of cases whose two temperature-0 verdicts
+match, parse-error count, latency, tokens. Cost is $0 on the free tier; a paid-equivalent
+cost per 1,000 verdicts is computed from the provider's published price and labelled an
+estimate.
+
+**Decision rule.** Report whatever happens. Accuracy is compared on the same cases: the
+difference LLM minus deterministic, per-run pooled, with a case-level bootstrap interval. If
+the LLM-decides arm's accuracy is greater than or equal to the deterministic arm's, the paper
+says so. If the interval contains 0 the paper says the arms are not distinguishable at this n.
+The case for deterministic verdicts is then made, or not made, on reproducibility and cost
+alone, and only if the numbers show a difference there.
+
+**Harder sets, held out.** The existing order set has contradiction, two-consignment,
+pounds-vs-kg, Hinglish and city-only cases but no missing-unit, wrong-centre-code or
+second Hinglish-style stress, and the invoice set has no case at the 15% tolerance edge on
+either side. New small sets (`b7_order_hard_set.json`, `b7_invoice_boundary_set.json`) fill
+only those gaps. They are written by code that shares nothing with the agents' rules (D-028),
+are still synthetic, and are scored once on first run: deterministic arm on all cases, LLM arm
+once at temperature 0 on the same cases. Nothing is tuned against them; if a rule is fixed
+afterwards both numbers are reported.
