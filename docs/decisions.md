@@ -2947,3 +2947,65 @@ recurring services run in both parts (D-083), so this shows the corridors' patte
 not that each is a distinct finding; and it is a statement about 23 dates in one season, not
 about other months. It does not contradict D-080: persistence is a different question from
 whether a single window's test survives a cluster-aware correction.
+
+
+## D-095 · Venue shortlist: ECML PKDD 2027 Applied Data Science track and the Journal of Big Data are recommended; the owner decides — `DECIDED`
+**Post-v1.0 · Mounika · upgrade work order item C2; revisits D-052**
+
+`docs/venues.md` (researched 21 October 2026) compares 11 conferences and 13 journals on
+scope fit, deadline, page limit, template, review type, indexing and cost, with every cell
+marked as read on the venue's own page or as third-party. Two facts shape the outcome.
+First, D-052's "ICCCI 2027, 20 February 2027" is the Tokyo conference on *Computer
+Communication and the Internet* (networking and IoT topics), not *Computational Collective
+Intelligence*; the latter has no 2027 call yet (see D-097). Second, no 2027 call exists yet
+for most candidates, so no deadline below is a date, only a previous cycle.
+
+**Recommended (a recommendation, not a choice): conference ECML PKDD 2027, Applied Data
+Science track** - 16 pages LNCS, double-blind, "methodological novelty is not required",
+reproducibility encouraged, about 24% acceptance in 2026 (90 of 381). Deadline unannounced;
+the 2026 cycle was 12 March, so a March 2027 deadline is an inference. Fallback: ICCCI
+(Computational Collective Intelligence) 2027, fit 3 of 5. **Journal: Journal of Big Data**
+for the extended version - scope covers analytics platforms, applications and case studies;
+median 47 days to first decision on its own aims page; open access, APC to be paid or waived
+(about USD 1,990 per an aggregator, not confirmed). Stretch: Transportation Research Part E.
+
+**Decision rule.** The owner picks the pair and records the choice in `HUMAN_ACTIONS.md`. The
+LaTeX is kept template-neutral (shared `paper/refs.bib`, which compiles under IEEEtran,
+splncs04 and elsarticle-num), so switching venue is a template swap. Each deadline is
+re-checked on the venue's page in the first week of January 2027 and again before
+submission. The journal's own rule on extended conference papers is read and recorded the day
+of submission; the project keeps its own floor of 30% new material because no venue on the
+list stated a percentage on a page that could be read.
+
+**What this does not settle:** the author order, and whether the work is one paper or two.
+
+## D-096 · A reference enters `refs.bib` only if title, authors, venue/year and an identifier were all confirmed — `DECIDED`
+**Post-v1.0 · Mounika · upgrade work order item C4**
+
+Rule applied to the 90 entries of `paper/refs.bib`, each confirmed on 21 October 2026 against
+Crossref, the arXiv API, a proceedings or journal page, or a library catalogue, with the
+source URL or DOI and the date in the entry's `note`. An item that failed any of the four
+checks was left out (the Flink bulletin article for lack of volume and issue; a control-tower
+review whose year the sources contradict; the Delhivery Kaggle page not opened; the Uber
+engineering blog). Metadata that a record did not show (a subtitle, a page range) is added
+only where it is the standard citation and the entry's note says so. Entries are tagged
+`core` (33, for the page-limited paper) or `journal`. Status in `docs/references.md` is
+`[metadata checked]` for all 90; **none is `[read]`**, so the paper may cite them but must not
+describe their findings until a full-text pass marks them. The Model Context Protocol is cited
+by its specification page, with no vendor named as author. Checked by
+`tests/test_refs_bib.py` and by a test compile under three bibliography styles.
+
+## D-097 · D-052's target venue is a networking conference; the schedule keyed to its 20 February 2027 date is withdrawn from the plan — `DECIDED`
+**Post-v1.0 · Mounika · corrects D-052**
+
+D-052 (18 September 2026) reads "ICCCI 2027 (9th Int. Conf. on Computer Communication and the
+Internet)" and `iccci.org/sub.html`. Its topic list is networks, IoT, multimedia
+communications, network management and security (re-read 21 October 2026). The work order and
+the 14 October update treated "ICCCI" as *Computational Collective Intelligence*, whose
+2027 call is not published. The two share an acronym and nothing else.
+
+**Decided:** the 20 February 2027 date is no longer a plan date for this paper, because the
+venue it belongs to is a poor scope fit (1 of 5). D-052 is left as written, as history; its
+second decision (arXiv preprint posted when the draft is done, not when a venue answers)
+stands unchanged. If the owner nonetheless wants the Tokyo conference, it is a 4-10 page,
+double-blind submission and the paper would be cut to that scope. This is the owner's call.

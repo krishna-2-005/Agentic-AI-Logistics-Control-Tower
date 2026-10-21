@@ -1487,6 +1487,33 @@ aw\delhivery_data.csv -> download it — see
 - **Fix.** The resampled sum of squares is floored at `sum^2 / n` in `src/ml/eb_ranking.py`.
   The published audit code is unchanged.
 
+### P-81 · Citation details recalled from memory were wrong, five times
+**Post-v1.0 · Mounika · resolved**
+
+- **Symptom.** While building `paper/refs.bib`, a batch lookup of DOIs through Crossref returned
+  papers that were not the ones intended: the Efron and Morris 1975 DOI was a Box and Tiao
+  paper, the Cochran 1954 DOI was a different Cochran paper, and the DOIs for ConSTGAT and
+  DRL4Route resolved to a social-media hazard system and a graph-learning paper.
+- **Cause.** The identifiers were typed from memory and the title was never compared with the
+  record behind them.
+- **Fix.** Every DOI is resolved through the registry before use and the returned title and
+  authors are compared with the intended ones; wrong ones were replaced after a second lookup
+  or dropped (DRL4Route keeps its arXiv id and the venue from the arXiv comment).
+  `tests/test_refs_bib.py` now requires a verification date and a URL or DOI in every note.
+- **Carry.** An identifier is a claim about a document. Check it by opening the document.
+
+### P-82 · The plan's venue was a different conference from the one the work order assumed
+**Post-v1.0 · Mounika · open, owner decision**
+
+- **Symptom.** D-052 targets "ICCCI 2027, 20 February 2027". That date belongs to the
+  International Conference on Computer Communication and the Internet (Tokyo); the
+  Computational Collective Intelligence conference with the same acronym has no 2027 call.
+- **Cause.** Two conferences share the acronym; the check on 18 September 2026 found the one
+  with a published 2027 date, and later documents read the name as the other.
+- **Fix.** `docs/venues.md` states both, scores the Tokyo conference's scope fit at 1 of 5,
+  and D-095 and D-097 record the recommendation. The choice stays with the owner.
+- **Carry.** Venues are identified by full name and URL, never by acronym alone.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
