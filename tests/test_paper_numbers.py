@@ -9,6 +9,7 @@ import json
 
 import pytest
 
+from src.report import bib_print
 from src.report import paper_numbers as pn
 
 BS = chr(92)
@@ -56,4 +57,23 @@ def test_the_plain_text_abstract_is_current_and_in_the_word_range():
     text = (pn.PAPER_DIR / "abstract.txt").read_text(encoding="utf-8").strip()
     assert text == pn.plain_text((pn.PAPER_DIR / "sections" / "abstract.tex").read_text(encoding="utf-8"))
     assert 200 <= len(text.split()) <= 250
+
+
+def test_the_printed_bibliography_is_the_bibliography_without_its_verification_notes():
+    source = bib_print.SOURCE.read_text(encoding="utf-8")
+    printed = bib_print.OUT.read_text(encoding="utf-8")
+    assert printed == bib_print.strip_notes(source)
+    assert printed.count("@") == source.count("@")  # no entry lost
+    assert "verified 2026" not in printed and "verified 2026" in source
+
+
+def test_every_cited_key_is_in_the_bibliography():
+    import re
+
+    keys = set(re.findall(r"@\w+\{([^,\s]+),", bib_print.OUT.read_text(encoding="utf-8")))
+    cited: set[str] = set()
+    for tex in (pn.PAPER_DIR / "sections").glob("*.tex"):
+        for group in re.findall(r"\\cite\{([^}]*)\}", tex.read_text(encoding="utf-8")):
+            cited |= {k.strip() for k in group.split(",")}
+    assert not (cited - keys), sorted(cited - keys)
 
