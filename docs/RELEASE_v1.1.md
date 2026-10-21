@@ -12,7 +12,7 @@ permutations); corridor effects do persist between halves of the period (rank co
 baseline fell from 6.5% to 4.6% once the baseline lost an unfair 0.0-minute cold-start fallback, and the validation cut did
 not favour the served model over that baseline. The reported model is now a single-node LightGBM chosen on validation by a
 rule fixed in advance: **29.66 min** against a back-off bar of **32.39** (−2.74, day-block 95% interval [−3.41, −2.11]), winning on
-all 13 slices and in 4 of 4 rolling-origin folds. The Spark model that the stream and the API serve is unchanged (30.90, −1.49).
+all 13 slices and in 4 of 4 rolling-origin folds. The Spark model that the stream and the API serve is unchanged (30.90, −1.49 on the headline split) and beats the bar in only 2 of 4 rolling-origin folds, so it is described as no worse than the bar and better on cold legs.
 
 ## Numbers that moved
 

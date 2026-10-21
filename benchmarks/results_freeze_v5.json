@@ -1,7 +1,7 @@
 {
-  "frozen_at": "2026-10-21T15:50:34.544948+00:00",
+  "frozen_at": "2026-10-21T17:46:49.661186+00:00",
   "layer": 1,
-  "n_values": 153,
+  "n_values": 168,
   "values": [
     {
       "id": "legs_total",
@@ -1226,11 +1226,133 @@
       "value": 82,
       "unit": "corridors",
       "source": "b3_audit_robust_1e6.json"
+    },
+    {
+      "id": "ro_zoo_delta_mean",
+      "week": 10,
+      "label": "Rolling origin: reported model minus bar, mean over folds",
+      "value": -2.4079,
+      "unit": "min",
+      "source": "b2_rolling_origin_zoo.json"
+    },
+    {
+      "id": "ro_zoo_delta_sd",
+      "week": 10,
+      "label": "Rolling origin: reported model minus bar, sd over folds",
+      "value": 0.5698,
+      "unit": "min",
+      "source": "b2_rolling_origin_zoo.json"
+    },
+    {
+      "id": "ro_zoo_beats_bar_folds",
+      "week": 10,
+      "label": "Rolling origin: folds in which the reported model beats the bar",
+      "value": 4,
+      "unit": "folds",
+      "source": "b2_rolling_origin_zoo.json"
+    },
+    {
+      "id": "ro_folds",
+      "week": 10,
+      "label": "Rolling-origin folds",
+      "value": 4,
+      "unit": "folds",
+      "source": "b2_rolling_origin_zoo.json"
+    },
+    {
+      "id": "reported_wins_after_holm",
+      "week": 10,
+      "label": "Comparisons the reported model wins after Holm correction",
+      "value": 14,
+      "unit": "comparisons",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "served_wins_after_holm",
+      "week": 10,
+      "label": "Comparisons the served model wins after Holm correction",
+      "value": 6,
+      "unit": "comparisons",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "served_wins_unadjusted",
+      "week": 10,
+      "label": "Comparisons the served model wins by the day-block interval, unadjusted",
+      "value": 10,
+      "unit": "comparisons",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "comparisons_total",
+      "week": 10,
+      "label": "Slice comparisons including the overall one",
+      "value": 14,
+      "unit": "comparisons",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "ro_served_delta_mean",
+      "week": 10,
+      "label": "Rolling origin: served model minus bar, mean over folds",
+      "value": -0.6001,
+      "unit": "min",
+      "source": "b2_rolling_origin.json"
+    },
+    {
+      "id": "ro_served_delta_sd",
+      "week": 10,
+      "label": "Rolling origin: served model minus bar, sd over folds",
+      "value": 1.3376,
+      "unit": "min",
+      "source": "b2_rolling_origin.json"
+    },
+    {
+      "id": "ro_served_beats_bar_folds",
+      "week": 10,
+      "label": "Rolling origin: folds in which the served model beats the bar",
+      "value": 2,
+      "unit": "folds",
+      "source": "b2_rolling_origin.json"
+    },
+    {
+      "id": "ro_v3_beats_bar_folds",
+      "week": 10,
+      "label": "Rolling origin: folds in which Spark v3 beats the bar",
+      "value": 2,
+      "unit": "folds",
+      "source": "b2_rolling_origin.json"
+    },
+    {
+      "id": "ro_bar_vs_old_delta_mean",
+      "week": 10,
+      "label": "Rolling origin: bar minus old median, mean over folds",
+      "value": -0.606,
+      "unit": "min",
+      "source": "b2_rolling_origin.json"
+    },
+    {
+      "id": "ro_cold_bar_mae",
+      "week": 10,
+      "label": "Rolling origin: cold-leg MAE of the bar, mean over folds",
+      "value": 115.172,
+      "unit": "min",
+      "source": "b2_rolling_origin.json"
+    },
+    {
+      "id": "ro_cold_served_mae",
+      "week": 10,
+      "label": "Rolling origin: cold-leg MAE of the served model, mean over folds",
+      "value": 80.6016,
+      "unit": "min",
+      "source": "b2_rolling_origin.json"
     }
   ],
   "source_hashes": {
     "b1_backoff_baseline.json": "4392c0dbe0866cf8",
     "b1_model_v3.json": "b0438487a027949c",
+    "b2_rolling_origin.json": "0c8831869c03d365",
+    "b2_rolling_origin_zoo.json": "2a1d3f838bed9812",
     "b2_significance.json": "9bc2b1213d08799a",
     "b3_audit_robust.json": "20608bd6490bb284",
     "b3_audit_robust_1e6.json": "f58b28acf2bed8b5",

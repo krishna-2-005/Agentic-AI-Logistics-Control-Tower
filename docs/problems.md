@@ -1691,3 +1691,11 @@ at zero; real disagreements still raise. Rerun: the interval for the stability d
 stands but is marginal. Lesson: results files record their own settings, and a quoted interval must
 be checked against `reps` in the file it came from.
 
+## P-84 · A long Spark run was killed by a test run that cleaned the shared scratch directory
+**Found 2026-10-21 · Mounika**
+
+The rolling-origin study (about 2.5 hours of Spark fits) died with `IndexShuffleBlockResolver: Error deleting index ...
+data\spark-tmplockmgr-...` when the fast test suite ran in the same window: some tests clean `data/spark-tmp`, which the
+job also used as its scratch directory. The relaunch set `SPARK_LOCAL_DIR` to a directory outside the repository and finished.
+Lesson, now in `REPRODUCIBILITY.md`: long Spark runs set `SPARK_LOCAL_DIR` elsewhere, and tests should not share it.
+

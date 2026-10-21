@@ -465,6 +465,20 @@ ENTRIES: list[tuple[str, int, str, str, str, Callable[[], Any]]] = [
      "b2_significance.json", lambda: _json("b2_significance.json")["models"]["v2_gbt"]["summary"]["wins_block_ci_below_zero"]),
     ("comparisons_total", 10, "Slice comparisons including the overall one", "comparisons",
      "b2_significance.json", lambda: _json("b2_significance.json")["models"]["v2_gbt"]["summary"]["slices_total_including_overall"]),
+    ("ro_served_delta_mean", 10, "Rolling origin: served model minus bar, mean over folds", "min",
+     "b2_rolling_origin.json", lambda: _json("b2_rolling_origin.json")["summary"]["delta_v2_vs_backoff"]["mean"]),
+    ("ro_served_delta_sd", 10, "Rolling origin: served model minus bar, sd over folds", "min",
+     "b2_rolling_origin.json", lambda: _json("b2_rolling_origin.json")["summary"]["delta_v2_vs_backoff"]["sd"]),
+    ("ro_served_beats_bar_folds", 10, "Rolling origin: folds in which the served model beats the bar", "folds",
+     "b2_rolling_origin.json", lambda: _json("b2_rolling_origin.json")["summary"]["v2_gbt_beats_backoff_in_folds"]),
+    ("ro_v3_beats_bar_folds", 10, "Rolling origin: folds in which Spark v3 beats the bar", "folds",
+     "b2_rolling_origin.json", lambda: _json("b2_rolling_origin.json")["summary"]["v3_gbt_beats_backoff_in_folds"]),
+    ("ro_bar_vs_old_delta_mean", 10, "Rolling origin: bar minus old median, mean over folds", "min",
+     "b2_rolling_origin.json", lambda: _json("b2_rolling_origin.json")["summary"]["delta_backoff_vs_old_median"]["mean"]),
+    ("ro_cold_bar_mae", 10, "Rolling origin: cold-leg MAE of the bar, mean over folds", "min",
+     "b2_rolling_origin.json", lambda: _json("b2_rolling_origin.json")["summary"]["mae_cold_backoff"]["mean"]),
+    ("ro_cold_served_mae", 10, "Rolling origin: cold-leg MAE of the served model, mean over folds", "min",
+     "b2_rolling_origin.json", lambda: _json("b2_rolling_origin.json")["summary"]["mae_cold_v2_gbt"]["mean"]),
 ]
 
 

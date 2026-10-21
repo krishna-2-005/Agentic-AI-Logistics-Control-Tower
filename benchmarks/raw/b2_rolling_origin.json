@@ -1,0 +1,83 @@
+{
+  "generated_at": "2026-10-21T17:46:26.645822+00:00",
+  "decision": "D-076",
+  "folds": [
+    [
+      10,
+      11,
+      13
+    ],
+    [
+      13,
+      14,
+      16
+    ],
+    [
+      16,
+      17,
+      19
+    ],
+    [
+      19,
+      20,
+      22
+    ]
+  ],
+  "v3_step_size_frozen": 1.0,
+  "v2_step_size_frozen": 1.0,
+  "bar": "backoff",
+  "summary": {
+    "mae_old_median": {
+      "mean": 33.0465,
+      "sd": 2.3697,
+      "folds": 4
+    },
+    "mae_backoff": {
+      "mean": 32.4404,
+      "sd": 2.3476,
+      "folds": 4
+    },
+    "mae_v2_gbt": {
+      "mean": 31.8404,
+      "sd": 2.8584,
+      "folds": 4
+    },
+    "mae_v3_gbt": {
+      "mean": 32.7995,
+      "sd": 3.7274,
+      "folds": 4
+    },
+    "delta_v2_vs_backoff": {
+      "mean": -0.6001,
+      "sd": 1.3376,
+      "folds": 4
+    },
+    "delta_v3_vs_backoff": {
+      "mean": 0.3589,
+      "sd": 1.5806,
+      "folds": 4
+    },
+    "delta_backoff_vs_old_median": {
+      "mean": -0.606,
+      "sd": 0.1116,
+      "folds": 4
+    },
+    "mae_cold_backoff": {
+      "mean": 115.172,
+      "sd": 21.953,
+      "folds": 4
+    },
+    "mae_cold_v2_gbt": {
+      "mean": 80.6016,
+      "sd": 13.2385,
+      "folds": 4
+    },
+    "mae_cold_v3_gbt": {
+      "mean": 90.4741,
+      "sd": 20.17,
+      "folds": 4
+    },
+    "v2_gbt_beats_backoff_in_folds": 2,
+    "v3_gbt_beats_backoff_in_folds": 2
+  }
+}

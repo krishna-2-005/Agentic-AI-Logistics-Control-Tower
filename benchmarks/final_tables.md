@@ -4,6 +4,46 @@
 
 Generated 2026-10-21. Every value is read from a file in `benchmarks/raw/`; `benchmarks/experiments_appendix.md` maps each one to the command that writes it.
 
+## Layer 1 — the upgrade pass (D-075 to D-098)
+
+The bar is a hierarchical **back-off median** (D-075): 32.39 min on the 5,274 test legs, against 33.04 for the old median, which predicted 0.0 minutes on a corridor with no history. Intervals are day-block bootstrap 95% (six India-time calendar days of test legs; D-076). The **reported model** is the candidate with the lowest validation MAE whatever its library (D-077); the **served** model is what the stream and the API run.
+
+| model | validation MAE | test MAE | test minus bar | 95% interval | comparisons won (of 14, Holm) |
+|---|---|---|---|---|---|
+| old median (0.0 cold fallback) | 29.89 | 33.04 | +0.65 | [+0.37, +0.87] | 0 |
+| **hard back-off (the bar)** | 29.36 | 32.39 | — | — | — |
+| Spark GBT over the old median (**served**) | 30.17 | 30.90 | -1.49 | [-2.25, -0.74] | 6 |
+| Spark GBT over back-off | 31.14 | 31.40 | -0.99 | [-1.59, -0.50] | 6 |
+| **LightGBM, L1** (**reported**), over the old median | 27.24 | 29.66 | -2.74 | [-3.41, -2.11] | 14 |
+| LightGBM, Huber, over the old median | 27.88 | 30.53 | -1.86 | [-2.30, -1.43] | 14 |
+| XGBoost, L1, over the old median | 28.00 | 29.71 | -2.68 | [-3.56, -1.92] | 12 |
+| histogram GBT, L1, over the old median | 27.54 | 29.75 | -2.65 | [-3.31, -2.03] | 14 |
+| linear median regression, over the old median | 34.32 | 33.96 | +1.56 | [+0.78, +2.39] | 1 |
+| LightGBM, L1, over back-off | 27.89 | 30.19 | -2.20 | [-2.85, -1.62] | 14 |
+| LightGBM, Huber, over back-off | 28.56 | 31.06 | -1.34 | [-1.60, -1.05] | 11 |
+| XGBoost, L1, over back-off | 28.86 | 30.49 | -1.91 | [-2.60, -1.28] | 11 |
+| histogram GBT, L1, over back-off | 28.00 | 30.33 | -2.06 | [-2.76, -1.49] | 14 |
+| linear median regression, over back-off | 33.72 | 33.63 | +1.24 | [+0.44, +2.04] | 1 |
+
+### Rolling origin: four expanding windows (D-076, D-098)
+
+| | mean test MAE | mean minus bar | sd over folds | folds beating the bar |
+|---|---|---|---|---|
+| back-off bar | 32.44 | — | — | — |
+| served (Spark over old median) | 31.84 | -0.60 | 1.34 | 2 of 4 |
+| Spark over back-off | 32.80 | +0.36 | 1.58 | 2 of 4 |
+| **reported (LightGBM, L1)** | 30.03 | -2.41 | 0.57 | 4 of 4 |
+
+### Corridor audit under dependence (D-080, D-084)
+
+| variant | slower | faster |
+|---|---|---|
+| Welch, BH (the original audit) | 273 | 512 |
+| Welch, BY | 218 | 452 |
+| cell permutation, BH | 1 | 0 |
+| **cell permutation, BY (headline)** | 0 | 0 |
+| cell permutation, BY, 10^6 permutations | 0 | 0 |
+
 ## Layer 1 — predicting how late a leg runs
 
 Test split: the last 20% of legs by creation time (D-022), 5,274 legs. Metric: mean absolute error in minutes (D-024).
@@ -15,14 +55,14 @@ Test split: the last 20% of legs by creation time (D-022), 5,274 legs. Metric: m
 | corridor mean | **36.13** | +3.09 | past-only mean gap per corridor (D-023) |
 | **corridor median** | **33.04** | — | **the bar**: MAE is minimised by the median (D-048) |
 | v2 GBT residual, step 0.05 | **32.52** | -0.52 | absolute loss on the median residual |
-| **v2 GBT residual, step 1.0** | **30.90** | -2.14 | **the reported model** (D-050) |
-| sklearn HistGBR (reference) | **29.52** | -3.52 | single-node ceiling, not a candidate |
+| **v2 GBT residual, step 1.0** | **30.90** | -2.14 | **the served model** (the stream and the API run it; D-050) |
+| sklearn HistGBR (v1.0 reference) | **29.52** | -3.52 | single-node; now one of the zoo candidates (D-077) |
 
-### Where the reported model wins, slice by slice
+### Where the served model wins, slice by slice (v1.0 slice table)
 
 Every slice the adoption rule looks at, and the two it does not (distance, hour) — reported because a model that wins overall by losing somewhere should have to show it.
 
-| dimension | slice | legs | corridor median | reported model | delta |
+| dimension | slice | legs | corridor median | served model | delta |
 |---|---|---|---|---|---|
 | corridor support in train | unseen | 294 | 111.18 | 75.92 | **-35.26** |
 | corridor support in train | 1-9 | 1,548 | 31.79 | 31.76 | **-0.03** |
@@ -38,7 +78,7 @@ Every slice the adoption rule looks at, and the two it does not (distance, hour)
 | departure hour | afternoon | 647 | 37.16 | 36.35 | **-0.81** |
 | departure hour | evening | 2,440 | 28.51 | 26.52 | **-1.99** |
 
-### How the reported model was selected
+### How the served model's step size was selected
 
 `stepSize` was chosen on a chronological validation cut of the training split and scored once on test, fixed in D-049 before it ran.
 
@@ -49,7 +89,7 @@ Every slice the adoption rule looks at, and the two it does not (distance, hour)
 | 0.3 | 59.7 | 30.51 |
 | 1 ← chosen | 199.0 | 30.17 |
 
-**Read this table before the one above it.** On validation every step size loses to the median; on test the chosen one wins by 6.5%. The rule was applied as written rather than re-opened once the test score was known.
+**Read this table before the one above it.** On validation every step size loses to the median; on test the chosen one wins by 6.5% against the old median (4.6% against the back-off bar, D-075). The rule was applied as written rather than re-opened once the test score was known.
 
 ## Layer 2 — the agents
 
