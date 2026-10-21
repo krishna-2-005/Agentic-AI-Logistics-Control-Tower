@@ -2554,3 +2554,64 @@ Text that described the AWS phase as upcoming (`docs/cost.md`, `docs/RELEASE_v1.
 `docs/deploy_dashboard.md`, a docstring) now says it was dropped. **Spend to date and planned:
 $0.**
 
+
+## D-075 · Pre-registration: a hierarchical back-off bar, and a residual model over it — `DECIDED`
+**Post-v1.0 (upgrade B1) · Mounika · written and committed before any back-off number was computed**
+
+**Why.** The bar the paper judges the model against, `baseline_median`, falls back to **0.0 minutes
+on a corridor with no history** (`models_v2.py`, `baselines.py`): on those legs the "fair
+baseline" predicts that the leg runs exactly on plan, which is OSRM. Most of the model's margin sits
+on exactly those legs (294 unseen-corridor test legs: 111.2 → 75.9 min). A reviewer can say the
+baseline has an unfair fallback. This entry fixes the baseline before it is measured.
+
+**Method (all as-of: a prior leg counts only once it has *finished*, at `od_end_time`, before the
+query leg's `trip_creation_time`; facts before queries on a tie, as D-020).**
+
+1. *Levels,* in order of preference, each a median of `gap_min` over the prior legs in its group
+   (the median is Spark's `percentile(0.5)`, the mean of the two middle values for an even count,
+   exactly what `corr_median_gap_min` uses):
+   L1 the leg's corridor; L2 its origin hub's outbound legs; L3 its destination hub's inbound
+   legs; L4 its route type × distance band (the three bands are the train-quantile terciles of
+   `planned_km` used by the paper's slice table); L5 the network, as-of.
+2. *Hard back-off (b):* use the first level with at least one prior leg.
+3. *Shrunken back-off (c):* each level's median is shrunk toward the next level's estimate with
+   weight `n/(n+k)` where `n` is that level's prior-leg count, applied from L5 up to L1 (so `n = 0`
+   reproduces the hard rule). `k` is chosen from {1, 2, 5, 10, 20, 50, 100} on the **validation**
+   cut only (the second chronological 80/20 cut inside the training split, the same cut D-049 used),
+   never on test.
+4. *Check before use:* the L1 median must reproduce `features_v2.corr_median_gap_min` on every
+   warm leg (to 1e-9), or the module refuses to write results (the builder-and-judge rule, D-028).
+
+**Report on the test split (5,274 legs, unchanged):** MAE of (a) the old median baseline with its
+0.0 cold fallback, (b) hard back-off, (c) shrunken back-off, (d) the v2 GBT (30.90) — overall, on
+*cold* legs (`corr_n_prior == 0`, as-of), on *warm* legs, on the "unseen in training" slice, and on
+all fourteen slices of the existing slice table. Output `b1_backoff_baseline.json` and
+`b1_backoff_slices.csv`; per-leg predictions `b1_test_predictions.csv` for the significance study.
+
+**Decision rule 1 — what "the bar" is.** The bar the paper, README and site use is the baseline
+with the **lowest test MAE among (a), (b), (c)**. It is chosen on test *deliberately*: the
+baselines have no fitted parameter except `k` (fixed on validation), and letting the bar be the
+best of three on test can only make the model's comparison harder, never easier. If back-off
+beats the old median, back-off becomes the bar everywhere and the old median is reported as a
+row, not removed.
+
+**Decision rule 2 — the residual model over the bar (`models_v3.py`).** A gradient-boosted
+residual model (Spark MLlib, absolute loss, 200 trees, depth 6, as v2) is trained on
+`gap − baseline`, where the baseline is the best of (a)/(b)/(c) **on validation** (so that choice
+never sees test). Inputs are the 38 v2 inputs plus two as-of descriptors of the baseline used: its
+level (1 to 5) and its prior-leg count. The only hyperparameter is the step size from
+{0.05, 0.3, 1.0}, chosen on validation; the chosen model is refit on the full training split and
+scored once on test (§5.3 of the paper, applied as written).
+
+**Decision rule 3 — which model is "the reported model".** Of the two gradient-boosted residual
+models, v2 (over the old median, step 1.0, already fixed) and v3 (over the validation-best
+baseline), the one with the **lower validation MAE** is the reported model, **even if its test MAE
+is higher than 30.90**. Both are reported with their test numbers.
+
+**Decision rule 4 — claims.** If the reported model does not beat the bar by a block-bootstrap
+confidence interval (by day) that excludes zero (study B2), the paper says so plainly and §5 is
+reframed as "a strong back-off baseline is hard to beat; the model's value is …". That is still a
+result. If the reported model changes from v2, the stream, the numpy tree reader, the API bundle
+and the stream-equals-batch validation are re-run and must again be bit-identical; if that cannot
+be done in this pass, v2 stays served and the paper and README state which model is served and
+which is reported.
