@@ -363,7 +363,7 @@ EB_CSV = "b4_eb_corridors.csv"
 # names are matched against these candidates, so the export does not depend on one
 # spelling; a file with none of them is ignored rather than guessed at.
 _ROBUST_COLUMNS = ("robust", "is_robust", "robust_flag", "survives", "robust_significant")
-_EB_RANK_COLUMNS = ("eb_rank", "rank_eb", "eb_bottleneck_rank", "shrunk_rank")
+_EB_RANK_COLUMNS = ("eb_rank", "rank_eb", "eb_bottleneck_rank", "shrunk_rank", "rank_eb_prob_floor10")
 
 
 def _first_column(df: pd.DataFrame, candidates: tuple[str, ...]) -> str | None:
@@ -384,6 +384,10 @@ def load_corridor_extras(raw_dir: Path | None = None) -> dict[str, dict[str, Any
     if robust_path.exists():
         df = pd.read_csv(robust_path)
         col = _first_column(df, _ROBUST_COLUMNS)
+        if col is None and "status" in df.columns:
+            # B3's own file: `status` is robust / fragile / headline_only / not_significant (D-080).
+            df = df.assign(robust=df["status"].astype(str).str.lower().eq("robust"))
+            col = "robust"
         if col is not None and "corridor_id" in df.columns:
             for cid, flag in zip(df["corridor_id"], df[col], strict=True):
                 if not pd.isna(flag):
