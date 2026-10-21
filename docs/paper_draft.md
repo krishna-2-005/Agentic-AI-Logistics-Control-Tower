@@ -1,4 +1,4 @@
-# Where is the planner wrong? Corridor-level localisation of systematic routing error in a national logistics network
+# Corridor-Level Localisation and Correction of Systematic Route-Planner Error in Road-Freight Logistics
 
 *Draft v0.2 for ICCCI 2027 (D-052); v0.2 adds the model and data cards, the agent ablation, related work with verified citations and threats to validity (WP-10). Authors withheld for double-blind review. Every number
 below is read from a file in `benchmarks/raw/`; `benchmarks/experiments_appendix.md` maps
