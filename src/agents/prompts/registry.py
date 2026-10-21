@@ -98,6 +98,20 @@ def load_prompt(agent: str, version: str | None = None) -> Prompt:
     return Prompt(agent=agent, version=version, text=path.read_text(encoding="utf-8"), path=path)
 
 
+def load_variant(agent: str, name: str) -> Prompt:
+    """Load a named non-numbered prompt such as ``llm_verdict_v1`` (the B7 ablation arm).
+
+    Variants live beside the numbered versions but are not "the newest version" of the
+    agent's prompt, so ``load_prompt`` never returns them.
+    """
+    if not re.fullmatch(r"[a-z_]+_v\d+", name):
+        raise ValueError(f"variant name {name!r} must look like llm_verdict_v1")
+    path = _agent_dir(agent) / f"{name}.md"
+    if not path.exists():
+        raise FileNotFoundError(f"Prompt variant {agent}/{name} not found at {path}")
+    return Prompt(agent=agent, version=name, text=path.read_text(encoding="utf-8"), path=path)
+
+
 def inventory() -> dict[str, list[str]]:
     """Every agent and its versions — rendered on the dashboard's prompt page."""
     return {

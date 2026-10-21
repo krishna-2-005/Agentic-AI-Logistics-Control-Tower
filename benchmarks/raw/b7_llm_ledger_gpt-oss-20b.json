@@ -1,0 +1,36 @@
+{
+  "live_calls": 168,
+  "input_tokens": 119658,
+  "output_tokens": 25702,
+  "latency_s": 1243.279,
+  "by_agent": {
+    "exception": {
+      "live_calls": 56,
+      "input_tokens": 22393,
+      "output_tokens": 4012,
+      "latency_s": 282.034
+    },
+    "invoice": {
+      "live_calls": 56,
+      "input_tokens": 45017,
+      "output_tokens": 11766,
+      "latency_s": 498.078
+    },
+    "order": {
+      "live_calls": 56,
+      "input_tokens": 52248,
+      "output_tokens": 9924,
+      "latency_s": 463.167
+    }
+  },
+  "model": "openai/gpt-oss-20b",
+  "provider": "groq",
+  "note": "rebuilt from the on-disk cache: one file is one provider call; includes the hard-set runs and 3 smoke calls",
+  "free_tier_cost_usd": 0.0,
+  "paid_equivalent_usd_per_1000_verdicts_ESTIMATE": 0.1986,
+  "assumed_price_usd_per_million_tokens_input_output": [
+    0.15,
+    0.6
+  ],
+  "basis": "mean measured tokens per call x provider public list price (assumed, check before quoting)"
+}

@@ -3070,3 +3070,217 @@ Charts and the hero map load when scrolled near (first-load JS 302 kB to 110 kB)
 reached 96-100 on every page (contrast tokens raised, form labels). Mobile-throttled performance
 on the map pages stays below 90 and is recorded in `docs/deploy_web.md`; shipping less map was
 judged worse than the number.
+
+## D-085 · Exception precision gets intervals, a valid test and a trend test; the rule is fixed before the run — `DECIDED`
+**Post-v1.0 · Mounika · B8, D-047, D-054**
+
+The agent's 58.6% as-of notification precision (1,007 of 1,720 alerts) is compared in the
+paper with a 54.1% trivial policy (alert every leg: 1,082 of 2,000 legs delayed). Neither
+number has an interval, and the severity claim ("precision rises with grade") has no test.
+`src/ml/exception_stats.py` adds them. It reads only counts already in
+`w8_replay_leakage.json` (as-of and superseded end-of-data-history replay), so it needs no
+Spark and no model run.
+
+**Which test is valid, decided before running.** The two policies are scored on the *same*
+2,000 legs, and the agent's alerted set is a subset of the trivial policy's set. A
+two-proportion test treating 1,720 and 2,000 as independent samples is therefore not valid
+(the samples overlap by 1,720 legs). The gap is an identity: with w = alerted share,
+trivial = w·p_alerted + (1−w)·p_not_alerted, so
+gain = (1−w)·(p_alerted − p_not_alerted). Testing "gain = 0" is exactly testing that the
+alerted legs are delayed at the same rate as the 280 not-alerted legs, two *disjoint*
+groups.
+
+* **Primary test:** pooled two-proportion z-test, alerted vs not alerted (two-sided), with
+  Fisher's exact test beside it as a check.
+* **Second test:** a nonparametric bootstrap over the 2,000 legs (10,000 resamples, seed
+  20260, percentile 95% interval for the gain, and the share of resamples with gain ≤ 0 as a
+  one-sided p). Both groups are resampled together, so the pairing is respected.
+* **Reported for reference only, flagged invalid:** the naive independent two-proportion
+  z-test, so a reader who would run it sees why it is not the headline.
+* Wilson 95% intervals for 58.6%, 54.1% and every per-severity precision (n = 453 / 667 /
+  308 / 292), for the as-of run and the superseded replay run.
+* **Trend:** Cochran–Armitage test of precision against severity grade (scores 1..4,
+  two-sided), implemented in the module and unit-tested against a hand computation.
+
+**Decision rule.** The gain is significant if the primary test gives p < 0.05 *and* the
+bootstrap interval excludes 0. If either fails, the write-up must say "directionally better;
+not significant at n = 2,000 legs (1,720 alerts)" and may not call the gain an improvement.
+If the trend test gives p ≥ 0.05, the monotonic-severity claim is withdrawn to "the point
+estimates rise". Applied as written, whatever the outcome.
+
+**Limits stated in advance.** Legs share corridors, so legs are not independent and the
+intervals are somewhat optimistic; the counts file has no leg-level corridor ids, so a
+cluster bootstrap is not possible without re-running the replay. The 2,000 legs are the
+earliest legs by creation time, 1,290 of them corridor-cold, so this is the hardest case for
+the model and not a typical day. I had read the counts (1,007 / 1,720 and 1,082 / 2,000)
+before writing this entry; the test choice follows from the sampling structure, not from the
+outcome.
+
+## D-086 · The deterministic-core vs LLM-decides ablation, pre-registered — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-041, D-028, D-043**
+
+D-041 says the agents decide with arithmetic and the model only writes the sentence. Nothing
+in the project has tested that position against the obvious alternative: let a language model
+make the decision. This entry fixes the experiment before any model call is made for it.
+
+**Agents and sets (existing sets, not new ones).**
+
+| agent | set | full size | LLM subset | stratified by |
+|---|---|---|---|---|
+| order entry | `w9_order_eval_set.json` | 200 emails, 20 templates | 40 | 2 per template |
+| invoice audit | `w9_invoice_eval_set.json` | 200 invoices, 10 kinds | 40 | 4 per kind |
+| exception severity | `w6_exception_eval_cases.csv` (superseded end-of-data replay alerts; only the decision rule is compared, so the history leak is common to both arms) | 1,347 alerts | 40 | 10 per deterministic grade |
+
+The deterministic arm is run on the full set and on the same subset, and the comparison uses
+the subset. Subsets are drawn with seed 8602, then ordered round-robin across strata, so any
+prefix is balanced. If provider quota binds, cases are completed in that order and the
+completed prefix is reported with its n; no case is half-run.
+
+**The LLM-decides variant.** The model receives exactly the inputs the code receives, plus
+the policy written out in prose (the rate card, the other-charge share, the tolerance, the
+severity cut-offs, the ask/file rules). The prose is written independently of the code and is
+versioned in `src/agents/prompts/<agent>/llm_verdict_v1.md`. Giving the policy to the model
+means the ablation isolates *who executes the policy*, not who knows it. It must answer in a
+strict JSON schema: order entry `file | ask | reject` plus fields; exception severity
+`low | medium | high | critical`; invoice `approve | dispute` plus a reason code. Parsing is
+strict (one JSON object, a closed vocabulary); anything else is an error and is counted, not
+repaired. An `ask` maps to the code's `clarify`; a `reject` is scored as wrong because the
+sets contain no non-orders. Invoice duplicate checking uses a ledger of 20 prior invoice
+numbers (the duplicate's source when one exists plus fixed decoys), identical for both arms,
+because the full history would not fit the provider's token limit.
+
+**Model.** The deployed prose model is a Gemini model with a free-tier cap of about 20 calls a
+day (D-032); this design needs about 900. The LLM arm therefore uses an open model through
+Groq's free tier: `openai/gpt-oss-120b`, the largest open model the key lists (the other
+models listed were gpt-oss-20b, qwen3.8-27b and allam-2-7b; no Llama model is available).
+Reasoning effort `low`, completion cap 600 tokens. **It is not the model that writes the
+project's prose**, and the paper must say so. A Gemini subset (order entry only, temperature 0,
+the first 20 subset cases) is attempted only if its daily cap allows, and reported separately,
+never merged.
+
+**Runs.** Per case: 5 calls at temperature 0.7 (a stochastic setting; the code's own default
+is 0.0, which would make "5 runs" one run repeated), plus 2 calls at temperature 0 (the
+determinism check). Every response is cached on disk by (agent, case, run, temperature,
+prompt hash, model), so a rerun costs nothing. A token, latency and call ledger is written.
+Rate limits are obeyed with backoff, never worked around.
+
+**Metrics, each with a Wilson 95% interval where it is a proportion.** Order entry: accuracy
+as `order_eval_scale` scores it (action, fields, and the field asked about), the invented-value
+rate (an order filed with a field the case never stated, or a centre code that does not appear
+verbatim in the email), clarification recall. Invoice: verdict accuracy, dispute recall,
+false-dispute count, right reason code. Exception: exact agreement with the code's grade,
+agreement within one grade, and the area under the ROC curve of grade against the leg really
+being late (reported for both arms, wide interval at this n). All agents: unanimity across the
+5 sampled runs, Fleiss' kappa across them, share of cases whose two temperature-0 verdicts
+match, parse-error count, latency, tokens. Cost is $0 on the free tier; a paid-equivalent
+cost per 1,000 verdicts is computed from the provider's published price and labelled an
+estimate.
+
+**Decision rule.** Report whatever happens. Accuracy is compared on the same cases: the
+difference LLM minus deterministic, per-run pooled, with a case-level bootstrap interval. If
+the LLM-decides arm's accuracy is greater than or equal to the deterministic arm's, the paper
+says so. If the interval contains 0 the paper says the arms are not distinguishable at this n.
+The case for deterministic verdicts is then made, or not made, on reproducibility and cost
+alone, and only if the numbers show a difference there.
+
+**Harder sets, held out.** The existing order set has contradiction, two-consignment,
+pounds-vs-kg, Hinglish and city-only cases but no missing-unit, wrong-centre-code or
+second Hinglish-style stress, and the invoice set has no case at the 15% tolerance edge on
+either side. New small sets (`b7_order_hard_set.json`, `b7_invoice_boundary_set.json`) fill
+only those gaps. They are written by code that shares nothing with the agents' rules (D-028),
+are still synthetic, and are scored once on first run: deterministic arm on all cases, LLM arm
+once at temperature 0 on the same cases. Nothing is tuned against them; if a rule is fixed
+afterwards both numbers are reported.
+
+## D-087 · The hard sets are held out; the first-run result stands and nothing is tuned — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-086, D-028, P-76**
+
+`src/ml/b7_hard_sets.py` builds two sets the existing 200-case sets did not cover:
+**100 order emails** (10 templates: weight with no unit, three kinds of malformed centre
+code, conflicting piece counts, conflicting service level, two Hindi-English bookings in one
+mail, and three Hindi-English phrasings) and **100 invoices at the tolerance edges** (freight
+2% inside and outside both ends of the tolerated rate band, other-charge share just inside and
+outside both ends, a total off by half a paisa versus two paise). Seeds are 9031 and 9033
+(9032 hits P-77). The builder imports none of the agents' rules and restates the rate model and
+tolerances itself. Both sets are synthetic, and the invoice labels use the same 15% tolerance
+the auditor uses, so what is measured is behaviour at the edge, not whether 15% is right.
+
+**First run of the unmodified deterministic agents, before any model call touched these
+sets** (`b7_hard_sets_deterministic.json`):
+
+| agent | correct | 95% interval |
+|---|---|---|
+| order entry | 70 / 100 | 60.4% to 78.1% |
+| invoice audit | 100 / 100 | 96.3% to 100.0% |
+
+Order entry scored 0 of 10 on `conflict_pieces`, `hinglish_file` and `hinglish_tonnes` and
+10 of 10 on the other seven templates. The invoice auditor was right on every edge case,
+which is what an arithmetic check with a stated tolerance should do.
+
+**Decided.** The agents are not modified in response. The order result is the held-out number
+and it is lower than the 100.0% the paper quotes for the 200-email set, which was measured
+after fixing what that set found (85.0% on first run, `w9_order_eval.json`). The paper reports 85.0% on the
+first run of the 200, 100.0% after the fix, and 70 of 100 on this set. If the reader is fixed
+later, both numbers on this set are reported, and the set is then spent. The LLM-decides arm
+is run once at temperature 0 on a balanced prefix of the same cases (`b7_hard_sets_llm.json`).
+
+## D-088 · The free tier caps the ablation at pilot scale; the design is kept and the n is stated — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-086, docs/cost.md**
+
+D-086 assumed the provider's limit was requests and tokens per minute. The limit that binds
+is **tokens per day: 200,000 for `openai/gpt-oss-120b` on this key** (the provider's own 429:
+"Limit 200000, Used 199374, Requested 1072"), refilling continuously, about 8 calls an hour once
+spent. One verdict costs about 1,100 tokens (order entry), 900 (invoice) or 500 (exception),
+and a case is 7 verdicts, so the day's allowance is about 30 cases across all three agents,
+not the 120 the design needs. The full D-086 sample would take about four days of quota.
+
+**Decided, before any further call is made:**
+
+1. The primary arm keeps its design and model (`openai/gpt-oss-120b`, 5 runs at 0.7 plus 2 at
+   temperature 0) and is reported at the **completed balanced prefix**, with its n and Wilson
+   intervals, which D-086's subset policy already allows. The first launch ran agents one
+   after another before this was visible, so the prefixes are unequal (order entry 18 cases,
+   invoice 8, exception 8); later launches interleave agents case by case. The word
+   "pilot" is used for these results, and no claim of a difference is made where the interval
+   on the difference contains 0.
+2. A second model, `openai/gpt-oss-20b` (its own daily allowance), runs the same design
+   interleaved at 8 cases per agent, and the held-out hard sets run once at temperature 0 on
+   it (20 cases per agent, balanced prefix). Its numbers are written to separate files with the
+   model id in the name and are **never merged** with the 120b arm. It answers a different
+   question (does a smaller open model do worse) and is not a substitute for the 120b sample.
+3. Responses are cached on disk, so resuming on a later day continues from where this stopped
+   (`python -m src.ml.agent_ablation --llm-verdict`), and the n in every file grows with no
+   re-spend. The decision rule of D-086 is unchanged and is applied to whatever n exists when
+   the files are frozen.
+4. Document extraction rows 21 to 40 were attempted on the same Gemini model and the free tier
+   allowed five more clean extractions (P-75); rows 21 to 40 stay unreported and no model is
+   mixed.
+
+## D-089 · What the pilot ablation supports, and what it does not — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-086, D-088**
+
+The decision rule of D-086 applied to the files as they stand (`b7_agent_ablation.json`,
+`openai/gpt-oss-120b`, n = 18 / 8 / 8 cases; `b7_agent_ablation_gpt-oss-20b.json`, n = 8 / 8 / 8):
+
+* **Order entry.** The model scored 87.8% pooled over 5 runs at temperature 0.7 (79 of 90,
+  Wilson 79.4% to 93.0%) against the rule route's 100% on the same 18 emails; the case-level
+  bootstrap interval for the difference is -25.6 to -2.2 points, so the arms are
+  distinguishable and the code is ahead. 83.3% of cases drew the same verdict on all 5 runs
+  (Fleiss kappa 0.82), 17 of 18 matched across two temperature-0 runs, and 6 of 50 orders the
+  model filed (12.0%, 5.6% to 23.8%) carried a value the email did not support, against 0 for
+  the rules. **Caveat that goes with it:** the rules' 100% is on a set they were fixed against
+  (85.0% on first run); on the held-out hard set they score 70% (D-087). The model arm was not
+  fixed against any set. The 20b model scored 72.5% (8 cases).
+* **Invoice audit.** Both arms scored 87.5% on the same 8 invoices (the one error is the
+  designed tolerance miss `overcharge_hidden`), the model gave identical verdicts on all runs
+  and no false disputes. n = 8 supports no comparison.
+* **Exception severity.** Given the cut-offs in prose, the model reproduced the code's grade on
+  40 of 40 verdicts (8 cases). Arithmetic on two numbers is within its reach; this too is
+  n = 8 and says nothing about harder inputs.
+
+**What the paper may say.** That a deterministic core is at least as accurate where the policy
+is arithmetic (invoice, severity), and ahead and reproducible on order entry at pilot scale,
+where the model's extra failures were invented values and 1 in 6 cases drawing different
+verdicts on re-run. That this is one open model on 8 to 18 cases per agent, not the Gemini
+model used for prose. It may not say the LLM arm is generally worse, nor claim a cost advantage
+beyond latency and the tokens measured. The full 40-case design is resumable from cache.
