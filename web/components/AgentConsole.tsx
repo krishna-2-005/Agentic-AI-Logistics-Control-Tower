@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { ApiDownNotice, WakingNotice, useSlow } from "@/components/ApiStates";
 import { Card, Notice, Pill, TableShell, Td, Th } from "@/components/ui";
 import { API_CONFIGURED, getTraces, type TraceRow } from "@/lib/api";
 import { cx, num } from "@/lib/format";
@@ -48,11 +49,13 @@ export function AgentConsole({
         ).map(([v, label]) => (
           <button
             key={v}
+            type="button"
+            aria-pressed={tab === v}
             onClick={() => setTab(v)}
             className={cx(
               "rounded-md px-3 py-1.5 text-sm font-medium transition-colors",
               tab === v
-                ? "bg-[var(--accent-soft)] text-[var(--accent)]"
+                ? "bg-[var(--accent)] text-white shadow-sm"
                 : "text-[var(--ink-muted)] hover:text-[var(--ink)]"
             )}
           >
@@ -77,8 +80,13 @@ function Lifecycle({
   orchestrator: AgentsData["orchestrator"];
   agents: AgentCard[];
 }) {
-  const stopped = orchestrator.cases - orchestrator.booked;
-  const booked = orchestrator.booked - orchestrator.ticketed;
+  // The 100-lifecycle run: each graph path and how many emails took it.
+  const paths = Object.entries(orchestrator.distribution);
+  const count = (test: (path: string) => boolean) =>
+    paths.filter(([path]) => test(path)).reduce((n, [, c]) => n + c, 0);
+  const stopped = count((p) => p.includes("clarify"));
+  const ticketed = count((p) => p.includes("triage"));
+  const booked = count((p) => p.includes("book") && !p.includes("triage"));
 
   return (
     <Card>
@@ -164,7 +172,7 @@ function Lifecycle({
             fontSize="12"
             fontFamily="var(--font-sans)"
           >
-            {orchestrator.cases} emails · 3 distinct paths · no human in the middle
+            {orchestrator.cases} emails · {orchestrator.paths_exercised} distinct paths · no human in the middle
           </text>
         </svg>
       </div>
@@ -183,7 +191,7 @@ function Lifecycle({
           color="#4d9fff"
         />
         <PathStat
-          n={orchestrator.ticketed}
+          n={ticketed}
           label="booked → flagged → ticketed"
           detail="Predicted late, severity graded, customer notified, ticket filed."
           color="#e34948"
@@ -313,28 +321,45 @@ function McpPanel({ mcp }: { mcp: McpTranscript }) {
 function TracePanel() {
   const [traces, setTraces] = useState<TraceRow[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [attempt, setAttempt] = useState(0);
+  const slow = useSlow(traces === null && error === null);
 
   useEffect(() => {
+    let cancelled = false;
+    setTraces(null);
+    setError(null);
     getTraces(undefined, 40).then((r) => {
+      if (cancelled) return;
       if (r.ok) setTraces(r.data.traces ?? []);
       else setError(r.message);
     });
-  }, []);
+    return () => {
+      cancelled = true;
+    };
+  }, [attempt]);
 
-  if (error || !API_CONFIGURED) {
+  if (!API_CONFIGURED) {
     return (
       <Notice tone="replay" title="No live trace log on this build">
-        {error ??
-          "This is a static build with no API attached, so there is no running agent to trace."}{" "}
-        The lifecycle and MCP tabs show the recorded runs instead, which is what
-        every number on this page was measured from.
+        This is a static build with no API attached, so there is no running
+        agent to trace. The lifecycle and MCP tabs show the recorded runs
+        instead, which is what every number on this page was measured from.
       </Notice>
+    );
+  }
+
+  if (error) {
+    return (
+      <ApiDownNotice message={error} onRetry={() => setAttempt((n) => n + 1)} />
     );
   }
 
   if (traces === null) {
     return (
-      <div className="h-40 animate-pulse rounded-xl border border-[var(--line)] bg-[var(--surface-raised)]" />
+      <>
+        {slow && <WakingNotice className="mb-3" />}
+        <div className="h-40 animate-pulse rounded-xl border border-[var(--line)] bg-[var(--surface-raised)]" />
+      </>
     );
   }
 

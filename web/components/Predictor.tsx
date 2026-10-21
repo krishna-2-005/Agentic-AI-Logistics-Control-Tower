@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
+import { RetryButton, WakingNotice, useSlow } from "@/components/ApiStates";
 import { Card, Notice, Pill } from "@/components/ui";
 import {
   API_CONFIGURED,
@@ -53,12 +54,16 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [attempt, setAttempt] = useState(0);
+  const slowPending = useSlow(pending);
+
   useEffect(() => {
     if (!API_CONFIGURED) {
       setStatus("unconfigured");
       return;
     }
     let cancelled = false;
+    setStatus("unknown");
     // The free host sleeps; the first call wakes it and is answered once it has
     // booted. Say so after a few seconds instead of leaving a silent wait.
     const slow = setTimeout(() => {
@@ -73,7 +78,7 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
       cancelled = true;
       clearTimeout(slow);
     };
-  }, []);
+  }, [attempt]);
 
   // Seed the form from the corridor's own measured distance, so the default is
   // a plausible leg rather than an arbitrary one.
@@ -225,11 +230,8 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
           {pending ? "Scoring…" : "Predict the delay"}
         </button>
 
-        {status === "waking" && (
-          <p className="mt-2 text-center font-mono text-[11px] text-amber-400">
-            waking the prediction service — the free server sleeps when idle and
-            takes up to a minute to start; you can press predict, it will wait
-          </p>
+        {(status === "waking" || (pending && slowPending)) && (
+          <WakingNotice className="mt-3" />
         )}
         {status === "warming" && (
           <p className="mt-2 text-center font-mono text-[11px] text-amber-400">
@@ -305,13 +307,17 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
               <>
                 {status === "unconfigured"
                   ? "This build has no API address, so nothing can score a leg here."
-                  : (error ?? "It did not answer within 90 seconds.") +
-                    " Reload the page in a minute to try again."}{" "}
+                  : (error ?? "It did not answer within 90 seconds.")}{" "}
                 The model itself and every number measured from it are on the{" "}
                 <a href="/evidence/" className="text-[var(--accent)] underline">
                   results page
                 </a>
                 , which needs no backend at all.
+                {status === "down" && (
+                  <span className="mt-3 block">
+                    <RetryButton onClick={() => setAttempt((n) => n + 1)} />
+                  </span>
+                )}
               </>
             ) : (
               <>
