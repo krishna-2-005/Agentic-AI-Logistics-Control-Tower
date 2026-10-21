@@ -2675,3 +2675,35 @@ only those gaps. They are written by code that shares nothing with the agents' r
 are still synthetic, and are scored once on first run: deterministic arm on all cases, LLM arm
 once at temperature 0 on the same cases. Nothing is tuned against them; if a rule is fixed
 afterwards both numbers are reported.
+
+## D-087 · The hard sets are held out; the first-run result stands and nothing is tuned — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-086, D-028, P-76**
+
+`src/ml/b7_hard_sets.py` builds two sets the existing 200-case sets did not cover:
+**100 order emails** (10 templates: weight with no unit, three kinds of malformed centre
+code, conflicting piece counts, conflicting service level, two Hindi-English bookings in one
+mail, and three Hindi-English phrasings) and **100 invoices at the tolerance edges** (freight
+2% inside and outside both ends of the tolerated rate band, other-charge share just inside and
+outside both ends, a total off by half a paisa versus two paise). Seeds are 9031 and 9033
+(9032 hits P-77). The builder imports none of the agents' rules and restates the rate model and
+tolerances itself. Both sets are synthetic, and the invoice labels use the same 15% tolerance
+the auditor uses, so what is measured is behaviour at the edge, not whether 15% is right.
+
+**First run of the unmodified deterministic agents, before any model call touched these
+sets** (`b7_hard_sets_deterministic.json`):
+
+| agent | correct | 95% interval |
+|---|---|---|
+| order entry | 70 / 100 | 60.4% to 78.1% |
+| invoice audit | 100 / 100 | 96.3% to 100.0% |
+
+Order entry scored 0 of 10 on `conflict_pieces`, `hinglish_file` and `hinglish_tonnes` and
+10 of 10 on the other seven templates. The invoice auditor was right on every edge case,
+which is what an arithmetic check with a stated tolerance should do.
+
+**Decided.** The agents are not modified in response. The order result is the held-out number
+and it is lower than the 100.0% the paper quotes for the 200-email set, which was measured
+after fixing what that set found (85.0% on first run, D-050). The paper reports 85.0% on the
+first run of the 200, 100.0% after the fix, and 70 of 100 on this set. If the reader is fixed
+later, both numbers on this set are reported, and the set is then spent. The LLM-decides arm
+is run once at temperature 0 on a balanced prefix of the same cases (`b7_hard_sets_llm.json`).

@@ -1459,6 +1459,51 @@ aw\delhivery_data.csv -> download it — see
 - **What it cost.** Nothing was published, but only by luck, and that is the lesson. The
   licence check belongs in the script that publishes, not in someone remembering to look.
 
+### P-75 · Resuming the extraction evaluation would have published 77.0% for a 99% agent
+**Post-v1.0 (B7) · Mounika · caught before anything was written to the reported files**
+
+- **Symptom.** Running rows 21 to 40 with the same model, `gemini-3.6-flash`, the free tier
+  allowed five more clean-PDF extractions and then answered 429. The evaluator then printed
+  "32 documents, accuracy 77.0%, noisy 54.9%" where the reported 20-document result is 97.9%
+  (noisy 96.9%).
+- **Cause.** A document whose clean extraction exists and whose noisy extraction has not been
+  run yet is counted as evaluated, and the noisy half is scored as 97 missed fields. The
+  module's own docstring says a quota stop leaves a document out; that holds when the stop
+  falls between documents, not between a document's two splits.
+- **Fix.** None to the module yet. The tracked result files were restored to the reported
+  20-row run, the five new extractions were kept outside the repository
+  (`data/b7_cache/w7_doc_extraction_cache_plus5.jsonl`), and rows 21 to 40 stay unreported.
+  The module should skip any document whose requested splits are not all cached.
+- **Carry.** The same lesson as P-58 in a new place: an unfinished row must be absent from a
+  score, never present as zero.
+
+### P-76 · The rule-based order reader fails three classes of held-out email, 0 of 10 each
+**Post-v1.0 (B7) · Mounika · reported, deliberately not fixed**
+
+- **Symptom.** On the 100-email hard set (`b7_order_hard_set.json`, written by code that shares
+  nothing with the reader) the rule route scored 70 of 100 on its first run, where it scores
+  200 of 200 on the set it was fixed against. Three templates scored 0 of 10: two different
+  piece counts in one email (it filed on the later figure), Hinglish "packets" (not read as a
+  piece count, so it asked), and a signature with the company on its own line (it took the
+  person's name as the customer).
+- **Cause.** The 100% on the 200-email set was measured after fixing what that set found, so it
+  was never independent. The hard set is the first measurement the reader has not seen.
+- **Decision.** The reader is left as it is. Fixing it now would change the deterministic arm
+  mid-way through the ablation and turn the hard set into a development set. Both numbers
+  would be reported if it is fixed later (D-087).
+- **Carry.** The signature failure is partly a test-design confound: the older sets sign as
+  "Logistics desk, Company" and the reader learned that layout. The write-up says so.
+
+### P-77 · The corpus generator crashes on some seeds
+**Post-v1.0 (B7) · Mounika · worked around**
+
+- **Symptom.** `generate_records(100, seed=9032)` raised `AttributeError: 'float' object has no
+  attribute 'split'`.
+- **Cause.** One audited corridor has a null destination facility name, and `_city_of` is
+  called on it when the city column is also null. The earlier seeds never drew that corridor.
+- **Fix.** The invoice boundary set uses seed 9033 and says why next to the constant. The
+  generator itself is not changed, because changing it would change every set built from it.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
