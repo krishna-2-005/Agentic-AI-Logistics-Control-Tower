@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-21T10:10:17.983696+00:00",
+  "generated_at": "2026-10-21T11:15:13.912247+00:00",
   "decision": "D-076",
   "seed": 20261021,
   "n_bootstrap": 10000,
@@ -2627,6 +2627,6526 @@
         "wins_after_holm_block": 6,
         "slices_point_estimate_below_zero": 13,
         "overall_wins_block_ci_below_zero": true
+      }
+    },
+    "lightgbm_l1": {
+      "own_mae": {
+        "mae": 30.1897,
+        "ci_block_day": [
+          28.2248,
+          31.7452
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 30.1897,
+          "mae_bar": 32.3932,
+          "delta_mae": -2.2035,
+          "ci_block_day": [
+            -2.8538,
+            -1.6181
+          ],
+          "ci_block_6h": [
+            -3.0627,
+            -1.5603
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.1411,
+            -1.4321
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -5.3914,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.2048,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 101.2003,
+          "mae_bar": 132.9706,
+          "delta_mae": -31.7702,
+          "ci_block_day": [
+            -47.4932,
+            -18.0246
+          ],
+          "ci_block_6h": [
+            -52.5683,
+            -15.5723
+          ],
+          "ci_paired_legs_optimistic": [
+            -54.4023,
+            -13.334
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -5.1619,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.1986,
+            "p": 0.001381,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 27.3325,
+          "mae_bar": 28.3464,
+          "delta_mae": -1.0139,
+          "ci_block_day": [
+            -1.2765,
+            -0.7625
+          ],
+          "ci_block_6h": [
+            -1.3351,
+            -0.639
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.2876,
+            -0.7412
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -10.3891,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.5138,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 76.7558,
+          "mae_bar": 99.5374,
+          "delta_mae": -22.7816,
+          "ci_block_day": [
+            -38.9245,
+            -12.3451
+          ],
+          "ci_block_6h": [
+            -39.2916,
+            -11.7125
+          ],
+          "ci_paired_legs_optimistic": [
+            -38.6324,
+            -10.1275
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.0108,
+            "p": 6.1e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.1567,
+            "p": 0.001596,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 76.7558,
+          "mae_bar": 99.5374,
+          "delta_mae": -22.7816,
+          "ci_block_day": [
+            -38.6425,
+            -12.6674
+          ],
+          "ci_block_6h": [
+            -39.2985,
+            -11.4632
+          ],
+          "ci_paired_legs_optimistic": [
+            -38.7458,
+            -10.1165
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.0108,
+            "p": 6.1e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.1567,
+            "p": 0.001596,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.000366,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 31.2739,
+          "mae_bar": 31.7862,
+          "delta_mae": -0.5123,
+          "ci_block_day": [
+            -0.9278,
+            -0.185
+          ],
+          "ci_block_6h": [
+            -0.9161,
+            -0.1943
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.9928,
+            -0.0279
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0018,
+          "p_wilcoxon_optimistic": 0.125768,
+          "dm_day_bandwidth": {
+            "statistic": -3.6783,
+            "p": 0.000235,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.1247,
+            "p": 0.033608,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.000705,
+          "holm_p_wilcoxon": 0.125768
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 25.2621,
+          "mae_bar": 26.255,
+          "delta_mae": -0.993,
+          "ci_block_day": [
+            -1.3051,
+            -0.7537
+          ],
+          "ci_block_6h": [
+            -1.3998,
+            -0.5167
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.3833,
+            -0.6266
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 6e-06,
+          "dm_day_bandwidth": {
+            "statistic": -8.739,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.3135,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 4.2e-05
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 27.4384,
+          "mae_bar": 29.4506,
+          "delta_mae": -2.0123,
+          "ci_block_day": [
+            -2.9354,
+            -0.8899
+          ],
+          "ci_block_6h": [
+            -2.8238,
+            -1.1226
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.6838,
+            -1.3333
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0012,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -9.1673,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.2487,
+            "p": 0.0,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 35.4528,
+          "mae_bar": 38.1642,
+          "delta_mae": -2.7114,
+          "ci_block_day": [
+            -3.9897,
+            -1.6681
+          ],
+          "ci_block_6h": [
+            -4.6358,
+            -1.3795
+          ],
+          "ci_paired_legs_optimistic": [
+            -4.6075,
+            -1.2209
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 3.1e-05,
+          "dm_day_bandwidth": {
+            "statistic": -3.8166,
+            "p": 0.000135,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.2065,
+            "p": 0.001343,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00063,
+          "holm_p_wilcoxon": 0.000186
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 25.0956,
+          "mae_bar": 26.8075,
+          "delta_mae": -1.7119,
+          "ci_block_day": [
+            -2.0053,
+            -1.5182
+          ],
+          "ci_block_6h": [
+            -2.1724,
+            -1.1926
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.1585,
+            -1.2899
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -13.0013,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.7552,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 17.6333,
+          "mae_bar": 18.4686,
+          "delta_mae": -0.8353,
+          "ci_block_day": [
+            -1.135,
+            -0.6104
+          ],
+          "ci_block_6h": [
+            -1.2632,
+            -0.3847
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.2136,
+            -0.4659
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0008,
+          "p_wilcoxon_optimistic": 3e-06,
+          "dm_day_bandwidth": {
+            "statistic": -10.3508,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.2031,
+            "p": 2.6e-05,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 2.4e-05
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 24.9066,
+          "mae_bar": 26.623,
+          "delta_mae": -1.7165,
+          "ci_block_day": [
+            -2.3286,
+            -1.1573
+          ],
+          "ci_block_6h": [
+            -2.1736,
+            -1.2472
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.3096,
+            -1.1601
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -14.6748,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -6.1236,
+            "p": 0.0,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 52.0102,
+          "mae_bar": 56.491,
+          "delta_mae": -4.4808,
+          "ci_block_day": [
+            -6.7369,
+            -2.4696
+          ],
+          "ci_block_6h": [
+            -7.3699,
+            -2.2646
+          ],
+          "ci_paired_legs_optimistic": [
+            -7.5823,
+            -1.9707
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.000115,
+          "dm_day_bandwidth": {
+            "statistic": -3.8344,
+            "p": 0.000126,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.1725,
+            "p": 0.001511,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00063,
+          "holm_p_wilcoxon": 0.000575
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 31.1837,
+          "mae_bar": 33.5638,
+          "delta_mae": -2.3801,
+          "ci_block_day": [
+            -4.3952,
+            -0.9067
+          ],
+          "ci_block_6h": [
+            -4.6441,
+            -0.8479
+          ],
+          "ci_paired_legs_optimistic": [
+            -4.8007,
+            -0.5634
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.013958,
+          "dm_day_bandwidth": {
+            "statistic": -5.9924,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.2547,
+            "p": 0.024149,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.041874
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 40.5146,
+          "mae_bar": 43.7408,
+          "delta_mae": -3.2262,
+          "ci_block_day": [
+            -6.4058,
+            -1.3317
+          ],
+          "ci_block_6h": [
+            -6.7082,
+            -1.2807
+          ],
+          "ci_paired_legs_optimistic": [
+            -7.2865,
+            -0.8646
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.00739,
+          "dm_day_bandwidth": {
+            "statistic": -2.6213,
+            "p": 0.008761,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.7702,
+            "p": 0.076692,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.017522,
+          "holm_p_wilcoxon": 0.02956
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 34.5389,
+          "mae_bar": 36.7141,
+          "delta_mae": -2.1752,
+          "ci_block_day": [
+            -5.1381,
+            -0.2587
+          ],
+          "ci_block_6h": [
+            -5.2598,
+            -0.1886
+          ],
+          "ci_paired_legs_optimistic": [
+            -5.4222,
+            -0.2403
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.007799,
+          "p_block_6h": 0.020457,
+          "p_wilcoxon_optimistic": 0.033721,
+          "dm_day_bandwidth": {
+            "statistic": -1.8308,
+            "p": 0.067134,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.6802,
+            "p": 0.092921,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.007799,
+          "holm_p_dm_day": 0.067134,
+          "holm_p_wilcoxon": 0.067442
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 25.6599,
+          "mae_bar": 27.4873,
+          "delta_mae": -1.8274,
+          "ci_block_day": [
+            -2.1531,
+            -1.5759
+          ],
+          "ci_block_6h": [
+            -2.213,
+            -1.565
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.3403,
+            -1.3406
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -11.8155,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.8099,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 14,
+        "wins_after_holm_block": 14,
+        "slices_point_estimate_below_zero": 14,
+        "overall_wins_block_ci_below_zero": true
+      }
+    },
+    "lightgbm_huber": {
+      "own_mae": {
+        "mae": 31.0562,
+        "ci_block_day": [
+          29.086,
+          32.7185
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 31.0562,
+          "mae_bar": 32.3932,
+          "delta_mae": -1.337,
+          "ci_block_day": [
+            -1.5973,
+            -1.0451
+          ],
+          "ci_block_6h": [
+            -1.6466,
+            -1.0086
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.7456,
+            -0.967
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 8e-06,
+          "dm_day_bandwidth": {
+            "statistic": -9.3792,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -6.733,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 118.9028,
+          "mae_bar": 132.9706,
+          "delta_mae": -14.0678,
+          "ci_block_day": [
+            -17.9115,
+            -10.8916
+          ],
+          "ci_block_6h": [
+            -19.8029,
+            -9.3646
+          ],
+          "ci_paired_legs_optimistic": [
+            -21.3565,
+            -7.7621
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 1e-06,
+          "dm_day_bandwidth": {
+            "statistic": -11.382,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.675,
+            "p": 3e-06,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 27.5216,
+          "mae_bar": 28.3464,
+          "delta_mae": -0.8248,
+          "ci_block_day": [
+            -1.1021,
+            -0.5525
+          ],
+          "ci_block_6h": [
+            -1.1633,
+            -0.4581
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.103,
+            -0.5472
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.000722,
+          "dm_day_bandwidth": {
+            "statistic": -7.3409,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.7521,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 89.1243,
+          "mae_bar": 99.5374,
+          "delta_mae": -10.4131,
+          "ci_block_day": [
+            -13.7782,
+            -8.4746
+          ],
+          "ci_block_6h": [
+            -14.6591,
+            -7.274
+          ],
+          "ci_paired_legs_optimistic": [
+            -15.6526,
+            -5.9375
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 3e-06,
+          "dm_day_bandwidth": {
+            "statistic": -7.8259,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.742,
+            "p": 2e-06,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 89.1243,
+          "mae_bar": 99.5374,
+          "delta_mae": -10.4131,
+          "ci_block_day": [
+            -13.7403,
+            -8.4746
+          ],
+          "ci_block_6h": [
+            -14.5846,
+            -7.1751
+          ],
+          "ci_paired_legs_optimistic": [
+            -15.5856,
+            -5.954
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 3e-06,
+          "dm_day_bandwidth": {
+            "statistic": -7.8259,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.742,
+            "p": 2e-06,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 3.3e-05
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 31.3048,
+          "mae_bar": 31.7862,
+          "delta_mae": -0.4814,
+          "ci_block_day": [
+            -0.9684,
+            0.0846
+          ],
+          "ci_block_6h": [
+            -1.0253,
+            -0.0448
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.0357,
+            0.0832
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.092391,
+          "p_block_6h": 0.029597,
+          "p_wilcoxon_optimistic": 0.560342,
+          "dm_day_bandwidth": {
+            "statistic": -2.2861,
+            "p": 0.022246,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.7422,
+            "p": 0.081475,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.092391,
+          "holm_p_dm_day": 0.022246,
+          "holm_p_wilcoxon": 1.0
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 25.4756,
+          "mae_bar": 26.255,
+          "delta_mae": -0.7795,
+          "ci_block_day": [
+            -1.1716,
+            -0.4422
+          ],
+          "ci_block_6h": [
+            -1.218,
+            -0.2746
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.1615,
+            -0.4198
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0024,
+          "p_wilcoxon_optimistic": 0.135307,
+          "dm_day_bandwidth": {
+            "statistic": -4.5935,
+            "p": 4e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.1656,
+            "p": 3.1e-05,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 1.6e-05,
+          "holm_p_wilcoxon": 0.676535
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 27.8676,
+          "mae_bar": 29.4506,
+          "delta_mae": -1.583,
+          "ci_block_day": [
+            -2.7258,
+            -0.3033
+          ],
+          "ci_block_6h": [
+            -2.5884,
+            -0.3973
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.2536,
+            -0.9006
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.018998,
+          "p_block_6h": 0.009999,
+          "p_wilcoxon_optimistic": 7e-06,
+          "dm_day_bandwidth": {
+            "statistic": -5.9468,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.933,
+            "p": 8.4e-05,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.056994,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 7e-05
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 36.8284,
+          "mae_bar": 38.1642,
+          "delta_mae": -1.3358,
+          "ci_block_day": [
+            -1.6925,
+            -0.8423
+          ],
+          "ci_block_6h": [
+            -1.9142,
+            -0.8078
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.0321,
+            -0.7158
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.14116,
+          "dm_day_bandwidth": {
+            "statistic": -8.4004,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.981,
+            "p": 6.9e-05,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.676535
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 25.4693,
+          "mae_bar": 26.8075,
+          "delta_mae": -1.3382,
+          "ci_block_day": [
+            -1.6115,
+            -1.1359
+          ],
+          "ci_block_6h": [
+            -1.8192,
+            -0.8746
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.7683,
+            -0.9229
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 2e-06,
+          "dm_day_bandwidth": {
+            "statistic": -9.8514,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -6.3048,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 2.4e-05
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 17.9624,
+          "mae_bar": 18.4686,
+          "delta_mae": -0.5062,
+          "ci_block_day": [
+            -0.7194,
+            -0.3065
+          ],
+          "ci_block_6h": [
+            -0.9173,
+            -0.1164
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.8636,
+            -0.1456
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.014999,
+          "p_wilcoxon_optimistic": 0.063645,
+          "dm_day_bandwidth": {
+            "statistic": -6.0763,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.5983,
+            "p": 0.009368,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.38187
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 25.3168,
+          "mae_bar": 26.623,
+          "delta_mae": -1.3062,
+          "ci_block_day": [
+            -1.7972,
+            -0.8244
+          ],
+          "ci_block_6h": [
+            -1.7025,
+            -0.9215
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.8449,
+            -0.8034
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.002492,
+          "dm_day_bandwidth": {
+            "statistic": -10.8774,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.2961,
+            "p": 0.0,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.022428
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 54.0712,
+          "mae_bar": 56.491,
+          "delta_mae": -2.4198,
+          "ci_block_day": [
+            -3.2432,
+            -1.5654
+          ],
+          "ci_block_6h": [
+            -3.2879,
+            -1.4484
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.5356,
+            -1.3952
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.003324,
+          "dm_day_bandwidth": {
+            "statistic": -8.0928,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.4229,
+            "p": 1e-05,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.026592
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 32.7437,
+          "mae_bar": 33.5638,
+          "delta_mae": -0.8201,
+          "ci_block_day": [
+            -1.3905,
+            -0.3276
+          ],
+          "ci_block_6h": [
+            -1.4345,
+            -0.2861
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.6693,
+            -0.0654
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.877026,
+          "dm_day_bandwidth": {
+            "statistic": -5.5702,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.9503,
+            "p": 0.051135,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 1.0
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 42.5339,
+          "mae_bar": 43.7408,
+          "delta_mae": -1.2069,
+          "ci_block_day": [
+            -2.0815,
+            -0.2327
+          ],
+          "ci_block_6h": [
+            -2.1539,
+            -0.0778
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.5833,
+            -0.0313
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.023598,
+          "p_block_6h": 0.043531,
+          "p_wilcoxon_optimistic": 0.216008,
+          "dm_day_bandwidth": {
+            "statistic": -2.7338,
+            "p": 0.006262,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.7224,
+            "p": 0.085003,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.056994,
+          "holm_p_dm_day": 0.012524,
+          "holm_p_wilcoxon": 0.676535
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 35.0299,
+          "mae_bar": 36.7141,
+          "delta_mae": -1.6841,
+          "ci_block_day": [
+            -3.0039,
+            -0.82
+          ],
+          "ci_block_6h": [
+            -3.0823,
+            -0.7957
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.8905,
+            -0.6793
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.016401,
+          "dm_day_bandwidth": {
+            "statistic": -3.1846,
+            "p": 0.00145,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.2055,
+            "p": 0.001348,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00435,
+          "holm_p_wilcoxon": 0.114807
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 25.882,
+          "mae_bar": 27.4873,
+          "delta_mae": -1.6053,
+          "ci_block_day": [
+            -1.8354,
+            -1.4193
+          ],
+          "ci_block_6h": [
+            -1.8668,
+            -1.3941
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.0945,
+            -1.1481
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -9.6043,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -6.8506,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 13,
+        "wins_after_holm_block": 11,
+        "slices_point_estimate_below_zero": 14,
+        "overall_wins_block_ci_below_zero": true
+      }
+    },
+    "xgboost_l1": {
+      "own_mae": {
+        "mae": 30.4868,
+        "ci_block_day": [
+          28.5363,
+          32.0944
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 30.4868,
+          "mae_bar": 32.3932,
+          "delta_mae": -1.9065,
+          "ci_block_day": [
+            -2.6035,
+            -1.2813
+          ],
+          "ci_block_6h": [
+            -2.8764,
+            -1.187
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.8822,
+            -1.1008
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.045226,
+          "dm_day_bandwidth": {
+            "statistic": -4.4109,
+            "p": 1e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.2212,
+            "p": 2.4e-05,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 105.9373,
+          "mae_bar": 132.9706,
+          "delta_mae": -27.0333,
+          "ci_block_day": [
+            -43.3826,
+            -13.0657
+          ],
+          "ci_block_6h": [
+            -49.7796,
+            -10.7643
+          ],
+          "ci_paired_legs_optimistic": [
+            -50.8332,
+            -8.5698
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 7.2e-05,
+          "dm_day_bandwidth": {
+            "statistic": -3.8606,
+            "p": 0.000113,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.6005,
+            "p": 0.009309,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 27.4509,
+          "mae_bar": 28.3464,
+          "delta_mae": -0.8955,
+          "ci_block_day": [
+            -1.1894,
+            -0.682
+          ],
+          "ci_block_6h": [
+            -1.2466,
+            -0.54
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.2806,
+            -0.5325
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.278952,
+          "dm_day_bandwidth": {
+            "statistic": -8.1834,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.911,
+            "p": 1e-06,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 80.2179,
+          "mae_bar": 99.5374,
+          "delta_mae": -19.3195,
+          "ci_block_day": [
+            -35.7265,
+            -8.7417
+          ],
+          "ci_block_6h": [
+            -36.5105,
+            -7.8281
+          ],
+          "ci_paired_legs_optimistic": [
+            -35.4892,
+            -6.2297
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 2.4e-05,
+          "dm_day_bandwidth": {
+            "statistic": -3.1616,
+            "p": 0.001569,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.5672,
+            "p": 0.010251,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 80.2179,
+          "mae_bar": 99.5374,
+          "delta_mae": -19.3195,
+          "ci_block_day": [
+            -35.7265,
+            -8.7417
+          ],
+          "ci_block_6h": [
+            -36.2022,
+            -7.7019
+          ],
+          "ci_paired_legs_optimistic": [
+            -36.2548,
+            -6.2747
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 2.4e-05,
+          "dm_day_bandwidth": {
+            "statistic": -3.1616,
+            "p": 0.001569,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.5672,
+            "p": 0.010251,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.009414,
+          "holm_p_wilcoxon": 0.000312
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 31.2277,
+          "mae_bar": 31.7862,
+          "delta_mae": -0.5585,
+          "ci_block_day": [
+            -1.231,
+            0.0597
+          ],
+          "ci_block_6h": [
+            -1.168,
+            -0.0741
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.1932,
+            0.0649
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.075992,
+          "p_block_6h": 0.022598,
+          "p_wilcoxon_optimistic": 0.726473,
+          "dm_day_bandwidth": {
+            "statistic": -3.0752,
+            "p": 0.002104,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.8463,
+            "p": 0.064851,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.227976,
+          "holm_p_dm_day": 0.01052,
+          "holm_p_wilcoxon": 1.0
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 25.3157,
+          "mae_bar": 26.255,
+          "delta_mae": -0.9394,
+          "ci_block_day": [
+            -1.3697,
+            -0.6034
+          ],
+          "ci_block_6h": [
+            -1.4563,
+            -0.429
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.4991,
+            -0.4319
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0006,
+          "p_wilcoxon_optimistic": 0.274171,
+          "dm_day_bandwidth": {
+            "statistic": -5.3855,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.4384,
+            "p": 0.000585,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 1.0
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 28.1073,
+          "mae_bar": 29.4506,
+          "delta_mae": -1.3434,
+          "ci_block_day": [
+            -2.2429,
+            -0.5258
+          ],
+          "ci_block_6h": [
+            -2.2482,
+            -0.3497
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.0766,
+            -0.6117
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.007599,
+          "p_wilcoxon_optimistic": 0.000121,
+          "dm_day_bandwidth": {
+            "statistic": -7.5885,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.3117,
+            "p": 0.000927,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.001452
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 35.7523,
+          "mae_bar": 38.1642,
+          "delta_mae": -2.4119,
+          "ci_block_day": [
+            -3.8481,
+            -1.1186
+          ],
+          "ci_block_6h": [
+            -4.5015,
+            -1.0008
+          ],
+          "ci_paired_legs_optimistic": [
+            -4.2533,
+            -0.8885
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.85783,
+          "dm_day_bandwidth": {
+            "statistic": -2.8432,
+            "p": 0.004466,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.688,
+            "p": 0.007189,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.017864,
+          "holm_p_wilcoxon": 1.0
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 25.3902,
+          "mae_bar": 26.8075,
+          "delta_mae": -1.4173,
+          "ci_block_day": [
+            -1.7122,
+            -1.3047
+          ],
+          "ci_block_6h": [
+            -1.9544,
+            -0.9118
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.0089,
+            -0.8702
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0033,
+          "dm_day_bandwidth": {
+            "statistic": -19.1467,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.9935,
+            "p": 1e-06,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.033
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 18.408,
+          "mae_bar": 18.4686,
+          "delta_mae": -0.0606,
+          "ci_block_day": [
+            -0.2391,
+            0.1658
+          ],
+          "ci_block_6h": [
+            -0.4623,
+            0.3254
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.4083,
+            0.2951
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.525947,
+          "p_block_6h": 0.756524,
+          "p_wilcoxon_optimistic": 0.274433,
+          "dm_day_bandwidth": {
+            "statistic": -0.5191,
+            "p": 0.603682,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -0.3354,
+            "p": 0.737344,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.525947,
+          "holm_p_dm_day": 0.603682,
+          "holm_p_wilcoxon": 1.0
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 24.949,
+          "mae_bar": 26.623,
+          "delta_mae": -1.674,
+          "ci_block_day": [
+            -2.2409,
+            -1.2637
+          ],
+          "ci_block_6h": [
+            -2.3479,
+            -1.1376
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.5039,
+            -0.9329
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.10602,
+          "dm_day_bandwidth": {
+            "statistic": -10.871,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.2213,
+            "p": 2.4e-05,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.84816
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 51.9931,
+          "mae_bar": 56.491,
+          "delta_mae": -4.4979,
+          "ci_block_day": [
+            -7.0722,
+            -1.9937
+          ],
+          "ci_block_6h": [
+            -7.7031,
+            -2.1452
+          ],
+          "ci_paired_legs_optimistic": [
+            -7.644,
+            -1.9785
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.004397,
+          "dm_day_bandwidth": {
+            "statistic": -3.2804,
+            "p": 0.001037,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.0541,
+            "p": 0.002257,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.007259,
+          "holm_p_wilcoxon": 0.039573
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 31.579,
+          "mae_bar": 33.5638,
+          "delta_mae": -1.9847,
+          "ci_block_day": [
+            -4.1293,
+            -0.4119
+          ],
+          "ci_block_6h": [
+            -4.4288,
+            -0.2959
+          ],
+          "ci_paired_legs_optimistic": [
+            -4.3915,
+            -0.2244
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.005999,
+          "p_block_6h": 0.018832,
+          "p_wilcoxon_optimistic": 0.321144,
+          "dm_day_bandwidth": {
+            "statistic": -4.2433,
+            "p": 2.2e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.8618,
+            "p": 0.062632,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.023996,
+          "holm_p_dm_day": 0.000176,
+          "holm_p_wilcoxon": 1.0
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 39.9449,
+          "mae_bar": 43.7408,
+          "delta_mae": -3.7959,
+          "ci_block_day": [
+            -7.7517,
+            -1.3733
+          ],
+          "ci_block_6h": [
+            -8.2326,
+            -1.2734
+          ],
+          "ci_paired_legs_optimistic": [
+            -8.5132,
+            -0.855
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.334729,
+          "dm_day_bandwidth": {
+            "statistic": -2.3785,
+            "p": 0.017382,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.8018,
+            "p": 0.071579,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.052146,
+          "holm_p_wilcoxon": 1.0
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 35.0278,
+          "mae_bar": 36.7141,
+          "delta_mae": -1.6863,
+          "ci_block_day": [
+            -4.4774,
+            0.1368
+          ],
+          "ci_block_6h": [
+            -4.842,
+            0.1658
+          ],
+          "ci_paired_legs_optimistic": [
+            -4.7753,
+            0.3224
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.10059,
+          "p_block_6h": 0.129776,
+          "p_wilcoxon_optimistic": 0.487533,
+          "dm_day_bandwidth": {
+            "statistic": -1.5919,
+            "p": 0.111415,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.3999,
+            "p": 0.161545,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.227976,
+          "holm_p_dm_day": 0.22283,
+          "holm_p_wilcoxon": 1.0
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 26.075,
+          "mae_bar": 27.4873,
+          "delta_mae": -1.4123,
+          "ci_block_day": [
+            -1.7408,
+            -1.1555
+          ],
+          "ci_block_6h": [
+            -1.7577,
+            -1.1322
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.0126,
+            -0.8728
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.001528,
+          "dm_day_bandwidth": {
+            "statistic": -7.9943,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.0816,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.016808
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 11,
+        "wins_after_holm_block": 11,
+        "slices_point_estimate_below_zero": 14,
+        "overall_wins_block_ci_below_zero": true
+      }
+    },
+    "histgbr_l1": {
+      "own_mae": {
+        "mae": 30.3283,
+        "ci_block_day": [
+          28.3927,
+          31.8941
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 30.3283,
+          "mae_bar": 32.3932,
+          "delta_mae": -2.065,
+          "ci_block_day": [
+            -2.7636,
+            -1.4932
+          ],
+          "ci_block_6h": [
+            -2.981,
+            -1.4064
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.007,
+            -1.2922
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.7914,
+            "p": 2e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.8201,
+            "p": 1e-06,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 102.5419,
+          "mae_bar": 132.9706,
+          "delta_mae": -30.4287,
+          "ci_block_day": [
+            -46.5545,
+            -16.4475
+          ],
+          "ci_block_6h": [
+            -52.2726,
+            -14.1622
+          ],
+          "ci_paired_legs_optimistic": [
+            -53.7531,
+            -12.282
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.5611,
+            "p": 5e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.0204,
+            "p": 0.002525,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 27.4226,
+          "mae_bar": 28.3464,
+          "delta_mae": -0.9237,
+          "ci_block_day": [
+            -1.1415,
+            -0.7575
+          ],
+          "ci_block_6h": [
+            -1.1676,
+            -0.6445
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.1825,
+            -0.6708
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -10.4294,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.2458,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 77.4131,
+          "mae_bar": 99.5374,
+          "delta_mae": -22.1243,
+          "ci_block_day": [
+            -38.4817,
+            -11.7749
+          ],
+          "ci_block_6h": [
+            -39.764,
+            -10.4055
+          ],
+          "ci_paired_legs_optimistic": [
+            -37.8832,
+            -9.2682
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -3.7269,
+            "p": 0.000194,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.0177,
+            "p": 0.002547,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 77.4131,
+          "mae_bar": 99.5374,
+          "delta_mae": -22.1243,
+          "ci_block_day": [
+            -38.4817,
+            -11.7749
+          ],
+          "ci_block_6h": [
+            -38.8441,
+            -10.181
+          ],
+          "ci_paired_legs_optimistic": [
+            -38.1106,
+            -9.2041
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -3.7269,
+            "p": 0.000194,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.0177,
+            "p": 0.002547,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00097,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 31.3355,
+          "mae_bar": 31.7862,
+          "delta_mae": -0.4507,
+          "ci_block_day": [
+            -0.8385,
+            -0.1693
+          ],
+          "ci_block_6h": [
+            -0.8514,
+            -0.1701
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.9361,
+            0.0236
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.037599,
+          "dm_day_bandwidth": {
+            "statistic": -4.4582,
+            "p": 8e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.8729,
+            "p": 0.061086,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 4.8e-05,
+          "holm_p_wilcoxon": 0.037599
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 25.4133,
+          "mae_bar": 26.255,
+          "delta_mae": -0.8418,
+          "ci_block_day": [
+            -1.1534,
+            -0.5685
+          ],
+          "ci_block_6h": [
+            -1.1637,
+            -0.4894
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.2,
+            -0.4967
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -6.0757,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.8292,
+            "p": 1e-06,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 27.4812,
+          "mae_bar": 29.4506,
+          "delta_mae": -1.9694,
+          "ci_block_day": [
+            -2.7322,
+            -1.0196
+          ],
+          "ci_block_6h": [
+            -2.7794,
+            -1.0177
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.6537,
+            -1.2812
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -11.1246,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.8613,
+            "p": 1e-06,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 35.6554,
+          "mae_bar": 38.1642,
+          "delta_mae": -2.5089,
+          "ci_block_day": [
+            -3.8033,
+            -1.4925
+          ],
+          "ci_block_6h": [
+            -4.5327,
+            -1.1668
+          ],
+          "ci_paired_legs_optimistic": [
+            -4.3722,
+            -1.0096
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 6.2e-05,
+          "dm_day_bandwidth": {
+            "statistic": -3.3573,
+            "p": 0.000787,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.9639,
+            "p": 0.003038,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.003148,
+          "holm_p_wilcoxon": 0.000372
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 25.1721,
+          "mae_bar": 26.8075,
+          "delta_mae": -1.6353,
+          "ci_block_day": [
+            -1.9167,
+            -1.4609
+          ],
+          "ci_block_6h": [
+            -1.9838,
+            -1.2578
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.0475,
+            -1.245
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -12.987,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.9688,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 17.5887,
+          "mae_bar": 18.4686,
+          "delta_mae": -0.88,
+          "ci_block_day": [
+            -1.0868,
+            -0.7536
+          ],
+          "ci_block_6h": [
+            -1.2444,
+            -0.5333
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.2334,
+            -0.5298
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -11.4407,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.7176,
+            "p": 2e-06,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 25.0059,
+          "mae_bar": 26.623,
+          "delta_mae": -1.6171,
+          "ci_block_day": [
+            -2.2189,
+            -1.0803
+          ],
+          "ci_block_6h": [
+            -2.0545,
+            -1.2026
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.1498,
+            -1.1302
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -15.332,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -6.3561,
+            "p": 0.0,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 52.4241,
+          "mae_bar": 56.491,
+          "delta_mae": -4.0669,
+          "ci_block_day": [
+            -6.4865,
+            -1.8674
+          ],
+          "ci_block_6h": [
+            -7.1688,
+            -1.8425
+          ],
+          "ci_paired_legs_optimistic": [
+            -7.2418,
+            -1.5779
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.000247,
+          "dm_day_bandwidth": {
+            "statistic": -3.3165,
+            "p": 0.000912,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.8847,
+            "p": 0.003918,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.003148,
+          "holm_p_wilcoxon": 0.001235
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 31.1207,
+          "mae_bar": 33.5638,
+          "delta_mae": -2.4431,
+          "ci_block_day": [
+            -4.3303,
+            -1.0984
+          ],
+          "ci_block_6h": [
+            -4.5357,
+            -0.9835
+          ],
+          "ci_paired_legs_optimistic": [
+            -4.7084,
+            -0.7184
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.001118,
+          "dm_day_bandwidth": {
+            "statistic": -6.0623,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.4094,
+            "p": 0.01598,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.004472
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 40.5307,
+          "mae_bar": 43.7408,
+          "delta_mae": -3.2101,
+          "ci_block_day": [
+            -6.8888,
+            -1.0058
+          ],
+          "ci_block_6h": [
+            -7.1729,
+            -0.9459
+          ],
+          "ci_paired_legs_optimistic": [
+            -7.3836,
+            -0.7625
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.009053,
+          "dm_day_bandwidth": {
+            "statistic": -2.2587,
+            "p": 0.023904,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.6618,
+            "p": 0.096549,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.047808,
+          "holm_p_wilcoxon": 0.022896
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 34.5616,
+          "mae_bar": 36.7141,
+          "delta_mae": -2.1525,
+          "ci_block_day": [
+            -5.3111,
+            -0.0229
+          ],
+          "ci_block_6h": [
+            -5.8224,
+            0.0957
+          ],
+          "ci_paired_legs_optimistic": [
+            -5.4091,
+            -0.2357
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.045195,
+          "p_block_6h": 0.061184,
+          "p_wilcoxon_optimistic": 0.007632,
+          "dm_day_bandwidth": {
+            "statistic": -1.6772,
+            "p": 0.093506,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.5297,
+            "p": 0.126098,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.045195,
+          "holm_p_dm_day": 0.093506,
+          "holm_p_wilcoxon": 0.022896
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 25.9887,
+          "mae_bar": 27.4873,
+          "delta_mae": -1.4986,
+          "ci_block_day": [
+            -1.7532,
+            -1.3065
+          ],
+          "ci_block_6h": [
+            -1.8001,
+            -1.2949
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.9521,
+            -1.0617
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -12.6591,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.1813,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 14,
+        "wins_after_holm_block": 14,
+        "slices_point_estimate_below_zero": 14,
+        "overall_wins_block_ci_below_zero": true
+      }
+    },
+    "quantile_linear": {
+      "own_mae": {
+        "mae": 33.6314,
+        "ci_block_day": [
+          30.8353,
+          36.0312
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 33.6314,
+          "mae_bar": 32.3932,
+          "delta_mae": 1.2381,
+          "ci_block_day": [
+            0.4449,
+            2.0431
+          ],
+          "ci_block_6h": [
+            0.4317,
+            2.1108
+          ],
+          "ci_paired_legs_optimistic": [
+            0.2485,
+            2.2587
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.005,
+          "p_wilcoxon_optimistic": 1e-06,
+          "dm_day_bandwidth": {
+            "statistic": 3.2938,
+            "p": 0.000989,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 2.5222,
+            "p": 0.011661,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 117.0115,
+          "mae_bar": 132.9706,
+          "delta_mae": -15.9591,
+          "ci_block_day": [
+            -24.7121,
+            -8.7169
+          ],
+          "ci_block_6h": [
+            -26.828,
+            -7.4282
+          ],
+          "ci_paired_legs_optimistic": [
+            -28.2246,
+            -5.8798
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.011285,
+          "dm_day_bandwidth": {
+            "statistic": -5.2389,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.0311,
+            "p": 0.002437,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 30.2764,
+          "mae_bar": 28.3464,
+          "delta_mae": 1.9301,
+          "ci_block_day": [
+            1.1571,
+            2.6997
+          ],
+          "ci_block_6h": [
+            1.1415,
+            2.9493
+          ],
+          "ci_paired_legs_optimistic": [
+            1.0292,
+            2.8722
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": 5.0535,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 4.038,
+            "p": 5.4e-05,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 87.4399,
+          "mae_bar": 99.5374,
+          "delta_mae": -12.0975,
+          "ci_block_day": [
+            -19.8595,
+            -7.0477
+          ],
+          "ci_block_6h": [
+            -20.3319,
+            -6.1472
+          ],
+          "ci_paired_legs_optimistic": [
+            -20.586,
+            -5.0852
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0004,
+          "p_wilcoxon_optimistic": 0.001497,
+          "dm_day_bandwidth": {
+            "statistic": -4.6975,
+            "p": 3e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.1261,
+            "p": 0.001771,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 87.4399,
+          "mae_bar": 99.5374,
+          "delta_mae": -12.0975,
+          "ci_block_day": [
+            -20.0006,
+            -7.0477
+          ],
+          "ci_block_6h": [
+            -20.1841,
+            -6.1512
+          ],
+          "ci_paired_legs_optimistic": [
+            -20.6608,
+            -5.196
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.001497,
+          "dm_day_bandwidth": {
+            "statistic": -4.6975,
+            "p": 3e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.1261,
+            "p": 0.001771,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 3.3e-05,
+          "holm_p_wilcoxon": 0.008982
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 36.7021,
+          "mae_bar": 31.7862,
+          "delta_mae": 4.9159,
+          "ci_block_day": [
+            2.7952,
+            7.0166
+          ],
+          "ci_block_6h": [
+            2.6946,
+            7.4126
+          ],
+          "ci_paired_legs_optimistic": [
+            2.5272,
+            7.4524
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 3e-06,
+          "dm_day_bandwidth": {
+            "statistic": 5.3864,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 3.6709,
+            "p": 0.000242,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 3.6e-05
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 27.1028,
+          "mae_bar": 26.255,
+          "delta_mae": 0.8477,
+          "ci_block_day": [
+            0.0492,
+            1.403
+          ],
+          "ci_block_6h": [
+            0.056,
+            1.7993
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.071,
+            1.7465
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.039396,
+          "p_block_6h": 0.034597,
+          "p_wilcoxon_optimistic": 1e-06,
+          "dm_day_bandwidth": {
+            "statistic": 4.9185,
+            "p": 1e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 1.7331,
+            "p": 0.083074,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.250572,
+          "holm_p_dm_day": 1.2e-05,
+          "holm_p_wilcoxon": 1.3e-05
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 29.6881,
+          "mae_bar": 29.4506,
+          "delta_mae": 0.2374,
+          "ci_block_day": [
+            -0.9583,
+            1.5727
+          ],
+          "ci_block_6h": [
+            -0.9998,
+            1.5434
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.7503,
+            1.2452
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.70353,
+          "p_block_6h": 0.687731,
+          "p_wilcoxon_optimistic": 0.458922,
+          "dm_day_bandwidth": {
+            "statistic": 0.5777,
+            "p": 0.563477,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 0.4162,
+            "p": 0.677232,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 1.0,
+          "holm_p_dm_day": 1.0,
+          "holm_p_wilcoxon": 0.613648
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 40.3349,
+          "mae_bar": 38.1642,
+          "delta_mae": 2.1707,
+          "ci_block_day": [
+            1.0237,
+            3.5897
+          ],
+          "ci_block_6h": [
+            0.8665,
+            3.2807
+          ],
+          "ci_paired_legs_optimistic": [
+            0.5101,
+            3.872
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.004,
+          "p_wilcoxon_optimistic": 3.8e-05,
+          "dm_day_bandwidth": {
+            "statistic": 4.2616,
+            "p": 2e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 2.6161,
+            "p": 0.008893,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00018,
+          "holm_p_wilcoxon": 0.00038
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 27.1429,
+          "mae_bar": 26.8075,
+          "delta_mae": 0.3355,
+          "ci_block_day": [
+            -0.6979,
+            1.2892
+          ],
+          "ci_block_6h": [
+            -0.722,
+            1.5918
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.7376,
+            1.4142
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.515548,
+          "p_block_6h": 0.579142,
+          "p_wilcoxon_optimistic": 0.003824,
+          "dm_day_bandwidth": {
+            "statistic": 0.5964,
+            "p": 0.550941,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 0.6257,
+            "p": 0.531544,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 1.0,
+          "holm_p_dm_day": 1.0,
+          "holm_p_wilcoxon": 0.01912
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 18.8406,
+          "mae_bar": 18.4686,
+          "delta_mae": 0.372,
+          "ci_block_day": [
+            -0.0765,
+            1.0158
+          ],
+          "ci_block_6h": [
+            -0.1831,
+            0.9752
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.199,
+            0.9415
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.171983,
+          "p_block_6h": 0.210179,
+          "p_wilcoxon_optimistic": 0.000206,
+          "dm_day_bandwidth": {
+            "statistic": 1.4262,
+            "p": 0.15381,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 1.3043,
+            "p": 0.192132,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.859915,
+          "holm_p_dm_day": 0.61524,
+          "holm_p_wilcoxon": 0.001854
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 28.1717,
+          "mae_bar": 26.623,
+          "delta_mae": 1.5486,
+          "ci_block_day": [
+            0.4329,
+            2.6913
+          ],
+          "ci_block_6h": [
+            0.0592,
+            3.2986
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.2758,
+            3.4091
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.005,
+          "p_block_6h": 0.039796,
+          "p_wilcoxon_optimistic": 0.189453,
+          "dm_day_bandwidth": {
+            "statistic": 3.2539,
+            "p": 0.001139,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 1.6666,
+            "p": 0.095599,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.04,
+          "holm_p_dm_day": 0.006834,
+          "holm_p_wilcoxon": 0.613648
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 58.4699,
+          "mae_bar": 56.491,
+          "delta_mae": 1.9789,
+          "ci_block_day": [
+            0.0262,
+            4.5265
+          ],
+          "ci_block_6h": [
+            -0.0478,
+            3.9871
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.5521,
+            4.4695
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.035796,
+          "p_block_6h": 0.055994,
+          "p_wilcoxon_optimistic": 0.000276,
+          "dm_day_bandwidth": {
+            "statistic": 4.3061,
+            "p": 1.7e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 1.6398,
+            "p": 0.101055,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.250572,
+          "holm_p_dm_day": 0.00017,
+          "holm_p_wilcoxon": 0.002208
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 34.7881,
+          "mae_bar": 33.5638,
+          "delta_mae": 1.2244,
+          "ci_block_day": [
+            -1.0711,
+            3.0508
+          ],
+          "ci_block_6h": [
+            -1.3441,
+            3.2943
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.9226,
+            3.389
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.268173,
+          "p_block_6h": 0.305717,
+          "p_wilcoxon_optimistic": 5e-06,
+          "dm_day_bandwidth": {
+            "statistic": 1.6069,
+            "p": 0.108074,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 1.0853,
+            "p": 0.277785,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 1.0,
+          "holm_p_dm_day": 0.54037,
+          "holm_p_wilcoxon": 5.5e-05
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 47.3408,
+          "mae_bar": 43.7408,
+          "delta_mae": 3.6,
+          "ci_block_day": [
+            2.0456,
+            5.4767
+          ],
+          "ci_block_6h": [
+            1.9604,
+            5.6837
+          ],
+          "ci_paired_legs_optimistic": [
+            0.3108,
+            7.1138
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.000846,
+          "dm_day_bandwidth": {
+            "statistic": 3.6521,
+            "p": 0.00026,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 2.4462,
+            "p": 0.014438,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00182,
+          "holm_p_wilcoxon": 0.005922
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 37.4365,
+          "mae_bar": 36.7141,
+          "delta_mae": 0.7224,
+          "ci_block_day": [
+            -1.8264,
+            3.4658
+          ],
+          "ci_block_6h": [
+            -2.3631,
+            3.6726
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.1149,
+            3.081
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.610739,
+          "p_block_6h": 0.624148,
+          "p_wilcoxon_optimistic": 0.153412,
+          "dm_day_bandwidth": {
+            "statistic": 1.0792,
+            "p": 0.280506,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 0.6419,
+            "p": 0.520919,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 1.0,
+          "holm_p_dm_day": 0.841518,
+          "holm_p_wilcoxon": 0.613648
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 28.2416,
+          "mae_bar": 27.4873,
+          "delta_mae": 0.7543,
+          "ci_block_day": [
+            0.4337,
+            1.151
+          ],
+          "ci_block_6h": [
+            0.3989,
+            1.2043
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.4304,
+            1.9864
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.235309,
+          "dm_day_bandwidth": {
+            "statistic": 3.8679,
+            "p": 0.00011,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 1.2657,
+            "p": 0.205612,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00088,
+          "holm_p_wilcoxon": 0.613648
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 1,
+        "wins_after_holm_block": 1,
+        "slices_point_estimate_below_zero": 1,
+        "overall_wins_block_ci_below_zero": false
+      }
+    },
+    "lightgbm_l1_oldbase": {
+      "own_mae": {
+        "mae": 29.6578,
+        "ci_block_day": [
+          27.8611,
+          31.1193
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 29.6578,
+          "mae_bar": 32.3932,
+          "delta_mae": -2.7354,
+          "ci_block_day": [
+            -3.4132,
+            -2.107
+          ],
+          "ci_block_6h": [
+            -3.7404,
+            -2.0357
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.7191,
+            -1.8902
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -6.291,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.9356,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 87.4145,
+          "mae_bar": 132.9706,
+          "delta_mae": -45.5561,
+          "ci_block_day": [
+            -60.2475,
+            -32.4896
+          ],
+          "ci_block_6h": [
+            -69.6778,
+            -27.1496
+          ],
+          "ci_paired_legs_optimistic": [
+            -69.1417,
+            -25.0228
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -6.9059,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.447,
+            "p": 9e-06,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 27.3339,
+          "mae_bar": 28.3464,
+          "delta_mae": -1.0125,
+          "ci_block_day": [
+            -1.2775,
+            -0.7392
+          ],
+          "ci_block_6h": [
+            -1.2985,
+            -0.6735
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.2935,
+            -0.7524
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -9.3555,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.5024,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 67.2434,
+          "mae_bar": 99.5374,
+          "delta_mae": -32.294,
+          "ci_block_day": [
+            -48.7543,
+            -21.7149
+          ],
+          "ci_block_6h": [
+            -51.9235,
+            -19.1104
+          ],
+          "ci_paired_legs_optimistic": [
+            -49.7077,
+            -18.0369
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.5849,
+            "p": 5e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.2673,
+            "p": 2e-05,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 67.2434,
+          "mae_bar": 99.5374,
+          "delta_mae": -32.294,
+          "ci_block_day": [
+            -48.4448,
+            -21.6944
+          ],
+          "ci_block_6h": [
+            -51.5391,
+            -19.056
+          ],
+          "ci_paired_legs_optimistic": [
+            -48.8623,
+            -18.0181
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.5849,
+            "p": 5e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.2673,
+            "p": 2e-05,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 2e-05,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 31.2052,
+          "mae_bar": 31.7862,
+          "delta_mae": -0.581,
+          "ci_block_day": [
+            -0.9678,
+            -0.3017
+          ],
+          "ci_block_6h": [
+            -0.9851,
+            -0.2635
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.0344,
+            -0.125
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.077421,
+          "dm_day_bandwidth": {
+            "statistic": -5.4787,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.6378,
+            "p": 0.008344,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.077421
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 25.3225,
+          "mae_bar": 26.255,
+          "delta_mae": -0.9326,
+          "ci_block_day": [
+            -1.3034,
+            -0.6282
+          ],
+          "ci_block_6h": [
+            -1.332,
+            -0.4423
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.3293,
+            -0.5574
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0004,
+          "p_wilcoxon_optimistic": 1e-06,
+          "dm_day_bandwidth": {
+            "statistic": -7.2574,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.8176,
+            "p": 1e-06,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 9e-06
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 27.3442,
+          "mae_bar": 29.4506,
+          "delta_mae": -2.1064,
+          "ci_block_day": [
+            -3.0397,
+            -1.0229
+          ],
+          "ci_block_6h": [
+            -2.9938,
+            -1.0652
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.8564,
+            -1.3938
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -8.2499,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.9803,
+            "p": 1e-06,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 34.8715,
+          "mae_bar": 38.1642,
+          "delta_mae": -3.2928,
+          "ci_block_day": [
+            -4.5221,
+            -2.1621
+          ],
+          "ci_block_6h": [
+            -5.4945,
+            -1.7152
+          ],
+          "ci_paired_legs_optimistic": [
+            -5.2608,
+            -1.6403
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 7.8e-05,
+          "dm_day_bandwidth": {
+            "statistic": -4.2539,
+            "p": 2.1e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.659,
+            "p": 0.000253,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 6.3e-05,
+          "holm_p_wilcoxon": 0.00039
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 24.6115,
+          "mae_bar": 26.8075,
+          "delta_mae": -2.196,
+          "ci_block_day": [
+            -2.7724,
+            -1.8434
+          ],
+          "ci_block_6h": [
+            -2.8081,
+            -1.5967
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.8131,
+            -1.6223
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -12.1224,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.3768,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 17.2105,
+          "mae_bar": 18.4686,
+          "delta_mae": -1.2582,
+          "ci_block_day": [
+            -1.9632,
+            -0.7602
+          ],
+          "ci_block_6h": [
+            -2.1106,
+            -0.6137
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.955,
+            -0.6807
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 1e-06,
+          "dm_day_bandwidth": {
+            "statistic": -9.3703,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.8394,
+            "p": 0.000123,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 9e-06
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 24.3617,
+          "mae_bar": 26.623,
+          "delta_mae": -2.2613,
+          "ci_block_day": [
+            -3.5796,
+            -1.1735
+          ],
+          "ci_block_6h": [
+            -3.1047,
+            -1.4344
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.3301,
+            -1.3044
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 2e-06,
+          "dm_day_bandwidth": {
+            "statistic": -6.403,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.3298,
+            "p": 1.5e-05,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 1.4e-05
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 51.3554,
+          "mae_bar": 56.491,
+          "delta_mae": -5.1356,
+          "ci_block_day": [
+            -7.1776,
+            -3.176
+          ],
+          "ci_block_6h": [
+            -8.2993,
+            -2.5793
+          ],
+          "ci_paired_legs_optimistic": [
+            -8.1834,
+            -2.6311
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 1e-05,
+          "dm_day_bandwidth": {
+            "statistic": -4.5934,
+            "p": 4e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.598,
+            "p": 0.000321,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 2e-05,
+          "holm_p_wilcoxon": 6e-05
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 30.2177,
+          "mae_bar": 33.5638,
+          "delta_mae": -3.346,
+          "ci_block_day": [
+            -5.6389,
+            -1.7992
+          ],
+          "ci_block_6h": [
+            -5.8494,
+            -1.7351
+          ],
+          "ci_paired_legs_optimistic": [
+            -5.83,
+            -1.4389
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.029687,
+          "dm_day_bandwidth": {
+            "statistic": -8.3769,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.0398,
+            "p": 0.002367,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.060243
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 39.9591,
+          "mae_bar": 43.7408,
+          "delta_mae": -3.7817,
+          "ci_block_day": [
+            -6.9351,
+            -1.3853
+          ],
+          "ci_block_6h": [
+            -7.3044,
+            -1.3564
+          ],
+          "ci_paired_legs_optimistic": [
+            -8.1741,
+            -0.7629
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.020081,
+          "dm_day_bandwidth": {
+            "statistic": -2.829,
+            "p": 0.00467,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.9936,
+            "p": 0.0462,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00934,
+          "holm_p_wilcoxon": 0.060243
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 33.7954,
+          "mae_bar": 36.7141,
+          "delta_mae": -2.9187,
+          "ci_block_day": [
+            -6.3129,
+            -0.3099
+          ],
+          "ci_block_6h": [
+            -6.3578,
+            -0.1494
+          ],
+          "ci_paired_legs_optimistic": [
+            -6.8511,
+            -0.1706
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.021,
+          "p_block_6h": 0.03632,
+          "p_wilcoxon_optimistic": 0.00161,
+          "dm_day_bandwidth": {
+            "statistic": -2.0463,
+            "p": 0.040728,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.7626,
+            "p": 0.077964,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.021,
+          "holm_p_dm_day": 0.040728,
+          "holm_p_wilcoxon": 0.00644
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 25.4638,
+          "mae_bar": 27.4873,
+          "delta_mae": -2.0234,
+          "ci_block_day": [
+            -2.3828,
+            -1.7032
+          ],
+          "ci_block_6h": [
+            -2.4184,
+            -1.6708
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.5921,
+            -1.458
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -10.6909,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.3407,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 14,
+        "wins_after_holm_block": 14,
+        "slices_point_estimate_below_zero": 14,
+        "overall_wins_block_ci_below_zero": true
+      }
+    },
+    "lightgbm_huber_oldbase": {
+      "own_mae": {
+        "mae": 30.5347,
+        "ci_block_day": [
+          28.6636,
+          32.1046
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 30.5347,
+          "mae_bar": 32.3932,
+          "delta_mae": -1.8586,
+          "ci_block_day": [
+            -2.3002,
+            -1.4293
+          ],
+          "ci_block_6h": [
+            -2.2183,
+            -1.5422
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.37,
+            -1.3715
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -9.1851,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.2839,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 105.0716,
+          "mae_bar": 132.9706,
+          "delta_mae": -27.899,
+          "ci_block_day": [
+            -32.5826,
+            -24.0941
+          ],
+          "ci_block_6h": [
+            -37.2757,
+            -20.0157
+          ],
+          "ci_paired_legs_optimistic": [
+            -38.841,
+            -17.9596
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -16.8898,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -6.2028,
+            "p": 0.0,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 27.5356,
+          "mae_bar": 28.3464,
+          "delta_mae": -0.8108,
+          "ci_block_day": [
+            -1.119,
+            -0.5222
+          ],
+          "ci_block_6h": [
+            -1.1492,
+            -0.4275
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.0895,
+            -0.53
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.000119,
+          "dm_day_bandwidth": {
+            "statistic": -6.2109,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.7282,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 79.6282,
+          "mae_bar": 99.5374,
+          "delta_mae": -19.9093,
+          "ci_block_day": [
+            -25.7555,
+            -15.5007
+          ],
+          "ci_block_6h": [
+            -27.7266,
+            -14.0483
+          ],
+          "ci_paired_legs_optimistic": [
+            -27.5854,
+            -12.8317
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -6.9925,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.9227,
+            "p": 0.0,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 79.6282,
+          "mae_bar": 99.5374,
+          "delta_mae": -19.9093,
+          "ci_block_day": [
+            -25.756,
+            -15.3676
+          ],
+          "ci_block_6h": [
+            -27.8898,
+            -14.1688
+          ],
+          "ci_paired_legs_optimistic": [
+            -27.7744,
+            -12.6499
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -6.9925,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.9227,
+            "p": 0.0,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 31.3271,
+          "mae_bar": 31.7862,
+          "delta_mae": -0.4591,
+          "ci_block_day": [
+            -0.9351,
+            -0.0415
+          ],
+          "ci_block_6h": [
+            -0.9568,
+            -0.0701
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.9814,
+            0.0837
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.028997,
+          "p_block_6h": 0.019598,
+          "p_wilcoxon_optimistic": 0.880835,
+          "dm_day_bandwidth": {
+            "statistic": -2.7927,
+            "p": 0.005227,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.7313,
+            "p": 0.0834,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.028997,
+          "holm_p_dm_day": 0.005227,
+          "holm_p_wilcoxon": 1.0
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 25.5074,
+          "mae_bar": 26.255,
+          "delta_mae": -0.7477,
+          "ci_block_day": [
+            -1.221,
+            -0.3316
+          ],
+          "ci_block_6h": [
+            -1.1746,
+            -0.2499
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.1155,
+            -0.3879
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.005,
+          "p_wilcoxon_optimistic": 0.013572,
+          "dm_day_bandwidth": {
+            "statistic": -3.2667,
+            "p": 0.001088,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.9639,
+            "p": 7.4e-05,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.002176,
+          "holm_p_wilcoxon": 0.095004
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 27.7551,
+          "mae_bar": 29.4506,
+          "delta_mae": -1.6956,
+          "ci_block_day": [
+            -2.737,
+            -0.5111
+          ],
+          "ci_block_6h": [
+            -2.6623,
+            -0.5275
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.383,
+            -0.9909
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0038,
+          "p_block_6h": 0.0042,
+          "p_wilcoxon_optimistic": 1.1e-05,
+          "dm_day_bandwidth": {
+            "statistic": -7.2089,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.0768,
+            "p": 4.6e-05,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.009,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.00011
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 36.3558,
+          "mae_bar": 38.1642,
+          "delta_mae": -1.8085,
+          "ci_block_day": [
+            -2.587,
+            -1.032
+          ],
+          "ci_block_6h": [
+            -2.579,
+            -1.1161
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.6415,
+            -1.0107
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.023328,
+          "dm_day_bandwidth": {
+            "statistic": -4.8397,
+            "p": 1e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.2437,
+            "p": 2.2e-05,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 5e-06,
+          "holm_p_wilcoxon": 0.139968
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 24.9004,
+          "mae_bar": 26.8075,
+          "delta_mae": -1.907,
+          "ci_block_day": [
+            -2.4854,
+            -1.4802
+          ],
+          "ci_block_6h": [
+            -2.6321,
+            -1.2796
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.5312,
+            -1.3429
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -10.766,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -6.3954,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 17.4263,
+          "mae_bar": 18.4686,
+          "delta_mae": -1.0423,
+          "ci_block_day": [
+            -1.6898,
+            -0.5786
+          ],
+          "ci_block_6h": [
+            -1.9601,
+            -0.4165
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.7551,
+            -0.44
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0008,
+          "p_wilcoxon_optimistic": 0.035699,
+          "dm_day_bandwidth": {
+            "statistic": -7.7024,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.1004,
+            "p": 0.001933,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.142796
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 24.5698,
+          "mae_bar": 26.623,
+          "delta_mae": -2.0532,
+          "ci_block_day": [
+            -3.3985,
+            -0.9352
+          ],
+          "ci_block_6h": [
+            -2.8964,
+            -1.2493
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.1037,
+            -1.114
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.000346,
+          "dm_day_bandwidth": {
+            "statistic": -5.6828,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.0258,
+            "p": 5.7e-05,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.003078
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 53.8234,
+          "mae_bar": 56.491,
+          "delta_mae": -2.6676,
+          "ci_block_day": [
+            -3.6711,
+            -1.935
+          ],
+          "ci_block_6h": [
+            -3.6676,
+            -1.6014
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.7334,
+            -1.7015
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.000342,
+          "dm_day_bandwidth": {
+            "statistic": -6.7562,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.2907,
+            "p": 0.0,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.003078
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 31.8573,
+          "mae_bar": 33.5638,
+          "delta_mae": -1.7065,
+          "ci_block_day": [
+            -2.5166,
+            -1.0938
+          ],
+          "ci_block_6h": [
+            -2.5817,
+            -1.0457
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.819,
+            -0.7589
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.809052,
+          "dm_day_bandwidth": {
+            "statistic": -7.4619,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.3173,
+            "p": 0.000909,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 1.0
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 41.5877,
+          "mae_bar": 43.7408,
+          "delta_mae": -2.1531,
+          "ci_block_day": [
+            -3.5921,
+            -0.9307
+          ],
+          "ci_block_6h": [
+            -3.8057,
+            -0.894
+          ],
+          "ci_paired_legs_optimistic": [
+            -4.3029,
+            -0.3029
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.192295,
+          "dm_day_bandwidth": {
+            "statistic": -3.593,
+            "p": 0.000327,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.1552,
+            "p": 0.031147,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.000981,
+          "holm_p_wilcoxon": 0.576885
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 34.6901,
+          "mae_bar": 36.7141,
+          "delta_mae": -2.024,
+          "ci_block_day": [
+            -3.1871,
+            -0.6829
+          ],
+          "ci_block_6h": [
+            -3.3545,
+            -0.6324
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.9418,
+            -0.3305
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.003,
+          "p_block_6h": 0.01807,
+          "p_wilcoxon_optimistic": 0.023701,
+          "dm_day_bandwidth": {
+            "statistic": -3.8095,
+            "p": 0.000139,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.1821,
+            "p": 0.029102,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.009,
+          "holm_p_dm_day": 0.000556,
+          "holm_p_wilcoxon": 0.139968
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 25.6553,
+          "mae_bar": 27.4873,
+          "delta_mae": -1.832,
+          "ci_block_day": [
+            -2.0982,
+            -1.5839
+          ],
+          "ci_block_6h": [
+            -2.1322,
+            -1.559
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.354,
+            -1.3113
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -9.2752,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.1963,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 14,
+        "wins_after_holm_block": 14,
+        "slices_point_estimate_below_zero": 14,
+        "overall_wins_block_ci_below_zero": true
+      }
+    },
+    "xgboost_l1_oldbase": {
+      "own_mae": {
+        "mae": 29.7104,
+        "ci_block_day": [
+          27.9396,
+          31.25
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 29.7104,
+          "mae_bar": 32.3932,
+          "delta_mae": -2.6829,
+          "ci_block_day": [
+            -3.5584,
+            -1.9242
+          ],
+          "ci_block_6h": [
+            -3.8549,
+            -1.8508
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.7672,
+            -1.7719
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 8.9e-05,
+          "dm_day_bandwidth": {
+            "statistic": -5.2838,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.532,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 86.5803,
+          "mae_bar": 132.9706,
+          "delta_mae": -46.3903,
+          "ci_block_day": [
+            -63.2725,
+            -31.4231
+          ],
+          "ci_block_6h": [
+            -72.193,
+            -27.1707
+          ],
+          "ci_paired_legs_optimistic": [
+            -71.3653,
+            -25.3635
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -5.8196,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.3962,
+            "p": 1.1e-05,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 27.4221,
+          "mae_bar": 28.3464,
+          "delta_mae": -0.9242,
+          "ci_block_day": [
+            -1.2665,
+            -0.6549
+          ],
+          "ci_block_6h": [
+            -1.3398,
+            -0.4883
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.3323,
+            -0.541
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0004,
+          "p_wilcoxon_optimistic": 0.016544,
+          "dm_day_bandwidth": {
+            "statistic": -6.7965,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.8649,
+            "p": 1e-06,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 66.7485,
+          "mae_bar": 99.5374,
+          "delta_mae": -32.7889,
+          "ci_block_day": [
+            -51.3985,
+            -20.8027
+          ],
+          "ci_block_6h": [
+            -53.4234,
+            -18.7767
+          ],
+          "ci_paired_legs_optimistic": [
+            -50.4276,
+            -18.3145
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.0148,
+            "p": 6e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.1881,
+            "p": 2.8e-05,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 66.7485,
+          "mae_bar": 99.5374,
+          "delta_mae": -32.7889,
+          "ci_block_day": [
+            -51.3985,
+            -20.8009
+          ],
+          "ci_block_6h": [
+            -54.2423,
+            -18.7219
+          ],
+          "ci_paired_legs_optimistic": [
+            -50.2337,
+            -18.241
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.0148,
+            "p": 6e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.1881,
+            "p": 2.8e-05,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00036,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 31.3714,
+          "mae_bar": 31.7862,
+          "delta_mae": -0.4147,
+          "ci_block_day": [
+            -1.1846,
+            0.3384
+          ],
+          "ci_block_6h": [
+            -1.2403,
+            0.1444
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.0609,
+            0.2049
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.273173,
+          "p_block_6h": 0.169783,
+          "p_wilcoxon_optimistic": 0.349058,
+          "dm_day_bandwidth": {
+            "statistic": -2.1134,
+            "p": 0.034565,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.3359,
+            "p": 0.181591,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.273173,
+          "holm_p_dm_day": 0.05498,
+          "holm_p_wilcoxon": 1.0
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 25.1847,
+          "mae_bar": 26.255,
+          "delta_mae": -1.0703,
+          "ci_block_day": [
+            -1.5436,
+            -0.6917
+          ],
+          "ci_block_6h": [
+            -1.6135,
+            -0.499
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.697,
+            -0.5018
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.001,
+          "p_wilcoxon_optimistic": 0.795461,
+          "dm_day_bandwidth": {
+            "statistic": -5.1088,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.5532,
+            "p": 0.000381,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 1.0
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 28.1066,
+          "mae_bar": 29.4506,
+          "delta_mae": -1.3441,
+          "ci_block_day": [
+            -2.578,
+            -0.157
+          ],
+          "ci_block_6h": [
+            -2.4426,
+            -0.1311
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.1193,
+            -0.5748
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.025397,
+          "p_block_6h": 0.029197,
+          "p_wilcoxon_optimistic": 0.00017,
+          "dm_day_bandwidth": {
+            "statistic": -4.2758,
+            "p": 1.9e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.0727,
+            "p": 0.002121,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.050794,
+          "holm_p_dm_day": 0.000133,
+          "holm_p_wilcoxon": 0.0017
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 35.0894,
+          "mae_bar": 38.1642,
+          "delta_mae": -3.0749,
+          "ci_block_day": [
+            -4.5881,
+            -1.6243
+          ],
+          "ci_block_6h": [
+            -5.5534,
+            -1.3992
+          ],
+          "ci_paired_legs_optimistic": [
+            -5.1773,
+            -1.4223
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.180885,
+          "dm_day_bandwidth": {
+            "statistic": -3.159,
+            "p": 0.001583,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.2912,
+            "p": 0.000998,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.006332,
+          "holm_p_wilcoxon": 1.0
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 24.504,
+          "mae_bar": 26.8075,
+          "delta_mae": -2.3034,
+          "ci_block_day": [
+            -2.8649,
+            -1.9395
+          ],
+          "ci_block_6h": [
+            -3.0929,
+            -1.604
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.1047,
+            -1.5753
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 2.7e-05,
+          "dm_day_bandwidth": {
+            "statistic": -15.1083,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -6.1043,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.000297
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 17.6788,
+          "mae_bar": 18.4686,
+          "delta_mae": -0.7899,
+          "ci_block_day": [
+            -1.3893,
+            -0.3145
+          ],
+          "ci_block_6h": [
+            -1.7512,
+            -0.1292
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.467,
+            -0.2149
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.015998,
+          "p_wilcoxon_optimistic": 0.601536,
+          "dm_day_bandwidth": {
+            "statistic": -6.4302,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.4208,
+            "p": 0.015485,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 1.0
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 23.8988,
+          "mae_bar": 26.623,
+          "delta_mae": -2.7242,
+          "ci_block_day": [
+            -4.075,
+            -1.6276
+          ],
+          "ci_block_6h": [
+            -3.6933,
+            -1.8547
+          ],
+          "ci_paired_legs_optimistic": [
+            -4.0463,
+            -1.5355
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.003091,
+          "dm_day_bandwidth": {
+            "statistic": -6.584,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.2694,
+            "p": 2e-05,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.024728
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 51.4674,
+          "mae_bar": 56.491,
+          "delta_mae": -5.0236,
+          "ci_block_day": [
+            -7.6619,
+            -2.3212
+          ],
+          "ci_block_6h": [
+            -8.7106,
+            -2.2434
+          ],
+          "ci_paired_legs_optimistic": [
+            -8.2671,
+            -2.3821
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.000995,
+          "dm_day_bandwidth": {
+            "statistic": -3.4931,
+            "p": 0.000478,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.4037,
+            "p": 0.000665,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00239,
+          "holm_p_wilcoxon": 0.008955
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 30.535,
+          "mae_bar": 33.5638,
+          "delta_mae": -3.0288,
+          "ci_block_day": [
+            -5.9408,
+            -1.2347
+          ],
+          "ci_block_6h": [
+            -6.1379,
+            -1.1333
+          ],
+          "ci_paired_legs_optimistic": [
+            -5.4309,
+            -1.1046
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.542643,
+          "dm_day_bandwidth": {
+            "statistic": -6.6058,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.8254,
+            "p": 0.004722,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 1.0
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 38.9398,
+          "mae_bar": 43.7408,
+          "delta_mae": -4.801,
+          "ci_block_day": [
+            -8.607,
+            -2.1999
+          ],
+          "ci_block_6h": [
+            -8.824,
+            -2.1465
+          ],
+          "ci_paired_legs_optimistic": [
+            -9.6389,
+            -1.2761
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.168802,
+          "dm_day_bandwidth": {
+            "statistic": -3.0538,
+            "p": 0.00226,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.217,
+            "p": 0.026623,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.00678,
+          "holm_p_wilcoxon": 1.0
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 33.6286,
+          "mae_bar": 36.7141,
+          "delta_mae": -3.0854,
+          "ci_block_day": [
+            -6.3725,
+            -0.6146
+          ],
+          "ci_block_6h": [
+            -6.6264,
+            -0.5771
+          ],
+          "ci_paired_legs_optimistic": [
+            -7.1607,
+            -0.2029
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0026,
+          "p_block_6h": 0.019669,
+          "p_wilcoxon_optimistic": 0.071227,
+          "dm_day_bandwidth": {
+            "statistic": -2.2045,
+            "p": 0.02749,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.8461,
+            "p": 0.064882,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0078,
+          "holm_p_dm_day": 0.05498,
+          "holm_p_wilcoxon": 0.498589
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 25.6933,
+          "mae_bar": 27.4873,
+          "delta_mae": -1.794,
+          "ci_block_day": [
+            -2.087,
+            -1.603
+          ],
+          "ci_block_6h": [
+            -2.109,
+            -1.598
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.4927,
+            -1.1464
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -11.6817,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.4101,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 13,
+        "wins_after_holm_block": 12,
+        "slices_point_estimate_below_zero": 14,
+        "overall_wins_block_ci_below_zero": true
+      }
+    },
+    "histgbr_l1_oldbase": {
+      "own_mae": {
+        "mae": 29.7456,
+        "ci_block_day": [
+          27.9681,
+          31.2175
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 29.7456,
+          "mae_bar": 32.3932,
+          "delta_mae": -2.6476,
+          "ci_block_day": [
+            -3.3083,
+            -2.0338
+          ],
+          "ci_block_6h": [
+            -3.6732,
+            -1.8983
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.6377,
+            -1.7979
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -6.197,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.7805,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 87.7561,
+          "mae_bar": 132.9706,
+          "delta_mae": -45.2145,
+          "ci_block_day": [
+            -60.0062,
+            -32.195
+          ],
+          "ci_block_6h": [
+            -69.3812,
+            -26.8019
+          ],
+          "ci_paired_legs_optimistic": [
+            -69.5174,
+            -24.4451
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -6.4786,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.4083,
+            "p": 1e-05,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 27.4115,
+          "mae_bar": 28.3464,
+          "delta_mae": -0.9349,
+          "ci_block_day": [
+            -1.172,
+            -0.713
+          ],
+          "ci_block_6h": [
+            -1.1846,
+            -0.6565
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.1713,
+            -0.7006
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -9.492,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -8.0378,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 67.2448,
+          "mae_bar": 99.5374,
+          "delta_mae": -32.2926,
+          "ci_block_day": [
+            -49.1178,
+            -21.5563
+          ],
+          "ci_block_6h": [
+            -52.1424,
+            -19.0166
+          ],
+          "ci_paired_legs_optimistic": [
+            -49.1831,
+            -18.0433
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.4084,
+            "p": 1e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.251,
+            "p": 2.1e-05,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 67.2448,
+          "mae_bar": 99.5374,
+          "delta_mae": -32.2926,
+          "ci_block_day": [
+            -49.2575,
+            -21.5563
+          ],
+          "ci_block_6h": [
+            -52.0085,
+            -19.0628
+          ],
+          "ci_paired_legs_optimistic": [
+            -49.3536,
+            -18.1468
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -4.4084,
+            "p": 1e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.251,
+            "p": 2.1e-05,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 5e-05,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 31.3281,
+          "mae_bar": 31.7862,
+          "delta_mae": -0.4581,
+          "ci_block_day": [
+            -0.8513,
+            -0.1604
+          ],
+          "ci_block_6h": [
+            -0.8432,
+            -0.1508
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.9001,
+            -0.0215
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0022,
+          "p_wilcoxon_optimistic": 0.07867,
+          "dm_day_bandwidth": {
+            "statistic": -3.1326,
+            "p": 0.001732,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.1521,
+            "p": 0.031388,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.005196,
+          "holm_p_wilcoxon": 0.07867
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 25.4147,
+          "mae_bar": 26.255,
+          "delta_mae": -0.8403,
+          "ci_block_day": [
+            -1.112,
+            -0.6162
+          ],
+          "ci_block_6h": [
+            -1.1529,
+            -0.494
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.1433,
+            -0.5438
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -6.797,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.7225,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 27.3742,
+          "mae_bar": 29.4506,
+          "delta_mae": -2.0764,
+          "ci_block_day": [
+            -2.8249,
+            -1.1788
+          ],
+          "ci_block_6h": [
+            -2.8135,
+            -1.1946
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.7848,
+            -1.3798
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -11.9345,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -5.0322,
+            "p": 0.0,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 34.8615,
+          "mae_bar": 38.1642,
+          "delta_mae": -3.3027,
+          "ci_block_day": [
+            -4.4386,
+            -2.2388
+          ],
+          "ci_block_6h": [
+            -5.5812,
+            -1.7074
+          ],
+          "ci_paired_legs_optimistic": [
+            -5.2261,
+            -1.7053
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 1.1e-05,
+          "dm_day_bandwidth": {
+            "statistic": -4.3399,
+            "p": 1.4e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.7096,
+            "p": 0.000208,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 5.6e-05,
+          "holm_p_wilcoxon": 5.5e-05
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 24.7939,
+          "mae_bar": 26.8075,
+          "delta_mae": -2.0136,
+          "ci_block_day": [
+            -2.5192,
+            -1.6492
+          ],
+          "ci_block_6h": [
+            -2.5883,
+            -1.5014
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.5965,
+            -1.5038
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -11.5635,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -7.2479,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 17.1943,
+          "mae_bar": 18.4686,
+          "delta_mae": -1.2743,
+          "ci_block_day": [
+            -1.9474,
+            -0.8179
+          ],
+          "ci_block_6h": [
+            -2.1434,
+            -0.6324
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.983,
+            -0.7047
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -8.9848,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.8885,
+            "p": 0.000101,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 24.5733,
+          "mae_bar": 26.623,
+          "delta_mae": -2.0497,
+          "ci_block_day": [
+            -3.3786,
+            -0.9637
+          ],
+          "ci_block_6h": [
+            -2.8998,
+            -1.2733
+          ],
+          "ci_paired_legs_optimistic": [
+            -3.0074,
+            -1.1184
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0004,
+          "p_wilcoxon_optimistic": 2e-06,
+          "dm_day_bandwidth": {
+            "statistic": -5.8474,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.089,
+            "p": 4.3e-05,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 1.2e-05
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 51.4341,
+          "mae_bar": 56.491,
+          "delta_mae": -5.0569,
+          "ci_block_day": [
+            -7.0,
+            -3.1202
+          ],
+          "ci_block_6h": [
+            -8.3929,
+            -2.5297
+          ],
+          "ci_paired_legs_optimistic": [
+            -8.1493,
+            -2.5354
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 1e-06,
+          "dm_day_bandwidth": {
+            "statistic": -4.6192,
+            "p": 4e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.6078,
+            "p": 0.000309,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 2.4e-05,
+          "holm_p_wilcoxon": 7e-06
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 30.2759,
+          "mae_bar": 33.5638,
+          "delta_mae": -3.2878,
+          "ci_block_day": [
+            -5.4302,
+            -1.8207
+          ],
+          "ci_block_6h": [
+            -5.5341,
+            -1.7225
+          ],
+          "ci_paired_legs_optimistic": [
+            -5.6124,
+            -1.433
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.000201,
+          "p_wilcoxon_optimistic": 0.014734,
+          "dm_day_bandwidth": {
+            "statistic": -8.5604,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -3.1389,
+            "p": 0.001696,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.029468
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 39.5359,
+          "mae_bar": 43.7408,
+          "delta_mae": -4.2048,
+          "ci_block_day": [
+            -7.4998,
+            -1.7893
+          ],
+          "ci_block_6h": [
+            -7.7676,
+            -1.7157
+          ],
+          "ci_paired_legs_optimistic": [
+            -9.0889,
+            -1.0293
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.003219,
+          "dm_day_bandwidth": {
+            "statistic": -3.0779,
+            "p": 0.002085,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -2.0786,
+            "p": 0.037653,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.005196,
+          "holm_p_wilcoxon": 0.009657
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 33.7082,
+          "mae_bar": 36.7141,
+          "delta_mae": -3.0059,
+          "ci_block_day": [
+            -6.2182,
+            -0.2877
+          ],
+          "ci_block_6h": [
+            -6.6006,
+            -0.0822
+          ],
+          "ci_paired_legs_optimistic": [
+            -6.9127,
+            -0.3092
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.020398,
+          "p_block_6h": 0.033902,
+          "p_wilcoxon_optimistic": 0.001566,
+          "dm_day_bandwidth": {
+            "statistic": -2.0516,
+            "p": 0.040204,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -1.7919,
+            "p": 0.073144,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.020398,
+          "holm_p_dm_day": 0.040204,
+          "holm_p_wilcoxon": 0.006264
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 25.7528,
+          "mae_bar": 27.4873,
+          "delta_mae": -1.7345,
+          "ci_block_day": [
+            -2.0485,
+            -1.4262
+          ],
+          "ci_block_6h": [
+            -2.0991,
+            -1.3663
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.2578,
+            -1.2442
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -8.8494,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -6.9578,
+            "p": 0.0,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 14,
+        "wins_after_holm_block": 14,
+        "slices_point_estimate_below_zero": 14,
+        "overall_wins_block_ci_below_zero": true
+      }
+    },
+    "quantile_linear_oldbase": {
+      "own_mae": {
+        "mae": 33.9563,
+        "ci_block_day": [
+          31.2041,
+          36.3676
+        ]
+      },
+      "vs_bar": {
+        "overall": {
+          "n": 5274,
+          "mae_model": 33.9563,
+          "mae_bar": 32.3932,
+          "delta_mae": 1.563,
+          "ci_block_day": [
+            0.779,
+            2.3917
+          ],
+          "ci_block_6h": [
+            0.7026,
+            2.4201
+          ],
+          "ci_paired_legs_optimistic": [
+            0.4173,
+            2.7123
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0018,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": 4.5051,
+            "p": 7e-06,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 2.7689,
+            "p": 0.005625,
+            "bandwidth": 17
+          }
+        },
+        "cold_asof": {
+          "n": 204,
+          "mae_model": 101.458,
+          "mae_bar": 132.9706,
+          "delta_mae": -31.5126,
+          "ci_block_day": [
+            -38.11,
+            -23.6749
+          ],
+          "ci_block_6h": [
+            -47.4458,
+            -18.8465
+          ],
+          "ci_paired_legs_optimistic": [
+            -47.6411,
+            -17.4056
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 4e-06,
+          "dm_day_bandwidth": {
+            "statistic": -8.4863,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.6932,
+            "p": 3e-06,
+            "bandwidth": 5
+          }
+        },
+        "warm_asof": {
+          "n": 5070,
+          "mae_model": 31.2402,
+          "mae_bar": 28.3464,
+          "delta_mae": 2.8939,
+          "ci_block_day": [
+            1.9357,
+            3.843
+          ],
+          "ci_block_6h": [
+            2.0785,
+            3.9035
+          ],
+          "ci_paired_legs_optimistic": [
+            1.8738,
+            3.9074
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": 6.7581,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 5.4607,
+            "p": 0.0,
+            "bandwidth": 17
+          }
+        },
+        "unseen_in_train": {
+          "n": 294,
+          "mae_model": 76.5234,
+          "mae_bar": 99.5374,
+          "delta_mae": -23.014,
+          "ci_block_day": [
+            -32.468,
+            -16.0246
+          ],
+          "ci_block_6h": [
+            -35.5364,
+            -14.1444
+          ],
+          "ci_paired_legs_optimistic": [
+            -34.396,
+            -13.0905
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -5.3411,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.6768,
+            "p": 3e-06,
+            "bandwidth": 6
+          }
+        },
+        "corridor_support_in_train: unseen": {
+          "n": 294,
+          "mae_model": 76.5234,
+          "mae_bar": 99.5374,
+          "delta_mae": -23.014,
+          "ci_block_day": [
+            -31.9967,
+            -16.2142
+          ],
+          "ci_block_6h": [
+            -35.8228,
+            -14.0414
+          ],
+          "ci_paired_legs_optimistic": [
+            -34.0286,
+            -13.0176
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 20,
+          "excludes_zero_block_day": true,
+          "wins_block_day": true,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": -5.3411,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": -4.6768,
+            "p": 3e-06,
+            "bandwidth": 6
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: 1-9": {
+          "n": 1548,
+          "mae_model": 38.1943,
+          "mae_bar": 31.7862,
+          "delta_mae": 6.4081,
+          "ci_block_day": [
+            3.9677,
+            8.716
+          ],
+          "ci_block_6h": [
+            4.0045,
+            9.0752
+          ],
+          "ci_paired_legs_optimistic": [
+            3.7053,
+            9.2374
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": 5.9899,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 4.2726,
+            "p": 1.9e-05,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: 10-29": {
+          "n": 2723,
+          "mae_model": 27.9164,
+          "mae_bar": 26.255,
+          "delta_mae": 1.6614,
+          "ci_block_day": [
+            0.7112,
+            2.3596
+          ],
+          "ci_block_6h": [
+            0.8124,
+            2.6715
+          ],
+          "ci_paired_legs_optimistic": [
+            0.6508,
+            2.6732
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.004,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": 9.1901,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 3.1352,
+            "p": 0.001718,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.032,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "corridor_support_in_train: >=30": {
+          "n": 709,
+          "mae_model": 30.2488,
+          "mae_bar": 29.4506,
+          "delta_mae": 0.7982,
+          "ci_block_day": [
+            -0.3999,
+            2.124
+          ],
+          "ci_block_6h": [
+            -0.4902,
+            2.1182
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.2937,
+            1.9057
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.216178,
+          "p_block_6h": 0.236376,
+          "p_wilcoxon_optimistic": 0.439266,
+          "dm_day_bandwidth": {
+            "statistic": 1.845,
+            "p": 0.06504,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 1.2757,
+            "p": 0.202074,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 1.0,
+          "holm_p_dm_day": 0.3252,
+          "holm_p_wilcoxon": 0.439266
+        },
+        "route_type: FTL": {
+          "n": 2594,
+          "mae_model": 40.968,
+          "mae_bar": 38.1642,
+          "delta_mae": 2.8038,
+          "ci_block_day": [
+            1.8417,
+            3.9248
+          ],
+          "ci_block_6h": [
+            1.3424,
+            4.0281
+          ],
+          "ci_paired_legs_optimistic": [
+            0.8186,
+            4.7793
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0016,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": 6.8635,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 2.9861,
+            "p": 0.002826,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "route_type: Carting": {
+          "n": 2680,
+          "mae_model": 27.1696,
+          "mae_bar": 26.8075,
+          "delta_mae": 0.3621,
+          "ci_block_day": [
+            -0.8604,
+            1.4799
+          ],
+          "ci_block_6h": [
+            -0.8495,
+            1.743
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.8968,
+            1.6273
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.584542,
+          "p_block_6h": 0.585741,
+          "p_wilcoxon_optimistic": 1.4e-05,
+          "dm_day_bandwidth": {
+            "statistic": 0.6142,
+            "p": 0.539085,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 0.5856,
+            "p": 0.558115,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 1.0,
+          "holm_p_dm_day": 1.0,
+          "holm_p_wilcoxon": 8.4e-05
+        },
+        "distance_band: short (<33 km)": {
+          "n": 1960,
+          "mae_model": 18.6041,
+          "mae_bar": 18.4686,
+          "delta_mae": 0.1355,
+          "ci_block_day": [
+            -0.8883,
+            1.1967
+          ],
+          "ci_block_6h": [
+            -0.8471,
+            1.0226
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.6891,
+            0.9156
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.818318,
+          "p_block_6h": 0.781922,
+          "p_wilcoxon_optimistic": 1.2e-05,
+          "dm_day_bandwidth": {
+            "statistic": 0.5203,
+            "p": 0.602842,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 0.3217,
+            "p": 0.747703,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 1.0,
+          "holm_p_dm_day": 1.0,
+          "holm_p_wilcoxon": 8.4e-05
+        },
+        "distance_band: medium (33-67 km)": {
+          "n": 1760,
+          "mae_model": 28.1206,
+          "mae_bar": 26.623,
+          "delta_mae": 1.4975,
+          "ci_block_day": [
+            0.0855,
+            3.0458
+          ],
+          "ci_block_6h": [
+            -0.1932,
+            3.5274
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.6838,
+            3.7013
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.019998,
+          "p_block_6h": 0.086191,
+          "p_wilcoxon_optimistic": 0.041427,
+          "dm_day_bandwidth": {
+            "statistic": 3.3754,
+            "p": 0.000737,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 1.3322,
+            "p": 0.182783,
+            "bandwidth": 12
+          },
+          "holm_p_block_day": 0.119988,
+          "holm_p_dm_day": 0.004422,
+          "holm_p_wilcoxon": 0.082854
+        },
+        "distance_band: long (>=67 km)": {
+          "n": 1554,
+          "mae_model": 59.9287,
+          "mae_bar": 56.491,
+          "delta_mae": 3.4377,
+          "ci_block_day": [
+            1.1264,
+            6.3399
+          ],
+          "ci_block_6h": [
+            0.7238,
+            5.9673
+          ],
+          "ci_paired_legs_optimistic": [
+            0.4972,
+            6.2464
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 21,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.013999,
+          "p_wilcoxon_optimistic": 0.0,
+          "dm_day_bandwidth": {
+            "statistic": 6.7937,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 2.533,
+            "p": 0.01131,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.0
+        },
+        "departure_hour: night": {
+          "n": 1537,
+          "mae_model": 34.516,
+          "mae_bar": 33.5638,
+          "delta_mae": 0.9522,
+          "ci_block_day": [
+            -1.3088,
+            2.8281
+          ],
+          "ci_block_6h": [
+            -1.5652,
+            2.9959
+          ],
+          "ci_paired_legs_optimistic": [
+            -1.6568,
+            3.481
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.391961,
+          "p_block_6h": 0.40453,
+          "p_wilcoxon_optimistic": 3e-06,
+          "dm_day_bandwidth": {
+            "statistic": 1.189,
+            "p": 0.234438,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 0.7252,
+            "p": 0.468301,
+            "bandwidth": 11
+          },
+          "holm_p_block_day": 1.0,
+          "holm_p_dm_day": 0.703314,
+          "holm_p_wilcoxon": 2.4e-05
+        },
+        "departure_hour: morning": {
+          "n": 650,
+          "mae_model": 47.324,
+          "mae_bar": 43.7408,
+          "delta_mae": 3.5832,
+          "ci_block_day": [
+            0.9954,
+            5.886
+          ],
+          "ci_block_6h": [
+            0.8151,
+            6.2333
+          ],
+          "ci_paired_legs_optimistic": [
+            -0.2788,
+            7.662
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.009,
+          "p_block_6h": 0.019451,
+          "p_wilcoxon_optimistic": 0.000132,
+          "dm_day_bandwidth": {
+            "statistic": 3.9415,
+            "p": 8.1e-05,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 2.0128,
+            "p": 0.044136,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 0.063,
+          "holm_p_dm_day": 0.000567,
+          "holm_p_wilcoxon": 0.00066
+        },
+        "departure_hour: afternoon": {
+          "n": 647,
+          "mae_model": 37.6925,
+          "mae_bar": 36.7141,
+          "delta_mae": 0.9785,
+          "ci_block_day": [
+            -1.4701,
+            3.5417
+          ],
+          "ci_block_6h": [
+            -2.0807,
+            3.8301
+          ],
+          "ci_paired_legs_optimistic": [
+            -2.4742,
+            4.0061
+          ],
+          "blocks_day": 5,
+          "blocks_6h": 5,
+          "excludes_zero_block_day": false,
+          "wins_block_day": false,
+          "p_block_day": 0.432757,
+          "p_block_6h": 0.461646,
+          "p_wilcoxon_optimistic": 0.027463,
+          "dm_day_bandwidth": {
+            "statistic": 1.505,
+            "p": 0.132325,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 0.667,
+            "p": 0.504747,
+            "bandwidth": 8
+          },
+          "holm_p_block_day": 1.0,
+          "holm_p_dm_day": 0.5293,
+          "holm_p_wilcoxon": 0.082389
+        },
+        "departure_hour: evening": {
+          "n": 2440,
+          "mae_model": 29.0519,
+          "mae_bar": 27.4873,
+          "delta_mae": 1.5646,
+          "ci_block_day": [
+            1.0684,
+            2.1317
+          ],
+          "ci_block_6h": [
+            1.0333,
+            2.282
+          ],
+          "ci_paired_legs_optimistic": [
+            0.2334,
+            2.9335
+          ],
+          "blocks_day": 6,
+          "blocks_6h": 6,
+          "excludes_zero_block_day": true,
+          "wins_block_day": false,
+          "p_block_day": 0.0002,
+          "p_block_6h": 0.0002,
+          "p_wilcoxon_optimistic": 0.001509,
+          "dm_day_bandwidth": {
+            "statistic": 7.4448,
+            "p": 0.0,
+            "bandwidth": 1032
+          },
+          "dm_cuberoot_bandwidth": {
+            "statistic": 2.3663,
+            "p": 0.017969,
+            "bandwidth": 13
+          },
+          "holm_p_block_day": 0.0026,
+          "holm_p_dm_day": 0.0,
+          "holm_p_wilcoxon": 0.006036
+        }
+      },
+      "summary": {
+        "slices_total_including_overall": 14,
+        "wins_block_ci_below_zero": 1,
+        "wins_after_holm_block": 1,
+        "slices_point_estimate_below_zero": 1,
+        "overall_wins_block_ci_below_zero": false
       }
     }
   }

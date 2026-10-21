@@ -2713,6 +2713,26 @@ test MAE with a block-bootstrap interval (D-076) against the full model. Groups:
 eight v2 columns and their three missing-value flags); *baseline descriptors* (level, prior-leg count).
 A group whose removal does not move test MAE by an interval excluding zero is reported as such.
 
+**Outcome (written after the runs, 2026-10-21).** Over the old median with the 38 v2 inputs (the
+secondary setting) the four boosted models score 29.66 (LightGBM L1), 30.53 (LightGBM Huber), 29.71
+(XGBoost) and 29.75 (histogram GBT) on test, and the linear median regression 33.96; over the back-off
+baseline with 40 inputs they score 30.19, 31.06, 30.49, 30.33 and 33.63. The 29.52 question is settled:
+three independent libraries land within 0.1 minute of each other at 29.7, so the single-node figure
+was not a lucky seed, and the MLlib model's 30.90 is about 1.2 minutes behind the same recipe in
+another library. By the reporting rule the **reported model is LightGBM with L1 loss over the old
+median** (validation 27.24, the lowest of all candidates; test 29.66, day-block 95% interval
+[27.86, 31.12]; minus the bar -2.74 [-3.41, -2.11], wins on 14 of 14 slices). It is single-node. What
+the API serves and the streaming job scores is still Spark v2 (30.90; minus the bar -1.49
+[-2.25, -0.74], wins 10 of 14), which is the better Spark candidate by validation; the paper says the
+two are different models and does not claim the served model has the reported score. Putting the
+back-off descriptors in made every boosted model worse on validation, so the back-off bar is a fairer
+yardstick but not a better feature. Feature-group ablation (LightGBM, primary setting, test MAE change on
+removing the group, day-block interval): time -> +0.44 [0.14, 0.63]; hub history -> +0.15 [0.06, 0.26];
+dispersion and dwell -> +0.29 [0.23, 0.35]; all others (plan and route, distance, corridor history,
+baseline descriptors) move it by less than 0.07 with intervals that include zero. Corridor history alone
+is redundant once hub history and the dispersion block are present, which fits the finding that the
+gain over the bar sits on cold corridors.
+
 ## D-083 · The audit's legs are clustered by recurring service, not by trip or day — `DECIDED`
 **Post-v1.0 · Mounika · inspected before the dependence-aware audit (D-080) was pre-registered**
 
