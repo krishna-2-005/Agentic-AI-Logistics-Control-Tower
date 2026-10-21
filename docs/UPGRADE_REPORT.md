@@ -74,7 +74,7 @@ See `docs/RELEASE_v1.1.md` for the table of moved numbers. Not repeated here.
 
 | Aspect | Score | Why not higher |
 |---|---|---|
-| Code and engineering | **8** | 824 fast tests, ruff and mypy clean, every new module tested, rebuild includes the new stages. Not 9: the Spark-marked tests' result is below, GitHub CI has not run on this branch, the lock was updated by hand for two packages and not re-compiled |
+| Code and engineering | **8** | 824 fast tests, ruff and mypy clean, every new module tested, rebuild includes the new stages. The 50 Spark-marked tests also pass locally. Not 9: GitHub CI has not run on this branch, the lock was updated by hand for two packages and not re-compiled |
 | Reproducibility | **8** | Freeze v5 verified (168 values unchanged), macros, `REPRODUCIBILITY.md`, DOI steps prepared. Not 9: the full-rebuild runtime (about six hours) is an estimate summed from stage timings, not a re-measured clean-clone run, and there is no DOI yet |
 | Statistical rigour | **8.5** | Dependence-aware audit, EB, stability, intervals and Holm on every comparison, rules pre-registered and logged, deviations logged. Open: a power simulation for the permutation test, a heavy-tailed random-effects model; day-block intervals rest on six blocks |
 | ML results | **8** | Fair bar, zoo under an identical budget, rolling origin, ablation, reporting rule applied. The honest finding is that the served model's margin is not robust, and the reported model is not what is served; no neural baseline |
@@ -97,4 +97,4 @@ See `docs/RELEASE_v1.1.md` for the table of moved numbers. Not repeated here.
 Fast tests: `pytest -m "not spark"` (824 passed). Lint and types: `ruff check src tests`, `mypy`. Freeze: `results_freeze --verify`
 (168 unchanged). Paper: both manuscripts compile with Tectonic; `paper_numbers --check` and the macro tests pass. Site: `tsc`, `next build`
 and `tests/e2e_site_check.py` pass. Secrets: `gitleaks detect` on all 329 commits reports none (the digests in the freezes are allow-listed).
-Spark-marked tests: see the final line of this file.
+Spark-marked tests: `pytest -m spark` (50 passed, 80 s).
