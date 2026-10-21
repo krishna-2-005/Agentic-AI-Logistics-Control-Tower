@@ -2554,3 +2554,48 @@ Text that described the AWS phase as upcoming (`docs/cost.md`, `docs/RELEASE_v1.
 `docs/deploy_dashboard.md`, a docstring) now says it was dropped. **Spend to date and planned:
 $0.**
 
+
+## D-085 · Exception precision gets intervals, a valid test and a trend test; the rule is fixed before the run — `DECIDED`
+**Post-v1.0 · Mounika · B8, D-047, D-054**
+
+The agent's 58.6% as-of notification precision (1,007 of 1,720 alerts) is compared in the
+paper with a 54.1% trivial policy (alert every leg: 1,082 of 2,000 legs delayed). Neither
+number has an interval, and the severity claim ("precision rises with grade") has no test.
+`src/ml/exception_stats.py` adds them. It reads only counts already in
+`w8_replay_leakage.json` (as-of and superseded end-of-data-history replay), so it needs no
+Spark and no model run.
+
+**Which test is valid, decided before running.** The two policies are scored on the *same*
+2,000 legs, and the agent's alerted set is a subset of the trivial policy's set. A
+two-proportion test treating 1,720 and 2,000 as independent samples is therefore not valid
+(the samples overlap by 1,720 legs). The gap is an identity: with w = alerted share,
+trivial = w·p_alerted + (1−w)·p_not_alerted, so
+gain = (1−w)·(p_alerted − p_not_alerted). Testing "gain = 0" is exactly testing that the
+alerted legs are delayed at the same rate as the 280 not-alerted legs, two *disjoint*
+groups.
+
+* **Primary test:** pooled two-proportion z-test, alerted vs not alerted (two-sided), with
+  Fisher's exact test beside it as a check.
+* **Second test:** a nonparametric bootstrap over the 2,000 legs (10,000 resamples, seed
+  20260, percentile 95% interval for the gain, and the share of resamples with gain ≤ 0 as a
+  one-sided p). Both groups are resampled together, so the pairing is respected.
+* **Reported for reference only, flagged invalid:** the naive independent two-proportion
+  z-test, so a reader who would run it sees why it is not the headline.
+* Wilson 95% intervals for 58.6%, 54.1% and every per-severity precision (n = 453 / 667 /
+  308 / 292), for the as-of run and the superseded replay run.
+* **Trend:** Cochran–Armitage test of precision against severity grade (scores 1..4,
+  two-sided), implemented in the module and unit-tested against a hand computation.
+
+**Decision rule.** The gain is significant if the primary test gives p < 0.05 *and* the
+bootstrap interval excludes 0. If either fails, the write-up must say "directionally better;
+not significant at n = 2,000 legs (1,720 alerts)" and may not call the gain an improvement.
+If the trend test gives p ≥ 0.05, the monotonic-severity claim is withdrawn to "the point
+estimates rise". Applied as written, whatever the outcome.
+
+**Limits stated in advance.** Legs share corridors, so legs are not independent and the
+intervals are somewhat optimistic; the counts file has no leg-level corridor ids, so a
+cluster bootstrap is not possible without re-running the replay. The 2,000 legs are the
+earliest legs by creation time, 1,290 of them corridor-cold, so this is the hardest case for
+the model and not a typical day. I had read the counts (1,007 / 1,720 and 1,082 / 2,000)
+before writing this entry; the test choice follows from the sampling structure, not from the
+outcome.
