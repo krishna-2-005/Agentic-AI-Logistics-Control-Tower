@@ -2835,6 +2835,24 @@ corridor effect cannot be separated from a service effect. The paper's headline 
 "0 corridors survive the cluster-aware test"; the 273 / 512 stay as the original row and as a
 screening list, not as confirmed bottlenecks.
 
+## D-084 · Sensitivity: the permutation test's resolution limits what B3 can reject — `DECIDED`
+**Post-v1.0 · Mounika · written before the 1,000,000-permutation run, after reading the B3 outcome**
+
+The B3 headline (D-080) is the most conservative valid variant, Benjamini-Yekutieli over permutation
+p-values, and it finds 0 of 273. With 100,000 permutations the smallest attainable p-value is
+1/100,001 = 1.0e-5 (`permutation_p_floor`), while the smallest Benjamini-Yekutieli threshold over 1,130
+tests is 0.05/(1,130 x H) = 5.8e-6 with H the 1,130th harmonic number (7.6), so **that variant cannot reject a
+single corridor however large its effect**; the Benjamini-Hochberg variant needs p <= 4.4e-5 for its
+first rejection and found one. A zero under the strictest variant is therefore partly a property of the
+resolution, and the paper must not read it as evidence that the corridors are null.
+
+**Run.** `python -m src.ml.audit_robust --permutations 1000000 --placebo 0 --suffix _1e6`, same seed,
+same cells, writing `b3_audit_robust_1e6.json` and its corridors file. **Rule.** The headline stays the
+100,000-permutation result because it was pre-registered; the 1,000,000 run is reported beside it as a
+sensitivity analysis with its own counts, and the paper states that the strictest variant is
+resolution-limited at 100,000. If the finer run rejects corridors, the paper says the headline is a lower
+bound and reports both; it does not replace the headline after seeing it.
+
 ## D-081 · Empirical-Bayes ranking and its stability across support floors — `DECIDED`
 **Post-v1.0 · Mounika · B4 · written before `src/ml/eb_ranking.py` is run**
 

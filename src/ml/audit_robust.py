@@ -286,7 +286,12 @@ def main() -> None:
     ap.add_argument("--permutations", type=int, default=PERMUTATIONS)
     ap.add_argument("--seed", type=int, default=SEED)
     ap.add_argument("--placebo", type=int, default=PLACEBO_REPS)
+    ap.add_argument("--suffix", default="", help="write b3_audit_robust<suffix>.* instead (a sensitivity run, D-084)")
     args = ap.parse_args()
+    global OUT_JSON, OUT_CSV
+    if args.suffix:
+        OUT_JSON = OUT_JSON.with_name(f"b3_audit_robust{args.suffix}.json")
+        OUT_CSV = OUT_CSV.with_name(f"b3_audit_robust{args.suffix}_corridors.csv")
     res = run(args.permutations, args.seed, args.placebo)
     print(json.dumps({k: v for k, v in res.items() if k != "top20_slower"}, indent=2))
 
