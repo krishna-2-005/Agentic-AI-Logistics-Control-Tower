@@ -73,6 +73,12 @@ body {
   color: #fff;
 }
 
+/* Grid items may shrink below their content, so a long label truncates instead of
+   pushing a 375px phone sideways. */
+.grid > * {
+  min-width: 0;
+}
+
 /* Scrollbars that do not fight the dark theme. */
 ::-webkit-scrollbar {
   width: 10px;
