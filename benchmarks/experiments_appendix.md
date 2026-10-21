@@ -63,6 +63,8 @@ Every value below is read from a file in `benchmarks/raw/`, and every file has a
 | Per-corridor flags for every audit variant, robust vs fragile | `benchmarks/raw/b3_audit_robust_corridors.csv` | python -m src.ml.audit_robust |
 | Empirical-Bayes ranking and floor stability, REML, threshold 1.5x (D-081) | `benchmarks/raw/b4_eb_ranking.json` | python -m src.ml.eb_ranking |
 | Per-corridor shrunk effect, 90% interval, P(exceed) and rank by floor | `benchmarks/raw/b4_eb_corridors.csv` | python -m src.ml.eb_ranking |
+| Split-by-date stability of the audit and the EB ranking, halves and thirds (D-082) | `benchmarks/raw/b5_stability.json` | python -m src.ml.stability |
+| Per-corridor first-half and second-half effects, flags and EB rank | `benchmarks/raw/b5_stability_corridors.csv` | python -m src.ml.stability |
 
 ## Gaps
 

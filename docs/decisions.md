@@ -2777,3 +2777,29 @@ hypergeometric p is below 0.05. If the raw top-20 and the EB top-20 persistence 
 Wilson intervals that overlap, the paper says "no detectable difference" and does not claim EB
 predicts the later window better. If stability is low it is reported as a finding about how
 often the audit has to be refreshed.
+
+**Outcome (D-082).** `python -m src.ml.stability`, 100,000 permutations, 2,000 corridor
+bootstrap resamples, `b5_stability.json`. Proportional floor, halves (14,385 and 11,984 legs):
+1,249 and 1,004 corridors tested; significantly slower under `bh_welch` 239 and 191, under
+`by_welch` 138 and 132, under `by_perm` 0 and 0 (the B3 headline finds nothing in any part,
+half or third, as it found nothing in the whole window). Universe testable in both halves: 807
+corridors. **Overlap of the `bh_welch` slower sets** (inside the universe, 173 and 151 corridors):
+126 in common, Jaccard 0.636 (bootstrap 95% 0.57 to 0.70) against about 32 expected by chance,
+hypergeometric p 9e-81; `by_welch` Jaccard 0.58 (0.50 to 0.66). **Spearman correlation of corridor
+effects:** raw mean 0.908 (0.889 to 0.924), EB posterior mean 0.911, n = 807, both "substantial"
+by the fixed reading. **Persistence:** of the 173 first-half `bh_welch` slower corridors, 97.7%
+(Wilson 94.2% to 99.1%) are slower than the network in the second half and 72.8% significantly
+so, against a base rate of 39.8% for the whole universe; of the 15 raw top-20 corridors
+testable later, 100% (79.6 to 100) are slower and 93.3% significantly; of the 14 EB top-20, 100%
+(78.5 to 100) and 100%. The two top-20 intervals overlap completely: **no detectable
+difference** between raw and EB, as the rule requires, and with n = 14 to 15 nothing finer
+could be seen. Fewer than 20 flagged corridors enter each statistic because the rest were not
+testable in the later half. Thirds: Jaccard 0.548 / 0.504 / 0.566 (T1-T2, T1-T3, T2-T3),
+Spearman 0.887 / 0.870 / 0.893, `bh_welch` set persistence 95.8% to 100%. The strict 10-leg
+floor gives the same picture on a smaller universe (197 corridors: Jaccard 0.685, Spearman 0.899,
+persistence 97.9%). **Stability is high, not low:** corridor effects reproduce on independent
+trips from a different part of the window. Two cautions that stay with the result: the same
+recurring services run in both parts (D-083), so this shows the corridors' pattern persists,
+not that each is a distinct finding; and it is a statement about 23 dates in one season, not
+about other months. It does not contradict D-080: persistence is a different question from
+whether a single window's test survives a cluster-aware correction.
