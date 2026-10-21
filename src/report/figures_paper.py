@@ -102,10 +102,37 @@ def architecture() -> plt.Figure:
     return fig
 
 
+def agent_ablation() -> plt.Figure:
+    """Pilot ablation: accuracy with Wilson 95% intervals for the rules and a model deciding, order and invoice."""
+    big = json.loads((RAW / "b7_agent_ablation.json").read_text(encoding="utf-8"))["agents"]
+    small = json.loads((RAW / "b7_agent_ablation_gpt-oss-20b.json").read_text(encoding="utf-8"))["agents"]
+    hard = json.loads((RAW / "b7_hard_sets_deterministic.json").read_text(encoding="utf-8"))
+    rows = [
+        (f"order: rules (n={big['order']['n_cases']})", big["order"]["deterministic"]["accuracy"], style.BLUE),
+        ("order: 120b model (5 runs)", big["order"]["llm_sampled_T0.7"]["pooled_accuracy_5_runs"], style.ORANGE),
+        ("order: 20b model (5 runs, n=8)", small["order"]["llm_sampled_T0.7"]["pooled_accuracy_5_runs"], style.YELLOW),
+        ("order: rules, held-out hard set", hard["order"]["overall"], style.BLUE),
+        (f"invoice: rules (n={big['invoice']['n_cases']})", big["invoice"]["deterministic"]["accuracy"], style.BLUE),
+        ("invoice: 120b model (5 runs)", big["invoice"]["llm_sampled_T0.7"]["pooled_accuracy_5_runs"], style.ORANGE),
+    ]
+    fig, ax = plt.subplots(figsize=(style.COL_WIDTH_IN * 1.15, 2.4))
+    for y, (_, cell, colour) in enumerate(rows):
+        ax.plot([cell["ci_low"], cell["ci_high"]], [y, y], color=colour, lw=1.6)
+        ax.plot(cell["rate"], y, "o", color=colour, ms=4)
+    ax.set_yticks(range(len(rows)), [r[0] for r in rows])
+    ax.invert_yaxis()
+    ax.set_xlim(0.3, 1.02)
+    ax.set_xlabel("accuracy (Wilson 95% interval)")
+    ax.set_title("Pilot scale: the rules' score on the first set is not held out", fontsize=7)
+    fig.tight_layout()
+    return fig
+
+
 def main() -> int:
     style.apply_style()
     style.save(forest(), "fig_forest_delta_mae")
     style.save(architecture(), "fig_architecture")
+    style.save(agent_ablation(), "fig_agent_ablation")
     if (RAW / "b2_rolling_origin_zoo.csv").exists():
         style.save(folds(), "fig_rolling_origin")
     return 0
