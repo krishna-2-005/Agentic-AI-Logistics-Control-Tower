@@ -2704,3 +2704,29 @@ higher than that of both `raw_published` and `raw_mean`, with the bootstrap 95% 
 each difference above 0. If an interval contains 0 the paper says "no detectable difference";
 if EB is lower, "EB is not more stable". Section 4.3 of the paper follows this sentence
 whatever the numbers are.
+
+**Outcome (D-081).** `python -m src.ml.eb_ranking`, `b4_eb_ranking.json`, 200 bootstrap
+resamples. REML `tau^2` at floors 5 / 10 / 20 / 30: 0.138 / 0.133 / 0.083 / 0.058 (corridors
+1,632 / 1,130 / 268 / 99); moments 0.114 / 0.106 / 0.071 / 0.028, which differs from REML by more
+than 25% only at floor 30, where the two top-20 lists are still identical. Threshold
+`t = 1.1838` (3.27 times the plan). **The hypothesis that the floor effect is mostly shrinkable
+noise is not supported:** the corridors' own sampling variances (about 0.002) are tiny against
+`tau^2`, so the median shrink factor is only 0.009 to 0.021 at every size band, and the
+posterior mean is within a few percent of the raw mean. Mean pairwise top-20 Jaccard over the
+six floor pairs: `raw_published` 0.101, `raw_mean` 0.101, `eb_prob` 0.150, `eb_postmean` 0.155.
+`eb_prob` minus `raw_published` is +0.049 (bootstrap 95% interval 0.037 to 0.067) and minus
+`raw_mean` +0.049 (0.045 to 0.068). **By the pre-registered rule EB is called more stable**, and
+the margin is small: both lists still change almost completely between floors (floors 5 and 30,
+and 10 and 30, share no top-20 corridor in either ranking). The reason is membership, not
+noise: the Spearman correlation of rank positions over corridors present in both floors is
+0.9997 to 1.0 for every ranking, and the top-20 restricted to the higher floor's corridors
+overlaps at 1.0 for raw and 0.95 for `eb_prob`. A lower floor admits small corridors with
+extreme means (mean top-20 corridor size 10.8 legs at floor 5, 47.7 at floor 30), which is
+what moves the list. At floor 10, 102 corridors have `P(theta > t) >= 0.5`, 65 have 0.9 or more
+and 60 have a 90% interval wholly above `t`, against 111 whose raw mean exceeds `t` and 273
+published slower corridors; there are more material corridors than the 20 slots, which also
+makes any top-20 sensitive to the floor. Sensitivity: inflating variances by the D-083 design
+effect (median 1.38) gives Jaccard 0.140; threshold factors 1.25 and 2.0 give 0.161 and 0.142.
+Paper: shrinkage and a probability ranking are better calibrated and slightly more stable, but
+they do not remove the floor's effect on which corridors enter a top-20; report the whole
+ranking and its intervals, not a top-20, and state the floor.

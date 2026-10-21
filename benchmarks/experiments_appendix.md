@@ -61,6 +61,8 @@ Every value below is read from a file in `benchmarks/raw/`, and every file has a
 | Dependence diagnostics of the audit's legs (D-083) | `benchmarks/raw/b3_dependence_diagnostics.json` | python -m src.ml.audit_data |
 | Dependence-aware audit, four variants and headline (D-080) | `benchmarks/raw/b3_audit_robust.json` | python -m src.ml.audit_robust |
 | Per-corridor flags for every audit variant, robust vs fragile | `benchmarks/raw/b3_audit_robust_corridors.csv` | python -m src.ml.audit_robust |
+| Empirical-Bayes ranking and floor stability, REML, threshold 1.5x (D-081) | `benchmarks/raw/b4_eb_ranking.json` | python -m src.ml.eb_ranking |
+| Per-corridor shrunk effect, 90% interval, P(exceed) and rank by floor | `benchmarks/raw/b4_eb_corridors.csv` | python -m src.ml.eb_ranking |
 
 ## Gaps
 
