@@ -1,0 +1,344 @@
+{
+  "generated_at": "2026-10-21T11:41:59+05:30",
+  "pre_registered_in": "D-086",
+  "held_out": true,
+  "synthetic": true,
+  "note": "first run of the unmodified deterministic agents; nothing was tuned on these sets",
+  "order": {
+    "n": 100,
+    "overall": {
+      "successes": 70,
+      "total": 100,
+      "rate": 0.7,
+      "ci_low": 0.6042,
+      "ci_high": 0.7811
+    },
+    "orders_filed_on_invented_values": 10,
+    "by_template": {
+      "unit_missing": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "code_short_origin": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "code_long_dest": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "code_scrambled": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "conflict_pieces": {
+        "successes": 0,
+        "total": 10,
+        "rate": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.2775
+      },
+      "conflict_service": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "two_orders_hinglish": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "hinglish_file": {
+        "successes": 0,
+        "total": 10,
+        "rate": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.2775
+      },
+      "hinglish_no_weight": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "hinglish_tonnes": {
+        "successes": 0,
+        "total": 10,
+        "rate": 0.0,
+        "ci_low": 0.0,
+        "ci_high": 0.2775
+      }
+    },
+    "failures": [
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "conflict_pieces",
+        "got_action": "file",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_file",
+        "got_action": "clarify",
+        "wrong_fields": []
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      },
+      {
+        "template": "hinglish_tonnes",
+        "got_action": "file",
+        "wrong_fields": [
+          "customer_name"
+        ]
+      }
+    ]
+  },
+  "invoice": {
+    "n": 100,
+    "overall": {
+      "successes": 100,
+      "total": 100,
+      "rate": 1.0,
+      "ci_low": 0.963,
+      "ci_high": 1.0
+    },
+    "by_kind": {
+      "freight_top_inside": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "freight_top_outside": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "freight_bottom_inside": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "freight_bottom_outside": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "share_high_inside": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "share_high_outside": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "share_low_inside": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "share_low_outside": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "total_off_half_paisa": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      },
+      "total_off_two_paise": {
+        "successes": 10,
+        "total": 10,
+        "rate": 1.0,
+        "ci_low": 0.7225,
+        "ci_high": 1.0
+      }
+    }
+  }
+}

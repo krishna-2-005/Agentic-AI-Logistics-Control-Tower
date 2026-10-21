@@ -1,0 +1,1602 @@
+[
+  {
+    "seq": 1,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Hyderabad_Shamshbd_H (Telangana) (IND501359AAE) for Hyderabad_Alwal_I (Telangana) (IND500010AAA).\nPackages: 1\nWeight: 407\nService: Carting\n\nRegards,\nPriya Nair\nHyderabad Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Hyderabad Enterprises",
+      "origin_centre": "IND501359AAE",
+      "dest_centre": "IND500010AAA",
+      "route_type": "Carting",
+      "pieces": 1
+    }
+  },
+  {
+    "seq": 2,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Nandikotkr_UmarDPP_D (Andhra Pradesh) (IND518401AAA) for Atmakur_IndraNgr_D (Andhra Pradesh) (IND518422AAB).\nPackages: 2\nWeight: 2069\nService: FTL\n\nRegards,\nRahul Menon\nNandikotkr Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Nandikotkr Logistics Pvt Ltd",
+      "origin_centre": "IND518401AAA",
+      "dest_centre": "IND518422AAB",
+      "route_type": "FTL",
+      "pieces": 2
+    }
+  },
+  {
+    "seq": 3,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Gurgaon_Bilaspur_HB (Haryana) (IND000000ACB) for Delhi_Mayapuri_PC (Delhi) (IND110064AAA).\nPackages: 11\nWeight: 90\nService: Carting\n\nRegards,\nAnita Desai\nGurgaon Industries",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Gurgaon Industries",
+      "origin_centre": "IND000000ACB",
+      "dest_centre": "IND110064AAA",
+      "route_type": "Carting",
+      "pieces": 11
+    }
+  },
+  {
+    "seq": 4,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Kanpur_Central_H_6 (Uttar Pradesh) (IND209304AAA) for Kanpur_GovndNgr_DC (Uttar Pradesh) (IND208006AAA).\nPackages: 14\nWeight: 29\nService: Carting\n\nRegards,\nVikram Shah\nKanpur Exports",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Kanpur Exports",
+      "origin_centre": "IND209304AAA",
+      "dest_centre": "IND208006AAA",
+      "route_type": "Carting",
+      "pieces": 14
+    }
+  },
+  {
+    "seq": 5,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Achrol_BgwriDPP_D (Rajasthan) (IND303002AAA) for Jaipur_Hub (Rajasthan) (IND302014AAA).\nPackages: 5\nWeight: 5778\nService: FTL\n\nRegards,\nSneha Iyer\nAchrol Industries",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Achrol Industries",
+      "origin_centre": "IND303002AAA",
+      "dest_centre": "IND302014AAA",
+      "route_type": "FTL",
+      "pieces": 5
+    }
+  },
+  {
+    "seq": 6,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Eluru_Agraharm_DC (Andhra Pradesh) (IND534001AAA) for Kaikaluru_Atapaka_D (Andhra Pradesh) (IND521333AAA).\nPackages: 1\nWeight: 7170\nService: FTL\n\nRegards,\nArjun Rao\nEluru Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Eluru Distributors",
+      "origin_centre": "IND534001AAA",
+      "dest_centre": "IND521333AAA",
+      "route_type": "FTL",
+      "pieces": 1
+    }
+  },
+  {
+    "seq": 7,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Bengaluru_Peenya_L (Karnataka) (IND560058AAD) for Bangalore_Nelmngla_H (Karnataka) (IND562132AAA).\nPackages: 9\nWeight: 25\nService: Carting\n\nRegards,\nMeera Krishnan\nBengaluru Industries",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Bengaluru Industries",
+      "origin_centre": "IND560058AAD",
+      "dest_centre": "IND562132AAA",
+      "route_type": "Carting",
+      "pieces": 9
+    }
+  },
+  {
+    "seq": 8,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Sillod_ZebaTWR_D (Maharashtra) (IND431112AAB) for Aurangabad_Central_H_1 (Maharashtra) (IND431136AAC).\nPackages: 19\nWeight: 215\nService: Carting\n\nRegards,\nImran Sheikh\nSillod Industries",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Sillod Industries",
+      "origin_centre": "IND431112AAB",
+      "dest_centre": "IND431136AAC",
+      "route_type": "Carting",
+      "pieces": 19
+    }
+  },
+  {
+    "seq": 9,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Jamjodhpur_Court_D (Gujarat) (IND360530AAB) for Junagadh_DPC (Gujarat) (IND362001AAA).\nPackages: 3\nWeight: 430\nService: Carting\n\nRegards,\nKavya Reddy\nJamjodhpur Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Jamjodhpur Logistics Pvt Ltd",
+      "origin_centre": "IND360530AAB",
+      "dest_centre": "IND362001AAA",
+      "route_type": "Carting",
+      "pieces": 3
+    }
+  },
+  {
+    "seq": 10,
+    "template": "unit_missing",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nPlease collect from Bengaluru_Bomsndra_HB (Karnataka) (IND560099AAB) for HBR Layout PC (Karnataka) (IND560043AAC).\nPackages: 13\nWeight: 79\nService: Carting\n\nRegards,\nNikhil Bose\nBengaluru Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Bengaluru Distributors",
+      "origin_centre": "IND560099AAB",
+      "dest_centre": "IND560043AAC",
+      "route_type": "Carting",
+      "pieces": 13
+    }
+  },
+  {
+    "seq": 11,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND39502AAD to IND395004AAB. 3 pieces, 163.1 kg, Carting.\n\nRegards,\nPriya Nair\nSurat Industries",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Surat Industries",
+      "dest_centre": "IND395004AAB",
+      "route_type": "Carting",
+      "pieces": 3,
+      "weight_kg": 163.1
+    }
+  },
+  {
+    "seq": 12,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND71231AAA to IND834002AAB. 4 pieces, 3614.8 kg, FTL.\n\nRegards,\nRahul Menon\nKolkata Industries",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Kolkata Industries",
+      "dest_centre": "IND834002AAB",
+      "route_type": "FTL",
+      "pieces": 4,
+      "weight_kg": 3614.8
+    }
+  },
+  {
+    "seq": 13,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND24614AAA to IND249407AAA. 6 pieces, 4388.4 kg, FTL.\n\nRegards,\nAnita Desai\nKotdwara Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Kotdwara Enterprises",
+      "dest_centre": "IND249407AAA",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 4388.4
+    }
+  },
+  {
+    "seq": 14,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND12100AAB to IND000000ACB. 9 pieces, 454.7 kg, Carting.\n\nRegards,\nVikram Shah\nFbd Industries",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Fbd Industries",
+      "dest_centre": "IND000000ACB",
+      "route_type": "Carting",
+      "pieces": 9,
+      "weight_kg": 454.7
+    }
+  },
+  {
+    "seq": 15,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND00000ACB to IND501359AAE. 2 pieces, 2660.7 kg, FTL.\n\nRegards,\nSneha Iyer\nGurgaon Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Gurgaon Enterprises",
+      "dest_centre": "IND501359AAE",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 2660.7
+    }
+  },
+  {
+    "seq": 16,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND42550AAB to IND450331AAA. 5 pieces, 144.3 kg, Carting.\n\nRegards,\nArjun Rao\nRaver Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Raver Distributors",
+      "dest_centre": "IND450331AAA",
+      "route_type": "Carting",
+      "pieces": 5,
+      "weight_kg": 144.3
+    }
+  },
+  {
+    "seq": 17,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND47322AAA to IND474003AAA. 6 pieces, 1286.3 kg, FTL.\n\nRegards,\nMeera Krishnan\nGuna Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Guna Logistics Pvt Ltd",
+      "dest_centre": "IND474003AAA",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 1286.3
+    }
+  },
+  {
+    "seq": 18,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND64106AAD to IND641607AAA. 2 pieces, 3493.6 kg, FTL.\n\nRegards,\nImran Sheikh\nCoimbatore Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Coimbatore Enterprises",
+      "dest_centre": "IND641607AAA",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 3493.6
+    }
+  },
+  {
+    "seq": 19,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND26315AAB to IND244715AAA. 1 pieces, 4969.5 kg, FTL.\n\nRegards,\nKavya Reddy\nRudrapur Industries",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Rudrapur Industries",
+      "dest_centre": "IND244715AAA",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 4969.5
+    }
+  },
+  {
+    "seq": 20,
+    "template": "code_short_origin",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nBooking: from IND50135AAE to IND518002AAA. 6 pieces, 1214.4 kg, FTL.\n\nRegards,\nNikhil Bose\nHyderabad Industries",
+    "expected_action": "clarify",
+    "expected_missing": "origin_centre",
+    "expected_fields": {
+      "customer_name": "Hyderabad Industries",
+      "dest_centre": "IND518002AAA",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 1214.4
+    }
+  },
+  {
+    "seq": 21,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 12 pieces (99.8 kg) from IND421302AAG to IND4000727AAB. Carting.\n\nRegards,\nPriya Nair\nBhiwandi Exports",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Bhiwandi Exports",
+      "origin_centre": "IND421302AAG",
+      "route_type": "Carting",
+      "pieces": 12,
+      "weight_kg": 99.8
+    }
+  },
+  {
+    "seq": 22,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 12 pieces (327.6 kg) from IND560099AAB to IND5621327AAA. Carting.\n\nRegards,\nRahul Menon\nBengaluru Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Bengaluru Freight Carriers",
+      "origin_centre": "IND560099AAB",
+      "route_type": "Carting",
+      "pieces": 12,
+      "weight_kg": 327.6
+    }
+  },
+  {
+    "seq": 23,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 18 pieces (354.6 kg) from IND110078AAA to IND1100437AAA. Carting.\n\nRegards,\nAnita Desai\nJanakpuri Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Janakpuri Logistics Pvt Ltd",
+      "origin_centre": "IND110078AAA",
+      "route_type": "Carting",
+      "pieces": 18,
+      "weight_kg": 354.6
+    }
+  },
+  {
+    "seq": 24,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 3 pieces (8569.9 kg) from IND581400AAB to IND5813257AAA. FTL.\n\nRegards,\nVikram Shah\nMallapur Exports",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Mallapur Exports",
+      "origin_centre": "IND581400AAB",
+      "route_type": "FTL",
+      "pieces": 3,
+      "weight_kg": 8569.9
+    }
+  },
+  {
+    "seq": 25,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 5 pieces (4386.4 kg) from IND000000ACB to IND1600027AAC. FTL.\n\nRegards,\nSneha Iyer\nGurgaon Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Gurgaon Freight Carriers",
+      "origin_centre": "IND000000ACB",
+      "route_type": "FTL",
+      "pieces": 5,
+      "weight_kg": 4386.4
+    }
+  },
+  {
+    "seq": 26,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 8 pieces (199.8 kg) from IND641062AAD to IND6432317AAA. Carting.\n\nRegards,\nArjun Rao\nCoimbatore Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Coimbatore Logistics Pvt Ltd",
+      "origin_centre": "IND641062AAD",
+      "route_type": "Carting",
+      "pieces": 8,
+      "weight_kg": 199.8
+    }
+  },
+  {
+    "seq": 27,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 19 pieces (153.1 kg) from IND411033AAA to IND0000007AAL. Carting.\n\nRegards,\nMeera Krishnan\nPune Exports",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Pune Exports",
+      "origin_centre": "IND411033AAA",
+      "route_type": "Carting",
+      "pieces": 19,
+      "weight_kg": 153.1
+    }
+  },
+  {
+    "seq": 28,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 14 pieces (89.2 kg) from IND400011AAA to IND4000727AAD. Carting.\n\nRegards,\nImran Sheikh\nLowerparel Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Lowerparel Freight Carriers",
+      "origin_centre": "IND400011AAA",
+      "route_type": "Carting",
+      "pieces": 14,
+      "weight_kg": 89.2
+    }
+  },
+  {
+    "seq": 29,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 13 pieces (166.8 kg) from IND683565AAA to IND6835117AAA. Carting.\n\nRegards,\nKavya Reddy\nKunnathund Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Kunnathund Logistics Pvt Ltd",
+      "origin_centre": "IND683565AAA",
+      "route_type": "Carting",
+      "pieces": 13,
+      "weight_kg": 166.8
+    }
+  },
+  {
+    "seq": 30,
+    "template": "code_long_dest",
+    "adversarial": true,
+    "subject": "New booking",
+    "body": "Hi,\n\nPlease book 9 pieces (318.0 kg) from IND121004AAB to IND1210047AAA. Carting.\n\nRegards,\nNikhil Bose\nFbd Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Fbd Freight Carriers",
+      "origin_centre": "IND121004AAB",
+      "route_type": "Carting",
+      "pieces": 9,
+      "weight_kg": 318.0
+    }
+  },
+  {
+    "seq": 31,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND382430AAB, destination INDACB000000. 2 pieces, 1821.0 kg, FTL.\n\nRegards,\nPriya Nair\nAhmedabad Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Ahmedabad Enterprises",
+      "origin_centre": "IND382430AAB",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 1821.0
+    }
+  },
+  {
+    "seq": 32,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND382430AAB, destination INDAAA389001. 2 pieces, 2012.1 kg, FTL.\n\nRegards,\nRahul Menon\nAhmedabad Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Ahmedabad Freight Carriers",
+      "origin_centre": "IND382430AAB",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 2012.1
+    }
+  },
+  {
+    "seq": 33,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND305001AAC, destination INDAAA305802. 6 pieces, 3990.1 kg, FTL.\n\nRegards,\nAnita Desai\nAjmer Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Ajmer Logistics Pvt Ltd",
+      "origin_centre": "IND305001AAC",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 3990.1
+    }
+  },
+  {
+    "seq": 34,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND421302AAG, destination INDAFT000000. 4 pieces, 388.8 kg, Carting.\n\nRegards,\nVikram Shah\nBhiwandi Exports",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Bhiwandi Exports",
+      "origin_centre": "IND421302AAG",
+      "route_type": "Carting",
+      "pieces": 4,
+      "weight_kg": 388.8
+    }
+  },
+  {
+    "seq": 35,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND641607AAA, destination INDAAA641654. 18 pieces, 92.8 kg, Carting.\n\nRegards,\nSneha Iyer\nTirupur Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Tirupur Enterprises",
+      "origin_centre": "IND641607AAA",
+      "route_type": "Carting",
+      "pieces": 18,
+      "weight_kg": 92.8
+    }
+  },
+  {
+    "seq": 36,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND533308AAB, destination INDAAA533003. 5 pieces, 1736.4 kg, FTL.\n\nRegards,\nArjun Rao\nMandapeta Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Mandapeta Logistics Pvt Ltd",
+      "origin_centre": "IND533308AAB",
+      "route_type": "FTL",
+      "pieces": 5,
+      "weight_kg": 1736.4
+    }
+  },
+  {
+    "seq": 37,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND560099AAB, destination INDAAB560058. 9 pieces, 56.6 kg, Carting.\n\nRegards,\nMeera Krishnan\nBengaluru Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Bengaluru Logistics Pvt Ltd",
+      "origin_centre": "IND560099AAB",
+      "route_type": "Carting",
+      "pieces": 9,
+      "weight_kg": 56.6
+    }
+  },
+  {
+    "seq": 38,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND382430AAB, destination INDAAB313001. 6 pieces, 7064.0 kg, FTL.\n\nRegards,\nImran Sheikh\nAhmedabad Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Ahmedabad Enterprises",
+      "origin_centre": "IND382430AAB",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 7064.0
+    }
+  },
+  {
+    "seq": 39,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND249407AAA, destination INDAAA249201. 1 pieces, 2838.8 kg, FTL.\n\nRegards,\nKavya Reddy\nHaridwar Industries",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Haridwar Industries",
+      "origin_centre": "IND249407AAA",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 2838.8
+    }
+  },
+  {
+    "seq": 40,
+    "template": "code_scrambled",
+    "adversarial": true,
+    "subject": "Transfer request",
+    "body": "Dear team,\n\nOrigin IND812002AAA, destination INDAAA813203. 1 pieces, 1563.8 kg, FTL.\n\nRegards,\nNikhil Bose\nBhagalpur Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "dest_centre",
+    "expected_fields": {
+      "customer_name": "Bhagalpur Distributors",
+      "origin_centre": "IND812002AAA",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 1563.8
+    }
+  },
+  {
+    "seq": 41,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND151001AAA to IND151302AAA, FTL, 7581.8 kg.\nNo. of packages: 6\n(Warehouse sheet shows 9 packages loaded.)\n\nRegards,\nPriya Nair\nBhatinda Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Bhatinda Freight Carriers",
+      "origin_centre": "IND151001AAA",
+      "dest_centre": "IND151302AAA",
+      "route_type": "FTL",
+      "weight_kg": 7581.8
+    }
+  },
+  {
+    "seq": 42,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND563125AAB to IND560300AAB, Carting, 225.9 kg.\nNo. of packages: 4\n(Warehouse sheet shows 7 packages loaded.)\n\nRegards,\nRahul Menon\nChintamani Exports",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Chintamani Exports",
+      "origin_centre": "IND563125AAB",
+      "dest_centre": "IND560300AAB",
+      "route_type": "Carting",
+      "weight_kg": 225.9
+    }
+  },
+  {
+    "seq": 43,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND533003AAA to IND533401AAA, FTL, 3472.2 kg.\nNo. of packages: 2\n(Warehouse sheet shows 5 packages loaded.)\n\nRegards,\nAnita Desai\nKakinada Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Kakinada Enterprises",
+      "origin_centre": "IND533003AAA",
+      "dest_centre": "IND533401AAA",
+      "route_type": "FTL",
+      "weight_kg": 3472.2
+    }
+  },
+  {
+    "seq": 44,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND121002AAB to IND000000ACB, Carting, 81.0 kg.\nNo. of packages: 1\n(Warehouse sheet shows 4 packages loaded.)\n\nRegards,\nVikram Shah\nFaridabad Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Faridabad Enterprises",
+      "origin_centre": "IND121002AAB",
+      "dest_centre": "IND000000ACB",
+      "route_type": "Carting",
+      "weight_kg": 81.0
+    }
+  },
+  {
+    "seq": 45,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND151302AAA to IND151505AAA, FTL, 4767.0 kg.\nNo. of packages: 6\n(Warehouse sheet shows 9 packages loaded.)\n\nRegards,\nSneha Iyer\nTalwandisabo Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Talwandisabo Distributors",
+      "origin_centre": "IND151302AAA",
+      "dest_centre": "IND151505AAA",
+      "route_type": "FTL",
+      "weight_kg": 4767.0
+    }
+  },
+  {
+    "seq": 46,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND842001AAA to IND848114AAA, FTL, 1244.2 kg.\nNo. of packages: 6\n(Warehouse sheet shows 9 packages loaded.)\n\nRegards,\nArjun Rao\nMuzaffrpur Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Muzaffrpur Freight Carriers",
+      "origin_centre": "IND842001AAA",
+      "dest_centre": "IND848114AAA",
+      "route_type": "FTL",
+      "weight_kg": 1244.2
+    }
+  },
+  {
+    "seq": 47,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND411036AAA to IND411033AAA, Carting, 226.7 kg.\nNo. of packages: 5\n(Warehouse sheet shows 8 packages loaded.)\n\nRegards,\nMeera Krishnan\nPune Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Pune Logistics Pvt Ltd",
+      "origin_centre": "IND411036AAA",
+      "dest_centre": "IND411033AAA",
+      "route_type": "Carting",
+      "weight_kg": 226.7
+    }
+  },
+  {
+    "seq": 48,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND802301AAA to IND804401AAA, FTL, 8386.3 kg.\nNo. of packages: 1\n(Warehouse sheet shows 4 packages loaded.)\n\nRegards,\nImran Sheikh\nArrah Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Arrah Logistics Pvt Ltd",
+      "origin_centre": "IND802301AAA",
+      "dest_centre": "IND804401AAA",
+      "route_type": "FTL",
+      "weight_kg": 8386.3
+    }
+  },
+  {
+    "seq": 49,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND673592AAA to IND673121AAA, Carting, 125.3 kg.\nNo. of packages: 10\n(Warehouse sheet shows 13 packages loaded.)\n\nRegards,\nKavya Reddy\nSultnbthry Traders",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Sultnbthry Traders",
+      "origin_centre": "IND673592AAA",
+      "dest_centre": "IND673121AAA",
+      "route_type": "Carting",
+      "weight_kg": 125.3
+    }
+  },
+  {
+    "seq": 50,
+    "template": "conflict_pieces",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Hello,\n\nShipment from IND508213AAB to IND508001AAA, FTL, 2077.1 kg.\nNo. of packages: 1\n(Warehouse sheet shows 4 packages loaded.)\n\nRegards,\nNikhil Bose\nSuryapet Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "pieces",
+    "expected_fields": {
+      "customer_name": "Suryapet Enterprises",
+      "origin_centre": "IND508213AAB",
+      "dest_centre": "IND508001AAA",
+      "route_type": "FTL",
+      "weight_kg": 2077.1
+    }
+  },
+  {
+    "seq": 51,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - FTL",
+    "body": "Hello,\n\nPlease move 4 pieces, 7707.0 kg, from IND160002AAC to IND174307AAA as Carting.\n\nRegards,\nPriya Nair\nChandigarh Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Chandigarh Enterprises",
+      "origin_centre": "IND160002AAC",
+      "dest_centre": "IND174307AAA",
+      "pieces": 4,
+      "weight_kg": 7707.0
+    }
+  },
+  {
+    "seq": 52,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - Carting",
+    "body": "Hello,\n\nPlease move 9 pieces, 400.5 kg, from IND000000ACN to IND501359AAF as FTL.\n\nRegards,\nRahul Menon\nHyderabad Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Hyderabad Enterprises",
+      "origin_centre": "IND000000ACN",
+      "dest_centre": "IND501359AAF",
+      "pieces": 9,
+      "weight_kg": 400.5
+    }
+  },
+  {
+    "seq": 53,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - FTL",
+    "body": "Hello,\n\nPlease move 2 pieces, 7160.0 kg, from IND342301AAA to IND342005AAD as Carting.\n\nRegards,\nAnita Desai\nPhalodi Exports",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Phalodi Exports",
+      "origin_centre": "IND342301AAA",
+      "dest_centre": "IND342005AAD",
+      "pieces": 2,
+      "weight_kg": 7160.0
+    }
+  },
+  {
+    "seq": 54,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - FTL",
+    "body": "Hello,\n\nPlease move 6 pieces, 4979.4 kg, from IND332001AAB to IND334001AAB as Carting.\n\nRegards,\nVikram Shah\nSikar Industries",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Sikar Industries",
+      "origin_centre": "IND332001AAB",
+      "dest_centre": "IND334001AAB",
+      "pieces": 6,
+      "weight_kg": 4979.4
+    }
+  },
+  {
+    "seq": 55,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - FTL",
+    "body": "Hello,\n\nPlease move 4 pieces, 5553.4 kg, from IND413002AAA to IND413501AAA as Carting.\n\nRegards,\nSneha Iyer\nSolapur Traders",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Solapur Traders",
+      "origin_centre": "IND413002AAA",
+      "dest_centre": "IND413501AAA",
+      "pieces": 4,
+      "weight_kg": 5553.4
+    }
+  },
+  {
+    "seq": 56,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - Carting",
+    "body": "Hello,\n\nPlease move 19 pieces, 67.2 kg, from IND585314AAA to IND585104AAA as FTL.\n\nRegards,\nArjun Rao\nAland Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Aland Enterprises",
+      "origin_centre": "IND585314AAA",
+      "dest_centre": "IND585104AAA",
+      "pieces": 19,
+      "weight_kg": 67.2
+    }
+  },
+  {
+    "seq": 57,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - Carting",
+    "body": "Hello,\n\nPlease move 2 pieces, 495.8 kg, from IND400015AAA to IND400072AAB as FTL.\n\nRegards,\nMeera Krishnan\nMumbai Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Mumbai Distributors",
+      "origin_centre": "IND400015AAA",
+      "dest_centre": "IND400072AAB",
+      "pieces": 2,
+      "weight_kg": 495.8
+    }
+  },
+  {
+    "seq": 58,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - FTL",
+    "body": "Hello,\n\nPlease move 5 pieces, 4059.5 kg, from IND625106AAA to IND625008AAA as Carting.\n\nRegards,\nImran Sheikh\nMelur Industries",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Melur Industries",
+      "origin_centre": "IND625106AAA",
+      "dest_centre": "IND625008AAA",
+      "pieces": 5,
+      "weight_kg": 4059.5
+    }
+  },
+  {
+    "seq": 59,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - FTL",
+    "body": "Hello,\n\nPlease move 3 pieces, 2594.0 kg, from IND457001AAA to IND457226AAA as Carting.\n\nRegards,\nKavya Reddy\nRatlam Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Ratlam Distributors",
+      "origin_centre": "IND457001AAA",
+      "dest_centre": "IND457226AAA",
+      "pieces": 3,
+      "weight_kg": 2594.0
+    }
+  },
+  {
+    "seq": 60,
+    "template": "conflict_service",
+    "adversarial": true,
+    "subject": "Booking - Carting",
+    "body": "Hello,\n\nPlease move 5 pieces, 113.1 kg, from IND688009AAA to IND686028AAB as FTL.\n\nRegards,\nNikhil Bose\nAlappuzha Industries",
+    "expected_action": "clarify",
+    "expected_missing": "route_type",
+    "expected_fields": {
+      "customer_name": "Alappuzha Industries",
+      "origin_centre": "IND688009AAA",
+      "dest_centre": "IND686028AAB",
+      "pieces": 5,
+      "weight_kg": 113.1
+    }
+  },
+  {
+    "seq": 61,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND493118AAC se IND495334AAB, 9 pieces, 51.5 kg, Carting.\nAur ek: IND495334AAB se IND493118AAC, 8 pieces, 17.2 kg, Carting.\n\nDono confirm kar dena.\n\nRegards,\nPriya Nair\nBhatpara Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Bhatpara Freight Carriers",
+      "origin_centre": "IND493118AAC",
+      "route_type": "Carting"
+    }
+  },
+  {
+    "seq": 62,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND244001AAA se IND263153AAB, 5 pieces, 1077.3 kg, FTL.\nAur ek: IND263153AAB se IND244001AAA, 4 pieces, 359.1 kg, FTL.\n\nDono confirm kar dena.\n\nRegards,\nRahul Menon\nMoradabad Exports",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Moradabad Exports",
+      "origin_centre": "IND244001AAA",
+      "route_type": "FTL"
+    }
+  },
+  {
+    "seq": 63,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND502286AAB se IND502220AAC, 5 pieces, 5028.3 kg, FTL.\nAur ek: IND502220AAC se IND502286AAB, 4 pieces, 1676.1 kg, FTL.\n\nDono confirm kar dena.\n\nRegards,\nAnita Desai\nNarayankhed Traders",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Narayankhed Traders",
+      "origin_centre": "IND502286AAB",
+      "route_type": "FTL"
+    }
+  },
+  {
+    "seq": 64,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND385535AAA se IND384205AAA, 1 pieces, 4864.3 kg, FTL.\nAur ek: IND384205AAA se IND385535AAA, 1 pieces, 1621.4 kg, FTL.\n\nDono confirm kar dena.\n\nRegards,\nVikram Shah\nDeesa Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Deesa Logistics Pvt Ltd",
+      "origin_centre": "IND385535AAA",
+      "route_type": "FTL"
+    }
+  },
+  {
+    "seq": 65,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND577201AAA se IND562132AAA, 4 pieces, 5975.1 kg, FTL.\nAur ek: IND562132AAA se IND577201AAA, 3 pieces, 1991.7 kg, FTL.\n\nDono confirm kar dena.\n\nRegards,\nSneha Iyer\nShimoga Industries",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Shimoga Industries",
+      "origin_centre": "IND577201AAA",
+      "route_type": "FTL"
+    }
+  },
+  {
+    "seq": 66,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND401104AAB se IND421302AAG, 18 pieces, 349.2 kg, Carting.\nAur ek: IND421302AAG se IND401104AAB, 17 pieces, 116.4 kg, Carting.\n\nDono confirm kar dena.\n\nRegards,\nArjun Rao\nMumbai Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Mumbai Distributors",
+      "origin_centre": "IND401104AAB",
+      "route_type": "Carting"
+    }
+  },
+  {
+    "seq": 67,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND532222AAA se IND761200AAA, 2 pieces, 1120.4 kg, FTL.\nAur ek: IND761200AAA se IND532222AAA, 1 pieces, 373.5 kg, FTL.\n\nDono confirm kar dena.\n\nRegards,\nMeera Krishnan\nPalasa Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Palasa Enterprises",
+      "origin_centre": "IND532222AAA",
+      "route_type": "FTL"
+    }
+  },
+  {
+    "seq": 68,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND521301AAA se IND521001AAA, 6 pieces, 4659.9 kg, FTL.\nAur ek: IND521001AAA se IND521301AAA, 5 pieces, 1553.3 kg, FTL.\n\nDono confirm kar dena.\n\nRegards,\nImran Sheikh\nGudivada Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Gudivada Logistics Pvt Ltd",
+      "origin_centre": "IND521301AAA",
+      "route_type": "FTL"
+    }
+  },
+  {
+    "seq": 69,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND683511AAA se IND000000ABA, 18 pieces, 299.9 kg, Carting.\nAur ek: IND000000ABA se IND683511AAA, 17 pieces, 100.0 kg, Carting.\n\nDono confirm kar dena.\n\nRegards,\nKavya Reddy\nAluva Distributors",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Aluva Distributors",
+      "origin_centre": "IND683511AAA",
+      "route_type": "Carting"
+    }
+  },
+  {
+    "seq": 70,
+    "template": "two_orders_hinglish",
+    "adversarial": true,
+    "subject": "Two bookings",
+    "body": "Hi,\n\nDo booking karni hain.\nPehli: IND515004AAA se IND515401AAB, 3 pieces, 3392.4 kg, FTL.\nAur ek: IND515401AAB se IND515004AAA, 2 pieces, 1130.8 kg, FTL.\n\nDono confirm kar dena.\n\nRegards,\nNikhil Bose\nAnantapur Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "consignment",
+    "expected_fields": {
+      "customer_name": "Anantapur Enterprises",
+      "origin_centre": "IND515004AAA",
+      "route_type": "FTL"
+    }
+  },
+  {
+    "seq": 71,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND600056AAB se IND524003AAA tak ek booking karni hai. Total 3 packets hain aur vajan 6832.3 kg hai. FTL chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nPriya Nair\nMaa Exports",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Maa Exports",
+      "origin_centre": "IND600056AAB",
+      "dest_centre": "IND524003AAA",
+      "route_type": "FTL",
+      "pieces": 3,
+      "weight_kg": 6832.3
+    }
+  },
+  {
+    "seq": 72,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND580028AAA se IND590016AAA tak ek booking karni hai. Total 4 packets hain aur vajan 3981.3 kg hai. FTL chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nRahul Menon\nHubli Traders",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Hubli Traders",
+      "origin_centre": "IND580028AAA",
+      "dest_centre": "IND590016AAA",
+      "route_type": "FTL",
+      "pieces": 4,
+      "weight_kg": 3981.3
+    }
+  },
+  {
+    "seq": 73,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND562132AAA se IND462022AAA tak ek booking karni hai. Total 1 packets hain aur vajan 1650.9 kg hai. FTL chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nAnita Desai\nBangalore Enterprises",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Bangalore Enterprises",
+      "origin_centre": "IND562132AAA",
+      "dest_centre": "IND462022AAA",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 1650.9
+    }
+  },
+  {
+    "seq": 74,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND560099AAB se IND560085AAA tak ek booking karni hai. Total 4 packets hain aur vajan 415.6 kg hai. Carting chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nVikram Shah\nBengaluru Industries",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Bengaluru Industries",
+      "origin_centre": "IND560099AAB",
+      "dest_centre": "IND560085AAA",
+      "route_type": "Carting",
+      "pieces": 4,
+      "weight_kg": 415.6
+    }
+  },
+  {
+    "seq": 75,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND530012AAA se IND501359AAE tak ek booking karni hai. Total 2 packets hain aur vajan 6583.0 kg hai. FTL chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nSneha Iyer\nVisakhapatnam Enterprises",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Visakhapatnam Enterprises",
+      "origin_centre": "IND530012AAA",
+      "dest_centre": "IND501359AAE",
+      "route_type": "FTL",
+      "pieces": 2,
+      "weight_kg": 6583.0
+    }
+  },
+  {
+    "seq": 76,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND000000ACB se IND110095AAB tak ek booking karni hai. Total 16 packets hain aur vajan 423.0 kg hai. Carting chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nArjun Rao\nGurgaon Distributors",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Gurgaon Distributors",
+      "origin_centre": "IND000000ACB",
+      "dest_centre": "IND110095AAB",
+      "route_type": "Carting",
+      "pieces": 16,
+      "weight_kg": 423.0
+    }
+  },
+  {
+    "seq": 77,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND600056AAB se IND600076AAB tak ek booking karni hai. Total 9 packets hain aur vajan 170.0 kg hai. Carting chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nMeera Krishnan\nMaa Enterprises",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Maa Enterprises",
+      "origin_centre": "IND600056AAB",
+      "dest_centre": "IND600076AAB",
+      "route_type": "Carting",
+      "pieces": 9,
+      "weight_kg": 170.0
+    }
+  },
+  {
+    "seq": 78,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND333042AAA se IND333031AAA tak ek booking karni hai. Total 6 packets hain aur vajan 6692.8 kg hai. FTL chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nImran Sheikh\nNawalgarh Enterprises",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Nawalgarh Enterprises",
+      "origin_centre": "IND333042AAA",
+      "dest_centre": "IND333031AAA",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 6692.8
+    }
+  },
+  {
+    "seq": 79,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND301001AAB se IND321001AAB tak ek booking karni hai. Total 4 packets hain aur vajan 7438.2 kg hai. FTL chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nKavya Reddy\nAlwar Exports",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Alwar Exports",
+      "origin_centre": "IND301001AAB",
+      "dest_centre": "IND321001AAB",
+      "route_type": "FTL",
+      "pieces": 4,
+      "weight_kg": 7438.2
+    }
+  },
+  {
+    "seq": 80,
+    "template": "hinglish_file",
+    "adversarial": true,
+    "subject": "Booking confirm karna",
+    "body": "Namaste,\n\nIND584101AAA se IND509124AAA tak ek booking karni hai. Total 1 packets hain aur vajan 2285.3 kg hai. FTL chahiye.\nKripya jaldi confirm karein.\n\nRegards,\nNikhil Bose\nRaichur Enterprises",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Raichur Enterprises",
+      "origin_centre": "IND584101AAA",
+      "dest_centre": "IND509124AAA",
+      "route_type": "FTL",
+      "pieces": 1,
+      "weight_kg": 2285.3
+    }
+  },
+  {
+    "seq": 81,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND614602AAA se IND614804AAA ke liye 6 packets bhejne hain, FTL. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nPriya Nair\nPattukotai Traders",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Pattukotai Traders",
+      "origin_centre": "IND614602AAA",
+      "dest_centre": "IND614804AAA",
+      "route_type": "FTL",
+      "pieces": 6
+    }
+  },
+  {
+    "seq": 82,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND751002AAB se IND712311AAA ke liye 6 packets bhejne hain, FTL. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nRahul Menon\nBhubaneshwar Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Bhubaneshwar Logistics Pvt Ltd",
+      "origin_centre": "IND751002AAB",
+      "dest_centre": "IND712311AAA",
+      "route_type": "FTL",
+      "pieces": 6
+    }
+  },
+  {
+    "seq": 83,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND627005AAA se IND628801AAA ke liye 17 packets bhejne hain, Carting. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nAnita Desai\nTirunelveli Enterprises",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Tirunelveli Enterprises",
+      "origin_centre": "IND627005AAA",
+      "dest_centre": "IND628801AAA",
+      "route_type": "Carting",
+      "pieces": 17
+    }
+  },
+  {
+    "seq": 84,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND508116AAA se IND508277AAB ke liye 2 packets bhejne hain, FTL. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nVikram Shah\nBhuvanagiri Exports",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Bhuvanagiri Exports",
+      "origin_centre": "IND508116AAA",
+      "dest_centre": "IND508277AAB",
+      "route_type": "FTL",
+      "pieces": 2
+    }
+  },
+  {
+    "seq": 85,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND411033AAA se IND413002AAA ke liye 5 packets bhejne hain, FTL. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nSneha Iyer\nPune Exports",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Pune Exports",
+      "origin_centre": "IND411033AAA",
+      "dest_centre": "IND413002AAA",
+      "route_type": "FTL",
+      "pieces": 5
+    }
+  },
+  {
+    "seq": 86,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND454001AAA se IND457001AAA ke liye 3 packets bhejne hain, FTL. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nArjun Rao\nDhar Freight Carriers",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Dhar Freight Carriers",
+      "origin_centre": "IND454001AAA",
+      "dest_centre": "IND457001AAA",
+      "route_type": "FTL",
+      "pieces": 3
+    }
+  },
+  {
+    "seq": 87,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND802158AAB se IND821115AAB ke liye 3 packets bhejne hain, FTL. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nMeera Krishnan\nJagdishpur Logistics Pvt Ltd",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Jagdishpur Logistics Pvt Ltd",
+      "origin_centre": "IND802158AAB",
+      "dest_centre": "IND821115AAB",
+      "route_type": "FTL",
+      "pieces": 3
+    }
+  },
+  {
+    "seq": 88,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND403726AAA se IND581303AAA ke liye 3 packets bhejne hain, FTL. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nImran Sheikh\nGoa Traders",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Goa Traders",
+      "origin_centre": "IND403726AAA",
+      "dest_centre": "IND581303AAA",
+      "route_type": "FTL",
+      "pieces": 3
+    }
+  },
+  {
+    "seq": 89,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND852139AAB se IND854326AAB ke liye 3 packets bhejne hain, FTL. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nKavya Reddy\nTriveninganj Industries",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Triveninganj Industries",
+      "origin_centre": "IND852139AAB",
+      "dest_centre": "IND854326AAB",
+      "route_type": "FTL",
+      "pieces": 3
+    }
+  },
+  {
+    "seq": 90,
+    "template": "hinglish_no_weight",
+    "adversarial": true,
+    "subject": "Booking",
+    "body": "Bhai,\n\nIND501359AAE se IND411033AAA ke liye 1 packets bhejne hain, FTL. Vajan abhi pata nahi hai, godown mein tolna baaki hai.\n\nRegards,\nNikhil Bose\nHyderabad Industries",
+    "expected_action": "clarify",
+    "expected_missing": "weight_kg",
+    "expected_fields": {
+      "customer_name": "Hyderabad Industries",
+      "origin_centre": "IND501359AAE",
+      "dest_centre": "IND411033AAA",
+      "route_type": "FTL",
+      "pieces": 1
+    }
+  },
+  {
+    "seq": 91,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND494334AAB se IND493445AAB ke liye 4 pieces, total 5.9 ton maal hai. FTL mein bhejna hai.\n\nRegards,\nPriya Nair\nKanker Freight Carriers",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Kanker Freight Carriers",
+      "origin_centre": "IND494334AAB",
+      "dest_centre": "IND493445AAB",
+      "route_type": "FTL",
+      "pieces": 4,
+      "weight_kg": 5900.0
+    }
+  },
+  {
+    "seq": 92,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND506132AAA se IND122001AAJ ke liye 6 pieces, total 6.0 ton maal hai. FTL mein bhejna hai.\n\nRegards,\nRahul Menon\nKhanpur Exports",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Khanpur Exports",
+      "origin_centre": "IND506132AAA",
+      "dest_centre": "IND122001AAJ",
+      "route_type": "FTL",
+      "pieces": 6,
+      "weight_kg": 6000.0
+    }
+  },
+  {
+    "seq": 93,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND273304AAA se IND273014AAB ke liye 3 pieces, total 0.4 ton maal hai. Carting mein bhejna hai.\n\nRegards,\nAnita Desai\nNichlaul Logistics Pvt Ltd",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Nichlaul Logistics Pvt Ltd",
+      "origin_centre": "IND273304AAA",
+      "dest_centre": "IND273014AAB",
+      "route_type": "Carting",
+      "pieces": 3,
+      "weight_kg": 400.0
+    }
+  },
+  {
+    "seq": 94,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND000000ACB se IND302022AAD ke liye 4 pieces, total 5.2 ton maal hai. FTL mein bhejna hai.\n\nRegards,\nVikram Shah\nGurgaon Distributors",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Gurgaon Distributors",
+      "origin_centre": "IND000000ACB",
+      "dest_centre": "IND302022AAD",
+      "route_type": "FTL",
+      "pieces": 4,
+      "weight_kg": 5200.0
+    }
+  },
+  {
+    "seq": 95,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND560064AAD se IND560043AAC ke liye 12 pieces, total 0.5 ton maal hai. Carting mein bhejna hai.\n\nRegards,\nSneha Iyer\nBengaluru Enterprises",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Bengaluru Enterprises",
+      "origin_centre": "IND560064AAD",
+      "dest_centre": "IND560043AAC",
+      "route_type": "Carting",
+      "pieces": 12,
+      "weight_kg": 500.0
+    }
+  },
+  {
+    "seq": 96,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND000000ACB se IND201301AAM ke liye 2 pieces, total 0.2 ton maal hai. Carting mein bhejna hai.\n\nRegards,\nArjun Rao\nGurgaon Freight Carriers",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Gurgaon Freight Carriers",
+      "origin_centre": "IND000000ACB",
+      "dest_centre": "IND201301AAM",
+      "route_type": "Carting",
+      "pieces": 2,
+      "weight_kg": 200.0
+    }
+  },
+  {
+    "seq": 97,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND209304AAA se IND209801AAA ke liye 10 pieces, total 0.4 ton maal hai. Carting mein bhejna hai.\n\nRegards,\nMeera Krishnan\nKanpur Exports",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Kanpur Exports",
+      "origin_centre": "IND209304AAA",
+      "dest_centre": "IND209801AAA",
+      "route_type": "Carting",
+      "pieces": 10,
+      "weight_kg": 400.0
+    }
+  },
+  {
+    "seq": 98,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND000000ACK se IND501359AAF ke liye 17 pieces, total 0.1 ton maal hai. Carting mein bhejna hai.\n\nRegards,\nImran Sheikh\nHyderabad Industries",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Hyderabad Industries",
+      "origin_centre": "IND000000ACK",
+      "dest_centre": "IND501359AAF",
+      "route_type": "Carting",
+      "pieces": 17,
+      "weight_kg": 100.0
+    }
+  },
+  {
+    "seq": 99,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND721306AAA se IND721507AAA ke liye 5 pieces, total 5.0 ton maal hai. FTL mein bhejna hai.\n\nRegards,\nKavya Reddy\nKharagpur Traders",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Kharagpur Traders",
+      "origin_centre": "IND721306AAA",
+      "dest_centre": "IND721507AAA",
+      "route_type": "FTL",
+      "pieces": 5,
+      "weight_kg": 5000.0
+    }
+  },
+  {
+    "seq": 100,
+    "template": "hinglish_tonnes",
+    "adversarial": true,
+    "subject": "Maal booking",
+    "body": "Hello ji,\n\nIND600056AAB se IND600110AAA ke liye 20 pieces, total 0.2 ton maal hai. Carting mein bhejna hai.\n\nRegards,\nNikhil Bose\nMaa Distributors",
+    "expected_action": "file",
+    "expected_missing": null,
+    "expected_fields": {
+      "customer_name": "Maa Distributors",
+      "origin_centre": "IND600056AAB",
+      "dest_centre": "IND600110AAA",
+      "route_type": "Carting",
+      "pieces": 20,
+      "weight_kg": 200.0
+    }
+  }
+]
