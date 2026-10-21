@@ -2698,3 +2698,252 @@ test MAE with a block-bootstrap interval (D-076) against the full model. Groups:
 *hub history* (the 12 `src_*`/`dst_*` v1 inputs and their cold flags); *v2 dispersion and dwell* (the
 eight v2 columns and their three missing-value flags); *baseline descriptors* (level, prior-leg count).
 A group whose removal does not move test MAE by an interval excluding zero is reported as such.
+
+## D-083 · The audit's legs are clustered by recurring service, not by trip or day — `DECIDED`
+**Post-v1.0 · Mounika · inspected before the dependence-aware audit (D-080) was pre-registered**
+
+The dependence-aware audit was planned to cluster on the trip, or on day-by-corridor blocks if
+trips rarely repeat a corridor. Before choosing, `python -m src.ml.audit_data` measured the
+clustering in the 26,369 legs (`benchmarks/raw/b3_dependence_diagnostics.json`). Its reading
+reproduces the published audit first: 1,130 corridors, 273 slower, 512 faster, every
+statistic within 1e-9 of `w2_corridor_audit.csv`.
+
+* **Trips do not repeat corridors.** In all 1,130 tested corridors `n_trips = n_legs`; no trip
+  visits a corridor twice. A trip cannot cluster a corridor's own legs. Trips do link a
+  corridor to the rest of the network (1.78 legs per trip, intraclass correlation 0.072 of
+  corridor-demeaned log-ratios), which a permutation inside a corridor cannot model.
+* **The creation day is almost irrelevant.** 23 calendar dates, intraclass correlation 0.0036,
+  design effect on a corridor mean about 1.0006.
+* **The recurring service is the real cluster.** `route_schedule_uuid` repeats: a corridor has
+  a median of 1 schedule (680 of 1,130 corridors run under exactly one), and the median
+  (corridor, schedule) cell holds 11 legs. Within a cell the intraclass correlation is 0.095,
+  giving a design effect of about 2.05 at the median corridor, so a typical corridor's 15 legs
+  carry the information of about 7 independent ones. Where a corridor has a single schedule its
+  corridor effect and its service effect cannot be told apart, and the correlation estimate is
+  biased downward by demeaning on the corridor, so 2.05 is a floor for that reason.
+
+**Decided: the cluster unit for the dependence-aware test is the (corridor, route schedule)
+cell.** This replaces both clusterings named in the plan, on the evidence above. It is a
+deviation from the plan's wording and is logged as one. D-080 states the permutation scheme
+that uses it.
+
+## D-080 · Dependence-aware corridor audit: four variants, one pre-registered headline rule — `DECIDED`
+**Post-v1.0 · Mounika · B3 · written before `src/ml/audit_robust.py` is run**
+
+The published audit (D-018) tests each corridor against the rest of the network with Welch's
+t-test and Benjamini-Hochberg at 5%. Welch assumes independent legs; D-083 found legs of one
+corridor and one recurring service are correlated (design effect about 2 at the median
+corridor). This experiment asks how many of the 273 slower and 512 faster corridors survive.
+
+**Variants, all on the same 1,130 corridors (10-leg floor), two-sided, alpha 0.05:**
+1. `bh_welch`: the published audit, unchanged (reproduced to 1e-9 first).
+2. `by_welch`: the same p-values, Benjamini-Yekutieli (valid under arbitrary dependence).
+3. `bh_perm`: cell-permutation p-values, Benjamini-Hochberg.
+4. `by_perm`: cell-permutation p-values, Benjamini-Yekutieli.
+BH and BY come from `statsmodels.stats.multitest.multipletests` (`fdr_bh`, `fdr_by`).
+
+**Permutation scheme (fixed now).** The exchangeable unit is the (corridor, route schedule)
+cell of D-083, built over all 26,369 legs, because the "rest" group contains every other leg.
+Let `m_b` be a cell's leg count and `ybar_b` its mean log-ratio. Cells are put in strata by
+size: 1, 2, 3, 4, 5, 6, 7, 8 exact, then 9-11, 12-15, 16-22, 23 and over. One permutation
+shuffles the cell means `ybar_b` among the cells of the same stratum, each position keeping its
+own size and its corridor. A corridor's permuted statistic is
+`D = (sum of m_b * permuted ybar_b over its cells) / n_c - (network total minus that sum) /
+(N - n_c)`, the corridor's mean minus the mean of the rest; the network total is recomputed per
+permutation. The observed `D` uses the real `ybar_b`. The p-value is two-sided,
+`(1 + #{|D_perm| >= |D_obs|}) / (B + 1)`, with **B = 100,000 permutations, seed 20260801**, in
+chunks, vectorised. 100,000 rather than 10,000 because the smallest attainable p-value at
+10,000 permutations (1e-4) is too coarse for Benjamini-Yekutieli over 1,130 tests.
+This is a global-null permutation (no corridor effect anywhere); with real corridor effects in
+the pool it is conservative for the strongest corridors, and it treats cells of one stratum as
+equally noisy. Both are stated limits. Cells in different corridors that share a schedule or a
+trip stay independent in this scheme; BY is what covers that.
+
+**Size check (reported, not a gate).** On 200 placebo datasets (cell means permuted, within-cell
+deviations kept) the uncorrected Welch rejection rate at 0.05 and the mean BH-Welch discovery
+count are reported, to show how far Welch's size is off under the cluster structure.
+
+**Decision rule.** All four variants are declared valid for their own assumptions (BH-Welch is
+the original). **The headline is the variant with the fewest significantly slower corridors;
+ties go to the one with the fewest significantly faster.** If that variant is not `bh_welch`,
+the headline drops to its counts everywhere, and `bh_welch` stays as a reported row. A corridor
+is **robust** if it is significant, in the same direction, under both the headline variant and
+`bh_welch`; otherwise a `bh_welch` discovery is **fragile**. Also reported: how many of the 273
+and 512 survive each variant, and the pairwise Jaccard overlap of the top-20 slower lists
+(ranked by `excess_ratio` among each variant's significant slower corridors).
+
+**Amendment to D-080, made before the full run.** A 2,000-permutation smoke test of the code
+(not the experiment: `b3_audit_robust.json` was overwritten by the real run) showed the rule
+could end in a three-way tie at zero slower and zero faster, which D-080 does not resolve. The
+tie-break is therefore fixed now: if the rule still ties after "fewest slower, then fewest
+faster", the headline is the first of `by_perm`, `bh_perm`, `by_welch`, `bh_welch` (the more
+conservative correction, and the cluster-aware test, first). Nothing else in D-080 changes.
+
+**Outcome (D-080).** `python -m src.ml.audit_robust`, 100,000 permutations, seed 20260801,
+`b3_audit_robust.json`. The published audit reproduced first (273 / 512, p-values within 3e-14).
+Significant slower / faster by variant: `bh_welch` 273 / 512, `by_welch` 218 / 452, `bh_perm`
+1 / 0, `by_perm` 0 / 0. **By the rule the headline is `by_perm`, which is 0 slower and 0 faster.**
+No tie arose: `by_perm` alone has zero slower corridors (`bh_perm` has one), so the
+tie-break was not used. So no corridor is
+**robust** (significant under both the headline and the original): all 273 slower and 512
+faster `bh_welch` discoveries are **fragile**. The top-20 lists barely overlap across the
+independence and cluster-aware families (Jaccard 0.05 for `bh_welch` against `bh_perm`, 0 for
+the others; `bh_welch` against `by_welch` is 1.0 because BY only removes the weakest). Why the
+drop is so large: under 200 placebo datasets in which corridor membership is meaningless but
+the cell structure is kept, Welch rejects 63.9% of corridors uncorrected at 0.05 and BH finds
+680 discoveries on average (maximum 723, all 200 datasets non-empty), against 785 found on the
+real data. The permutation p-values are not empty: 81 corridors fall below 0.05 and 18 below
+0.01 (smallest 4e-5), and the top-20 slower corridors ranked by permutation p share a Jaccard
+of 0.74 with the Welch top-20. They do not clear a 5% false discovery rate over 1,130 tests.
+Reading, with the limits kept: 680 of the 1,130 corridors run under a single schedule, so for
+them the test compares one service with the spread of services of the same size, and a
+corridor effect cannot be separated from a service effect. The paper's headline becomes
+"0 corridors survive the cluster-aware test"; the 273 / 512 stay as the original row and as a
+screening list, not as confirmed bottlenecks.
+
+## D-081 · Empirical-Bayes ranking and its stability across support floors — `DECIDED`
+**Post-v1.0 · Mounika · B4 · written before `src/ml/eb_ranking.py` is run**
+
+The audit's support floor changes its answer: the top-20 at 10 legs and at 30 legs are
+disjoint (D-018). The hypothesis here is that this is mostly small-sample noise that
+shrinkage removes. It may be wrong, and the result is reported either way.
+
+**Model, per support floor `f` in {5, 10, 20, 30}, on exactly the corridors with at least `f`
+legs (the same set for the raw and the shrunk ranking).** For corridor `c` with `n_c` legs let
+`ybar_c` be the mean of `r = log(actual / osrm)`, `s_c^2` its leg-level sample variance and
+`v_c = s_c^2 / n_c`. Then `ybar_c ~ N(theta_c, v_c)` and `theta_c ~ N(mu, tau^2)`.
+* `mu`, `tau^2` by **REML (the headline)**, with DerSimonian-Laird method of moments and ML
+  reported beside it. If REML and the moments estimate differ in `tau^2` by more than 25%, the
+  top-20 overlap between the two estimators is reported too.
+* Posterior mean `(1-B_c) ybar_c + B_c mu` with `B_c = v_c / (v_c + tau^2)`; posterior variance
+  `(1-B_c) v_c + B_c^2 Var(mu_hat)`; 90% interval is the mean plus or minus 1.645 sd.
+* Sampling variances are taken as the model says (independent legs). A pre-registered
+  sensitivity row inflates `v_c` by the design effect of D-083,
+  `1 + (n_c/k_c - 1) * 0.0953`, with `k_c` the corridor's schedule-cell count and 0.0953 the
+  intraclass correlation in `b3_dependence_diagnostics.json`. The headline stays the model as
+  written; the sensitivity row is reported in full.
+
+**Material threshold (fixed now).** `t = m + ln 1.5`, where `m = 0.7783` is the mean of `r`
+over all 26,369 legs (the network's typical overrun, `w2_audit_report.json`). A corridor is
+material when `theta_c > t`, that is when its geometric-mean overrun is at least 1.5 times the
+network's (`exp(t)` = 3.27 times the plan against 2.18). 1.5 is a round factor that asks for
+half again the usual overrun, large enough to matter to a planner and small enough to leave
+corridors above it. Sensitivity rows use factors 1.25 and 2.0.
+
+**Rankings.** `eb_prob`, ordered by `P(theta_c > t)` (headline; ties by posterior mean);
+`eb_postmean`, by posterior mean; `raw_published`, the audit's own rule re-run on the floor's
+corridors (Benjamini-Hochberg Welch significant slower corridors, ordered by `excess_ratio`);
+`raw_mean`, all corridors by `ybar_c`. Top-20 lists are taken within each floor's set.
+
+**Stability metrics.** For each ranking and each of the six floor pairs: Jaccard overlap of
+the two top-20 lists (the operational question: does the list depend on the floor I pick); the
+Spearman correlation of rank positions over the corridors in both floors' sets; and the
+Jaccard of the top-20 lists after restricting the lower floor to the higher floor's corridors
+(so only the scoring differs, not the membership). A paired bootstrap, 200 resamples of legs
+within each corridor, seed 20260802, gives 95% intervals for the mean pairwise Jaccard and for
+the difference between rankings.
+
+**Decision rule.** EB (`eb_prob`) is **called more stable** only if its mean pairwise Jaccard is
+higher than that of both `raw_published` and `raw_mean`, with the bootstrap 95% interval of
+each difference above 0. If an interval contains 0 the paper says "no detectable difference";
+if EB is lower, "EB is not more stable". Section 4.3 of the paper follows this sentence
+whatever the numbers are.
+
+**Outcome (D-081).** `python -m src.ml.eb_ranking`, `b4_eb_ranking.json`, 200 bootstrap
+resamples. REML `tau^2` at floors 5 / 10 / 20 / 30: 0.138 / 0.133 / 0.083 / 0.058 (corridors
+1,632 / 1,130 / 268 / 99); moments 0.114 / 0.106 / 0.071 / 0.028, which differs from REML by more
+than 25% only at floor 30, where the two top-20 lists are still identical. Threshold
+`t = 1.1838` (3.27 times the plan). **The hypothesis that the floor effect is mostly shrinkable
+noise is not supported:** the corridors' own sampling variances (about 0.002) are tiny against
+`tau^2`, so the median shrink factor is only 0.009 to 0.021 at every size band, and the
+posterior mean is within a few percent of the raw mean. Mean pairwise top-20 Jaccard over the
+six floor pairs: `raw_published` 0.101, `raw_mean` 0.101, `eb_prob` 0.150, `eb_postmean` 0.155.
+`eb_prob` minus `raw_published` is +0.049 (bootstrap 95% interval 0.037 to 0.067) and minus
+`raw_mean` +0.049 (0.045 to 0.068). **By the pre-registered rule EB is called more stable**, and
+the margin is small: both lists still change almost completely between floors (floors 5 and 30,
+and 10 and 30, share no top-20 corridor in either ranking). The reason is membership, not
+noise: the Spearman correlation of rank positions over corridors present in both floors is
+0.9997 to 1.0 for every ranking, and the top-20 restricted to the higher floor's corridors
+overlaps at 1.0 for raw and 0.95 for `eb_prob`. A lower floor admits small corridors with
+extreme means (mean top-20 corridor size 10.8 legs at floor 5, 47.7 at floor 30), which is
+what moves the list. At floor 10, 102 corridors have `P(theta > t) >= 0.5`, 65 have 0.9 or more
+and 60 have a 90% interval wholly above `t`, against 111 whose raw mean exceeds `t` and 273
+published slower corridors; there are more material corridors than the 20 slots, which also
+makes any top-20 sensitive to the floor. Sensitivity: inflating variances by the D-083 design
+effect (median 1.38) gives Jaccard 0.140; threshold factors 1.25 and 2.0 give 0.161 and 0.142.
+Paper: shrinkage and a probability ranking are better calibrated and slightly more stable, but
+they do not remove the floor's effect on which corridors enter a top-20; report the whole
+ranking and its intervals, not a top-20, and state the floor.
+
+## D-082 · Temporal stability of the audit: split by creation date, three audit rules — `DECIDED`
+**Post-v1.0 · Mounika · B5 · written before `src/ml/stability.py` is run**
+
+**Question.** With 23 creation dates (2018-09-11 to 2018-10-03; the plan calls it 22 days, the
+first date holds only 378 legs), do the corridors the audit flags in one part of the window
+stay bad in another?
+
+**Parts.** Legs are assigned to parts by the calendar date of `trip_creation_time`, in date
+order, as contiguous groups of dates: halves of 12 and 11 dates (14,385 and 11,984 legs), thirds
+of 8, 8 and 7 dates (9,219; 10,085; 7,065 legs). Pairs compared: the two halves; and, for
+thirds, T1-T2, T1-T3, T2-T3 (earlier part first).
+
+**Each part is audited independently**: its own network baseline, its own corridor family, its
+own multiple-testing correction. Support rule, two readings: **headline = proportional floor**,
+the 10-leg floor scaled to the share of the window, 5 legs per half and 4 per third, because a
+10-leg floor in a half-window tests far fewer corridors than the published audit does; and the
+**strict reading**, 10 legs in every part, reported beside it. Universe for a pair: corridors
+testable (at or above the floor) in both parts.
+
+**Audit rules applied to each part.** `bh_welch` (the published rule); `by_welch`; and `by_perm`
+(the B3 headline of D-080, cell-permutation p-values with 100,000 permutations, seed 20260801,
+Benjamini-Yekutieli). The empirical-Bayes ranking is the B4 headline, `eb_prob` with REML, and
+the material threshold stays at the full-data value `t = 1.1838` for every part (D-081), so no
+part sets its own bar.
+
+**Statistics per pair, each with its n and an interval.**
+1. Overlap of the significantly-slower sets: sizes, intersection, Jaccard, the overlap expected
+   by chance given the sizes and the universe (hypergeometric mean) and its one-sided
+   p-value, and a corridor bootstrap 95% interval for the Jaccard (2,000 resamples of the
+   universe, seed 20260803).
+2. Spearman correlation of corridor effects over the universe: the raw mean of `r` and the EB
+   posterior mean, with a corridor bootstrap interval.
+3. Persistence: of the corridors the earlier part flags, the share that are slower than the
+   network in the later part, that is later-part mean of `r` above the later part's mean over
+   all other legs, among those testable in the later part, and the share that are significantly
+   slower there (`bh_welch`). Flagged sets: the earlier part's `bh_welch` slower set (raw), its
+   top-20 by `excess_ratio` (raw top-20), and its top-20 by `eb_prob` (EB). Wilson 95%
+   intervals; the base rate (the share of the whole universe slower in the later part) is
+   reported as the reference, since half or more of any random set would also be slower.
+
+**Reading rule, fixed now.** A Spearman correlation below 0.3 is called low stability, 0.3 to 0.6
+moderate and above 0.6 substantial; a set overlap counts as above chance only if the
+hypergeometric p is below 0.05. If the raw top-20 and the EB top-20 persistence shares have
+Wilson intervals that overlap, the paper says "no detectable difference" and does not claim EB
+predicts the later window better. If stability is low it is reported as a finding about how
+often the audit has to be refreshed.
+
+**Outcome (D-082).** `python -m src.ml.stability`, 100,000 permutations, 2,000 corridor
+bootstrap resamples, `b5_stability.json`. Proportional floor, halves (14,385 and 11,984 legs):
+1,249 and 1,004 corridors tested; significantly slower under `bh_welch` 239 and 191, under
+`by_welch` 138 and 132, under `by_perm` 0 and 0 (the B3 headline finds nothing in any part,
+half or third, as it found nothing in the whole window). Universe testable in both halves: 807
+corridors. **Overlap of the `bh_welch` slower sets** (inside the universe, 173 and 151 corridors):
+126 in common, Jaccard 0.636 (bootstrap 95% 0.57 to 0.70) against about 32 expected by chance,
+hypergeometric p 9e-81; `by_welch` Jaccard 0.58 (0.50 to 0.66). **Spearman correlation of corridor
+effects:** raw mean 0.908 (0.889 to 0.924), EB posterior mean 0.911, n = 807, both "substantial"
+by the fixed reading. **Persistence:** of the 173 first-half `bh_welch` slower corridors, 97.7%
+(Wilson 94.2% to 99.1%) are slower than the network in the second half and 72.8% significantly
+so, against a base rate of 39.8% for the whole universe; of the 15 raw top-20 corridors
+testable later, 100% (79.6 to 100) are slower and 93.3% significantly; of the 14 EB top-20, 100%
+(78.5 to 100) and 100%. The two top-20 intervals overlap completely: **no detectable
+difference** between raw and EB, as the rule requires, and with n = 14 to 15 nothing finer
+could be seen. Fewer than 20 flagged corridors enter each statistic because the rest were not
+testable in the later half. Thirds: Jaccard 0.548 / 0.504 / 0.566 (T1-T2, T1-T3, T2-T3),
+Spearman 0.887 / 0.870 / 0.893, `bh_welch` set persistence 95.8% to 100%. The strict 10-leg
+floor gives the same picture on a smaller universe (197 corridors: Jaccard 0.685, Spearman 0.899,
+persistence 97.9%). **Stability is high, not low:** corridor effects reproduce on independent
+trips from a different part of the window. Two cautions that stay with the result: the same
+recurring services run in both parts (D-083), so this shows the corridors' pattern persists,
+not that each is a distinct finding; and it is a statement about 23 dates in one season, not
+about other months. It does not contradict D-080: persistence is a different question from
+whether a single window's test survives a cluster-aware correction.

@@ -58,6 +58,14 @@ Every value below is read from a file in `benchmarks/raw/`, and every file has a
 | Week 7 agent evaluation table (five agents) | `benchmarks/agent_evaluation.md` | each row cites its own cache file in the Evidence table |
 | Streaming throughput and latency | `benchmarks/streaming_throughput.md` | python -m src.streaming.producer / job, full-replay run |
 | Scale appendix runtimes | `benchmarks/scale_appendix.md` | python -m src.pipeline.scale_benchmark --months 17 |
+| Dependence diagnostics of the audit's legs (D-083) | `benchmarks/raw/b3_dependence_diagnostics.json` | python -m src.ml.audit_data |
+| Dependence-aware audit, four variants and headline (D-080) | `benchmarks/raw/b3_audit_robust.json` | python -m src.ml.audit_robust |
+| Per-corridor flags for every audit variant, robust vs fragile | `benchmarks/raw/b3_audit_robust_corridors.csv` | python -m src.ml.audit_robust |
+| Empirical-Bayes ranking and floor stability, REML, threshold 1.5x (D-081) | `benchmarks/raw/b4_eb_ranking.json` | python -m src.ml.eb_ranking |
+| Per-corridor shrunk effect, 90% interval, P(exceed) and rank by floor | `benchmarks/raw/b4_eb_corridors.csv` | python -m src.ml.eb_ranking |
+| Split-by-date stability of the audit and the EB ranking, halves and thirds (D-082) | `benchmarks/raw/b5_stability.json` | python -m src.ml.stability |
+| Per-corridor first-half and second-half effects, flags and EB rank | `benchmarks/raw/b5_stability_corridors.csv` | python -m src.ml.stability |
+| Figures b3_audit_robust, b4_eb_shrinkage, b4_eb_stability_heatmap, b5_stability_scatter | `docs/figures/` | python -m src.report.figures_audit |
 
 ## Gaps
 

@@ -1459,6 +1459,34 @@ aw\delhivery_data.csv -> download it — see
 - **What it cost.** Nothing was published, but only by luck, and that is the lesson. The
   licence check belongs in the script that publishes, not in someone remembering to look.
 
+### P-72 · The plan's clustering assumption was wrong: trips never repeat a corridor
+**Post-v1.0 · Mounika · resolved**
+
+- **Symptom.** The dependence-aware audit was planned around trip clusters, or day-by-corridor
+  blocks if trips rarely repeat. The diagnostics showed `n_trips = n_legs` in all 1,130 tested
+  corridors and a day intraclass correlation of 0.0036, so neither clustering existed.
+- **Cause.** The dependence sits in the recurring service (`route_schedule_uuid`): intraclass
+  correlation 0.095 within a corridor-service cell, 680 of 1,130 corridors with one service.
+- **Fix.** D-083 moved the cluster unit to the (corridor, schedule) cell before D-080 was written.
+- **Carry.** Measure the dependence structure before pre-registering a clustered test.
+
+### P-73 · A smoke test exposed a gap in a pre-registered rule
+**Post-v1.0 · Mounika · resolved**
+
+- **Symptom.** A 2,000-permutation test run of the audit showed zero discoveries in two variants,
+  which D-080's headline rule could not break a tie on.
+- **Fix.** A tie-break was added to D-080 in its own commit before the full run, and the
+  amendment says a smoke test prompted it. The full run did not tie.
+- **Carry.** Dry-run the decision rule on made-up counts before committing it.
+
+### P-74 · A bootstrap resample of one repeated value made a variance negative
+**Post-v1.0 · Mounika · resolved**
+
+- **Symptom.** `welch_against_network` raised on a bootstrap resample: a 5-leg corridor drawn as
+  one value five times gives a sum-of-squares identity a hair below zero.
+- **Fix.** The resampled sum of squares is floored at `sum^2 / n` in `src/ml/eb_ranking.py`.
+  The published audit code is unchanged.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
