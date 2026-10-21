@@ -1,0 +1,51 @@
+\section{Predicting the Gap}\label{sec:prediction}
+
+\subsection{Setup and the bar}
+The quantity predicted is the gap $g_i$: how many minutes past its plan a leg will run, known when the leg is created. The split is chronological (\fzSplitTrain{} training legs and the latest \fzSplitTest{} for test) because a random split would score a model on legs interleaved in time with its training data. The metric is mean absolute error (MAE) in minutes, which the median minimises, so the comparator is an as-of \emph{median}, not a mean; using the per-corridor mean as the bar would have flattered every model by 3.1 minutes (\fzMaeCorridorMean{} against \fzBarOldMedianMaeDpTwo{}).
+
+\paragraph{A bar without an unfair fallback.} The per-corridor median we first used as the bar predicts 0.0 minutes on a corridor with no history, that is, ``exactly on plan'', which is the OSRM estimate the whole paper shows to be wrong. Most of a model's margin sits on exactly those legs, so a reviewer can fairly say the baseline is handicapped. We therefore fixed, before measuring, a hierarchy of as-of medians (Algorithm~\ref{alg:asof}): the corridor; failing that the origin hub's outbound legs; the destination hub's inbound legs; the route type and distance band; the network. A shrunken variant weights each level by $n/(n+k)$. The bar is the baseline with the lowest test MAE of the three, which can only make the comparison harder for the model. The hard back-off scores \fzBarBackoffMaeDpTwo{} against \fzBarOldMedianMaeDpTwo{} for the old median and \fzBarShrunkMaeDpTwo{} for the shrunken variant (the best $k=1$; larger $k$ is monotonically worse), and is the bar. It is not harder on warm legs (identical to the old median there by construction); on the \fzColdLegsTest{} cold test legs it scores \fzColdMaeBackoffDpOne{} against 149.8.
+
+\subsection{Models}
+The target is the gap minus the baseline, and the prediction adds the baseline back, so a model that learns nothing reproduces the baseline. The 38 inputs are the leg's planned time and distance, departure hour, day and route type; as-of history for the corridor and both hubs with cold indicators; and corridor dispersion (median, 90th percentile, interquartile range, standard deviation), a trailing seven-day mean and hub dwell by part of day. We fit two families under the same budget (200 trees, depth 6, absolute loss, one learning rate chosen on a validation cut inside the training split, refit on all training legs, scored once on test). The distributed family is Spark MLlib gradient boosting, which the streaming and serving path \streamsec{} uses; the single-node family is LightGBM~\cite{ke2017lightgbm} with L1 loss, XGBoost~\cite{chen2016xgboost}, a histogram gradient-boosted regressor, a Huber-loss variant and a linear median regression. \emph{The reported model is whichever candidate has the lowest validation MAE, whatever library it comes from}; this rule was fixed in advance (D-077).
+
+\begin{table}[t]
+\caption{Test MAE on \fzSplitTest{} legs, with day-block bootstrap 95\% intervals. Validation MAE is the selection criterion. The \emph{served} model is what the streaming job and public API run.}
+\label{tab:mae}
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Model & Validation & Test \\
+\midrule
+OSRM plan (context) & --- & \fzMaeOsrm{} \\
+Per-corridor mean & --- & \fzMaeCorridorMean{} \\
+Old median (0.0 cold fallback) & 29.89 & \fzBarOldMedianMaeDpTwo{} \\
+\textbf{Hard back-off (the bar)} & \fzBarBackoffValidationMaeDpTwo{} & \textbf{\fzBarBackoffMaeDpTwo{}} \\
+Spark GBT over the old median (served) & \fzVTwoValidationMaeDpTwo{} & \fzServedMaeDpTwo{} [\fzServedMaeCiLowDpOne{}, \fzServedMaeCiHighDpOne{}] \\
+Spark GBT over back-off & \fzVThreeValidationMaeDpTwo{} & \fzVThreeTestMaeDpTwo{} \\
+Linear median regression & 34.32 & \fzZooLinearMaeDpTwo{} \\
+XGBoost, L1 & 28.00 & \fzZooXgboostMaeDpTwo{} \\
+Histogram GBT, L1 & 27.54 & \fzZooHistgbrMaeDpTwo{} \\
+LightGBM, Huber & 27.88 & \fzZooLightgbmHuberMaeDpTwo{} \\
+\textbf{LightGBM, L1 (reported)} & \fzReportedValidationMaeDpTwo{} & \textbf{\fzReportedMaeDpTwo{}} [\fzReportedMaeCiLowDpOne{}, \fzReportedMaeCiHighDpOne{}] \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Results with intervals}
+Table~\ref{tab:mae} is the headline. The reported model scores \fzReportedMaeDpTwo{} against the bar's \fzBarBackoffMaeDpTwo{}: a difference of \fzReportedVsBarDeltaDpTwo{} minutes, with a day-block bootstrap 95\% interval of [\fzReportedVsBarCiLowDpTwo{}, \fzReportedVsBarCiHighDpTwo{}] that excludes zero, and it wins on all \fzSlicesTotal{} slices of the slice table (Fig.~\ref{fig:forest}). The served Spark model is behind it, at \fzServedMaeDpTwo{}, a difference to the bar of \fzServedVsBarDeltaDpTwo{} [\fzServedVsBarCiLowDpTwo{}, \fzServedVsBarCiHighDpTwo{}], winning \fzServedSlicesWon{} of the \fzSlicesTotal{} slices. We therefore report two models and say which is which: the reported model is single-node, the served one is the better Spark candidate by validation, and the paper does not claim they are the same model. Three independent boosting libraries land within 0.1 minute of one another over the old median (29.66, 29.71, 29.75), so the earlier single-node figure of 29.52 was not a lucky seed and the distributed model's \fzServedMaeDpTwo{} is simply behind the same recipe.
+
+\paragraph{Three readings of the intervals, none flattering to a naive test.} Test legs are not independent: legs on one day share conditions. Our interval resamples whole India-time calendar days (six blocks), which is the most conservative of the three we compute; a six-hour-block bootstrap is narrower and a paired-leg bootstrap narrower still and optimistic. The Diebold--Mariano test~\cite{diebold1995comparing,harvey1997testing} with a Newey--West bandwidth of one day of legs agrees with the day-block conclusion for the reported model. Six blocks is few; the interval is honest about that but should not be over-read.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_forest_delta_mae.pdf}
+\caption{MAE minus the back-off bar by slice, for the reported (LightGBM) and served (Spark) models, with day-block 95\% intervals (source: \texttt{b2\_significance.json}). The corridors unseen in training (a gain of about $-32$ minutes) are omitted to keep the scale readable.}
+\label{fig:forest}
+\end{figure}
+
+\paragraph{Where the gain is.} Against the bar, the reported model's whole margin is concentrated on legs the bar has no history for. On the \fzColdLegsTest{} cold legs it scores \fzReportedColdMaeDpOne{} against the bar's \fzColdMaeBackoffDpOne{} (a difference of \fzReportedColdDeltaDpOne{} minutes, day-block interval [\fzReportedColdCiLowDpOne{}, \fzReportedColdCiHighDpOne{}]); on the warm legs the difference is \fzReportedWarmDeltaDpTwo{} minutes [\fzReportedWarmCiLowDpTwo{}, \fzReportedWarmCiHighDpTwo{}]. A back-off hierarchy is a strong lookup, and the model's value is mostly where a lookup has little to say. A note on validation: the validation cut did not favour the model over the bar (the bar scores \fzBarBackoffValidationMaeDpTwo{} there against the served model's \fzVTwoValidationMaeDpTwo{}), although the reported model does (\fzReportedValidationMaeDpTwo{}). We report both because the selection rule uses validation and the claim uses test.
+
+\paragraph{Feature groups.} Removing one group at a time from the LightGBM model and measuring the change in test MAE with day-block intervals shows that only three groups carry detectable weight: the time of day and week (+\fzAblationTimeDeltaDpTwo{} minutes), the hub histories (+\fzAblationHubDeltaDpTwo{}) and the dispersion and dwell block (+\fzAblationDispersionDeltaDpTwo{}). Corridor history alone is redundant given the others ($\Delta=\fzAblationCorridorDeltaDpTwo{}$, interval including zero), which agrees with the gain sitting on cold legs.
+
+\subsection{Rolling-origin check}\label{sec:rolling}
+\input{../sections/rolling.tex}

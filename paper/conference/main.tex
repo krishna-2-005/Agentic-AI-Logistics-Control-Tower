@@ -1,0 +1,48 @@
+\documentclass[runningheads]{llncs}
+
+\usepackage{iftex}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{xcolor}
+\usepackage[hyphens]{xurl}
+\usepackage{textcomp}
+
+\graphicspath{{../../docs/figures/}}
+\input{../numbers.tex}
+\newcommand{\streamsec}{(described in the journal version)}
+
+\begin{document}
+
+\title{Localising Systematic Route-Estimate Error in Road Freight: Dependence-Aware Corridor Auditing and Residual Prediction}
+\titlerunning{Localising Route-Estimate Error in Road Freight}
+
+% Author order and affiliations are a human decision (HUMAN_ACTIONS.md); placeholders follow the project's role split.
+\author{Kuchuru Sai Krishna Reddy\and Makkena Lahari\and Shery Mounika Reddy}
+\authorrunning{K. S. K. Reddy et al.}
+\institute{Dept.\ of Computer Science and Data Science, SVKM's Narsee Monjee Institute of Management Studies, Hyderabad, India\
+\email{kuchurusaikrishnareddy@gmail.com, laharisuresh6666@gmail.com, sherymounikareddy.2006@gmail.com}}
+
+\maketitle
+
+\begin{abstract}
+\input{../sections/abstract.tex}
+\keywords{route planning \and travel-time reliability \and multiple testing \and gradient boosting \and evaluation}
+\end{abstract}
+
+\input{../sections/intro.tex}
+\input{../sections/related.tex}
+\input{../sections/data.tex}
+\input{../sections/audit.tex}
+\input{../sections/prediction.tex}
+\input{../sections/pitfalls.tex}
+\input{../sections/context.tex}
+\input{../sections/threats.tex}
+\input{../sections/conclusion.tex}
+
+\bibliographystyle{splncs04}
+\bibliography{../refs}
+
+\end{document}

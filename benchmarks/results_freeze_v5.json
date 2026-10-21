@@ -1,7 +1,7 @@
 {
-  "frozen_at": "2026-10-21T11:19:28.292835+00:00",
+  "frozen_at": "2026-10-21T15:50:34.544948+00:00",
   "layer": 1,
-  "n_values": 109,
+  "n_values": 153,
   "values": [
     {
       "id": "legs_total",
@@ -596,7 +596,7 @@
       "source": "b4_eb_ranking.json"
     },
     {
-      "id": "eb_top20_jaccard_raw",
+      "id": "eb_top_twenty_jaccard_raw",
       "week": 10,
       "label": "Top-20 overlap across support floors, raw ranking",
       "value": 0.10117716405748861,
@@ -604,7 +604,7 @@
       "source": "b4_eb_ranking.json"
     },
     {
-      "id": "eb_top20_jaccard_eb",
+      "id": "eb_top_twenty_jaccard_eb",
       "week": 10,
       "label": "Top-20 overlap across support floors, EB ranking",
       "value": 0.1502136752136752,
@@ -874,6 +874,358 @@
       "value": 1.0,
       "unit": "share",
       "source": "b7_hard_sets_deterministic.json"
+    },
+    {
+      "id": "stream_all_legs_identical",
+      "week": 10,
+      "label": "Legs scored by the running stream job identically to batch",
+      "value": 26369,
+      "unit": "legs",
+      "source": "w10_stream_validation_v2.json"
+    },
+    {
+      "id": "stream_all_legs",
+      "week": 10,
+      "label": "Legs scored by the running stream job",
+      "value": 26369,
+      "unit": "legs",
+      "source": "w10_stream_validation_v2.json"
+    },
+    {
+      "id": "stream_max_abs_difference",
+      "week": 10,
+      "label": "Largest stream-versus-batch prediction difference",
+      "value": 0.0,
+      "unit": "min",
+      "source": "w10_stream_validation_v2.json"
+    },
+    {
+      "id": "audit_by_welch_faster",
+      "week": 10,
+      "label": "Faster corridors, Welch with BY control",
+      "value": 452,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_bh_perm_slower",
+      "week": 10,
+      "label": "Slower corridors, permutation with BH",
+      "value": 1,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_bh_perm_faster",
+      "week": 10,
+      "label": "Faster corridors, permutation with BH",
+      "value": 0,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_perm_p_below_five_pct",
+      "week": 10,
+      "label": "Corridors with permutation p below 0.05",
+      "value": 81,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_perm_p_below_one_pct",
+      "week": 10,
+      "label": "Corridors with permutation p below 0.01",
+      "value": 18,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_welch_p_005",
+      "week": 10,
+      "label": "Corridors with Welch p below 0.05",
+      "value": 816,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_perm_p_floor",
+      "week": 10,
+      "label": "Smallest attainable permutation p at 100,000 permutations",
+      "value": 9.99990000099999e-06,
+      "unit": "p",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_top_twenty_jaccard_list",
+      "week": 10,
+      "label": "Top-20 overlap, Welch list vs permutation-p list",
+      "value": 0.7391304347826086,
+      "unit": "jaccard",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "dep_design_effect_median",
+      "week": 10,
+      "label": "Median design effect of a corridor from recurring service",
+      "value": 2.0483891742881406,
+      "unit": "x",
+      "source": "b3_dependence_diagnostics.json"
+    },
+    {
+      "id": "dep_icc_service_cell",
+      "week": 10,
+      "label": "Intraclass correlation within a (corridor, service) cell",
+      "value": 0.0953081067534673,
+      "unit": "rho",
+      "source": "b3_dependence_diagnostics.json"
+    },
+    {
+      "id": "dep_icc_day",
+      "week": 10,
+      "label": "Intraclass correlation within a creation day",
+      "value": 0.003570460041188541,
+      "unit": "rho",
+      "source": "b3_dependence_diagnostics.json"
+    },
+    {
+      "id": "dep_single_service_corridors",
+      "week": 10,
+      "label": "Tested corridors run under a single service",
+      "value": 680,
+      "unit": "corridors",
+      "source": "b3_dependence_diagnostics.json"
+    },
+    {
+      "id": "eb_p_exceed_half",
+      "week": 10,
+      "label": "Corridors with posterior exceedance probability at least 0.5",
+      "value": 102,
+      "unit": "corridors",
+      "source": "b4_eb_ranking.json"
+    },
+    {
+      "id": "eb_p_exceed_nine",
+      "week": 10,
+      "label": "Corridors with posterior exceedance probability at least 0.9",
+      "value": 65,
+      "unit": "corridors",
+      "source": "b4_eb_ranking.json"
+    },
+    {
+      "id": "eb_interval_above",
+      "week": 10,
+      "label": "Corridors whose 90% interval lies above the threshold",
+      "value": 60,
+      "unit": "corridors",
+      "source": "b4_eb_ranking.json"
+    },
+    {
+      "id": "eb_diff_ci_low",
+      "week": 10,
+      "label": "EB minus raw stability, bootstrap low",
+      "value": 0.005882099019353922,
+      "unit": "jaccard",
+      "source": "b4_eb_ranking.json"
+    },
+    {
+      "id": "eb_diff_ci_high",
+      "week": 10,
+      "label": "EB minus raw stability, bootstrap high",
+      "value": 0.062241245471795756,
+      "unit": "jaccard",
+      "source": "b4_eb_ranking.json"
+    },
+    {
+      "id": "served_mae",
+      "week": 10,
+      "label": "Served model (Spark v2), test MAE",
+      "value": 30.9048,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_cold_mae",
+      "week": 10,
+      "label": "Reported model, cold legs MAE",
+      "value": 87.4145,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_cold_delta",
+      "week": 10,
+      "label": "Reported model minus bar, cold legs",
+      "value": -45.5561,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_cold_ci_low",
+      "week": 10,
+      "label": "Cold-leg difference, interval low",
+      "value": -60.2475,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_cold_ci_high",
+      "week": 10,
+      "label": "Cold-leg difference, interval high",
+      "value": -32.4896,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_warm_mae",
+      "week": 10,
+      "label": "Reported model, warm legs MAE",
+      "value": 27.3339,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_warm_delta",
+      "week": 10,
+      "label": "Reported model minus bar, warm legs",
+      "value": -1.0125,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_warm_ci_low",
+      "week": 10,
+      "label": "Warm-leg difference, interval low",
+      "value": -1.2775,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_warm_ci_high",
+      "week": 10,
+      "label": "Warm-leg difference, interval high",
+      "value": -0.7392,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_slices_won",
+      "week": 10,
+      "label": "Slices on which the reported model beats the bar (day-block interval)",
+      "value": 13,
+      "unit": "slices",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "served_slices_won",
+      "week": 10,
+      "label": "Slices on which the served model beats the bar (day-block interval)",
+      "value": 9,
+      "unit": "slices",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "slices_total",
+      "week": 10,
+      "label": "Slices in the slice table",
+      "value": 13,
+      "unit": "slices",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "ablation_time_delta",
+      "week": 10,
+      "label": "Removing time features, change in MAE",
+      "value": 0.4388,
+      "unit": "min",
+      "source": "b6_feature_ablation.json"
+    },
+    {
+      "id": "ablation_hub_delta",
+      "week": 10,
+      "label": "Removing hub history, change in MAE",
+      "value": 0.1451,
+      "unit": "min",
+      "source": "b6_feature_ablation.json"
+    },
+    {
+      "id": "ablation_dispersion_delta",
+      "week": 10,
+      "label": "Removing dispersion and dwell, change in MAE",
+      "value": 0.2871,
+      "unit": "min",
+      "source": "b6_feature_ablation.json"
+    },
+    {
+      "id": "ablation_corridor_delta",
+      "week": 10,
+      "label": "Removing corridor history, change in MAE",
+      "value": 0.0021,
+      "unit": "min",
+      "source": "b6_feature_ablation.json"
+    },
+    {
+      "id": "scale_wall_s",
+      "week": 10,
+      "label": "Wall time, 56.4M rows on 20 cores",
+      "value": 14.32,
+      "unit": "seconds",
+      "source": "w7_scale_benchmark.json"
+    },
+    {
+      "id": "scale_rows_per_s",
+      "week": 10,
+      "label": "Throughput at 56.4M rows on 20 cores",
+      "value": 3936022,
+      "unit": "rows/s",
+      "source": "w7_scale_benchmark.json"
+    },
+    {
+      "id": "scale_wall_s_four_cores",
+      "week": 10,
+      "label": "Wall time, 56.4M rows on 4 cores",
+      "value": 17.75,
+      "unit": "seconds",
+      "source": "w7_scale_benchmark.json"
+    },
+    {
+      "id": "api_p95_ms",
+      "week": 10,
+      "label": "Public API latency, 95th percentile",
+      "value": 345.0,
+      "unit": "ms",
+      "source": "f1_api_latency.json"
+    },
+    {
+      "id": "assistant_route_accuracy_llm",
+      "week": 10,
+      "label": "Analytics assistant, correct route with model phrasing",
+      "value": 0.9333,
+      "unit": "share",
+      "source": "w7_assistant_run_llm.json"
+    },
+    {
+      "id": "audit_fine_by_perm_slower",
+      "week": 10,
+      "label": "Slower corridors, permutation with BY, 10^6 permutations",
+      "value": 0,
+      "unit": "corridors",
+      "source": "b3_audit_robust_1e6.json"
+    },
+    {
+      "id": "audit_fine_bh_perm_slower",
+      "week": 10,
+      "label": "Slower corridors, permutation with BH, 10^6 permutations",
+      "value": 1,
+      "unit": "corridors",
+      "source": "b3_audit_robust_1e6.json"
+    },
+    {
+      "id": "audit_fine_p_below_five_pct",
+      "week": 10,
+      "label": "Corridors with permutation p below 0.05, 10^6 permutations",
+      "value": 82,
+      "unit": "corridors",
+      "source": "b3_audit_robust_1e6.json"
     }
   ],
   "source_hashes": {
@@ -881,12 +1233,17 @@
     "b1_model_v3.json": "b0438487a027949c",
     "b2_significance.json": "9bc2b1213d08799a",
     "b3_audit_robust.json": "20608bd6490bb284",
-    "b4_eb_ranking.json": "a275ff88a245ccd6",
+    "b3_audit_robust_1e6.json": "f58b28acf2bed8b5",
+    "b3_dependence_diagnostics.json": "589581ace973bc10",
+    "b4_eb_ranking.json": "f61b56ee1c18cc1d",
     "b5_stability.json": "2fcfce876063f2a4",
+    "b6_feature_ablation.json": "525da5695e4e8c60",
     "b6_model_zoo.json": "5de81983b89353a3",
     "b7_agent_ablation.json": "39eb25469be9e855",
     "b7_hard_sets_deterministic.json": "b6bc242b3aae712c",
     "b8_exception_stats.json": "e80626bd149006a4",
+    "f1_api_latency.json": "610e6dafb248cd9e",
+    "w10_stream_validation_v2.json": "4e6b686a581d212d",
     "w2_audit_report.json": "904add5e20cd382c",
     "w3_baseline_metrics.csv": "52c122938e3dc076",
     "w3_baseline_report.json": "9b72d866436a3303",
@@ -898,6 +1255,7 @@
     "w5_stream_validation_report.json": "8707b72f924203ab",
     "w6_invoice_audit_runs.json": "cb1c6c4a19f95a76",
     "w6_orchestrator_runs.json": "e138ac1e46127bea",
+    "w7_assistant_run_llm.json": "b3f1ec445bbf9946",
     "w7_assistant_run_no_llm.json": "852ed5361c232f02",
     "w7_doc_extraction_eval.json": "d133daa5590ca375",
     "w7_groundedness_summary.json": "3d33e189019556ef",

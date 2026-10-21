@@ -52,7 +52,7 @@ def grouped(number: int) -> str:
 
 def decimal(value: float, places: int) -> str:
     whole, _, frac = f"{value:.{places}f}".partition(".")
-    sign = "-" if whole.startswith("-") else ""
+    sign = r"\textminus{}" if whole.startswith("-") else ""
     return sign + grouped(int(whole.lstrip("-"))) + ("." + frac if frac else "")
 
 
@@ -67,8 +67,8 @@ def tex_value(value: object) -> str:
 
 
 def variants(name: str, value: object) -> dict[str, str]:
-    """Rounded forms of a float: `Dp1`, `Dp2`, and `Pct` (a share times 100, one decimal) when it is a share."""
-    if isinstance(value, bool) or not isinstance(value, float):
+    """Rounded forms of a number (an integer-valued float is stored as an int in JSON): `Dp1`, `Dp2`, and `Pct` (a share times 100, one decimal) when it is a share."""
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
         return {}
     out = {name + "DpOne": decimal(value, 1), name + "DpTwo": decimal(value, 2)}
     if abs(value) <= 1.0:
@@ -91,6 +91,8 @@ def render(freeze_path: Path | None = None) -> str:
             raise ValueError(f"freeze ids {seen[name]!r} and {item['id']!r} both become \\{name}")
         seen[name] = item["id"]
         lines.append(f"\\providecommand{{\\{name}}}{{{tex_value(item['value'])}}} % {item['id']} ({item['unit'] or 'text'})")
+        for extra, text in variants(name, item["value"]).items():
+            lines.append(f"\\providecommand{{\\{extra}}}{{{text}}} % {item['id']}, rounded")
     return "\n".join(lines) + "\n"
 
 

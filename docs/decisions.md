@@ -2853,6 +2853,14 @@ sensitivity analysis with its own counts, and the paper states that the strictes
 resolution-limited at 100,000. If the finer run rejects corridors, the paper says the headline is a lower
 bound and reports both; it does not replace the headline after seeing it.
 
+**Outcome (D-084, 2026-10-21).** `python -m src.ml.audit_robust --permutations 1000000 --placebo 0 --suffix _1e6`
+(495 s). The smallest attainable p is now 1.0e-6, below the smallest BY threshold (5.8e-6), so the
+strictest variant can reject. It still rejects nothing: `by_perm` 0 slower / 0 faster and `bh_perm`
+1 / 0, identical to the 100,000-permutation counts; the smallest permutation p is 3.3e-5 (4.0e-5
+before), 18 corridors below 0.01 and 82 below 0.05 (81 before). So the headline 0 / 0 is **not** a
+resolution artefact: it holds at ten times the resolution. The paper says both facts: at 10^5 the
+strictest variant could not have rejected, and a ten-fold finer run changes nothing.
+
 ## D-081 · Empirical-Bayes ranking and its stability across support floors — `DECIDED`
 **Post-v1.0 · Mounika · B4 · written before `src/ml/eb_ranking.py` is run**
 

@@ -1,0 +1,16 @@
+\section{Streaming and Serving}\label{sec:stream}
+
+A producer replays legs as two kinds of event, a \emph{query} when a leg is created and a \emph{fact} when it finishes, and a structured-streaming job~\cite{armbrust2018structured} scores each query and raises an alert when the prediction crosses twice the planned time. Events travel through Kafka~\cite{kreps2011kafka} or a file source, and the model is a Spark MLlib ensemble~\cite{meng2016mllib}. Several features cannot be served from a static lookup: the seven-day window moves with each query, and dwell is keyed by hub and by the query's own part of the day. The job therefore keeps every corridor's and hub's history as \textbf{event-time state}: each fact updates the state of the keys it belongs to, each query reads that state as of its own time, and the state is persisted so that a restarted job resumes with the history it had. The updates repeat the batch arithmetic in the same order, so results are equal rather than close.
+
+\paragraph{Equivalence.} Over the full \fzStreamEvents{}-event replay, run in two halves across a restart from the persisted state, \textbf{\fzStreamAllLegsIdentical{} of \fzStreamAllLegs{} legs score bit-identically to batch} (largest difference \fzStreamMaxAbsDifference{} minutes), and no history feature differs on any leg. The stream's own test-split predictions give the served model's \fzServedMaeDpTwo{} minutes. Replaying 2,000 legs through a live broker and through a file source produces the same alerts on the same legs with the same predicted gaps. The streamed model is the \emph{served} model (Section~\ref{sec:prediction}); the reported single-node model has not been put through this chain.
+
+\paragraph{Throughput.} With a stateless history lookup the producer sustained \fzStreamProducedEpsDpOne{} events/s and the job scored \fzStreamScoringEpsDpOne{} events/s, with event-to-alert latency of \fzStreamLatencyPFiveZeroSDpOne{} s at the median on one 20-core machine. Event-time state costs throughput: the stateful job scored 74 events/s of busy time on the same machine, ample for the real event rate and too slow for a one-minute replay of three weeks. A public interface serves the same model with a tree evaluator identical to the distributed one on every leg, at \fzApiPNineFiveMsDpOne{} ms at the 95th percentile from a free-tier host.
+
+\paragraph{Alerting is a workload decision.} For the best classifier, raising the delay threshold from $1.15\times$ to $2.0\times$ moves the Matthews correlation~\cite{matthews1975comparison,chicco2020advantages} only from 0.507 to 0.536, while the share of legs alerted falls from 98\% to 49\% (Fig.~\ref{fig:threshold}). The threshold is a policy about how many alerts an operator can act on, not a dial for quality.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\columnwidth]{fig7_threshold_sensitivity.pdf}
+\caption{Matthews correlation and alert volume across delay thresholds. Quality is nearly flat; workload is not.}
+\label{fig:threshold}
+\end{figure}
