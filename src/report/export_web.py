@@ -1098,6 +1098,24 @@ def export_alerts_sample(out: Path) -> tuple[str, int]:
     ))
 
 
+# Freeze values the site relabels. The freeze keeps its original wording; the public
+# page says what each one now is.
+RELABEL = {
+    "champion_model": "Week 4 model family, superseded (D-050)",
+    "mae_champion": "Week 4 random forest test MAE, superseded (D-050)",
+    "corridors_improved": "Test corridors the Week 4 random forest beats OSRM on, superseded (D-050)",
+    "scale_rows": "Proxy rows (NYC taxi trips) the Week 2 aggregation stage alone was run on",
+}
+
+# Shares that are only meaningful beside the number of cases behind them.
+N_OF = {
+    "order_eval_success": "order_eval_run",
+    "order_eval_scale_heldout": "order_eval_scale_cases",
+    "invoice_eval_scale_accuracy": "invoice_eval_scale_cases",
+    "lifecycle_eval_scale_routing": "lifecycle_eval_scale_cases",
+}
+
+
 def export_evidence_index(out: Path) -> tuple[str, int]:
     """Every frozen value, so each KPI on the site can link to its source.
 
@@ -1105,14 +1123,24 @@ def export_evidence_index(out: Path) -> tuple[str, int]:
     what `tests/test_web_numbers.py` diffs the site against.
     """
     doc = _read_json(FREEZE_PATH)
-    entries = [{
-        "key": v["id"],
-        "label": _public_label(v["label"]),
-        "value": _public_value(_clean(v["value"])),
-        "unit": v.get("unit") or "",
-        "week": v.get("week"),
-        "file": f"benchmarks/raw/{v['source']}",
-    } for v in doc.get("values", [])]
+    values = {v["id"]: v["value"] for v in doc["values"]}
+    entries = []
+    for v in doc["values"]:
+        key = v["id"]
+        entry = {
+            "key": key,
+            "label": RELABEL.get(key, _public_label(v["label"])),
+            "value": _public_value(_clean(v["value"])),
+            "unit": v.get("unit") or "",
+            "week": v.get("week"),
+            "file": f"benchmarks/raw/{v['source']}",
+        }
+        if key in RELABEL and "superseded" in RELABEL[key]:
+            entry["superseded"] = True
+        if key in N_OF:
+            entry["unit"] = "share"
+            entry["n"] = int(values[N_OF[key]])
+        entries.append(entry)
 
     return _write(out, "evidence_index.json", _envelope(
         FREEZE_FILE,
