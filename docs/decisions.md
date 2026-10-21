@@ -2554,3 +2554,31 @@ Text that described the AWS phase as upcoming (`docs/cost.md`, `docs/RELEASE_v1.
 `docs/deploy_dashboard.md`, a docstring) now says it was dropped. **Spend to date and planned:
 $0.**
 
+
+## D-083 · The audit's legs are clustered by recurring service, not by trip or day — `DECIDED`
+**Post-v1.0 · Mounika · inspected before the dependence-aware audit (D-080) was pre-registered**
+
+The dependence-aware audit was planned to cluster on the trip, or on day-by-corridor blocks if
+trips rarely repeat a corridor. Before choosing, `python -m src.ml.audit_data` measured the
+clustering in the 26,369 legs (`benchmarks/raw/b3_dependence_diagnostics.json`). Its reading
+reproduces the published audit first: 1,130 corridors, 273 slower, 512 faster, every
+statistic within 1e-9 of `w2_corridor_audit.csv`.
+
+* **Trips do not repeat corridors.** In all 1,130 tested corridors `n_trips = n_legs`; no trip
+  visits a corridor twice. A trip cannot cluster a corridor's own legs. Trips do link a
+  corridor to the rest of the network (1.78 legs per trip, intraclass correlation 0.072 of
+  corridor-demeaned log-ratios), which a permutation inside a corridor cannot model.
+* **The creation day is almost irrelevant.** 23 calendar dates, intraclass correlation 0.0036,
+  design effect on a corridor mean about 1.0006.
+* **The recurring service is the real cluster.** `route_schedule_uuid` repeats: a corridor has
+  a median of 1 schedule (680 of 1,130 corridors run under exactly one), and the median
+  (corridor, schedule) cell holds 11 legs. Within a cell the intraclass correlation is 0.095,
+  giving a design effect of about 2.05 at the median corridor, so a typical corridor's 15 legs
+  carry the information of about 7 independent ones. Where a corridor has a single schedule its
+  corridor effect and its service effect cannot be told apart, and the correlation estimate is
+  biased downward by demeaning on the corridor, so 2.05 is a floor for that reason.
+
+**Decided: the cluster unit for the dependence-aware test is the (corridor, route schedule)
+cell.** This replaces both clusterings named in the plan, on the evidence above. It is a
+deviation from the plan's wording and is logged as one. D-080 states the permutation scheme
+that uses it.
