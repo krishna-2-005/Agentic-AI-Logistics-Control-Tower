@@ -2,6 +2,7 @@
 
     python -m src.ml.groundedness --precheck     # rebuild contexts, check every number
     python -m src.ml.groundedness --report       # merge in the hand verdicts, write the summary
+    python -m src.ml.groundedness --agreement docs/human_tasks/second_labeller_groundedness_sheet.csv
 
 Two stages, and the split is the point.
 
@@ -78,6 +79,48 @@ def unsupported(answer: str, context: str) -> list[str]:
     return missing
 
 
+def cohen_kappa(first: list[str], second: list[str]) -> dict:
+    """Cohen's kappa for two labellers rating the same items with nominal labels.
+
+    kappa = (p_o - p_e) / (1 - p_e); p_e is the agreement two labellers with these label
+    frequencies would reach by chance. kappa is None when p_e is 1 (both always give one
+    label), where it is undefined. Labels are compared case-insensitively.
+    """
+    if len(first) != len(second) or not first:
+        raise ValueError("need two equal-length, non-empty label lists")
+    a = [str(x).strip().lower() for x in first]
+    b = [str(y).strip().lower() for y in second]
+    n = len(a)
+    observed = sum(x == y for x, y in zip(a, b, strict=True)) / n
+    labels = sorted(set(a) | set(b))
+    expected = sum((a.count(c) / n) * (b.count(c) / n) for c in labels)
+    kappa = None if expected >= 1.0 else (observed - expected) / (1 - expected)
+    return {"n": n, "observed_agreement": round(observed, 4),
+            "chance_agreement": round(expected, 4),
+            "kappa": None if kappa is None else round(kappa, 4)}
+
+
+AGREEMENT = RAW / "b7_groundedness_agreement.json"
+
+
+def agreement(second_sheet: str) -> dict:
+    """Cohen's kappa between the first labeller's verdicts and a filled second-labeller sheet.
+
+    The sheet is `docs/human_tasks/second_labeller_groundedness_sheet.csv` with the `verdict`
+    column filled with grounded / partly grounded / not grounded. Blank rows are rejected:
+    a half-filled sheet would quietly shrink n.
+    """
+    first = pd.read_csv(VERDICTS, keep_default_na=False)
+    second = pd.read_csv(second_sheet, keep_default_na=False)
+    merged = first.merge(second[["id", "verdict"]], on="id", suffixes=("_first", "_second"))
+    if (merged["verdict_second"].str.strip() == "").any():
+        raise ValueError("the second-labeller sheet has blank verdicts; fill every row first")
+    result = cohen_kappa(merged["verdict_first"].tolist(), merged["verdict_second"].tolist())
+    result["generated_at"] = datetime.now().astimezone().isoformat(timespec="seconds")
+    AGREEMENT.write_text(json.dumps(result, indent=2), encoding="utf-8")
+    return result
+
+
 def precheck() -> pd.DataFrame:
     from src.agents.analytics_assistant import answer as ask
 
@@ -145,7 +188,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="Judge the assistant's answers for groundedness")
     parser.add_argument("--precheck", action="store_true")
     parser.add_argument("--report", action="store_true")
+    parser.add_argument("--agreement", metavar="SHEET_CSV",
+                        help="Cohen's kappa against a filled second-labeller sheet")
     args = parser.parse_args()
+    if args.agreement:
+        print(json.dumps(agreement(args.agreement), indent=2))
     if args.precheck:
         precheck()
     if args.report:
