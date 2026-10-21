@@ -73,8 +73,8 @@ That a command reproduces a number says the pipeline is deterministic given its 
 |---|---|
 | `benchmarks/raw/b8_exception_stats.json` | `python -m src.ml.exception_stats` |
 | `docs/figures/fig_b8_severity_ci.{pdf,png}` | `python -m src.report.figures_agents` |
-| `benchmarks/raw/b7_agent_ablation.json`, `b7_agent_ablation_cases.csv`, `b7_llm_ledger.json` | `python -m src.ml.agent_ablation --llm-verdict` (responses cached under `data/b7_cache/`, so a rerun makes no calls) |
-| `benchmarks/raw/b7_hard_sets_llm.json`, `b7_llm_ledger_hard_sets.json` | `python -m src.ml.agent_ablation --llm-verdict --hard-sets --limit 50` |
+| `benchmarks/raw/b7_agent_ablation.json`, `b7_agent_ablation_cases.csv`, `b7_llm_ledger.json` | `python -m src.ml.agent_ablation --llm-verdict` (120b; add `--model openai/gpt-oss-20b --max-cases 8` for the second arm; `--cache-only` rebuilds from cache; responses cached under `data/b7_cache/`, so a rerun makes no calls) |
+| `benchmarks/raw/b7_hard_sets_llm_gpt-oss-20b.json`, `b7_llm_ledger_hard_sets_gpt-oss-20b.json` | `python -m src.ml.agent_ablation --llm-verdict --model openai/gpt-oss-20b --hard-sets --limit 20` |
 | `benchmarks/raw/b7_order_hard_set.json`, `b7_invoice_boundary_set.json` | `python -m src.ml.b7_hard_sets --build` |
 | `benchmarks/raw/b7_hard_sets_deterministic.json` | `python -m src.ml.b7_hard_sets --score` |
 | `docs/human_tasks/*.csv` (blank sheets) | `python -m src.ml.human_sheets --build` |
