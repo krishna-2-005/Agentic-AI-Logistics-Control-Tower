@@ -2707,3 +2707,35 @@ after fixing what that set found (85.0% on first run, `w9_order_eval.json`). The
 first run of the 200, 100.0% after the fix, and 70 of 100 on this set. If the reader is fixed
 later, both numbers on this set are reported, and the set is then spent. The LLM-decides arm
 is run once at temperature 0 on a balanced prefix of the same cases (`b7_hard_sets_llm.json`).
+
+## D-088 · The free tier caps the ablation at pilot scale; the design is kept and the n is stated — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-086, docs/cost.md**
+
+D-086 assumed the provider's limit was requests and tokens per minute. The limit that binds
+is **tokens per day: 200,000 for `openai/gpt-oss-120b` on this key** (the provider's own 429:
+"Limit 200000, Used 199374, Requested 1072"), refilling continuously, about 8 calls an hour once
+spent. One verdict costs about 1,100 tokens (order entry), 900 (invoice) or 500 (exception),
+and a case is 7 verdicts, so the day's allowance is about 30 cases across all three agents,
+not the 120 the design needs. The full D-086 sample would take about four days of quota.
+
+**Decided, before any further call is made:**
+
+1. The primary arm keeps its design and model (`openai/gpt-oss-120b`, 5 runs at 0.7 plus 2 at
+   temperature 0) and is reported at the **completed balanced prefix**, with its n and Wilson
+   intervals, which D-086's subset policy already allows. The first launch ran agents one
+   after another before this was visible, so the prefixes are unequal (order entry 18 cases,
+   invoice 8, exception 8); later launches interleave agents case by case. The word
+   "pilot" is used for these results, and no claim of a difference is made where the interval
+   on the difference contains 0.
+2. A second model, `openai/gpt-oss-20b` (its own daily allowance), runs the same design
+   interleaved at 8 cases per agent, and the held-out hard sets run once at temperature 0 on
+   it (20 cases per agent, balanced prefix). Its numbers are written to separate files with the
+   model id in the name and are **never merged** with the 120b arm. It answers a different
+   question (does a smaller open model do worse) and is not a substitute for the 120b sample.
+3. Responses are cached on disk, so resuming on a later day continues from where this stopped
+   (`python -m src.ml.agent_ablation --llm-verdict`), and the n in every file grows with no
+   re-spend. The decision rule of D-086 is unchanged and is applied to whatever n exists when
+   the files are frozen.
+4. Document extraction rows 21 to 40 were attempted on the same Gemini model and the free tier
+   allowed five more clean extractions (P-75); rows 21 to 40 stay unreported and no model is
+   mixed.

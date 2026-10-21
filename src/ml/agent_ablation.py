@@ -219,7 +219,7 @@ def cached_call(agent: str, case_id: str, run: str, temperature: float, prompt_t
 class Throttle:
     """Keeps a sliding 60 s token total under the provider's per-minute limit."""
 
-    def __init__(self, tokens_per_minute: int = 7200, estimate: int = 900):
+    def __init__(self, tokens_per_minute: int = 7600, estimate: int = 900):
         self.limit, self.estimate = tokens_per_minute, estimate
         self.events: list[tuple[float, int]] = []
 
@@ -501,6 +501,26 @@ def cost_estimate(ledger: Ledger) -> dict:
             "basis": "mean measured tokens per call x provider public list price (assumed, check before quoting)"}
 
 
+def ledger_from_cache(cache_dir: Path | None = None) -> dict:
+    """The true live-call ledger, from the cache itself: one file is one billed provider call.
+
+    A per-process counter would lose calls made before a restart, so the ledger is rebuilt
+    from what is on disk. Provider failures are never cached and so are not counted here.
+    """
+    cache_dir = cache_dir or CACHE_DIR
+    totals = {"live_calls": 0, "input_tokens": 0, "output_tokens": 0, "latency_s": 0.0, "by_agent": {}}
+    for path in sorted(cache_dir.glob("*/*.json")):
+        record = json.loads(path.read_text(encoding="utf-8"))
+        slot = totals["by_agent"].setdefault(record["agent"], {"live_calls": 0, "input_tokens": 0,
+                                                              "output_tokens": 0, "latency_s": 0.0})
+        for target in (totals, slot):
+            target["live_calls"] += 1
+            target["input_tokens"] += record["in_tok"]
+            target["output_tokens"] += record["out_tok"]
+            target["latency_s"] = round(target["latency_s"] + record["latency_s"], 3)
+    return totals
+
+
 def write_cases_csv(path: Path, all_cases: dict[str, tuple[list[AblationCase], dict]]) -> None:
     with path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh)
@@ -614,6 +634,8 @@ def main() -> int:
     ap.add_argument("--n", type=int, default=40, help="cases per agent in the LLM subset")
     ap.add_argument("--hard-sets", action="store_true", help="run the held-out hard sets once at T=0 (needs --llm-verdict)")
     ap.add_argument("--limit", type=int, default=None, help="cap on hard-set cases per agent (balanced prefix)")
+    ap.add_argument("--stop-after-min", type=float, default=None,
+                    help="stop starting new cases after this many minutes (time budget, D-086 subset policy)")
     args = ap.parse_args()
 
     from src.agents.llm import ProviderRateLimited
@@ -631,19 +653,32 @@ def main() -> int:
                      "model_note": "open model on a free tier; NOT the Gemini model that writes the prose",
                      "sampled_temperature": SAMPLED_TEMPERATURE, "agents": {}}
     csv_data = {}
-    for agent in [a for a in args.agents.split(",") if a]:
-        cases, extra = BUILDERS[agent](args.n)
+    agents = [a for a in args.agents.split(",") if a]
+    built = {agent: BUILDERS[agent](args.n) for agent in agents}
+    all_runs: dict[str, dict[str, dict]] = {agent: {} for agent in agents}
+    halted_by: dict[str, str | None] = dict.fromkeys(agents)
+    stop_at = time.monotonic() + args.stop_after_min * 60 if args.stop_after_min else None
+    if caller is not None:
+        # Interleaved by case index, so whatever the quota or the time budget allows, every
+        # agent has completed the same number of (balanced-prefix) cases.
+        for i in range(max(len(built[a][0]) for a in agents)):
+            if stop_at is not None and time.monotonic() > stop_at:
+                break
+            for agent in agents:
+                cases = built[agent][0]
+                if i >= len(cases) or halted_by[agent]:
+                    continue
+                try:
+                    all_runs[agent][cases[i].case_id] = run_case(cases[i], caller, ledger)
+                except ProviderRateLimited as exc:
+                    halted_by[agent] = str(exc)
+    for agent in agents:
+        cases, extra = built[agent]
         entry: dict = {"agent": agent, "subset_n": len(cases), **extra,
                        "deterministic_on_subset": wilson(sum(c.det_correct for c in cases), len(cases)).as_dict()}
         if caller is not None:
-            runs: dict[str, dict] = {}
-            halted = None
-            for c in cases:
-                try:
-                    runs[c.case_id] = run_case(c, caller, ledger)
-                except ProviderRateLimited as exc:
-                    halted = str(exc)
-                    break
+            runs = all_runs[agent]
+            halted = halted_by[agent]
             done = [c for c in cases if c.case_id in runs]
             if done:
                 entry = {**entry, **summarise_agent(agent, done, runs, extra)}
@@ -654,9 +689,12 @@ def main() -> int:
         print(agent, {k: v for k, v in entry.items() if k in ("subset_n", "cases_completed", "halted_by_provider_limit")}, flush=True)
     if caller is not None:
         summary["cost"] = cost_estimate(ledger)
-        OUT_LEDGER.write_text(json.dumps({**asdict(ledger), "model": MODEL, "provider": PROVIDER,
-                                          "note": "calls include cache hits; live calls = calls - cache_hits",
-                                          **cost_estimate(ledger)}, indent=2), encoding="utf-8")
+        live = ledger_from_cache()
+        OUT_LEDGER.write_text(json.dumps({
+            **live, "model": MODEL, "provider": PROVIDER,
+            "note": "rebuilt from the on-disk cache: one file is one provider call; includes the hard-set runs and 3 smoke calls",
+            **cost_estimate(Ledger(calls=live["live_calls"], input_tokens=live["input_tokens"],
+                                   output_tokens=live["output_tokens"]))}, indent=2), encoding="utf-8")
         write_cases_csv(OUT_CSV, csv_data)
     OUT_JSON.write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
     print(f"wrote {OUT_JSON.name}; live key present: {bool(os.environ.get('GROQ_API_KEY'))}")

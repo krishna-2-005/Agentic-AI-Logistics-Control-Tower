@@ -213,3 +213,14 @@ def test_run_hard_with_mock_model(tmp_path, monkeypatch):
     assert result["agents"]["order"]["llm_T0"]["rate"] == 1.0
     assert result["agents"]["invoice"]["llm_T0"]["rate"] == 1.0
     assert result["agents"]["order"]["deterministic_on_same_cases"]["total"] == 10
+
+
+def test_ledger_from_cache_counts_one_call_per_file(tmp_path):
+    def fake(prompt, temperature):
+        return '{"severity":"low"}', 10, 5
+
+    for i in range(3):
+        ab.cached_call("exception", f"c{i}", "s0", 0.7, "p", fake, ab.Ledger(), cache_dir=tmp_path)
+    ab.cached_call("exception", "c0", "s0", 0.7, "p", fake, ab.Ledger(), cache_dir=tmp_path)  # cache hit
+    out = ab.ledger_from_cache(tmp_path)
+    assert out["live_calls"] == 3 and out["input_tokens"] == 30 and out["by_agent"]["exception"]["live_calls"] == 3
