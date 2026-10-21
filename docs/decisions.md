@@ -2656,3 +2656,51 @@ them the test compares one service with the spread of services of the same size,
 corridor effect cannot be separated from a service effect. The paper's headline becomes
 "0 corridors survive the cluster-aware test"; the 273 / 512 stay as the original row and as a
 screening list, not as confirmed bottlenecks.
+
+## D-081 · Empirical-Bayes ranking and its stability across support floors — `DECIDED`
+**Post-v1.0 · Mounika · B4 · written before `src/ml/eb_ranking.py` is run**
+
+The audit's support floor changes its answer: the top-20 at 10 legs and at 30 legs are
+disjoint (D-018). The hypothesis here is that this is mostly small-sample noise that
+shrinkage removes. It may be wrong, and the result is reported either way.
+
+**Model, per support floor `f` in {5, 10, 20, 30}, on exactly the corridors with at least `f`
+legs (the same set for the raw and the shrunk ranking).** For corridor `c` with `n_c` legs let
+`ybar_c` be the mean of `r = log(actual / osrm)`, `s_c^2` its leg-level sample variance and
+`v_c = s_c^2 / n_c`. Then `ybar_c ~ N(theta_c, v_c)` and `theta_c ~ N(mu, tau^2)`.
+* `mu`, `tau^2` by **REML (the headline)**, with DerSimonian-Laird method of moments and ML
+  reported beside it. If REML and the moments estimate differ in `tau^2` by more than 25%, the
+  top-20 overlap between the two estimators is reported too.
+* Posterior mean `(1-B_c) ybar_c + B_c mu` with `B_c = v_c / (v_c + tau^2)`; posterior variance
+  `(1-B_c) v_c + B_c^2 Var(mu_hat)`; 90% interval is the mean plus or minus 1.645 sd.
+* Sampling variances are taken as the model says (independent legs). A pre-registered
+  sensitivity row inflates `v_c` by the design effect of D-083,
+  `1 + (n_c/k_c - 1) * 0.0953`, with `k_c` the corridor's schedule-cell count and 0.0953 the
+  intraclass correlation in `b3_dependence_diagnostics.json`. The headline stays the model as
+  written; the sensitivity row is reported in full.
+
+**Material threshold (fixed now).** `t = m + ln 1.5`, where `m = 0.7783` is the mean of `r`
+over all 26,369 legs (the network's typical overrun, `w2_audit_report.json`). A corridor is
+material when `theta_c > t`, that is when its geometric-mean overrun is at least 1.5 times the
+network's (`exp(t)` = 3.27 times the plan against 2.18). 1.5 is a round factor that asks for
+half again the usual overrun, large enough to matter to a planner and small enough to leave
+corridors above it. Sensitivity rows use factors 1.25 and 2.0.
+
+**Rankings.** `eb_prob`, ordered by `P(theta_c > t)` (headline; ties by posterior mean);
+`eb_postmean`, by posterior mean; `raw_published`, the audit's own rule re-run on the floor's
+corridors (Benjamini-Hochberg Welch significant slower corridors, ordered by `excess_ratio`);
+`raw_mean`, all corridors by `ybar_c`. Top-20 lists are taken within each floor's set.
+
+**Stability metrics.** For each ranking and each of the six floor pairs: Jaccard overlap of
+the two top-20 lists (the operational question: does the list depend on the floor I pick); the
+Spearman correlation of rank positions over the corridors in both floors' sets; and the
+Jaccard of the top-20 lists after restricting the lower floor to the higher floor's corridors
+(so only the scoring differs, not the membership). A paired bootstrap, 200 resamples of legs
+within each corridor, seed 20260802, gives 95% intervals for the mean pairwise Jaccard and for
+the difference between rankings.
+
+**Decision rule.** EB (`eb_prob`) is **called more stable** only if its mean pairwise Jaccard is
+higher than that of both `raw_published` and `raw_mean`, with the bootstrap 95% interval of
+each difference above 0. If an interval contains 0 the paper says "no detectable difference";
+if EB is lower, "EB is not more stable". Section 4.3 of the paper follows this sentence
+whatever the numbers are.
