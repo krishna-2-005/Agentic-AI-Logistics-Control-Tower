@@ -2730,3 +2730,50 @@ effect (median 1.38) gives Jaccard 0.140; threshold factors 1.25 and 2.0 give 0.
 Paper: shrinkage and a probability ranking are better calibrated and slightly more stable, but
 they do not remove the floor's effect on which corridors enter a top-20; report the whole
 ranking and its intervals, not a top-20, and state the floor.
+
+## D-082 · Temporal stability of the audit: split by creation date, three audit rules — `DECIDED`
+**Post-v1.0 · Mounika · B5 · written before `src/ml/stability.py` is run**
+
+**Question.** With 23 creation dates (2018-09-11 to 2018-10-03; the plan calls it 22 days, the
+first date holds only 378 legs), do the corridors the audit flags in one part of the window
+stay bad in another?
+
+**Parts.** Legs are assigned to parts by the calendar date of `trip_creation_time`, in date
+order, as contiguous groups of dates: halves of 12 and 11 dates (14,385 and 11,984 legs), thirds
+of 8, 8 and 7 dates (9,219; 10,085; 7,065 legs). Pairs compared: the two halves; and, for
+thirds, T1-T2, T1-T3, T2-T3 (earlier part first).
+
+**Each part is audited independently**: its own network baseline, its own corridor family, its
+own multiple-testing correction. Support rule, two readings: **headline = proportional floor**,
+the 10-leg floor scaled to the share of the window, 5 legs per half and 4 per third, because a
+10-leg floor in a half-window tests far fewer corridors than the published audit does; and the
+**strict reading**, 10 legs in every part, reported beside it. Universe for a pair: corridors
+testable (at or above the floor) in both parts.
+
+**Audit rules applied to each part.** `bh_welch` (the published rule); `by_welch`; and `by_perm`
+(the B3 headline of D-080, cell-permutation p-values with 100,000 permutations, seed 20260801,
+Benjamini-Yekutieli). The empirical-Bayes ranking is the B4 headline, `eb_prob` with REML, and
+the material threshold stays at the full-data value `t = 1.1838` for every part (D-081), so no
+part sets its own bar.
+
+**Statistics per pair, each with its n and an interval.**
+1. Overlap of the significantly-slower sets: sizes, intersection, Jaccard, the overlap expected
+   by chance given the sizes and the universe (hypergeometric mean) and its one-sided
+   p-value, and a corridor bootstrap 95% interval for the Jaccard (2,000 resamples of the
+   universe, seed 20260803).
+2. Spearman correlation of corridor effects over the universe: the raw mean of `r` and the EB
+   posterior mean, with a corridor bootstrap interval.
+3. Persistence: of the corridors the earlier part flags, the share that are slower than the
+   network in the later part, that is later-part mean of `r` above the later part's mean over
+   all other legs, among those testable in the later part, and the share that are significantly
+   slower there (`bh_welch`). Flagged sets: the earlier part's `bh_welch` slower set (raw), its
+   top-20 by `excess_ratio` (raw top-20), and its top-20 by `eb_prob` (EB). Wilson 95%
+   intervals; the base rate (the share of the whole universe slower in the later part) is
+   reported as the reference, since half or more of any random set would also be slower.
+
+**Reading rule, fixed now.** A Spearman correlation below 0.3 is called low stability, 0.3 to 0.6
+moderate and above 0.6 substantial; a set overlap counts as above chance only if the
+hypergeometric p is below 0.05. If the raw top-20 and the EB top-20 persistence shares have
+Wilson intervals that overlap, the paper says "no detectable difference" and does not claim EB
+predicts the later window better. If stability is low it is reported as a finding about how
+often the audit has to be refreshed.
