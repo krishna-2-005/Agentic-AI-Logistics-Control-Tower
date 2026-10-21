@@ -2627,3 +2627,10 @@ is **robust** if it is significant, in the same direction, under both the headli
 `bh_welch`; otherwise a `bh_welch` discovery is **fragile**. Also reported: how many of the 273
 and 512 survive each variant, and the pairwise Jaccard overlap of the top-20 slower lists
 (ranked by `excess_ratio` among each variant's significant slower corridors).
+
+**Amendment to D-080, made before the full run.** A 2,000-permutation smoke test of the code
+(not the experiment: `b3_audit_robust.json` was overwritten by the real run) showed the rule
+could end in a three-way tie at zero slower and zero faster, which D-080 does not resolve. The
+tie-break is therefore fixed now: if the rule still ties after "fewest slower, then fewest
+faster", the headline is the first of `by_perm`, `bh_perm`, `by_welch`, `bh_welch` (the more
+conservative correction, and the cluster-aware test, first). Nothing else in D-080 changes.
