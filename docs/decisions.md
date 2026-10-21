@@ -2910,8 +2910,8 @@ noise is not supported:** the corridors' own sampling variances (about 0.002) ar
 `tau^2`, so the median shrink factor is only 0.009 to 0.021 at every size band, and the
 posterior mean is within a few percent of the raw mean. Mean pairwise top-20 Jaccard over the
 six floor pairs: `raw_published` 0.101, `raw_mean` 0.101, `eb_prob` 0.150, `eb_postmean` 0.155.
-`eb_prob` minus `raw_published` is +0.049 (bootstrap 95% interval 0.037 to 0.067) and minus
-`raw_mean` +0.049 (0.045 to 0.068). **By the pre-registered rule EB is called more stable**, and
+`eb_prob` minus `raw_published` is +0.049 (bootstrap 95% interval 0.006 to 0.062) and minus
+`raw_mean` +0.049 (0.007 to 0.067). **By the pre-registered rule EB is called more stable** (the committed file first held a 3-resample bootstrap, a leftover of a smoke run that had overwritten it; the intervals above are from the full 200-resample run, rerun after `audit.welch_against_network` stopped rejecting a variance that rounded to -1e-17 on a constant resample, P-83), and
 the margin is small: both lists still change almost completely between floors (floors 5 and 30,
 and 10 and 30, share no top-20 corridor in either ranking). The reason is membership, not
 noise: the Spearman correlation of rank positions over corridors present in both floors is

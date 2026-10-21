@@ -46,17 +46,34 @@ def macro_name(freeze_id: str) -> str:
     return PREFIX + spelled
 
 
+def grouped(number: int) -> str:
+    return f"{number:,}".replace(",", "{,}")
+
+
+def decimal(value: float, places: int) -> str:
+    whole, _, frac = f"{value:.{places}f}".partition(".")
+    sign = "-" if whole.startswith("-") else ""
+    return sign + grouped(int(whole.lstrip("-"))) + ("." + frac if frac else "")
+
+
 def tex_value(value: object) -> str:
     if isinstance(value, bool):
         return "true" if value else "false"
     if isinstance(value, int):
-        return f"{value:,}".replace(",", "{,}")
+        return grouped(value)
     if isinstance(value, float):
-        text = repr(value)
-        whole, _, frac = text.partition(".")
-        grouped = f"{int(whole):,}".replace(",", "{,}") if whole.lstrip("-").isdigit() else whole
-        return grouped + ("." + frac if frac and frac != "0" else "")
+        return decimal(value, 4).rstrip("0").rstrip(".") if value != int(value) else grouped(int(value))
     return str(value).replace("\\", "").replace("_", r"\_").replace("%", r"\%").replace("&", r"\&").replace("#", r"\#")
+
+
+def variants(name: str, value: object) -> dict[str, str]:
+    """Rounded forms of a float: `Dp1`, `Dp2`, and `Pct` (a share times 100, one decimal) when it is a share."""
+    if isinstance(value, bool) or not isinstance(value, float):
+        return {}
+    out = {name + "DpOne": decimal(value, 1), name + "DpTwo": decimal(value, 2)}
+    if abs(value) <= 1.0:
+        out[name + "Pct"] = decimal(value * 100, 1)
+    return out
 
 
 def render(freeze_path: Path | None = None) -> str:
@@ -93,7 +110,10 @@ def check() -> list[str]:
     expected = render()
     if not OUT.exists() or OUT.read_text(encoding="utf-8") != expected:
         problems.append(f"{OUT.name} is missing or differs from what the newest freeze generates")
-    defined = {macro_name(i["id"]) for i in json.loads(newest_freeze().read_text(encoding="utf-8"))["values"]}
+    defined = set()
+    for item in json.loads(newest_freeze().read_text(encoding="utf-8"))["values"]:
+        name = macro_name(item["id"])
+        defined |= {name, *variants(name, item["value"])}
     for name, files in used_macros().items():
         if name not in defined:
             problems.append(f"\\{name} is used in {files} but the freeze defines no such value")

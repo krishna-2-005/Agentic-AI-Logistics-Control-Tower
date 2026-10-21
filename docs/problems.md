@@ -1678,3 +1678,16 @@ Week 2's two blocking problems (P-12 and the support floor) are both closed abov
 | — | 13.5% of in-trip handoffs are chain breaks (D-015) | Mounika | Week 5 stream replay |
 | — | JDK 17 + winutils on Lahari's machine | Lahari | her local Spark runs |
 | — | No dashboard screenshots captured for W1 or W2 (GIT_RULES §3) | Krishna | Week 8 demo assets |
+
+## P-83 · The empirical-Bayes bootstrap interval came from 3 resamples, not 200
+**Found while citing it in the paper, 2026-10-21 · Mounika**
+
+`b4_eb_ranking.json` recorded `bootstrap.reps = 3`: a smoke run had overwritten the real one, and the
+interval quoted in D-081 (0.037 to 0.067) was from those 3 resamples. The 200-resample rerun crashed on
+a corridor whose resampled leg values were all equal (variance rounding to -1e-17, caught by the
+negative-variance assertion). `audit.welch_against_network` now tolerates rounding below 1e-9 and clips
+at zero; real disagreements still raise. Rerun: the interval for the stability difference is 0.006 to
+0.062 (the lower end moved from 0.037), still above zero, so the pre-registered verdict "more stable"
+stands but is marginal. Lesson: results files record their own settings, and a quoted interval must
+be checked against `reps` in the file it came from.
+

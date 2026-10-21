@@ -200,12 +200,14 @@ def welch_against_network(pdf: pd.DataFrame, baseline: dict) -> pd.DataFrame:
     mean_r = sum_r / n_r
     var_r = (sumsq_r - n_r * mean_r**2) / (n_r - 1)
 
-    if (var_c < 0).any() or (var_r < 0).any():
+    # A constant sample (every value equal) can round a hair below zero; a real disagreement is far below.
+    if (var_c < -1e-9).any() or (var_r < -1e-9).any():
         raise AssertionError(
             "Negative variance from the sum-of-squares identity — the aggregate and "
             "the network totals disagree. Do not report these p-values."
         )
 
+    var_c, var_r = np.maximum(var_c, 0.0), np.maximum(var_r, 0.0)
     se_c, se_r = var_c / n_c, var_r / n_r
     se = np.sqrt(se_c + se_r)
     t = (mean_c - mean_r) / se

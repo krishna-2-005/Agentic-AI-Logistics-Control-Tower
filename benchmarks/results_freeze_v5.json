@@ -1,0 +1,915 @@
+{
+  "frozen_at": "2026-10-21T11:19:28.292835+00:00",
+  "layer": 1,
+  "n_values": 109,
+  "values": [
+    {
+      "id": "legs_total",
+      "week": 1,
+      "label": "Legs in the cleaned feature table",
+      "value": 26369,
+      "unit": "legs",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "corridors_total",
+      "week": 1,
+      "label": "Distinct corridors",
+      "value": 2783,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "median_gap_ratio",
+      "week": 1,
+      "label": "Median leg runs this many times its OSRM plan",
+      "value": 2.0,
+      "unit": "x",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "corridors_tested",
+      "week": 2,
+      "label": "Corridors above the 10-leg floor (D-018)",
+      "value": 1130,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "bottlenecks",
+      "week": 2,
+      "label": "Significantly slower corridors (FDR 0.05)",
+      "value": 273,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "faster_corridors",
+      "week": 2,
+      "label": "Significantly faster corridors",
+      "value": 512,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "legs_covered",
+      "week": 2,
+      "label": "Legs covered by tested corridors",
+      "value": 20739,
+      "unit": "legs",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "robustness_bottlenecks",
+      "week": 2,
+      "label": "Bottlenecks at the old 30-leg floor",
+      "value": 34,
+      "unit": "corridors",
+      "source": "w2_audit_report.json"
+    },
+    {
+      "id": "split_train",
+      "week": 3,
+      "label": "Training legs (chronological, D-022)",
+      "value": 21095,
+      "unit": "legs",
+      "source": "w3_baseline_report.json"
+    },
+    {
+      "id": "split_test",
+      "week": 3,
+      "label": "Held-out legs",
+      "value": 5274,
+      "unit": "legs",
+      "source": "w3_baseline_report.json"
+    },
+    {
+      "id": "pct_delayed",
+      "week": 3,
+      "label": "Legs delayed at the decided 2.00x threshold (D-003)",
+      "value": 49.69,
+      "unit": "%",
+      "source": "w3_baseline_report.json"
+    },
+    {
+      "id": "mae_osrm",
+      "week": 3,
+      "label": "OSRM test MAE",
+      "value": 107.09,
+      "unit": "min",
+      "source": "w3_baseline_metrics.csv"
+    },
+    {
+      "id": "mae_corridor_mean",
+      "week": 3,
+      "label": "Corridor-mean baseline test MAE",
+      "value": 36.13,
+      "unit": "min",
+      "source": "w3_baseline_metrics.csv"
+    },
+    {
+      "id": "champion_model",
+      "week": 4,
+      "label": "Champion model",
+      "value": "random_forest",
+      "unit": "",
+      "source": "w4_model_report.json"
+    },
+    {
+      "id": "mae_champion",
+      "week": 4,
+      "label": "Champion test MAE",
+      "value": 36.89,
+      "unit": "min",
+      "source": "w4_model_metrics.csv"
+    },
+    {
+      "id": "corridors_improved",
+      "week": 4,
+      "label": "Test corridors the champion beats OSRM on",
+      "value": 1369,
+      "unit": "corridors",
+      "source": "w4_model_report.json"
+    },
+    {
+      "id": "doc_agent_f1_v1",
+      "week": 4,
+      "label": "Document agent field F1, prompt v1",
+      "value": 0.853,
+      "unit": "",
+      "source": "w4_doc_eval_summary.json"
+    },
+    {
+      "id": "doc_agent_f1_v2",
+      "week": 4,
+      "label": "Document agent field F1, prompt v2",
+      "value": 0.929,
+      "unit": "",
+      "source": "w4_doc_eval_summary.json"
+    },
+    {
+      "id": "stream_identical",
+      "week": 5,
+      "label": "Legs scoring identically in batch and stream",
+      "value": 500,
+      "unit": "of 500",
+      "source": "w5_stream_validation_report.json"
+    },
+    {
+      "id": "stream_events",
+      "week": 5,
+      "label": "Events replayed end to end",
+      "value": 52738,
+      "unit": "events",
+      "source": "w5_stream_throughput_full.json"
+    },
+    {
+      "id": "stream_produced_eps",
+      "week": 5,
+      "label": "Producer rate sustained",
+      "value": 886.4,
+      "unit": "events/sec",
+      "source": "w5_stream_throughput_full.json"
+    },
+    {
+      "id": "stream_scoring_eps",
+      "week": 5,
+      "label": "Saturated scoring rate",
+      "value": 739.9,
+      "unit": "events/sec",
+      "source": "w5_stream_throughput_full.json"
+    },
+    {
+      "id": "stream_latency_p50_s",
+      "week": 5,
+      "label": "Event-to-alert latency, median",
+      "value": 28.9,
+      "unit": "s",
+      "source": "w5_stream_throughput_full.json"
+    },
+    {
+      "id": "order_eval_run",
+      "week": 5,
+      "label": "Order Entry eval cases run",
+      "value": 50,
+      "unit": "of 50",
+      "source": "w5_order_eval_summary.json"
+    },
+    {
+      "id": "order_eval_success",
+      "week": 5,
+      "label": "Order Entry eval success rate",
+      "value": 1.0,
+      "unit": "",
+      "source": "w5_order_eval_summary.json"
+    },
+    {
+      "id": "order_eval_invented",
+      "week": 5,
+      "label": "Orders filed on invented values",
+      "value": 0,
+      "unit": "orders",
+      "source": "w5_order_eval_summary.json"
+    },
+    {
+      "id": "lifecycle_cases",
+      "week": 6,
+      "label": "Emails through the full lifecycle",
+      "value": 10,
+      "unit": "cases",
+      "source": "w6_orchestrator_runs.json"
+    },
+    {
+      "id": "lifecycle_booked",
+      "week": 6,
+      "label": "Lifecycle cases booked into the TMS",
+      "value": 5,
+      "unit": "cases",
+      "source": "w6_orchestrator_runs.json"
+    },
+    {
+      "id": "lifecycle_ticketed",
+      "week": 6,
+      "label": "Lifecycle cases reaching an exception ticket",
+      "value": 2,
+      "unit": "cases",
+      "source": "w6_orchestrator_runs.json"
+    },
+    {
+      "id": "invoice_cases",
+      "week": 6,
+      "label": "Invoices audited on the development corpus",
+      "value": 20,
+      "unit": "invoices",
+      "source": "w6_invoice_audit_runs.json"
+    },
+    {
+      "id": "invoice_correct",
+      "week": 6,
+      "label": "Invoice verdicts matching the seeded truth",
+      "value": 20,
+      "unit": "invoices",
+      "source": "w6_invoice_audit_runs.json"
+    },
+    {
+      "id": "median_bar_mae",
+      "week": 7,
+      "label": "The fair baseline: per-corridor as-of median",
+      "value": 33.04,
+      "unit": "min",
+      "source": "w7_model_v2_stepsize_report.json"
+    },
+    {
+      "id": "model_v2_mae",
+      "week": 7,
+      "label": "Reported model: v2 GBT on the median residual",
+      "value": 30.9,
+      "unit": "min",
+      "source": "w7_model_v2_stepsize_report.json"
+    },
+    {
+      "id": "doc_extraction_accuracy",
+      "week": 7,
+      "label": "Document extraction, per-field accuracy",
+      "value": 0.9786,
+      "unit": "share",
+      "source": "w7_doc_extraction_eval.json"
+    },
+    {
+      "id": "doc_extraction_rows",
+      "week": 7,
+      "label": "Document rows scored (of 40 planned)",
+      "value": 20,
+      "unit": "rows",
+      "source": "w7_doc_extraction_eval.json"
+    },
+    {
+      "id": "assistant_route_accuracy",
+      "week": 7,
+      "label": "Analytics assistant, correct route on the fixed set",
+      "value": 0.9,
+      "unit": "share",
+      "source": "w7_assistant_run_no_llm.json"
+    },
+    {
+      "id": "scale_rows",
+      "week": 7,
+      "label": "Rows the Week 2 aggregation was run on at scale",
+      "value": 56353613,
+      "unit": "rows",
+      "source": "w7_scale_benchmark.json"
+    },
+    {
+      "id": "exception_precision_as_of",
+      "week": 8,
+      "label": "Exception alert precision, as-of history (D-054)",
+      "value": 0.5855,
+      "unit": "share",
+      "source": "w8_replay_leakage.json"
+    },
+    {
+      "id": "assistant_groundedness",
+      "week": 8,
+      "label": "Assistant groundedness, model-written answers",
+      "value": 0.9444,
+      "unit": "share",
+      "source": "w7_groundedness_summary.json"
+    },
+    {
+      "id": "kafka_file_alerts_identical",
+      "week": 8,
+      "label": "Kafka and file-source alerts identical (same legs, same gaps)",
+      "value": true,
+      "unit": "bool",
+      "source": "w7_kafka_source_equivalence.json"
+    },
+    {
+      "id": "adopted_stream_equals_batch",
+      "week": 8,
+      "label": "Reported model, stream equals batch",
+      "value": 500,
+      "unit": "legs",
+      "source": "w8_stream_validation_v2.json"
+    },
+    {
+      "id": "fresh_clone_rebuild_s",
+      "week": 8,
+      "label": "Full rebuild from the raw CSV on a fresh clone",
+      "value": 4258,
+      "unit": "seconds",
+      "source": "w8_fresh_clone_rebuild.json"
+    },
+    {
+      "id": "order_eval_scale_heldout",
+      "week": 9,
+      "label": "Order entry, 200 cases, held-out first run",
+      "value": 0.85,
+      "unit": "share",
+      "source": "w9_order_eval.json"
+    },
+    {
+      "id": "order_eval_scale_adversarial_heldout",
+      "week": 9,
+      "label": "Order entry, adversarial half, held-out first run",
+      "value": 0.7,
+      "unit": "share",
+      "source": "w9_order_eval.json"
+    },
+    {
+      "id": "order_eval_scale_cases",
+      "week": 9,
+      "label": "Order entry evaluation cases",
+      "value": 200,
+      "unit": "cases",
+      "source": "w9_order_eval.json"
+    },
+    {
+      "id": "invoice_eval_scale_accuracy",
+      "week": 9,
+      "label": "Invoice auditor, stratified, verdict correct",
+      "value": 0.9,
+      "unit": "share",
+      "source": "w9_invoice_eval.json"
+    },
+    {
+      "id": "invoice_eval_scale_cases",
+      "week": 9,
+      "label": "Invoice auditor evaluation cases",
+      "value": 200,
+      "unit": "invoices",
+      "source": "w9_invoice_eval.json"
+    },
+    {
+      "id": "invoice_eval_scale_false_disputes",
+      "week": 9,
+      "label": "Correct invoices wrongly disputed",
+      "value": 0,
+      "unit": "invoices",
+      "source": "w9_invoice_eval.json"
+    },
+    {
+      "id": "lifecycle_eval_scale_paths",
+      "week": 9,
+      "label": "Orchestrator graph paths exercised",
+      "value": 3,
+      "unit": "of 3",
+      "source": "w9_lifecycle_eval.json"
+    },
+    {
+      "id": "lifecycle_eval_scale_routing",
+      "week": 9,
+      "label": "Orchestrator routed as the email deserved",
+      "value": 1.0,
+      "unit": "share",
+      "source": "w9_lifecycle_eval.json"
+    },
+    {
+      "id": "lifecycle_eval_scale_cases",
+      "week": 9,
+      "label": "Orchestrator lifecycles run",
+      "value": 100,
+      "unit": "lifecycles",
+      "source": "w9_lifecycle_eval.json"
+    },
+    {
+      "id": "bar_old_median_mae",
+      "week": 10,
+      "label": "Old median baseline, test MAE",
+      "value": 33.0423,
+      "unit": "min",
+      "source": "b1_backoff_baseline.json"
+    },
+    {
+      "id": "bar_backoff_mae",
+      "week": 10,
+      "label": "Hard back-off bar, test MAE",
+      "value": 32.3932,
+      "unit": "min",
+      "source": "b1_backoff_baseline.json"
+    },
+    {
+      "id": "bar_shrunk_mae",
+      "week": 10,
+      "label": "Shrunken back-off, test MAE",
+      "value": 32.9221,
+      "unit": "min",
+      "source": "b1_backoff_baseline.json"
+    },
+    {
+      "id": "bar_backoff_validation_mae",
+      "week": 10,
+      "label": "Hard back-off bar, validation MAE",
+      "value": 29.3567,
+      "unit": "min",
+      "source": "b1_backoff_baseline.json"
+    },
+    {
+      "id": "cold_legs_test",
+      "week": 10,
+      "label": "Test legs with no prior leg on the corridor",
+      "value": 204,
+      "unit": "legs",
+      "source": "b1_backoff_baseline.json"
+    },
+    {
+      "id": "cold_mae_backoff",
+      "week": 10,
+      "label": "Cold legs, back-off MAE",
+      "value": 132.9706,
+      "unit": "min",
+      "source": "b1_backoff_baseline.json"
+    },
+    {
+      "id": "cold_mae_model",
+      "week": 10,
+      "label": "Cold legs, reported model MAE",
+      "value": 100.1619,
+      "unit": "min",
+      "source": "b1_backoff_baseline.json"
+    },
+    {
+      "id": "warm_mae_backoff",
+      "week": 10,
+      "label": "Warm legs, back-off MAE",
+      "value": 28.3464,
+      "unit": "min",
+      "source": "b1_backoff_baseline.json"
+    },
+    {
+      "id": "warm_mae_model",
+      "week": 10,
+      "label": "Warm legs, reported model MAE",
+      "value": 28.1182,
+      "unit": "min",
+      "source": "b1_backoff_baseline.json"
+    },
+    {
+      "id": "v3_validation_mae",
+      "week": 10,
+      "label": "Residual model over back-off, validation MAE",
+      "value": 31.1425,
+      "unit": "min",
+      "source": "b1_model_v3.json"
+    },
+    {
+      "id": "v2_validation_mae",
+      "week": 10,
+      "label": "Reported residual model, validation MAE",
+      "value": 30.17,
+      "unit": "min",
+      "source": "b1_model_v3.json"
+    },
+    {
+      "id": "v3_test_mae",
+      "week": 10,
+      "label": "Residual model over back-off, test MAE",
+      "value": 31.4032,
+      "unit": "min",
+      "source": "b1_model_v3.json"
+    },
+    {
+      "id": "served_vs_bar_delta",
+      "week": 10,
+      "label": "Served model (Spark v2) minus bar, test MAE",
+      "value": -1.4884,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "served_vs_bar_ci_low",
+      "week": 10,
+      "label": "Day-block 95% interval, lower end",
+      "value": -2.2465,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "served_vs_bar_ci_high",
+      "week": 10,
+      "label": "Day-block 95% interval, upper end",
+      "value": -0.738,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "served_mae_ci_low",
+      "week": 10,
+      "label": "Served model MAE, day-block interval low",
+      "value": 29.0171,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "served_mae_ci_high",
+      "week": 10,
+      "label": "Served model MAE, day-block interval high",
+      "value": 32.6355,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "audit_robust_headline_slower",
+      "week": 10,
+      "label": "Slower corridors surviving the strictest valid test",
+      "value": 0,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_robust_headline_faster",
+      "week": 10,
+      "label": "Faster corridors surviving the strictest valid test",
+      "value": 0,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_by_welch_slower",
+      "week": 10,
+      "label": "Slower corridors, Welch with BY control",
+      "value": 218,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_placebo_rejection",
+      "week": 10,
+      "label": "Welch uncorrected rejection rate on placebo labels",
+      "value": 0.6387079646017699,
+      "unit": "share",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "audit_placebo_discoveries",
+      "week": 10,
+      "label": "Mean BH-Welch discoveries on placebo labels",
+      "value": 680.205,
+      "unit": "corridors",
+      "source": "b3_audit_robust.json"
+    },
+    {
+      "id": "eb_threshold_log",
+      "week": 10,
+      "label": "Empirical-Bayes exceedance threshold (log ratio)",
+      "value": 1.1837693408621637,
+      "unit": "log",
+      "source": "b4_eb_ranking.json"
+    },
+    {
+      "id": "eb_top20_jaccard_raw",
+      "week": 10,
+      "label": "Top-20 overlap across support floors, raw ranking",
+      "value": 0.10117716405748861,
+      "unit": "jaccard",
+      "source": "b4_eb_ranking.json"
+    },
+    {
+      "id": "eb_top20_jaccard_eb",
+      "week": 10,
+      "label": "Top-20 overlap across support floors, EB ranking",
+      "value": 0.1502136752136752,
+      "unit": "jaccard",
+      "source": "b4_eb_ranking.json"
+    },
+    {
+      "id": "stability_universe",
+      "week": 10,
+      "label": "Corridors testable in both halves",
+      "value": 807,
+      "unit": "corridors",
+      "source": "b5_stability.json"
+    },
+    {
+      "id": "stability_jaccard",
+      "week": 10,
+      "label": "Slower-set overlap between halves (BH-Welch)",
+      "value": 0.6363636363636364,
+      "unit": "jaccard",
+      "source": "b5_stability.json"
+    },
+    {
+      "id": "stability_spearman",
+      "week": 10,
+      "label": "Rank correlation of raw corridor means between halves",
+      "value": 0.9084462321904426,
+      "unit": "rho",
+      "source": "b5_stability.json"
+    },
+    {
+      "id": "stability_still_slower",
+      "week": 10,
+      "label": "First-half slower corridors still slower in second half",
+      "value": 0.9769,
+      "unit": "share",
+      "source": "b5_stability.json"
+    },
+    {
+      "id": "stability_base_rate",
+      "week": 10,
+      "label": "Base rate of slower corridors in the second half",
+      "value": 0.39776951672862454,
+      "unit": "share",
+      "source": "b5_stability.json"
+    },
+    {
+      "id": "reported_mae",
+      "week": 10,
+      "label": "Reported model (LightGBM, L1), test MAE",
+      "value": 29.6578,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_mae_ci_low",
+      "week": 10,
+      "label": "Reported model MAE, day-block interval low",
+      "value": 27.8611,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_mae_ci_high",
+      "week": 10,
+      "label": "Reported model MAE, day-block interval high",
+      "value": 31.1193,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_vs_bar_delta",
+      "week": 10,
+      "label": "Reported model minus bar, test MAE",
+      "value": -2.7354,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_vs_bar_ci_low",
+      "week": 10,
+      "label": "Reported minus bar, day-block interval low",
+      "value": -3.4132,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_vs_bar_ci_high",
+      "week": 10,
+      "label": "Reported minus bar, day-block interval high",
+      "value": -2.107,
+      "unit": "min",
+      "source": "b2_significance.json"
+    },
+    {
+      "id": "reported_validation_mae",
+      "week": 10,
+      "label": "Reported model, validation MAE",
+      "value": 27.2368,
+      "unit": "min",
+      "source": "b6_model_zoo.json"
+    },
+    {
+      "id": "zoo_lightgbm_huber_mae",
+      "week": 10,
+      "label": "LightGBM Huber, test MAE (over old median)",
+      "value": 30.5347,
+      "unit": "min",
+      "source": "b6_model_zoo.json"
+    },
+    {
+      "id": "zoo_xgboost_mae",
+      "week": 10,
+      "label": "XGBoost L1, test MAE (over old median)",
+      "value": 29.7104,
+      "unit": "min",
+      "source": "b6_model_zoo.json"
+    },
+    {
+      "id": "zoo_histgbr_mae",
+      "week": 10,
+      "label": "Histogram GBT L1, test MAE (over old median)",
+      "value": 29.7456,
+      "unit": "min",
+      "source": "b6_model_zoo.json"
+    },
+    {
+      "id": "zoo_linear_mae",
+      "week": 10,
+      "label": "Linear median regression, test MAE (over old median)",
+      "value": 33.9563,
+      "unit": "min",
+      "source": "b6_model_zoo.json"
+    },
+    {
+      "id": "exc_precision_as_of_rate",
+      "week": 10,
+      "label": "Exception agent precision, as-of",
+      "value": 0.5855,
+      "unit": "share",
+      "source": "b8_exception_stats.json"
+    },
+    {
+      "id": "exc_precision_ci_low",
+      "week": 10,
+      "label": "Exception precision, Wilson low",
+      "value": 0.562,
+      "unit": "share",
+      "source": "b8_exception_stats.json"
+    },
+    {
+      "id": "exc_precision_ci_high",
+      "week": 10,
+      "label": "Exception precision, Wilson high",
+      "value": 0.6085,
+      "unit": "share",
+      "source": "b8_exception_stats.json"
+    },
+    {
+      "id": "exc_alerts",
+      "week": 10,
+      "label": "Exception alerts raised in the as-of replay",
+      "value": 1720,
+      "unit": "legs",
+      "source": "b8_exception_stats.json"
+    },
+    {
+      "id": "exc_gain_points",
+      "week": 10,
+      "label": "Gain over alerting on every leg",
+      "value": 4.45,
+      "unit": "points",
+      "source": "b8_exception_stats.json"
+    },
+    {
+      "id": "exc_gain_ci_low",
+      "week": 10,
+      "label": "Gain, bootstrap low",
+      "value": 0.0353,
+      "unit": "share",
+      "source": "b8_exception_stats.json"
+    },
+    {
+      "id": "exc_gain_ci_high",
+      "week": 10,
+      "label": "Gain, bootstrap high",
+      "value": 0.0538,
+      "unit": "share",
+      "source": "b8_exception_stats.json"
+    },
+    {
+      "id": "exc_gain_z",
+      "week": 10,
+      "label": "Alerted vs not alerted, z statistic",
+      "value": 9.8904,
+      "unit": "z",
+      "source": "b8_exception_stats.json"
+    },
+    {
+      "id": "ablation_order_cases",
+      "week": 10,
+      "label": "Order emails in the ablation pilot",
+      "value": 18,
+      "unit": "cases",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "ablation_order_llm_accuracy",
+      "week": 10,
+      "label": "Order, model decides, pooled over 5 runs",
+      "value": 0.8778,
+      "unit": "share",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "ablation_order_llm_ci_low",
+      "week": 10,
+      "label": "Order, model decides, Wilson low",
+      "value": 0.7943,
+      "unit": "share",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "ablation_order_llm_ci_high",
+      "week": 10,
+      "label": "Order, model decides, Wilson high",
+      "value": 0.9304,
+      "unit": "share",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "ablation_order_unanimity",
+      "week": 10,
+      "label": "Order, model decides, unanimous across 5 runs",
+      "value": 0.8333,
+      "unit": "share",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "ablation_order_kappa",
+      "week": 10,
+      "label": "Order, Fleiss kappa across 5 runs",
+      "value": 0.8199999999999997,
+      "unit": "kappa",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "hard_order_rules",
+      "week": 10,
+      "label": "Rule order agent on the held-out hard set",
+      "value": 0.7,
+      "unit": "share",
+      "source": "b7_hard_sets_deterministic.json"
+    },
+    {
+      "id": "hard_order_cases",
+      "week": 10,
+      "label": "Held-out hard order emails",
+      "value": 100,
+      "unit": "cases",
+      "source": "b7_hard_sets_deterministic.json"
+    },
+    {
+      "id": "hard_invoice_rules",
+      "week": 10,
+      "label": "Rule invoice auditor on the boundary set",
+      "value": 1.0,
+      "unit": "share",
+      "source": "b7_hard_sets_deterministic.json"
+    }
+  ],
+  "source_hashes": {
+    "b1_backoff_baseline.json": "4392c0dbe0866cf8",
+    "b1_model_v3.json": "b0438487a027949c",
+    "b2_significance.json": "9bc2b1213d08799a",
+    "b3_audit_robust.json": "20608bd6490bb284",
+    "b4_eb_ranking.json": "a275ff88a245ccd6",
+    "b5_stability.json": "2fcfce876063f2a4",
+    "b6_model_zoo.json": "5de81983b89353a3",
+    "b7_agent_ablation.json": "39eb25469be9e855",
+    "b7_hard_sets_deterministic.json": "b6bc242b3aae712c",
+    "b8_exception_stats.json": "e80626bd149006a4",
+    "w2_audit_report.json": "904add5e20cd382c",
+    "w3_baseline_metrics.csv": "52c122938e3dc076",
+    "w3_baseline_report.json": "9b72d866436a3303",
+    "w4_doc_eval_summary.json": "00657539920b5988",
+    "w4_model_metrics.csv": "3e5a299b3b1f3088",
+    "w4_model_report.json": "ed457212e12d2d38",
+    "w5_order_eval_summary.json": "86784bba061bc2b6",
+    "w5_stream_throughput_full.json": "353d3d9c6f0b8306",
+    "w5_stream_validation_report.json": "8707b72f924203ab",
+    "w6_invoice_audit_runs.json": "cb1c6c4a19f95a76",
+    "w6_orchestrator_runs.json": "e138ac1e46127bea",
+    "w7_assistant_run_no_llm.json": "852ed5361c232f02",
+    "w7_doc_extraction_eval.json": "d133daa5590ca375",
+    "w7_groundedness_summary.json": "3d33e189019556ef",
+    "w7_kafka_source_equivalence.json": "b5e35619e7f3c90c",
+    "w7_model_v2_stepsize_report.json": "4107e8ee821aca8a",
+    "w7_scale_benchmark.json": "b9ab664ee9b4285d",
+    "w8_fresh_clone_rebuild.json": "795dcbee122e22c5",
+    "w8_replay_leakage.json": "98cec9b58e1efd09",
+    "w8_stream_validation_v2.json": "78506e804f8612ed",
+    "w9_invoice_eval.json": "ae1391dceb717b86",
+    "w9_lifecycle_eval.json": "8b639af4d22a4135",
+    "w9_order_eval.json": "dae7152d167c6a59"
+  },
+  "problems": []
+}
