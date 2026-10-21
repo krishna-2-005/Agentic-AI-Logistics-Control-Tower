@@ -57,7 +57,7 @@ FREEZE_JSON_V1 = config.BENCHMARKS_DIR / "results_freeze_v1.json"
 FREEZE_JSON_V2 = config.BENCHMARKS_DIR / "results_freeze_v2.json"
 #: v3 is the freeze v1.0 ships with (D-056): v2's numbers plus Week 8's, with extraction at
 #: the row count the release actually carries. v1 and v2 stay as they were.
-FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v3.json"
+FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v5.json"
 SUMMARY_MD = config.DOCS_DIR / "RESULTS_SUMMARY.md"
 
 

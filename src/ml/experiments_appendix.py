@@ -64,6 +64,28 @@ PRODUCERS: dict[str, tuple[str, str]] = {
     "w7_kafka_source_equivalence.json": (
         "scripts/kafka_native.ps1, then python -m src.streaming.compare_sources", "Mounika"),
     "w8_fresh_clone_rebuild.json": ("bash scripts/rebuild_all.sh on a fresh clone", "Mounika"),
+    # Upgrade pass (D-075 to D-089).
+    "b1_backoff_baseline.json": ("python -m src.ml.backoff_baseline", "Mounika"),
+    "b1_model_v3.json": ("python -m src.ml.models_v3", "Mounika"),
+    "b2_significance.json": ("python -m src.ml.significance", "Mounika"),
+    "b2_rolling_origin.json": ("python -m src.ml.rolling_origin", "Mounika"),
+    "b6_model_zoo.json": ("python -m src.ml.model_zoo", "Mounika"),
+    "b6_feature_ablation.json": ("python -m src.ml.model_zoo", "Mounika"),
+    "b3_dependence_diagnostics.json": ("python -m src.ml.audit_data", "Mounika"),
+    "b3_audit_robust.json": ("python -m src.ml.audit_robust", "Mounika"),
+    "b3_audit_robust_1e6.json": (
+        "python -m src.ml.audit_robust --permutations 1000000 --placebo 0 --suffix _1e6", "Mounika"),
+    "b4_eb_ranking.json": ("python -m src.ml.eb_ranking", "Mounika"),
+    "b5_stability.json": ("python -m src.ml.stability", "Mounika"),
+    "b7_agent_ablation.json": ("python -m src.ml.agent_ablation --llm-verdict (resumable; --cache-only rebuilds)", "Krishna"),
+    "b7_hard_sets_deterministic.json": ("python -m src.ml.b7_hard_sets --build --score", "Krishna"),
+    "b8_exception_stats.json": ("python -m src.ml.exception_stats", "Lahari"),
+    "w10_stream_validation_v2.json": ("python -m src.ml.stream_validation --adopted", "Lahari"),
+    "w7_assistant_run_llm.json": ("python -m src.agents.assistant_eval", "Krishna"),
+    "w9_order_eval.json": ("python -m src.ml.order_eval_scale --run --route rules", "Lahari"),
+    "w9_invoice_eval.json": ("python -m src.ml.invoice_eval_scale", "Lahari"),
+    "w9_lifecycle_eval.json": ("python -m src.ml.lifecycle_eval_scale --cases 100", "Lahari"),
+    "f1_api_latency.json": ("python scripts/api_bench.py --base https://control-tower-api.onrender.com", "Mounika"),
 }
 
 #: Numbers that are reported but are not in the freeze, with where they come from. Kept
