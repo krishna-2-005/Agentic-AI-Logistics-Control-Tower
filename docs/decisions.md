@@ -2634,3 +2634,25 @@ could end in a three-way tie at zero slower and zero faster, which D-080 does no
 tie-break is therefore fixed now: if the rule still ties after "fewest slower, then fewest
 faster", the headline is the first of `by_perm`, `bh_perm`, `by_welch`, `bh_welch` (the more
 conservative correction, and the cluster-aware test, first). Nothing else in D-080 changes.
+
+**Outcome (D-080).** `python -m src.ml.audit_robust`, 100,000 permutations, seed 20260801,
+`b3_audit_robust.json`. The published audit reproduced first (273 / 512, p-values within 3e-14).
+Significant slower / faster by variant: `bh_welch` 273 / 512, `by_welch` 218 / 452, `bh_perm`
+1 / 0, `by_perm` 0 / 0. **By the rule the headline is `by_perm`, which is 0 slower and 0 faster.**
+No tie arose: `by_perm` alone has zero slower corridors (`bh_perm` has one), so the
+tie-break was not used. So no corridor is
+**robust** (significant under both the headline and the original): all 273 slower and 512
+faster `bh_welch` discoveries are **fragile**. The top-20 lists barely overlap across the
+independence and cluster-aware families (Jaccard 0.05 for `bh_welch` against `bh_perm`, 0 for
+the others; `bh_welch` against `by_welch` is 1.0 because BY only removes the weakest). Why the
+drop is so large: under 200 placebo datasets in which corridor membership is meaningless but
+the cell structure is kept, Welch rejects 63.9% of corridors uncorrected at 0.05 and BH finds
+680 discoveries on average (maximum 723, all 200 datasets non-empty), against 785 found on the
+real data. The permutation p-values are not empty: 81 corridors fall below 0.05 and 18 below
+0.01 (smallest 4e-5), and the top-20 slower corridors ranked by permutation p share a Jaccard
+of 0.74 with the Welch top-20. They do not clear a 5% false discovery rate over 1,130 tests.
+Reading, with the limits kept: 680 of the 1,130 corridors run under a single schedule, so for
+them the test compares one service with the spread of services of the same size, and a
+corridor effect cannot be separated from a service effect. The paper's headline becomes
+"0 corridors survive the cluster-aware test"; the 273 / 512 stay as the original row and as a
+screening list, not as confirmed bottlenecks.

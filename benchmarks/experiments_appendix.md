@@ -58,6 +58,9 @@ Every value below is read from a file in `benchmarks/raw/`, and every file has a
 | Week 7 agent evaluation table (five agents) | `benchmarks/agent_evaluation.md` | each row cites its own cache file in the Evidence table |
 | Streaming throughput and latency | `benchmarks/streaming_throughput.md` | python -m src.streaming.producer / job, full-replay run |
 | Scale appendix runtimes | `benchmarks/scale_appendix.md` | python -m src.pipeline.scale_benchmark --months 17 |
+| Dependence diagnostics of the audit's legs (D-083) | `benchmarks/raw/b3_dependence_diagnostics.json` | python -m src.ml.audit_data |
+| Dependence-aware audit, four variants and headline (D-080) | `benchmarks/raw/b3_audit_robust.json` | python -m src.ml.audit_robust |
+| Per-corridor flags for every audit variant, robust vs fragile | `benchmarks/raw/b3_audit_robust_corridors.csv` | python -m src.ml.audit_robust |
 
 ## Gaps
 
