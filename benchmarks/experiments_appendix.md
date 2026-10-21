@@ -66,3 +66,15 @@ None: every frozen number has a cache file and a command that writes it.
 ## What this table does not prove
 
 That a command reproduces a number says the pipeline is deterministic given its inputs. It does not say the number is right — that is what the decisions log and the problem log argue about, and several entries here are numbers an earlier version of the same command got wrong (P-42, P-46, P-52).
+
+## B7 and B8 additions (agent study)
+
+| file | command |
+|---|---|
+| `benchmarks/raw/b8_exception_stats.json` | `python -m src.ml.exception_stats` |
+| `docs/figures/fig_b8_severity_ci.{pdf,png}` | `python -m src.report.figures_agents` |
+| `benchmarks/raw/b7_agent_ablation.json`, `b7_agent_ablation_cases.csv`, `b7_llm_ledger.json` | `python -m src.ml.agent_ablation --llm-verdict` (responses cached under `data/b7_cache/`, so a rerun makes no calls) |
+| `benchmarks/raw/b7_hard_sets_llm.json`, `b7_llm_ledger_hard_sets.json` | `python -m src.ml.agent_ablation --llm-verdict --hard-sets --limit 50` |
+| `benchmarks/raw/b7_order_hard_set.json`, `b7_invoice_boundary_set.json` | `python -m src.ml.b7_hard_sets --build` |
+| `benchmarks/raw/b7_hard_sets_deterministic.json` | `python -m src.ml.b7_hard_sets --score` |
+| `docs/human_tasks/*.csv` (blank sheets) | `python -m src.ml.human_sheets --build` |
