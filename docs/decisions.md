@@ -2703,7 +2703,7 @@ which is what an arithmetic check with a stated tolerance should do.
 
 **Decided.** The agents are not modified in response. The order result is the held-out number
 and it is lower than the 100.0% the paper quotes for the 200-email set, which was measured
-after fixing what that set found (85.0% on first run, D-050). The paper reports 85.0% on the
+after fixing what that set found (85.0% on first run, `w9_order_eval.json`). The paper reports 85.0% on the
 first run of the 200, 100.0% after the fix, and 70 of 100 on this set. If the reader is fixed
 later, both numbers on this set are reported, and the set is then spent. The LLM-decides arm
 is run once at temperature 0 on a balanced prefix of the same cases (`b7_hard_sets_llm.json`).
