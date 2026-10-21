@@ -13,6 +13,17 @@ import {
 } from "@/components/ui";
 import { getCorridors, getModel, getOverview } from "@/lib/data";
 import { minutes, num, pct, ratio } from "@/lib/format";
+import { PROJECT_NAME, SITE_DESCRIPTION } from "@/lib/site";
+
+export const metadata = {
+  title: { absolute: PROJECT_NAME },
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    title: PROJECT_NAME,
+    description: SITE_DESCRIPTION,
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: PROJECT_NAME }],
+  },
+};
 
 export default function HomePage() {
   const overview = getOverview();
@@ -36,13 +47,13 @@ export default function HomePage() {
 
         <h1 className="max-w-4xl text-balance text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.4rem]">
           Where is the{" "}
-          <span className="text-[var(--accent)]">planner wrong</span>?
+          <span className="text-[var(--accent)]">OSRM estimate wrong</span>?
         </h1>
 
         <p className="mt-5 max-w-2xl text-pretty text-lg leading-relaxed text-[var(--ink-muted)]">
-          A production routing engine estimates how long every freight leg
-          should take. Across {num(o.legs)} real legs it is wrong in one
-          direction almost every time — so we found{" "}
+          The dataset records an OSRM routing estimate of how long every
+          freight leg should take. Across {num(o.legs)} real legs it is wrong in
+          one direction almost every time — so we found{" "}
           <strong className="font-semibold text-[var(--ink)]">exactly where</strong>.
         </p>
 
@@ -70,7 +81,7 @@ export default function HomePage() {
       {/* ── four headline numbers ──────────────────────────────────────── */}
       <Section
         title="The finding"
-        description="If the error were random it would cancel out across a corridor. It does not — so it concentrates, and it can be found."
+        description="If the error were random it would cancel out across a corridor. It does not, so it is systematic, and the audit asks where it sits."
       >
         <KpiRow>
           <Kpi
@@ -89,7 +100,7 @@ export default function HomePage() {
           <Kpi
             value={num(o.faster_corridors)}
             label="corridors significantly faster"
-            sub="The planner is not uniformly optimistic — it is wrong in both directions."
+            sub="The OSRM estimate is not uniformly optimistic — it is wrong in both directions."
             file="benchmarks/raw/w2_corridor_audit.csv"
           />
           <Kpi
@@ -106,9 +117,11 @@ export default function HomePage() {
         title="The premise, in one chart"
         description={
           <>
-            Realised time ÷ planned time, across every leg. If the planner&apos;s
-            error were noise it would centre on 1.0 and cancel out. It does not
-            centre and it does not cancel — so it has to concentrate somewhere.
+            Realised time ÷ the OSRM estimate, across every leg. If the
+            estimate&apos;s error were noise it would centre on 1.0 and cancel
+            out. It does not centre: the error is one-sided. Whether it
+            concentrates in particular corridors is the question the audit
+            answers.
           </>
         }
         actions={<Evidence file="benchmarks/raw/w1_leg_summary.csv" />}
@@ -155,7 +168,7 @@ export default function HomePage() {
                 the margin on corridors nobody has seen before.
               </>
             }
-            stat={`${minutes(model.data.headline.mae_min)} error vs ${minutes(model.data.headline.osrm_mae_min)} for the planner`}
+            stat={`${minutes(model.data.headline.mae_min)} error vs ${minutes(model.data.headline.osrm_mae_min)} for the OSRM estimate (OSRM estimate, context only; not a fair comparison)`}
             href="/predict/"
             cta="Try a prediction"
           />
@@ -180,11 +193,11 @@ export default function HomePage() {
       {/* ── worst corridors, as a teaser ───────────────────────────────── */}
       <Section
         title="The worst corridors in the network"
-        description="Ranked by how much more a corridor overruns than the network typically does. The leg count matters — a 13.9× on 13 legs is a lead, not a verdict."
+        description={`The ${worst.length} corridors on the map, ranked by how much more a corridor overruns than the network typically does. The leg count matters — a 13.9× on 13 legs is a lead, not a verdict.`}
         actions={<ArrowLink href="/corridors/">All {num(o.corridors_tested)} corridors</ArrowLink>}
       >
         <div className="grid gap-3 sm:grid-cols-2">
-          {worst.slice(0, 6).map((c, i) => (
+          {worst.map((c, i) => (
             <Card key={c.id} className="flex items-center gap-4 py-3.5">
               <span className="tabular w-6 shrink-0 font-mono text-sm text-[var(--ink-faint)]">
                 {i + 1}
@@ -196,11 +209,14 @@ export default function HomePage() {
               />
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">
-                  {c.src.city ?? c.src.code} → {c.dst.city ?? c.dst.code}
+                  {c.route}
                   {c.intra_city && (
-                    <span className="ml-2 text-xs font-normal text-[var(--ink-faint)]">
-                      intra-city
-                    </span>
+                    <>
+                      {" "}
+                      <span className="text-xs font-normal text-[var(--ink-faint)]">
+                        · intra-city
+                      </span>
+                    </>
                   )}
                 </p>
                 <p className="mt-0.5 text-xs text-[var(--ink-muted)]">
@@ -221,10 +237,10 @@ export default function HomePage() {
         <Card className="border-dashed">
           <h3 className="text-sm font-semibold">What this does not claim</h3>
           <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[var(--ink-muted)]">
-            Not &ldquo;beats the planner&rdquo;. The routing engine has no access
-            to corridor history, so a model that has seen it is not a fair
-            comparison — every model result here is reported against the
-            per-corridor median instead. The agents operate on synthetic
+            Not &ldquo;beats the OSRM estimate&rdquo;. The OSRM estimate recorded
+            in the dataset has no access to corridor history, so a model that
+            has seen it is not a fair comparison — every model result here is
+            reported against the per-corridor median instead. The agents operate on synthetic
             documents and a mock TMS, declared as scaffolding. The{" "}
             {num(o.legs)} legs underneath are real.
           </p>

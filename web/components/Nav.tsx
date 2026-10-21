@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 import { cx } from "@/lib/format";
+import { PROJECT_NAME } from "@/lib/site";
 
 /**
  * Top navigation in four sections.
@@ -27,7 +28,7 @@ const SECTIONS: { label: string; items: { href: string; label: string }[] }[] = 
     label: "Predict",
     items: [
       { href: "/predict/", label: "Delay predictor" },
-      { href: "/alerts/", label: "Live alerts" },
+      { href: "/alerts/", label: "Alert replay" },
     ],
   },
   {
@@ -42,6 +43,7 @@ const SECTIONS: { label: string; items: { href: string; label: string }[] }[] = 
     label: "Results",
     items: [
       { href: "/evidence/", label: "The numbers" },
+      { href: "/paper/", label: "Paper" },
       { href: "/about/", label: "About" },
     ],
   },
@@ -61,8 +63,8 @@ function Logo() {
         <circle cx="4" cy="18" r="2.5" fill="var(--accent)" />
         <circle cx="24" cy="18" r="2.5" fill="var(--accent)" />
       </svg>
-      <span className="text-[15px] font-semibold tracking-tight">
-        Control Tower
+      <span className="text-[13px] font-semibold leading-tight tracking-tight sm:text-[15px]">
+        {PROJECT_NAME}
       </span>
     </Link>
   );
