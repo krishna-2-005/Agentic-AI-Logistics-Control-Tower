@@ -15,7 +15,7 @@ a prediction model judged against a fair baseline with confidence intervals, and
 ## Start here (90 seconds)
 
 1. **Look.** The [site](https://control-tower-mu-rouge.vercel.app) shows the map, the corridor audit, the agents and every frozen number; its **Paper** page has the abstract and figures.
-2. **Read.** The manuscripts are LaTeX in [`paper/conference/`](paper/conference/main.tex) (LNCS, about 15 pages) and [`paper/journal/`](paper/journal/main.tex) (journal draft). Every number in them is a macro generated from [`benchmarks/results_freeze_v5.json`](benchmarks/results_freeze_v5.json). Build them with `make paper`; [`docs/paper_draft.md`](docs/paper_draft.md) points here.
+2. **Read.** The manuscripts are LaTeX in [`paper/conference/`](paper/conference/main.tex) (LNCS, 16 pages with references) and [`paper/journal/`](paper/journal/main.tex) (journal draft). Every number in them is a macro generated from [`benchmarks/results_freeze_v5.json`](benchmarks/results_freeze_v5.json). Build them with `make paper`; [`docs/paper_draft.md`](docs/paper_draft.md) points here.
 3. **Reproduce.** `make test` runs the fast tests; `make rebuild` regenerates every result from the raw CSV and ends in `results_freeze --verify`. [`REPRODUCIBILITY.md`](REPRODUCIBILITY.md) has hardware, versions and runtimes; [`docs/install.md`](docs/install.md) has the full setup.
 
 ## What the data say, at the strength they support
