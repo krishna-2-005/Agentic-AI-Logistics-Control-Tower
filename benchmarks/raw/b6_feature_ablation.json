@@ -1,0 +1,125 @@
+{
+  "model": "lightgbm_l1",
+  "learning_rate": 0.03,
+  "test_mae_full": 30.1897,
+  "groups": {
+    "plan_and_route": {
+      "features_removed": [
+        "planned_min",
+        "is_ftl"
+      ],
+      "test_mae_without": 30.1273,
+      "delta_mae": -0.0624,
+      "ci_block_day": [
+        -0.1728,
+        0.016
+      ],
+      "interval_excludes_zero": false
+    },
+    "distance": {
+      "features_removed": [
+        "planned_km"
+      ],
+      "test_mae_without": 30.2532,
+      "delta_mae": 0.0635,
+      "ci_block_day": [
+        -0.023,
+        0.1509
+      ],
+      "interval_excludes_zero": false
+    },
+    "time": {
+      "features_removed": [
+        "created_hour",
+        "created_dayofweek",
+        "created_is_weekend"
+      ],
+      "test_mae_without": 30.6285,
+      "delta_mae": 0.4388,
+      "ci_block_day": [
+        0.1418,
+        0.6256
+      ],
+      "interval_excludes_zero": true
+    },
+    "corridor_history": {
+      "features_removed": [
+        "corr_n_prior",
+        "corr_mean_log_ratio",
+        "corr_std_log_ratio",
+        "corr_mean_gap_min",
+        "corr_last_log_ratio",
+        "corr_hours_since_last",
+        "corr_is_cold"
+      ],
+      "test_mae_without": 30.1918,
+      "delta_mae": 0.0021,
+      "ci_block_day": [
+        -0.1108,
+        0.0977
+      ],
+      "interval_excludes_zero": false
+    },
+    "hub_history": {
+      "features_removed": [
+        "src_n_prior",
+        "src_mean_log_ratio",
+        "src_std_log_ratio",
+        "src_mean_gap_min",
+        "src_last_log_ratio",
+        "src_hours_since_last",
+        "dst_n_prior",
+        "dst_mean_log_ratio",
+        "dst_std_log_ratio",
+        "dst_mean_gap_min",
+        "dst_last_log_ratio",
+        "dst_hours_since_last",
+        "src_is_cold",
+        "dst_is_cold"
+      ],
+      "test_mae_without": 30.3349,
+      "delta_mae": 0.1451,
+      "ci_block_day": [
+        0.064,
+        0.2633
+      ],
+      "interval_excludes_zero": true
+    },
+    "v2_dispersion_and_dwell": {
+      "features_removed": [
+        "corr_median_gap_min",
+        "corr_p90_gap_min",
+        "corr_iqr_gap_min",
+        "corr_std_gap_min",
+        "corr_mean_gap_7d",
+        "corr_n_prior_7d",
+        "src_dwell_by_hour_min",
+        "dst_dwell_by_hour_min",
+        "corr_7d_is_cold",
+        "src_dwell_is_cold",
+        "dst_dwell_is_cold"
+      ],
+      "test_mae_without": 30.4768,
+      "delta_mae": 0.2871,
+      "ci_block_day": [
+        0.2327,
+        0.3482
+      ],
+      "interval_excludes_zero": true
+    },
+    "baseline_descriptors": {
+      "features_removed": [
+        "baseline_level",
+        "baseline_n"
+      ],
+      "test_mae_without": 30.18,
+      "delta_mae": -0.0097,
+      "ci_block_day": [
+        -0.0896,
+        0.0448
+      ],
+      "interval_excludes_zero": false
+    }
+  },
+  "reported_model_for_context": "lightgbm_l1 (secondary_old_median)"
+}
