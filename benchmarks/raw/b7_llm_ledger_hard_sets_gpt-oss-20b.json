@@ -1,0 +1,32 @@
+{
+  "calls": 40,
+  "cache_hits": 0,
+  "errors": 0,
+  "input_tokens": 34019,
+  "output_tokens": 7277,
+  "latency_s": 318.24799999999993,
+  "by_agent": {
+    "order": {
+      "calls": 20,
+      "input_tokens": 17932,
+      "output_tokens": 2986,
+      "latency_s": 131.492,
+      "errors": 0
+    },
+    "invoice": {
+      "calls": 20,
+      "input_tokens": 16087,
+      "output_tokens": 4291,
+      "latency_s": 186.756,
+      "errors": 0
+    }
+  },
+  "model": "openai/gpt-oss-20b",
+  "free_tier_cost_usd": 0.0,
+  "paid_equivalent_usd_per_1000_verdicts_ESTIMATE": 0.2367,
+  "assumed_price_usd_per_million_tokens_input_output": [
+    0.15,
+    0.6
+  ],
+  "basis": "mean measured tokens per call x provider public list price (assumed, check before quoting)"
+}

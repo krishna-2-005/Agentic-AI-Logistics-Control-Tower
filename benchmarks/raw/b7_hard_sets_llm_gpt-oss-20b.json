@@ -1,0 +1,377 @@
+{
+  "generated_at": "2026-10-21T16:19:38+05:30",
+  "pre_registered_in": "D-086",
+  "model": "openai/gpt-oss-20b",
+  "temperature": 0.0,
+  "runs_per_case": 1,
+  "held_out": true,
+  "synthetic": true,
+  "agents": {
+    "order": {
+      "cases_completed": 20,
+      "of": 20,
+      "halted_by_provider_limit": null,
+      "deterministic_on_same_cases": {
+        "successes": 14,
+        "total": 20,
+        "rate": 0.7,
+        "ci_low": 0.481,
+        "ci_high": 0.8545
+      },
+      "llm_T0": {
+        "successes": 11,
+        "total": 20,
+        "rate": 0.55,
+        "ci_low": 0.3421,
+        "ci_high": 0.7418
+      },
+      "parse_or_schema_errors": 0,
+      "llm_invented_value_orders": 9,
+      "by_stratum": {
+        "code_long_dest": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 0,
+            "total": 2,
+            "rate": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.6576
+          }
+        },
+        "code_scrambled": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 0,
+            "total": 2,
+            "rate": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.6576
+          }
+        },
+        "code_short_origin": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 0,
+            "total": 2,
+            "rate": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.6576
+          }
+        },
+        "conflict_pieces": {
+          "deterministic": {
+            "successes": 0,
+            "total": 2,
+            "rate": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.6576
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "conflict_service": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 0,
+            "total": 2,
+            "rate": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.6576
+          }
+        },
+        "hinglish_file": {
+          "deterministic": {
+            "successes": 0,
+            "total": 2,
+            "rate": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.6576
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "hinglish_no_weight": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "hinglish_tonnes": {
+          "deterministic": {
+            "successes": 0,
+            "total": 2,
+            "rate": 0.0,
+            "ci_low": 0.0,
+            "ci_high": 0.6576
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "two_orders_hinglish": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "unit_missing": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 1,
+            "total": 2,
+            "rate": 0.5,
+            "ci_low": 0.0945,
+            "ci_high": 0.9055
+          }
+        }
+      }
+    },
+    "invoice": {
+      "cases_completed": 20,
+      "of": 20,
+      "halted_by_provider_limit": null,
+      "deterministic_on_same_cases": {
+        "successes": 20,
+        "total": 20,
+        "rate": 1.0,
+        "ci_low": 0.8389,
+        "ci_high": 1.0
+      },
+      "llm_T0": {
+        "successes": 19,
+        "total": 20,
+        "rate": 0.95,
+        "ci_low": 0.7639,
+        "ci_high": 0.9911
+      },
+      "parse_or_schema_errors": 1,
+      "llm_invented_value_orders": null,
+      "by_stratum": {
+        "freight_bottom_inside": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 1,
+            "total": 2,
+            "rate": 0.5,
+            "ci_low": 0.0945,
+            "ci_high": 0.9055
+          }
+        },
+        "freight_bottom_outside": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "freight_top_inside": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "freight_top_outside": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "share_high_inside": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "share_high_outside": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "share_low_inside": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "share_low_outside": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "total_off_half_paisa": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        },
+        "total_off_two_paise": {
+          "deterministic": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          },
+          "llm_T0": {
+            "successes": 2,
+            "total": 2,
+            "rate": 1.0,
+            "ci_low": 0.3424,
+            "ci_high": 1.0
+          }
+        }
+      }
+    }
+  }
+}

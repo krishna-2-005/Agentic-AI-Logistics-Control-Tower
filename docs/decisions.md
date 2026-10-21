@@ -2739,3 +2739,32 @@ not the 120 the design needs. The full D-086 sample would take about four days o
 4. Document extraction rows 21 to 40 were attempted on the same Gemini model and the free tier
    allowed five more clean extractions (P-75); rows 21 to 40 stay unreported and no model is
    mixed.
+
+## D-089 · What the pilot ablation supports, and what it does not — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-086, D-088**
+
+The decision rule of D-086 applied to the files as they stand (`b7_agent_ablation.json`,
+`openai/gpt-oss-120b`, n = 18 / 8 / 8 cases; `b7_agent_ablation_gpt-oss-20b.json`, n = 8 / 8 / 8):
+
+* **Order entry.** The model scored 87.8% pooled over 5 runs at temperature 0.7 (79 of 90,
+  Wilson 79.4% to 93.0%) against the rule route's 100% on the same 18 emails; the case-level
+  bootstrap interval for the difference is -25.6 to -2.2 points, so the arms are
+  distinguishable and the code is ahead. 83.3% of cases drew the same verdict on all 5 runs
+  (Fleiss kappa 0.82), 17 of 18 matched across two temperature-0 runs, and 6 of 50 orders the
+  model filed (12.0%, 5.6% to 23.8%) carried a value the email did not support, against 0 for
+  the rules. **Caveat that goes with it:** the rules' 100% is on a set they were fixed against
+  (85.0% on first run); on the held-out hard set they score 70% (D-087). The model arm was not
+  fixed against any set. The 20b model scored 72.5% (8 cases).
+* **Invoice audit.** Both arms scored 87.5% on the same 8 invoices (the one error is the
+  designed tolerance miss `overcharge_hidden`), the model gave identical verdicts on all runs
+  and no false disputes. n = 8 supports no comparison.
+* **Exception severity.** Given the cut-offs in prose, the model reproduced the code's grade on
+  40 of 40 verdicts (8 cases). Arithmetic on two numbers is within its reach; this too is
+  n = 8 and says nothing about harder inputs.
+
+**What the paper may say.** That a deterministic core is at least as accurate where the policy
+is arithmetic (invoice, severity), and ahead and reproducible on order entry at pilot scale,
+where the model's extra failures were invented values and 1 in 6 cases drawing different
+verdicts on re-run. That this is one open model on 8 to 18 cases per agent, not the Gemini
+model used for prose. It may not say the LLM arm is generally worse, nor claim a cost advantage
+beyond latency and the tokens measured. The full 40-case design is resumable from cache.

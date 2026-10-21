@@ -197,9 +197,10 @@ def cache_key(agent: str, case_id: str, run: str, temperature: float, prompt_tex
 
 
 def cached_call(agent: str, case_id: str, run: str, temperature: float, prompt_text: str,
-                caller: CALLER, ledger: Ledger, model: str = MODEL, cache_dir: Path | None = None) -> dict:
+                caller: CALLER, ledger: Ledger, model: str | None = None, cache_dir: Path | None = None) -> dict:
     """One LLM call through the disk cache. Provider failures raise; they are never cached."""
     cache_dir = cache_dir or CACHE_DIR
+    model = model or MODEL
     path = cache_dir / agent / f"{cache_key(agent, case_id, run, temperature, prompt_text, model)}.json"
     if path.exists():
         record = json.loads(path.read_text(encoding="utf-8"))
@@ -501,7 +502,7 @@ def cost_estimate(ledger: Ledger) -> dict:
             "basis": "mean measured tokens per call x provider public list price (assumed, check before quoting)"}
 
 
-def ledger_from_cache(cache_dir: Path | None = None) -> dict:
+def ledger_from_cache(cache_dir: Path | None = None, model: str | None = None) -> dict:
     """The true live-call ledger, from the cache itself: one file is one billed provider call.
 
     A per-process counter would lose calls made before a restart, so the ledger is rebuilt
@@ -511,6 +512,8 @@ def ledger_from_cache(cache_dir: Path | None = None) -> dict:
     totals = {"live_calls": 0, "input_tokens": 0, "output_tokens": 0, "latency_s": 0.0, "by_agent": {}}
     for path in sorted(cache_dir.glob("*/*.json")):
         record = json.loads(path.read_text(encoding="utf-8"))
+        if model and record.get("model") != model:
+            continue
         slot = totals["by_agent"].setdefault(record["agent"], {"live_calls": 0, "input_tokens": 0,
                                                               "output_tokens": 0, "latency_s": 0.0})
         for target in (totals, slot):
@@ -636,11 +639,24 @@ def main() -> int:
     ap.add_argument("--limit", type=int, default=None, help="cap on hard-set cases per agent (balanced prefix)")
     ap.add_argument("--stop-after-min", type=float, default=None,
                     help="stop starting new cases after this many minutes (time budget, D-086 subset policy)")
+    ap.add_argument("--max-cases", type=int, default=None, help="stop after this many cases per agent (balanced prefix)")
+    ap.add_argument("--cache-only", action="store_true", help="rebuild the report from cached responses; never call the provider")
+    ap.add_argument("--model", default=None, help="provider model id (default: the 120b primary arm)")
     args = ap.parse_args()
+
+    global MODEL, OUT_JSON, OUT_CSV, OUT_LEDGER, OUT_HARD, OUT_LEDGER_HARD
+    if args.model and args.model != MODEL:
+        MODEL = args.model
+        tag = "_" + MODEL.split("/")[-1]
+        OUT_JSON, OUT_CSV, OUT_LEDGER = (p.with_name(p.stem + tag + p.suffix) for p in (OUT_JSON, OUT_CSV, OUT_LEDGER))
+        OUT_HARD, OUT_LEDGER_HARD = (p.with_name(p.stem + tag + p.suffix) for p in (OUT_HARD, OUT_LEDGER_HARD))
 
     from src.agents.llm import ProviderRateLimited
 
     caller = default_caller() if args.llm_verdict else None
+    if args.cache_only:
+        def caller(prompt: str, temperature: float) -> tuple[str, int, int]:  # noqa: ARG001
+            raise ProviderRateLimited("cache-only run: response not in the cache")
     ledger = Ledger()
     if args.hard_sets:
         if caller is None:
@@ -661,7 +677,7 @@ def main() -> int:
     if caller is not None:
         # Interleaved by case index, so whatever the quota or the time budget allows, every
         # agent has completed the same number of (balanced-prefix) cases.
-        for i in range(max(len(built[a][0]) for a in agents)):
+        for i in range(min(args.max_cases or 10**9, max(len(built[a][0]) for a in agents))):
             if stop_at is not None and time.monotonic() > stop_at:
                 break
             for agent in agents:
@@ -675,7 +691,7 @@ def main() -> int:
     for agent in agents:
         cases, extra = built[agent]
         entry: dict = {"agent": agent, "subset_n": len(cases), **extra,
-                       "deterministic_on_subset": wilson(sum(c.det_correct for c in cases), len(cases)).as_dict()}
+                       "deterministic_on_full_subset": wilson(sum(c.det_correct for c in cases), len(cases)).as_dict()}
         if caller is not None:
             runs = all_runs[agent]
             halted = halted_by[agent]
@@ -689,7 +705,7 @@ def main() -> int:
         print(agent, {k: v for k, v in entry.items() if k in ("subset_n", "cases_completed", "halted_by_provider_limit")}, flush=True)
     if caller is not None:
         summary["cost"] = cost_estimate(ledger)
-        live = ledger_from_cache()
+        live = ledger_from_cache(model=MODEL)
         OUT_LEDGER.write_text(json.dumps({
             **live, "model": MODEL, "provider": PROVIDER,
             "note": "rebuilt from the on-disk cache: one file is one provider call; includes the hard-set runs and 3 smoke calls",

@@ -49,3 +49,32 @@ No paid service is used, and none is planned (D-074). If one were, the compariso
 
 Hosting is deliberately *not* on that list: the site runs on Vercel's free plan and the API on
 Render's free plan (D-073), and paying for either buys a nicer URL rather than a better result.
+
+## B7 agent ablation: calls, tokens, cost (D-086, D-088)
+
+The LLM-decides arm uses open models on Groq's free tier, not the Gemini model that writes the
+project's prose. Measured cost: **$0**. Every response is cached on disk, so a rerun makes no calls.
+
+| arm | provider calls | input / output tokens | summed latency | cases |
+|---|---|---|---|---|
+| `openai/gpt-oss-120b`, ablation (3 smoke calls included) | 248 | 193,573 / 54,583 | 2,148 s | order 18, invoice 8, exception 8 |
+| `openai/gpt-oss-20b`, ablation | 168 | 119,658 / 25,702 | 1,243 s | 8 per agent |
+| `openai/gpt-oss-20b`, held-out hard sets, temperature 0 | 40 | see `b7_llm_ledger_hard_sets_gpt-oss-20b.json` | | 20 per agent |
+| Gemini, document extraction rows 21 to 40 (same model as rows 1 to 20) | 5 | not recorded | | 5 clean extractions, kept out of the repository (P-75) |
+
+**The limit that bound, and what it cost the design.** The key's limits for `gpt-oss-120b` are
+1,000 requests a day, 8,000 tokens a minute and **200,000 tokens a day**. The daily token cap
+ended the run after 248 calls (the provider's own message: "Limit 200000, Used 199374,
+Requested 1072"); it refills continuously, about 8 calls an hour after that. The design needs
+about 840 calls per model, so the pre-registered 40 cases per agent would take about four
+days of allowance, and the results are reported at the completed prefix (D-088). A paid tier
+would remove the constraint; this was not bought (D-074).
+
+**Paid-equivalent estimate, clearly an estimate.** At an assumed list price of $0.15 per million
+input tokens and $0.60 per million output tokens for `gpt-oss-120b` (entered by hand from the
+provider's public pricing; check it before quoting), the measured mean token use gives about
+**$0.25 per 1,000 verdicts** (`gpt-oss-120b`, 7 calls per case included) and about $0.20 for
+`gpt-oss-20b` at the same assumed prices, which are not 20b's own. The deterministic arm
+costs no tokens and its decision takes microseconds. Latency per verdict was 4.9 s (exception),
+8.6 s (invoice) and 10.9 s (order entry) mean for `gpt-oss-120b`, against 0.04 ms for the
+exception agent's arithmetic (`w6_exception_eval.json`).
