@@ -15,6 +15,7 @@ fi
 
 "$PY" -m src.report.paper_numbers
 "$PY" -m src.report.paper_numbers --check
+"$PY" -m src.report.bib_print
 
 compile() {
   local dir="$1"

@@ -243,14 +243,14 @@ def run(n_boot: int = N_BOOT) -> dict:
                 adjusted = holm([getter(entry["vs_bar"][s]) for s in slice_names])
                 for s, p_adj in zip(slice_names, adjusted, strict=True):
                     entry["vs_bar"][s][field] = round(p_adj, 6)
-            slices = [entry["vs_bar"][s] for s in slice_names]
+            slice_rows = [entry["vs_bar"][s] for s in slice_names]
             overall = entry["vs_bar"]["overall"]
             entry["summary"] = {
-                "slices_total_including_overall": len(slices) + 1,
-                "wins_block_ci_below_zero": int(sum(c["wins_block_day"] for c in slices) + overall["wins_block_day"]),
-                "wins_after_holm_block": int(sum(c["holm_p_block_day"] < 0.05 and c["delta_mae"] < 0 for c in slices)
+                "slices_total_including_overall": len(slice_rows) + 1,
+                "wins_block_ci_below_zero": int(sum(c["wins_block_day"] for c in slice_rows) + overall["wins_block_day"]),
+                "wins_after_holm_block": int(sum(c["holm_p_block_day"] < 0.05 and c["delta_mae"] < 0 for c in slice_rows)
                                              + (overall["p_block_day"] < 0.05 and overall["delta_mae"] < 0)),
-                "slices_point_estimate_below_zero": int(sum(c["delta_mae"] < 0 for c in slices) + (overall["delta_mae"] < 0)),
+                "slices_point_estimate_below_zero": int(sum(c["delta_mae"] < 0 for c in slice_rows) + (overall["delta_mae"] < 0)),
                 "overall_wins_block_ci_below_zero": bool(overall["wins_block_day"]),
             }
         results[model] = entry

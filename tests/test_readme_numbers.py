@@ -22,9 +22,10 @@ import re
 import pytest
 
 from src.common import config
+from src.report import paper_numbers
 
 README = config.REPO_ROOT / "README.md"
-FREEZE = config.BENCHMARKS_DIR / "results_freeze_v3.json"
+FREEZE = paper_numbers.newest_freeze()  # the README follows the newest freeze (v5 onwards)
 
 
 @pytest.fixture(scope="module")
@@ -58,10 +59,10 @@ CLAIMS = [
     ("faster_corridors", "512", "corridors significantly faster"),
     ("corridors_tested", "1,130", "corridors tested"),
     ("legs_total", "26,369", "legs in the feature table"),
-    ("model_v2_mae", "30.90", "the reported model's MAE"),
-    ("median_bar_mae", "33.04", "the per-corridor median baseline"),
-    ("mae_osrm", "107.1", "OSRM's own MAE"),
-    ("mae_champion", "36.9", "the superseded Week 4 champion, kept as the correction story"),
+    ("model_v2_mae", "30.90", "the served model's MAE"),
+    ("bar_backoff_mae", "32.39", "the back-off bar"),
+    ("reported_mae", "29.66", "the reported model's MAE"),
+    ("exc_gain_points", "4.45", "gain of the exception agent over alerting on every leg"),
     ("scale_rows", "56,353,613", "rows in the scale appendix"),
     ("stream_events", "52,738", "events replayed"),
     ("stream_produced_eps", "886", "producer events/sec"),

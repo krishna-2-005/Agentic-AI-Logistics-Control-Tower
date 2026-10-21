@@ -116,7 +116,8 @@ def select_and_score(name: str, features: list[str], inner: pd.DataFrame, valid:
     if name == "quantile_linear":
         (valid_res,) = fit_predict_linear(inner, [valid], features)
         (test_res,) = fit_predict_linear(train, [test], features)
-        choice, grid = None, {}
+        choice: float | None = None
+        grid: dict[float, float] = {}
         valid_pred = valid["baseline_gap"].to_numpy() + valid_res
     else:
         delta = float(np.median(np.abs(inner["residual"] - inner["residual"].median())))
@@ -176,7 +177,7 @@ def reporting_rule(primary: dict, secondary: dict) -> dict:
     """D-077: the reported model is the lowest validation MAE regardless of library."""
     v2 = json.loads((RAW / "w7_model_v2_stepsize_report.json").read_text(encoding="utf-8"))
     v3 = json.loads((RAW / "b1_model_v3.json").read_text(encoding="utf-8"))
-    candidates = {
+    candidates: dict[str, dict] = {
         "spark_v2_gbt (old median, step 1.0)": {"validation_mae": float(v2["validation"]["mae_min_by_step_size"]["1"]),
                                                 "test_mae": float(v2["test"]["overall_mae_min"]["v2_gbt_residual_absolute_step1"]),
                                                 "library": "spark-mllib", "setting": "v2"},
