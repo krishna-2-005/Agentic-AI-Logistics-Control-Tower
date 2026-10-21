@@ -2582,3 +2582,48 @@ statistic within 1e-9 of `w2_corridor_audit.csv`.
 cell.** This replaces both clusterings named in the plan, on the evidence above. It is a
 deviation from the plan's wording and is logged as one. D-080 states the permutation scheme
 that uses it.
+
+## D-080 · Dependence-aware corridor audit: four variants, one pre-registered headline rule — `DECIDED`
+**Post-v1.0 · Mounika · B3 · written before `src/ml/audit_robust.py` is run**
+
+The published audit (D-018) tests each corridor against the rest of the network with Welch's
+t-test and Benjamini-Hochberg at 5%. Welch assumes independent legs; D-083 found legs of one
+corridor and one recurring service are correlated (design effect about 2 at the median
+corridor). This experiment asks how many of the 273 slower and 512 faster corridors survive.
+
+**Variants, all on the same 1,130 corridors (10-leg floor), two-sided, alpha 0.05:**
+1. `bh_welch`: the published audit, unchanged (reproduced to 1e-9 first).
+2. `by_welch`: the same p-values, Benjamini-Yekutieli (valid under arbitrary dependence).
+3. `bh_perm`: cell-permutation p-values, Benjamini-Hochberg.
+4. `by_perm`: cell-permutation p-values, Benjamini-Yekutieli.
+BH and BY come from `statsmodels.stats.multitest.multipletests` (`fdr_bh`, `fdr_by`).
+
+**Permutation scheme (fixed now).** The exchangeable unit is the (corridor, route schedule)
+cell of D-083, built over all 26,369 legs, because the "rest" group contains every other leg.
+Let `m_b` be a cell's leg count and `ybar_b` its mean log-ratio. Cells are put in strata by
+size: 1, 2, 3, 4, 5, 6, 7, 8 exact, then 9-11, 12-15, 16-22, 23 and over. One permutation
+shuffles the cell means `ybar_b` among the cells of the same stratum, each position keeping its
+own size and its corridor. A corridor's permuted statistic is
+`D = (sum of m_b * permuted ybar_b over its cells) / n_c - (network total minus that sum) /
+(N - n_c)`, the corridor's mean minus the mean of the rest; the network total is recomputed per
+permutation. The observed `D` uses the real `ybar_b`. The p-value is two-sided,
+`(1 + #{|D_perm| >= |D_obs|}) / (B + 1)`, with **B = 100,000 permutations, seed 20260801**, in
+chunks, vectorised. 100,000 rather than 10,000 because the smallest attainable p-value at
+10,000 permutations (1e-4) is too coarse for Benjamini-Yekutieli over 1,130 tests.
+This is a global-null permutation (no corridor effect anywhere); with real corridor effects in
+the pool it is conservative for the strongest corridors, and it treats cells of one stratum as
+equally noisy. Both are stated limits. Cells in different corridors that share a schedule or a
+trip stay independent in this scheme; BY is what covers that.
+
+**Size check (reported, not a gate).** On 200 placebo datasets (cell means permuted, within-cell
+deviations kept) the uncorrected Welch rejection rate at 0.05 and the mean BH-Welch discovery
+count are reported, to show how far Welch's size is off under the cluster structure.
+
+**Decision rule.** All four variants are declared valid for their own assumptions (BH-Welch is
+the original). **The headline is the variant with the fewest significantly slower corridors;
+ties go to the one with the fewest significantly faster.** If that variant is not `bh_welch`,
+the headline drops to its counts everywhere, and `bh_welch` stays as a reported row. A corridor
+is **robust** if it is significant, in the same direction, under both the headline variant and
+`bh_welch`; otherwise a `bh_welch` discovery is **fragile**. Also reported: how many of the 273
+and 512 survive each variant, and the pairwise Jaccard overlap of the top-20 slower lists
+(ranked by `excess_ratio` among each variant's significant slower corridors).
