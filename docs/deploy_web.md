@@ -112,7 +112,7 @@ evidence to live.
 Run against a local static server of `web/out` with the installed Chrome:
 `npx lighthouse http://127.0.0.1:8765/<page> --only-categories=performance,accessibility,best-practices,seo`
 (add `--preset=desktop` for desktop). Scores are performance / accessibility / best practices / SEO.
-The machine was also running other work, so performance numbers are noisy by several points.
+The machine was also running other work, so performance numbers are noisy by several points. A re-run on an idle machine after the upgrade pass gave mobile performance of 42 (Home), 62 (Hubs) and 78 (Prompts): the table above is not an artefact of load, and reaching 90 needs real work on the map and chart bundles.
 
 | page | mobile | desktop |
 |---|---|---|
