@@ -15,7 +15,7 @@ trip records, published on Kaggle.
 | **Terms** | The dataset's own Kaggle licence. Read it on the dataset page before use — it governs what you may do with the data, independently of this repository's code licence. |
 | **Redistributed here?** | **No.** `data/` is gitignored. `data/README.md` has download instructions and the expected file size, and `src.common.check_env` verifies it. |
 | **What we use** | 144,867 scan-level segment rows across 14,817 trips, reconstructed into 26,369 origin-destination legs on 2,783 corridors. |
-| **Window** | 11 September – 3 October 2018 (21 days). |
+| **Window** | Leg creation from 11 September to 3 October 2018 by UTC date (23 dates), which is 22 calendar days in India time, the convention the paper uses. |
 
 **Attribution.** If you publish work derived from this repository, cite the dataset
 from its Kaggle page as well as this repository (`CITATION.cff`).

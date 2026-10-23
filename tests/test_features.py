@@ -26,7 +26,10 @@ import json
 import pytest
 
 from src.common import config
-from src.pipeline.features import BANNED_FEATURES, TARGETS
+
+pytest.importorskip("pyspark")  # the fast job runs without PySpark: skip, do not error
+
+from src.pipeline.features import BANNED_FEATURES, TARGETS  # noqa: E402
 
 pd = pytest.importorskip("pandas")
 

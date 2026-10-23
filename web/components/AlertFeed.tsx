@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 
+import { ApiDownNotice, WakingNotice, useSlow } from "@/components/ApiStates";
 import { Card, Notice, Pill, TableShell, Td, Th } from "@/components/ui";
 import { API_CONFIGURED, getAlerts } from "@/lib/api";
 import { cx, minutes, num, ratio, shortDate } from "@/lib/format";
@@ -28,15 +29,28 @@ export function AlertFeed({ sample }: { sample: AlertsSample }) {
   // Set when the API says its feed is a recorded run released live, not a running stream.
   const [replayNote, setReplayNote] = useState<string | null>(null);
   const [visible, setVisible] = useState(12);
+  // "checking" covers the first request, which waits for a sleeping host to boot.
+  const [apiState, setApiState] = useState<"checking" | "up" | "down">(
+    API_CONFIGURED ? "checking" : "down"
+  );
+  const [attempt, setAttempt] = useState(0);
+  const waking = useSlow(apiState === "checking");
 
   useEffect(() => {
     if (!API_CONFIGURED) return;
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    setApiState("checking");
 
     async function poll() {
       const r = await getAlerts();
       if (cancelled) return;
-      if (r.ok && r.data.alerts?.length) {
+      if (!r.ok) {
+        setApiState("down");
+        return;
+      }
+      setApiState("up");
+      if (r.data.alerts?.length) {
         setLive(
           r.data.alerts.map((a) => ({
             seq: a.seq,
@@ -51,15 +65,16 @@ export function AlertFeed({ sample }: { sample: AlertsSample }) {
         setIsLive(true);
         setReplayNote(r.data.mode === "replay" ? r.data.note ?? "" : null);
       }
+      // One request at a time: the next poll starts only after this one returned.
+      timer = setTimeout(poll, 5000);
     }
 
     poll();
-    const id = setInterval(poll, 5000);
     return () => {
       cancelled = true;
-      clearInterval(id);
+      if (timer) clearTimeout(timer);
     };
-  }, []);
+  }, [attempt]);
 
   const rows = live ?? sample.alerts;
   const counts = rows.reduce<Record<string, number>>((acc, a) => {
@@ -69,6 +84,14 @@ export function AlertFeed({ sample }: { sample: AlertsSample }) {
 
   return (
     <>
+      {apiState === "checking" && waking && <WakingNotice className="mb-4" />}
+      {apiState === "down" && API_CONFIGURED && (
+        <ApiDownNotice
+          className="mb-4"
+          message="The live replay service did not answer, so the table below is the copy recorded with the site."
+          onRetry={() => setAttempt((n) => n + 1)}
+        />
+      )}
       {isLive && replayNote !== null && (
         <Notice tone="replay" title="A recorded stream run, released live" className="mb-4">
           {replayNote ||
@@ -76,14 +99,14 @@ export function AlertFeed({ sample }: { sample: AlertsSample }) {
         </Notice>
       )}
       {!isLive && (
-        <Notice tone="replay" title="Recorded run, not a live feed" className="mb-4">
+        <Notice tone="replay" title="Alert replay: a recorded run, not a live feed" className="mb-4">
           {sample.replay_note ||
             "These alerts come from a recorded replay committed with the site."}{" "}
           {sample.recorded_at && `Recorded ${shortDate(sample.recorded_at)}.`}{" "}
           {sample.run.alerts !== null && (
             <>
               That run produced {num(sample.run.alerts)} alerts from{" "}
-              {num(sample.run.events)} events.
+              {num(sample.run.events)} events. {sample.sample_note}
             </>
           )}
         </Notice>
@@ -93,7 +116,7 @@ export function AlertFeed({ sample }: { sample: AlertsSample }) {
         {isLive && (
           <Pill tone="good">
             <span className="inline-block h-1.5 w-1.5 animate-pulse-dot rounded-full bg-emerald-400" />
-            live · polling every 5s
+            replay released by the API · refreshing every 5s
           </Pill>
         )}
         {(["critical", "high", "medium", "low"] as const).map((s) =>

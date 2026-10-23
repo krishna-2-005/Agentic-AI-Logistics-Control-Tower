@@ -1,0 +1,1126 @@
+{
+  "generated_at": "2026-10-21T06:14:11.085404+00:00",
+  "decision": "D-082",
+  "threshold_log": 1.1837693408621637,
+  "permutations": 100000,
+  "bootstrap_reps": 2000,
+  "seed": 20260803,
+  "settings": {
+    "proportional": {
+      "halves": {
+        "parts": [
+          {
+            "first_date": "2018-09-11",
+            "last_date": "2018-09-22",
+            "dates": 12,
+            "legs": 14385,
+            "floor": 5,
+            "corridors_tested": 1249,
+            "significant_slower": {
+              "bh_welch": 239,
+              "by_welch": 138,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.12471722830949772
+          },
+          {
+            "first_date": "2018-09-23",
+            "last_date": "2018-10-03",
+            "dates": 11,
+            "legs": 11984,
+            "floor": 5,
+            "corridors_tested": 1004,
+            "significant_slower": {
+              "bh_welch": 191,
+              "by_welch": 132,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.15026021899351286
+          }
+        ],
+        "pairs": {
+          "H1->H2": {
+            "universe": 807,
+            "base_rate_slower_in_later": 0.39776951672862454,
+            "overlap": {
+              "bh_welch": {
+                "universe": 807,
+                "size_earlier": 173,
+                "size_later": 151,
+                "intersection": 126,
+                "jaccard": 0.6363636363636364,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.5721649484536082,
+                  0.7019281914893616
+                ],
+                "expected_intersection_by_chance": 32.37050805452292,
+                "hypergeometric_p_one_sided": 8.930833020745805e-81,
+                "above_chance": true
+              },
+              "by_welch": {
+                "universe": 807,
+                "size_earlier": 101,
+                "size_later": 106,
+                "intersection": 76,
+                "jaccard": 0.5801526717557252,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.4958660323633586,
+                  0.6640625
+                ],
+                "expected_intersection_by_chance": 13.26641883519207,
+                "hypergeometric_p_one_sided": 2.2333032901083625e-59,
+                "above_chance": true
+              },
+              "by_perm": {
+                "universe": 807,
+                "size_earlier": 0,
+                "size_later": 0,
+                "intersection": 0,
+                "jaccard": NaN,
+                "jaccard_ci95_corridor_bootstrap": null,
+                "expected_intersection_by_chance": 0.0,
+                "hypergeometric_p_one_sided": NaN,
+                "above_chance": false
+              }
+            },
+            "spearman_raw_mean": {
+              "rho": 0.9084462321904426,
+              "n": 807,
+              "ci95_corridor_bootstrap": [
+                0.8891567135302803,
+                0.923821923950024
+              ],
+              "reading": "substantial"
+            },
+            "spearman_eb_posterior_mean": {
+              "rho": 0.9105063088706686,
+              "n": 807,
+              "ci95_corridor_bootstrap": [
+                0.892490510376909,
+                0.9250552546041928
+              ],
+              "reading": "substantial"
+            },
+            "persistence": {
+              "raw_bh_welch_slower_set": {
+                "flagged": 173,
+                "still_slower": {
+                  "successes": 169,
+                  "total": 173,
+                  "rate": 0.9769,
+                  "ci_low": 0.9421,
+                  "ci_high": 0.991
+                },
+                "still_significantly_slower": {
+                  "successes": 126,
+                  "total": 173,
+                  "rate": 0.7283,
+                  "ci_low": 0.6576,
+                  "ci_high": 0.7891
+                }
+              },
+              "raw_top20": {
+                "flagged": 15,
+                "still_slower": {
+                  "successes": 15,
+                  "total": 15,
+                  "rate": 1.0,
+                  "ci_low": 0.7961,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 14,
+                  "total": 15,
+                  "rate": 0.9333,
+                  "ci_low": 0.7018,
+                  "ci_high": 0.9881
+                }
+              },
+              "eb_top20": {
+                "flagged": 14,
+                "still_slower": {
+                  "successes": 14,
+                  "total": 14,
+                  "rate": 1.0,
+                  "ci_low": 0.7847,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 14,
+                  "total": 14,
+                  "rate": 1.0,
+                  "ci_low": 0.7847,
+                  "ci_high": 1.0
+                }
+              }
+            },
+            "eb_vs_raw_top20_persistence_reading": "no_detectable_difference"
+          }
+        }
+      },
+      "thirds": {
+        "parts": [
+          {
+            "first_date": "2018-09-11",
+            "last_date": "2018-09-18",
+            "dates": 8,
+            "legs": 9219,
+            "floor": 4,
+            "corridors_tested": 1072,
+            "significant_slower": {
+              "bh_welch": 150,
+              "by_welch": 55,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.11293729147552763
+          },
+          {
+            "first_date": "2018-09-19",
+            "last_date": "2018-09-26",
+            "dates": 8,
+            "legs": 10085,
+            "floor": 4,
+            "corridors_tested": 1196,
+            "significant_slower": {
+              "bh_welch": 174,
+              "by_welch": 83,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.14034053502132576
+          },
+          {
+            "first_date": "2018-09-27",
+            "last_date": "2018-10-03",
+            "dates": 7,
+            "legs": 7065,
+            "floor": 4,
+            "corridors_tested": 845,
+            "significant_slower": {
+              "bh_welch": 126,
+              "by_welch": 72,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.1558567231039812
+          }
+        ],
+        "pairs": {
+          "T1->T2": {
+            "universe": 868,
+            "base_rate_slower_in_later": 0.39055299539170507,
+            "overlap": {
+              "bh_welch": {
+                "universe": 868,
+                "size_earlier": 116,
+                "size_later": 124,
+                "intersection": 85,
+                "jaccard": 0.5483870967741935,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.46661290322580645,
+                  0.6228654244306419
+                ],
+                "expected_intersection_by_chance": 16.571428571428573,
+                "hypergeometric_p_one_sided": 2.593749368026292e-60,
+                "above_chance": true
+              },
+              "by_welch": {
+                "universe": 868,
+                "size_earlier": 44,
+                "size_later": 65,
+                "intersection": 33,
+                "jaccard": 0.4342105263157895,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.3235294117647059,
+                  0.5454545454545454
+                ],
+                "expected_intersection_by_chance": 3.294930875576037,
+                "hypergeometric_p_one_sided": 3.1273113830599805e-32,
+                "above_chance": true
+              },
+              "by_perm": {
+                "universe": 868,
+                "size_earlier": 0,
+                "size_later": 0,
+                "intersection": 0,
+                "jaccard": NaN,
+                "jaccard_ci95_corridor_bootstrap": null,
+                "expected_intersection_by_chance": 0.0,
+                "hypergeometric_p_one_sided": NaN,
+                "above_chance": false
+              }
+            },
+            "spearman_raw_mean": {
+              "rho": 0.8874767083767013,
+              "n": 868,
+              "ci95_corridor_bootstrap": [
+                0.8613326837986742,
+                0.9088192400284028
+              ],
+              "reading": "substantial"
+            },
+            "spearman_eb_posterior_mean": {
+              "rho": 0.8942431902089187,
+              "n": 868,
+              "ci95_corridor_bootstrap": [
+                0.8721633958705683,
+                0.9113127714093963
+              ],
+              "reading": "substantial"
+            },
+            "persistence": {
+              "raw_bh_welch_slower_set": {
+                "flagged": 116,
+                "still_slower": {
+                  "successes": 116,
+                  "total": 116,
+                  "rate": 1.0,
+                  "ci_low": 0.9679,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 85,
+                  "total": 116,
+                  "rate": 0.7328,
+                  "ci_low": 0.6457,
+                  "ci_high": 0.8049
+                }
+              },
+              "raw_top20": {
+                "flagged": 14,
+                "still_slower": {
+                  "successes": 14,
+                  "total": 14,
+                  "rate": 1.0,
+                  "ci_low": 0.7847,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 13,
+                  "total": 14,
+                  "rate": 0.9286,
+                  "ci_low": 0.6853,
+                  "ci_high": 0.9873
+                }
+              },
+              "eb_top20": {
+                "flagged": 15,
+                "still_slower": {
+                  "successes": 15,
+                  "total": 15,
+                  "rate": 1.0,
+                  "ci_low": 0.7961,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 14,
+                  "total": 15,
+                  "rate": 0.9333,
+                  "ci_low": 0.7018,
+                  "ci_high": 0.9881
+                }
+              }
+            },
+            "eb_vs_raw_top20_persistence_reading": "no_detectable_difference"
+          },
+          "T1->T3": {
+            "universe": 596,
+            "base_rate_slower_in_later": 0.3724832214765101,
+            "overlap": {
+              "bh_welch": {
+                "universe": 596,
+                "size_earlier": 94,
+                "size_later": 82,
+                "intersection": 59,
+                "jaccard": 0.5042735042735043,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.41508735150244586,
+                  0.5937577351485148
+                ],
+                "expected_intersection_by_chance": 12.93288590604027,
+                "hypergeometric_p_one_sided": 1.0451605540175414e-37,
+                "above_chance": true
+              },
+              "by_welch": {
+                "universe": 596,
+                "size_earlier": 36,
+                "size_later": 52,
+                "intersection": 22,
+                "jaccard": 0.3333333333333333,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.22058823529411764,
+                  0.45588235294117646
+                ],
+                "expected_intersection_by_chance": 3.140939597315436,
+                "hypergeometric_p_one_sided": 7.281112938922176e-17,
+                "above_chance": true
+              },
+              "by_perm": {
+                "universe": 596,
+                "size_earlier": 0,
+                "size_later": 0,
+                "intersection": 0,
+                "jaccard": NaN,
+                "jaccard_ci95_corridor_bootstrap": null,
+                "expected_intersection_by_chance": 0.0,
+                "hypergeometric_p_one_sided": NaN,
+                "above_chance": false
+              }
+            },
+            "spearman_raw_mean": {
+              "rho": 0.869703488963627,
+              "n": 596,
+              "ci95_corridor_bootstrap": [
+                0.840969641713729,
+                0.8936977220010616
+              ],
+              "reading": "substantial"
+            },
+            "spearman_eb_posterior_mean": {
+              "rho": 0.870039782126469,
+              "n": 596,
+              "ci95_corridor_bootstrap": [
+                0.842236153462811,
+                0.8924100895959631
+              ],
+              "reading": "substantial"
+            },
+            "persistence": {
+              "raw_bh_welch_slower_set": {
+                "flagged": 94,
+                "still_slower": {
+                  "successes": 91,
+                  "total": 94,
+                  "rate": 0.9681,
+                  "ci_low": 0.9103,
+                  "ci_high": 0.9891
+                },
+                "still_significantly_slower": {
+                  "successes": 59,
+                  "total": 94,
+                  "rate": 0.6277,
+                  "ci_low": 0.5267,
+                  "ci_high": 0.7186
+                }
+              },
+              "raw_top20": {
+                "flagged": 15,
+                "still_slower": {
+                  "successes": 15,
+                  "total": 15,
+                  "rate": 1.0,
+                  "ci_low": 0.7961,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 12,
+                  "total": 15,
+                  "rate": 0.8,
+                  "ci_low": 0.5481,
+                  "ci_high": 0.9295
+                }
+              },
+              "eb_top20": {
+                "flagged": 12,
+                "still_slower": {
+                  "successes": 12,
+                  "total": 12,
+                  "rate": 1.0,
+                  "ci_low": 0.7575,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 11,
+                  "total": 12,
+                  "rate": 0.9167,
+                  "ci_low": 0.6461,
+                  "ci_high": 0.9851
+                }
+              }
+            },
+            "eb_vs_raw_top20_persistence_reading": "no_detectable_difference"
+          },
+          "T2->T3": {
+            "universe": 706,
+            "base_rate_slower_in_later": 0.3838526912181303,
+            "overlap": {
+              "bh_welch": {
+                "universe": 706,
+                "size_earlier": 118,
+                "size_later": 106,
+                "intersection": 81,
+                "jaccard": 0.5664335664335665,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.48361242307141833,
+                  0.6466666666666666
+                ],
+                "expected_intersection_by_chance": 17.71671388101983,
+                "hypergeometric_p_one_sided": 1.9514669463308484e-54,
+                "above_chance": true
+              },
+              "by_welch": {
+                "universe": 706,
+                "size_earlier": 64,
+                "size_later": 60,
+                "intersection": 35,
+                "jaccard": 0.39325842696629215,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.2978660081053698,
+                  0.5
+                ],
+                "expected_intersection_by_chance": 5.4390934844192635,
+                "hypergeometric_p_one_sided": 1.152900473034219e-25,
+                "above_chance": true
+              },
+              "by_perm": {
+                "universe": 706,
+                "size_earlier": 0,
+                "size_later": 0,
+                "intersection": 0,
+                "jaccard": NaN,
+                "jaccard_ci95_corridor_bootstrap": null,
+                "expected_intersection_by_chance": 0.0,
+                "hypergeometric_p_one_sided": NaN,
+                "above_chance": false
+              }
+            },
+            "spearman_raw_mean": {
+              "rho": 0.892870190779292,
+              "n": 706,
+              "ci95_corridor_bootstrap": [
+                0.8699177180806025,
+                0.9111269213838792
+              ],
+              "reading": "substantial"
+            },
+            "spearman_eb_posterior_mean": {
+              "rho": 0.8958711531967577,
+              "n": 706,
+              "ci95_corridor_bootstrap": [
+                0.8747396291473295,
+                0.9140718742773395
+              ],
+              "reading": "substantial"
+            },
+            "persistence": {
+              "raw_bh_welch_slower_set": {
+                "flagged": 118,
+                "still_slower": {
+                  "successes": 113,
+                  "total": 118,
+                  "rate": 0.9576,
+                  "ci_low": 0.9046,
+                  "ci_high": 0.9818
+                },
+                "still_significantly_slower": {
+                  "successes": 81,
+                  "total": 118,
+                  "rate": 0.6864,
+                  "ci_low": 0.598,
+                  "ci_high": 0.7632
+                }
+              },
+              "raw_top20": {
+                "flagged": 15,
+                "still_slower": {
+                  "successes": 15,
+                  "total": 15,
+                  "rate": 1.0,
+                  "ci_low": 0.7961,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 12,
+                  "total": 15,
+                  "rate": 0.8,
+                  "ci_low": 0.5481,
+                  "ci_high": 0.9295
+                }
+              },
+              "eb_top20": {
+                "flagged": 12,
+                "still_slower": {
+                  "successes": 12,
+                  "total": 12,
+                  "rate": 1.0,
+                  "ci_low": 0.7575,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 12,
+                  "total": 12,
+                  "rate": 1.0,
+                  "ci_low": 0.7575,
+                  "ci_high": 1.0
+                }
+              }
+            },
+            "eb_vs_raw_top20_persistence_reading": "no_detectable_difference"
+          }
+        }
+      }
+    },
+    "strict": {
+      "halves": {
+        "parts": [
+          {
+            "first_date": "2018-09-11",
+            "last_date": "2018-09-22",
+            "dates": 12,
+            "legs": 14385,
+            "floor": 10,
+            "corridors_tested": 411,
+            "significant_slower": {
+              "bh_welch": 93,
+              "by_welch": 62,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.08533357960566212
+          },
+          {
+            "first_date": "2018-09-23",
+            "last_date": "2018-10-03",
+            "dates": 11,
+            "legs": 11984,
+            "floor": 10,
+            "corridors_tested": 297,
+            "significant_slower": {
+              "bh_welch": 59,
+              "by_welch": 46,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.08371068587892234
+          }
+        ],
+        "pairs": {
+          "H1->H2": {
+            "universe": 197,
+            "base_rate_slower_in_later": 0.4263959390862944,
+            "overlap": {
+              "bh_welch": {
+                "universe": 197,
+                "size_earlier": 48,
+                "size_later": 43,
+                "intersection": 37,
+                "jaccard": 0.6851851851851852,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.5490196078431373,
+                  0.804917387883556
+                ],
+                "expected_intersection_by_chance": 10.47715736040609,
+                "hypergeometric_p_one_sided": 5.854875525072619e-24,
+                "above_chance": true
+              },
+              "by_welch": {
+                "universe": 197,
+                "size_earlier": 31,
+                "size_later": 34,
+                "intersection": 25,
+                "jaccard": 0.625,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.47368421052631576,
+                  0.7777777777777778
+                ],
+                "expected_intersection_by_chance": 5.350253807106599,
+                "hypergeometric_p_one_sided": 9.331523644646204e-19,
+                "above_chance": true
+              },
+              "by_perm": {
+                "universe": 197,
+                "size_earlier": 0,
+                "size_later": 0,
+                "intersection": 0,
+                "jaccard": NaN,
+                "jaccard_ci95_corridor_bootstrap": null,
+                "expected_intersection_by_chance": 0.0,
+                "hypergeometric_p_one_sided": NaN,
+                "above_chance": false
+              }
+            },
+            "spearman_raw_mean": {
+              "rho": 0.8988271820033967,
+              "n": 197,
+              "ci95_corridor_bootstrap": [
+                0.8584047746818244,
+                0.9282522936512717
+              ],
+              "reading": "substantial"
+            },
+            "spearman_eb_posterior_mean": {
+              "rho": 0.9065544076421524,
+              "n": 197,
+              "ci95_corridor_bootstrap": [
+                0.8691583342270172,
+                0.9338384071207739
+              ],
+              "reading": "substantial"
+            },
+            "persistence": {
+              "raw_bh_welch_slower_set": {
+                "flagged": 48,
+                "still_slower": {
+                  "successes": 47,
+                  "total": 48,
+                  "rate": 0.9792,
+                  "ci_low": 0.891,
+                  "ci_high": 0.9963
+                },
+                "still_significantly_slower": {
+                  "successes": 37,
+                  "total": 48,
+                  "rate": 0.7708,
+                  "ci_low": 0.6346,
+                  "ci_high": 0.8669
+                }
+              },
+              "raw_top20": {
+                "flagged": 11,
+                "still_slower": {
+                  "successes": 11,
+                  "total": 11,
+                  "rate": 1.0,
+                  "ci_low": 0.7412,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 9,
+                  "total": 11,
+                  "rate": 0.8182,
+                  "ci_low": 0.523,
+                  "ci_high": 0.9486
+                }
+              },
+              "eb_top20": {
+                "flagged": 11,
+                "still_slower": {
+                  "successes": 11,
+                  "total": 11,
+                  "rate": 1.0,
+                  "ci_low": 0.7412,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 11,
+                  "total": 11,
+                  "rate": 1.0,
+                  "ci_low": 0.7412,
+                  "ci_high": 1.0
+                }
+              }
+            },
+            "eb_vs_raw_top20_persistence_reading": "no_detectable_difference"
+          }
+        }
+      },
+      "thirds": {
+        "parts": [
+          {
+            "first_date": "2018-09-11",
+            "last_date": "2018-09-18",
+            "dates": 8,
+            "legs": 9219,
+            "floor": 10,
+            "corridors_tested": 127,
+            "significant_slower": {
+              "bh_welch": 24,
+              "by_welch": 14,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.05155967357634359
+          },
+          {
+            "first_date": "2018-09-19",
+            "last_date": "2018-09-26",
+            "dates": 8,
+            "legs": 10085,
+            "floor": 10,
+            "corridors_tested": 126,
+            "significant_slower": {
+              "bh_welch": 24,
+              "by_welch": 19,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.05204370898972514
+          },
+          {
+            "first_date": "2018-09-27",
+            "last_date": "2018-10-03",
+            "dates": 7,
+            "legs": 7065,
+            "floor": 10,
+            "corridors_tested": 89,
+            "significant_slower": {
+              "bh_welch": 20,
+              "by_welch": 11,
+              "by_perm": 0
+            },
+            "tau2_reml": 0.066925151878927
+          }
+        ],
+        "pairs": {
+          "T1->T2": {
+            "universe": 95,
+            "base_rate_slower_in_later": 0.4631578947368421,
+            "overlap": {
+              "bh_welch": {
+                "universe": 95,
+                "size_earlier": 15,
+                "size_later": 18,
+                "intersection": 12,
+                "jaccard": 0.5714285714285714,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.35294117647058826,
+                  0.7857142857142857
+                ],
+                "expected_intersection_by_chance": 2.8421052631578947,
+                "hypergeometric_p_one_sided": 1.2532354702458985e-08,
+                "above_chance": true
+              },
+              "by_welch": {
+                "universe": 95,
+                "size_earlier": 8,
+                "size_later": 15,
+                "intersection": 7,
+                "jaccard": 0.4375,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.18181818181818182,
+                  0.6876201923076917
+                ],
+                "expected_intersection_by_chance": 1.263157894736842,
+                "hypergeometric_p_one_sided": 4.288202426307285e-06,
+                "above_chance": true
+              },
+              "by_perm": {
+                "universe": 95,
+                "size_earlier": 0,
+                "size_later": 0,
+                "intersection": 0,
+                "jaccard": NaN,
+                "jaccard_ci95_corridor_bootstrap": null,
+                "expected_intersection_by_chance": 0.0,
+                "hypergeometric_p_one_sided": NaN,
+                "above_chance": false
+              }
+            },
+            "spearman_raw_mean": {
+              "rho": 0.8860862262038073,
+              "n": 95,
+              "ci95_corridor_bootstrap": [
+                0.8259168696410839,
+                0.9236587798871003
+              ],
+              "reading": "substantial"
+            },
+            "spearman_eb_posterior_mean": {
+              "rho": 0.8941349384098545,
+              "n": 95,
+              "ci95_corridor_bootstrap": [
+                0.8364979987459721,
+                0.930993397392953
+              ],
+              "reading": "substantial"
+            },
+            "persistence": {
+              "raw_bh_welch_slower_set": {
+                "flagged": 15,
+                "still_slower": {
+                  "successes": 15,
+                  "total": 15,
+                  "rate": 1.0,
+                  "ci_low": 0.7961,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 12,
+                  "total": 15,
+                  "rate": 0.8,
+                  "ci_low": 0.5481,
+                  "ci_high": 0.9295
+                }
+              },
+              "raw_top20": {
+                "flagged": 12,
+                "still_slower": {
+                  "successes": 12,
+                  "total": 12,
+                  "rate": 1.0,
+                  "ci_low": 0.7575,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 10,
+                  "total": 12,
+                  "rate": 0.8333,
+                  "ci_low": 0.552,
+                  "ci_high": 0.953
+                }
+              },
+              "eb_top20": {
+                "flagged": 13,
+                "still_slower": {
+                  "successes": 13,
+                  "total": 13,
+                  "rate": 1.0,
+                  "ci_low": 0.7719,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 9,
+                  "total": 13,
+                  "rate": 0.6923,
+                  "ci_low": 0.4237,
+                  "ci_high": 0.8732
+                }
+              }
+            },
+            "eb_vs_raw_top20_persistence_reading": "no_detectable_difference"
+          },
+          "T1->T3": {
+            "universe": 66,
+            "base_rate_slower_in_later": 0.48484848484848486,
+            "overlap": {
+              "bh_welch": {
+                "universe": 66,
+                "size_earlier": 14,
+                "size_later": 12,
+                "intersection": 10,
+                "jaccard": 0.625,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.36363636363636365,
+                  0.875
+                ],
+                "expected_intersection_by_chance": 2.5454545454545454,
+                "hypergeometric_p_one_sided": 2.7348729641951327e-07,
+                "above_chance": true
+              },
+              "by_welch": {
+                "universe": 66,
+                "size_earlier": 7,
+                "size_later": 5,
+                "intersection": 3,
+                "jaccard": 0.3333333333333333,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.0,
+                  0.6666666666666666
+                ],
+                "expected_intersection_by_chance": 0.5303030303030303,
+                "hypergeometric_p_one_sided": 0.006934261974584556,
+                "above_chance": true
+              },
+              "by_perm": {
+                "universe": 66,
+                "size_earlier": 0,
+                "size_later": 0,
+                "intersection": 0,
+                "jaccard": NaN,
+                "jaccard_ci95_corridor_bootstrap": null,
+                "expected_intersection_by_chance": 0.0,
+                "hypergeometric_p_one_sided": NaN,
+                "above_chance": false
+              }
+            },
+            "spearman_raw_mean": {
+              "rho": 0.8394739588769441,
+              "n": 66,
+              "ci95_corridor_bootstrap": [
+                0.7220333697383118,
+                0.9139735184957124
+              ],
+              "reading": "substantial"
+            },
+            "spearman_eb_posterior_mean": {
+              "rho": 0.8827679782903665,
+              "n": 66,
+              "ci95_corridor_bootstrap": [
+                0.8079941582587975,
+                0.9220836872599173
+              ],
+              "reading": "substantial"
+            },
+            "persistence": {
+              "raw_bh_welch_slower_set": {
+                "flagged": 14,
+                "still_slower": {
+                  "successes": 14,
+                  "total": 14,
+                  "rate": 1.0,
+                  "ci_low": 0.7847,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 10,
+                  "total": 14,
+                  "rate": 0.7143,
+                  "ci_low": 0.4535,
+                  "ci_high": 0.8828
+                }
+              },
+              "raw_top20": {
+                "flagged": 11,
+                "still_slower": {
+                  "successes": 11,
+                  "total": 11,
+                  "rate": 1.0,
+                  "ci_low": 0.7412,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 9,
+                  "total": 11,
+                  "rate": 0.8182,
+                  "ci_low": 0.523,
+                  "ci_high": 0.9486
+                }
+              },
+              "eb_top20": {
+                "flagged": 10,
+                "still_slower": {
+                  "successes": 10,
+                  "total": 10,
+                  "rate": 1.0,
+                  "ci_low": 0.7225,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 5,
+                  "total": 10,
+                  "rate": 0.5,
+                  "ci_low": 0.2366,
+                  "ci_high": 0.7634
+                }
+              }
+            },
+            "eb_vs_raw_top20_persistence_reading": "no_detectable_difference"
+          },
+          "T2->T3": {
+            "universe": 77,
+            "base_rate_slower_in_later": 0.5064935064935064,
+            "overlap": {
+              "bh_welch": {
+                "universe": 77,
+                "size_earlier": 19,
+                "size_later": 16,
+                "intersection": 15,
+                "jaccard": 0.75,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.5416666666666666,
+                  0.9286904761904756
+                ],
+                "expected_intersection_by_chance": 3.948051948051948,
+                "hypergeometric_p_one_sided": 1.6515355812978343e-11,
+                "above_chance": true
+              },
+              "by_welch": {
+                "universe": 77,
+                "size_earlier": 16,
+                "size_later": 9,
+                "intersection": 8,
+                "jaccard": 0.47058823529411764,
+                "jaccard_ci95_corridor_bootstrap": [
+                  0.23809523809523808,
+                  0.7037581699346402
+                ],
+                "expected_intersection_by_chance": 1.87012987012987,
+                "hypergeometric_p_one_sided": 4.937375173020576e-06,
+                "above_chance": true
+              },
+              "by_perm": {
+                "universe": 77,
+                "size_earlier": 0,
+                "size_later": 0,
+                "intersection": 0,
+                "jaccard": NaN,
+                "jaccard_ci95_corridor_bootstrap": null,
+                "expected_intersection_by_chance": 0.0,
+                "hypergeometric_p_one_sided": NaN,
+                "above_chance": false
+              }
+            },
+            "spearman_raw_mean": {
+              "rho": 0.8946316841053682,
+              "n": 77,
+              "ci95_corridor_bootstrap": [
+                0.8145763912119078,
+                0.937445080203835
+              ],
+              "reading": "substantial"
+            },
+            "spearman_eb_posterior_mean": {
+              "rho": 0.9107734370892264,
+              "n": 77,
+              "ci95_corridor_bootstrap": [
+                0.8456184359482755,
+                0.9439647586514538
+              ],
+              "reading": "substantial"
+            },
+            "persistence": {
+              "raw_bh_welch_slower_set": {
+                "flagged": 19,
+                "still_slower": {
+                  "successes": 19,
+                  "total": 19,
+                  "rate": 1.0,
+                  "ci_low": 0.8318,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 15,
+                  "total": 19,
+                  "rate": 0.7895,
+                  "ci_low": 0.5667,
+                  "ci_high": 0.9149
+                }
+              },
+              "raw_top20": {
+                "flagged": 16,
+                "still_slower": {
+                  "successes": 16,
+                  "total": 16,
+                  "rate": 1.0,
+                  "ci_low": 0.8064,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 13,
+                  "total": 16,
+                  "rate": 0.8125,
+                  "ci_low": 0.5699,
+                  "ci_high": 0.9341
+                }
+              },
+              "eb_top20": {
+                "flagged": 13,
+                "still_slower": {
+                  "successes": 13,
+                  "total": 13,
+                  "rate": 1.0,
+                  "ci_low": 0.7719,
+                  "ci_high": 1.0
+                },
+                "still_significantly_slower": {
+                  "successes": 9,
+                  "total": 13,
+                  "rate": 0.6923,
+                  "ci_low": 0.4237,
+                  "ci_high": 0.8732
+                }
+              }
+            },
+            "eb_vs_raw_top20_persistence_reading": "no_detectable_difference"
+          }
+        }
+      }
+    }
+  },
+  "headline": {
+    "universe_corridors_both_halves": 807,
+    "bh_welch_slower_jaccard": 0.6363636363636364,
+    "bh_welch_slower_hypergeometric_p": 8.930833020745805e-81,
+    "spearman_raw_mean": 0.9084462321904426,
+    "spearman_eb_posterior_mean": 0.9105063088706686,
+    "raw_slower_set_still_slower_rate": 0.9769,
+    "raw_top20_still_slower_rate": 1.0,
+    "eb_top20_still_slower_rate": 1.0,
+    "base_rate_slower_in_later": 0.39776951672862454
+  },
+  "seconds": 534.5
+}

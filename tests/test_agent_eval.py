@@ -33,7 +33,7 @@ def test_every_frozen_entry_names_a_source():
         # work packages produce numbers too, and grouping those under week 8
         # would put them beside results they did not come from. 9 is the WP-02
         # agent evaluations; a later package that adds a value widens this again.
-        assert 1 <= week <= 9
+        assert 1 <= week <= 10  # 10 is the upgrade pass (D-075 onwards), not a project week
 
 
 def test_entry_ids_are_unique():

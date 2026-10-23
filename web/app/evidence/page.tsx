@@ -14,13 +14,10 @@ import {
   Th,
 } from "@/components/ui";
 import { getEvidence, getFigures, getModel } from "@/lib/data";
-import { num } from "@/lib/format";
+import { num, pct } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Results",
-  description:
-    "The measured results behind the network map, the model and the agents.",
-};
+export const metadata: Metadata = pageMeta("Results", "The measured results behind the network map, the model and the agents.");
 
 const WEEK_LABELS: Record<number, string> = {
   1: "The data",
@@ -57,6 +54,10 @@ export default function EvidencePage() {
   });
 
   const h = model.data.headline;
+  const reported = model.data.slices.filter((s) => s.model === h.model);
+  const wins = reported.filter(
+    (s) => s.delta_vs_median_min !== null && s.delta_vs_median_min < 0
+  ).length;
 
   return (
     <>
@@ -87,15 +88,49 @@ export default function EvidencePage() {
           />
           <Kpi
             value={`${num(h.osrm_mae_min, 2)} min`}
-            label="the routing engine's error"
-            sub="shown for context: it has no access to past journeys"
+            label="the OSRM estimate's error"
+            sub="the estimate recorded in the dataset, shown as context only: it has no access to past journeys"
           />
           <Kpi
-            value="14 / 14"
+            value={`${wins} / ${reported.length}`}
             label="slices the model wins on"
             sub="by corridor history, route type, distance band and departure hour"
           />
         </KpiRow>
+      </Section>
+
+      <Section
+        title="Two baselines, and why the median is the bar"
+        description="A model is only as impressive as the simple rule it beats."
+      >
+        <Card>
+          <ul className="space-y-2 text-sm leading-relaxed text-[var(--ink-muted)]">
+            <li>
+              <strong className="text-[var(--ink)]">
+                Mean, {num(h.mean_baseline_mae_min, 2)} min:
+              </strong>{" "}
+              predict each corridor&apos;s average past delay. A few very long
+              legs drag an average up, so it is a weak yardstick.
+            </li>
+            <li>
+              <strong className="text-[var(--ink)]">
+                Median, {num(h.baseline_mae_min, 2)} min:
+              </strong>{" "}
+              predict each corridor&apos;s median past delay. Mean absolute error
+              is smallest at the median, so this is the fair bar the model has to
+              clear.
+            </li>
+            {h.backoff_mae_min != null && (
+              <li>
+                <strong className="text-[var(--ink)]">
+                  Hierarchical back-off, {num(h.backoff_mae_min, 2)} min:
+                </strong>{" "}
+                the median, falling back to coarser groups rather than to the
+                OSRM estimate when a corridor has no history.
+              </li>
+            )}
+          </ul>
+        </Card>
       </Section>
 
       {/* ── which model the live predictor runs, from the evidence file ── */}
@@ -146,7 +181,7 @@ export default function EvidencePage() {
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={f.file}
-                    alt={f.title}
+                    alt={`${f.title}. ${f.caption}`}
                     loading="lazy"
                     className="w-full"
                   />
@@ -173,8 +208,8 @@ export default function EvidencePage() {
                 <h3 className="mb-2 flex items-baseline gap-2 text-sm font-semibold">
                   <span className="font-mono text-[var(--ink-faint)]">
                     W{week}
-                  </span>
-                  {WEEK_LABELS[week] ?? ""}
+                  </span>{" "}
+                  <span>{WEEK_LABELS[week] ?? ""}</span>
                 </h3>
                 <TableShell>
                   <thead>
@@ -189,15 +224,23 @@ export default function EvidencePage() {
                         key={e.key}
                         className="transition-colors hover:bg-[var(--surface-sunken)]"
                       >
-                        <Td>{e.label}</Td>
+                        <Td>
+                          {e.label}
+                        </Td>
                         <Td align="right" mono className="whitespace-nowrap">
                           <strong>
                             {typeof e.value === "number"
-                              ? e.value.toLocaleString("en-IN")
+                              ? e.unit === "share"
+                                ? pct(e.value, 1)
+                                : num(e.value, Number.isInteger(e.value) ? 0 : 2)
                               : String(e.value)}
                           </strong>{" "}
                           <span className="text-[var(--ink-faint)]">
-                            {e.unit}
+                            {e.unit === "share"
+                              ? e.n !== undefined
+                                ? `(n = ${num(e.n)})`
+                                : ""
+                              : e.unit}
                           </span>
                         </Td>
                       </tr>

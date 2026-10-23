@@ -1,0 +1,43 @@
+{
+  "generated_at": "2026-10-21T16:18:41.078665+00:00",
+  "decision": "D-098",
+  "model": "lightgbm_l1",
+  "learning_rate_frozen": 0.03,
+  "folds": [
+    [
+      10,
+      11,
+      13
+    ],
+    [
+      13,
+      14,
+      16
+    ],
+    [
+      16,
+      17,
+      19
+    ],
+    [
+      19,
+      20,
+      22
+    ]
+  ],
+  "summary": {
+    "mae_model": {
+      "mean": 30.0326,
+      "sd": 2.6797
+    },
+    "mae_backoff": {
+      "mean": 32.4404
+    },
+    "delta_vs_backoff": {
+      "mean": -2.4079,
+      "sd": 0.5698
+    },
+    "model_beats_backoff_in_folds": 4,
+    "folds": 4
+  }
+}

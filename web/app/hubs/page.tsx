@@ -4,12 +4,9 @@ import { HubExplorer } from "@/components/HubExplorer";
 import { Kpi, KpiRow, PageHeader, Section } from "@/components/ui";
 import { getHubs } from "@/lib/data";
 import { minutes, num, pct } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Hub friction",
-  description:
-    "Which facilities hold shipments longest — dwell is a third of a leg's wall clock.",
-};
+export const metadata: Metadata = pageMeta("Hub friction", "Which facilities hold shipments longest — dwell is a third of a leg's wall clock.");
 
 export default function HubsPage() {
   const hubs = getHubs();

@@ -16,6 +16,8 @@ import json
 import pandas as pd
 import pytest
 
+pytest.importorskip("pyspark")  # the fast job runs without PySpark: skip, do not error
+
 from src.streaming import producer
 
 

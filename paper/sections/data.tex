@@ -1,0 +1,47 @@
+\section{Data and Problem Definition}\label{sec:data}
+
+\subsection{The records and what they are}
+The raw records are 144,867 scan-level segments across 14,817 trips collected between 12 September and 8 October 2018. Cleaning repairs types and keys and flags 2,600 suspect segments without dropping a row. Segments are reconstructed into \fzLegsTotal{} origin--destination \emph{legs} on \fzCorridorsTotal{} \emph{corridors}, a corridor being an ordered pair of facilities; the legs touch 1,657 facilities (Table~\ref{tab:dataset}). A leg is one trip's movement from one facility to the next. No trip visits a corridor twice, so every tested corridor's legs come from distinct trips.
+
+\begin{table}[t]
+\caption{The dataset after reconstruction. Splits are chronological by leg creation time; the validation cut is the last fifth of the training legs.}
+\label{tab:dataset}
+\centering
+\begin{tabular}{@{}lr@{}}
+\toprule
+Quantity & Value \\
+\midrule
+Raw scan segments / trips & 144,867 / 14,817 \\
+Legs / corridors / facilities & \fzLegsTotal{} / \fzCorridorsTotal{} / 1,657 \\
+Corridors with at least 10 legs (tested) & \fzCorridorsTested{} \\
+Legs on tested corridors & \fzLegsCovered{} \\
+Calendar days of leg creation (India time) & 22 \\
+Training / validation / test legs & \fzSplitTrain{} (16,876 + 4,219) / \fzSplitTest{} \\
+Test legs with no prior leg on the corridor (cold) & \fzColdLegsTest{} \\
+Legs with no prior corridor history, all legs & 11.09\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{What the planned time is, and what we cannot know.} The planned time is the dataset's \texttt{osrm\_time} column, with \texttt{osrm\_distance}; its name says it comes from OSRM, an open-source route planner, and the dataset documents nothing more. We call it ``the OSRM estimate recorded in the dataset''. We cannot know how or whether the carrier used it operationally, which OSRM version or speed profile produced it, or whether the carrier's own planning had access to corridor history. We therefore make no claim about the carrier's planning system; the error measured is that of this recorded estimate against realised time, directly and not by simulation.
+
+\paragraph{Notation.} For leg $i$ on corridor $c(i)$ let $a_i$ be the realised moving time and $o_i$ the recorded OSRM time, both in minutes. The \emph{log ratio} is $r_i=\log(a_i/o_i)$ and the \emph{gap} is $g_i=a_i-o_i$. The corridor audit works with $r_i$, which makes comparisons multiplicative and symmetric; prediction works with $g_i$, because the metric is minutes.
+
+\paragraph{Dwell is separated from movement.} Realised moving time excludes dwell at the hub, the scan-to-scan interval minus moving time. The median leg spends 49 minutes, 34.6\% of its wall clock, parked. A leg finishes at its final scan, not at departure plus moving time; an earlier version of our pipeline used the latter, placed finishes a median 49.6 minutes early and counted unfinished legs as history. A leg is called delayed when it exceeds twice its plan; at that threshold \fzPctDelayedDpOne{}\% of legs are delayed.
+
+\subsection{As-of features}\label{sec:asof}
+Every feature describing a corridor's or hub's history is computed only from legs that had \emph{finished} before the leg in question was \emph{created}, with completions ordered before creations on a tie (Algorithm~\ref{alg:asof}). Legs with no prior leg on their corridor carry an explicit cold indicator rather than a zero that would read ``known to be on time''. Because a leakage rule is a claim, we verified it: an independent reconstruction of the as-of history agrees with the production implementation on every leg with history. Before the finish-time correction above the agreement was 95.2\%, which is how that error was found.
+
+\begin{algorithm}[t]
+\caption{As-of history for a query leg $q$ created at time $t_q$ (hierarchical back-off)}
+\label{alg:asof}
+\begin{algorithmic}[1]
+\STATE $F \leftarrow \{\text{legs } j : \text{end}_j < t_q\}$ \hfill \COMMENT{facts first on ties}
+\FOR{level $\ell$ in (corridor, origin hub, destination hub, route type $\times$ distance band, network)}
+  \STATE $F_\ell \leftarrow \{j \in F : \text{key}_\ell(j)=\text{key}_\ell(q)\}$
+  \IF{$F_\ell \neq \emptyset$}
+    \STATE \textbf{return} level $\ell$, $n=|F_\ell|$, $\operatorname{median}\{g_j : j\in F_\ell\}$
+  \ENDIF
+\ENDFOR
+\end{algorithmic}
+\end{algorithm}

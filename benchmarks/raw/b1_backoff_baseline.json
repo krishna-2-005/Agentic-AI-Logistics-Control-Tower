@@ -1,0 +1,93 @@
+{
+  "generated_at": "2026-10-21T06:04:45.412148+00:00",
+  "decision": "D-075",
+  "split": {
+    "train": 21095,
+    "validation_fit": 16876,
+    "validation": 4219,
+    "test": 5274,
+    "test_cutoff": "2018-09-28 17:42:35.939821056",
+    "validation_cutoff": "2018-09-25 07:19:01.957622016"
+  },
+  "distance_band_cuts_km": [
+    33.2308,
+    67.1535
+  ],
+  "judge_level_one": {
+    "legs": 26369,
+    "warm_legs": 23444,
+    "count_agrees": true,
+    "max_abs_median_difference": 0.0
+  },
+  "k_grid_validation_mae": {
+    "1": 31.4064,
+    "2": 33.7761,
+    "5": 39.6741,
+    "10": 46.4001,
+    "20": 54.2818,
+    "50": 63.9526,
+    "100": 69.2891
+  },
+  "k_chosen": 1.0,
+  "validation_mae": {
+    "old_median": 29.8918,
+    "backoff": 29.3567,
+    "shrunk_backoff": 31.4064
+  },
+  "test_mae": {
+    "old_median": 33.0423,
+    "backoff": 32.3932,
+    "shrunk_backoff": 32.9221,
+    "v2_gbt": 30.9048
+  },
+  "test_mae_by_regime": {
+    "overall": {
+      "n": 5274,
+      "old_median": 33.0423,
+      "backoff": 32.3932,
+      "shrunk_backoff": 32.9221,
+      "v2_gbt": 30.9048
+    },
+    "cold_asof": {
+      "n": 204,
+      "old_median": 149.75,
+      "backoff": 132.9706,
+      "shrunk_backoff": 128.7179,
+      "v2_gbt": 100.1619
+    },
+    "warm_asof": {
+      "n": 5070,
+      "old_median": 28.3464,
+      "backoff": 28.3464,
+      "shrunk_backoff": 29.0676,
+      "v2_gbt": 28.1182
+    },
+    "unseen_in_train": {
+      "n": 294,
+      "old_median": 111.1803,
+      "backoff": 99.5374,
+      "shrunk_backoff": 97.8001,
+      "v2_gbt": 75.9199
+    }
+  },
+  "bar": {
+    "name": "backoff",
+    "rule": "lowest test MAE of old_median, backoff, shrunk_backoff (D-075 rule 1)",
+    "test_mae": 32.3932
+  },
+  "v3_baseline": {
+    "name": "backoff",
+    "rule": "lowest validation MAE of the same three (D-075 rule 2)",
+    "validation_mae": 29.3567
+  },
+  "backoff_beats_old_median_on_test": true,
+  "test_legs_by_backoff_level": {
+    "corridor": 5070,
+    "origin_hub": 142,
+    "destination_hub": 43,
+    "route_distance_band": 19
+  },
+  "test_legs_no_history_anywhere": 0,
+  "all_legs_no_history_anywhere": 89,
+  "cold_test_legs": 204
+}

@@ -1,0 +1,124 @@
+{
+  "n_legs": 26369,
+  "n_trips": 14817,
+  "n_creation_dates": 23,
+  "first_date": "2018-09-11",
+  "last_date": "2018-10-03",
+  "min_support": 10,
+  "corridors_tested": 1130,
+  "legs_in_tested_corridors": 20739,
+  "legs_per_corridor": {
+    "min": 10.0,
+    "p25": 12.0,
+    "median": 15.0,
+    "mean": 18.353097345132742,
+    "p75": 19.0,
+    "max": 151.0
+  },
+  "trips_per_corridor": {
+    "min": 10.0,
+    "p25": 12.0,
+    "median": 15.0,
+    "mean": 18.353097345132742,
+    "p75": 19.0,
+    "max": 151.0
+  },
+  "days_per_corridor": {
+    "min": 5.0,
+    "p25": 12.0,
+    "median": 15.0,
+    "mean": 14.957522123893805,
+    "p75": 18.0,
+    "max": 23.0
+  },
+  "legs_per_trip": {
+    "min": 1.0,
+    "p25": 1.0,
+    "median": 1.0,
+    "mean": 1.7796450023621515,
+    "p75": 2.0,
+    "max": 8.0
+  },
+  "corridors_where_a_trip_repeats_the_corridor": 0,
+  "max_repeats_of_a_corridor_within_one_trip": 0,
+  "corridor_day_cells": 16902,
+  "legs_per_corridor_day_cell": {
+    "min": 1.0,
+    "p25": 1.0,
+    "median": 1.0,
+    "mean": 1.2270145544905928,
+    "p75": 1.0,
+    "max": 10.0
+  },
+  "icc_corridor_of_r": {
+    "rho": 0.5799953566159902,
+    "n0": 18.344922859423146,
+    "groups": 1130
+  },
+  "icc_day_of_corridor_demeaned_r": {
+    "rho": 0.003570460041188541,
+    "n0": 900.179179323979,
+    "groups": 23
+  },
+  "icc_trip_of_corridor_demeaned_r": {
+    "rho": 0.07187149163249586,
+    "n0": 2.838871776435304,
+    "groups": 4266
+  },
+  "schedule_cells_per_corridor": {
+    "min": 1.0,
+    "p25": 1.0,
+    "median": 1.0,
+    "mean": 1.7619469026548673,
+    "p75": 2.0,
+    "max": 18.0
+  },
+  "corridors_with_one_schedule_cell": 680,
+  "legs_per_corridor_schedule_cell": {
+    "min": 1.0,
+    "p25": 5.0,
+    "median": 11.0,
+    "mean": 10.416373681567052,
+    "p75": 15.0,
+    "max": 53.0
+  },
+  "icc_corridor_schedule_cell_of_corridor_demeaned_r": {
+    "rho": 0.0953081067534673,
+    "n0": 11.088716416019489,
+    "groups": 1858
+  },
+  "design_effect_schedule_cell_within_corridor": {
+    "min": 1.083394593409284,
+    "p25": 1.7148108006510048,
+    "median": 2.0483891742881406,
+    "mean": 2.070390682617785,
+    "p75": 2.4296216013020095,
+    "max": 5.9560215511803
+  },
+  "effective_n_per_corridor_schedule_cell_design": {
+    "min": 5.382789076548371,
+    "p25": 6.064289074287294,
+    "median": 6.996751499996065,
+    "mean": 9.093029782493787,
+    "p75": 9.597177965514822,
+    "max": 80.52532769161425
+  },
+  "design_effect_day_within_corridor": {
+    "min": 1.0,
+    "p25": 1.0,
+    "median": 1.0,
+    "mean": 1.000636216508091,
+    "p75": 1.0002975383367656,
+    "max": 1.0209358793324237
+  },
+  "design_effect_trip_on_rest_group": 1.1144590776902814,
+  "effective_n_per_corridor_day_design": {
+    "min": 9.984721407653533,
+    "p25": 12.0,
+    "median": 15.0,
+    "mean": 18.319067978702947,
+    "p75": 19.0,
+    "max": 147.90350996258147
+  },
+  "reading": "A trip never visits the same corridor twice among the tested corridors, so a trip cannot cluster a corridor's own legs, and the creation day is nearly independent of the statistic. The cluster that does bind a corridor's legs is the recurring service (route_schedule_uuid): legs of one corridor and one schedule are alike (see the schedule-cell ICC and design effect). Caveat: a majority of the corridors run under a single schedule, where the corridor effect and the service effect cannot be told apart, and the within-corridor ICC estimate is biased downward by demeaning on the corridor; the design effect is a lower-bound guide."
+}

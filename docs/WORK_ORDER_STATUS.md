@@ -18,7 +18,7 @@ A package is **done** only when the evidence named in its Acceptance row exists 
 | 07 | One measured LLM decision + approval queue + cost traces | not started | 2 labellers × 2 h (HUMAN_ACTIONS §3.2) | `benchmarks/raw/w9_llm_decision_eval.json`, D-065, D-067 |
 | 08 | Real documents for the doc agent | not started | 10 phone photos (HUMAN_ACTIONS §3.4) | `benchmarks/raw/w9_doc_eval_real.json` |
 | 09 | Code hygiene — ruff, mypy, LF, lock file | **mostly done** | `docker compose` needs Docker Desktop; module splitting deferred | `requirements.lock`, `scripts/lock_requirements.sh`, ruff + mypy + locked-install CI jobs, all green |
-| 10 | Paper readiness — model card, data card, ablations, related work | not started | depends on WP-02 and WP-07 numbers | `docs/model_card.md`, `docs/data_card.md` |
+| 10 | Paper readiness — model card, data card, ablations, related work | **drafted; Lahari's pass owed** | Lahari verifies each `[metadata checked]` reference and edits the sections (they are hers); ICCCI 2027 CFP not yet published | `docs/model_card.md`, `docs/data_card.md` (54 number tests, `tests/test_cards.py`); `paper_draft.md` v0.2: related work with 15 references, Table 2 ablation (§7.3), threats to validity (§9); claims map cites Table 2; D-052 CFP note |
 | 11 | Serve the v2 model in the stream (close D-053) | **done** | — | `w10_stream_validation_v2.json`: 500/500 sampled, 26,369/26,369 overall, 0 of 26 history features differ, stream test MAE 30.90, resumed from a restored state store; `src/streaming/state.py`, D-070, Predict page names v2 |
 | 12 | Demo video, screenshots, README hero, social preview | not started | recording + voice by the team | `docs/demo_video_script.md`, README hero |
 

@@ -14,9 +14,14 @@ buys three things the project needs by Week 6:
 from __future__ import annotations
 
 import os
+import time
 from functools import lru_cache
 
+import httpx
 from langchain_core.language_models.chat_models import BaseChatModel
+from langchain_core.messages import AIMessage
+from langchain_core.outputs import ChatGeneration, ChatResult
+from pydantic import SecretStr
 
 from src.common import config
 from src.common.logging_setup import get_logger
@@ -31,6 +36,9 @@ DEFAULT_MODELS = {
     "gemini": "gemini-3.6-flash",
     "anthropic": "claude-sonnet-5",
     "ollama": "llama3.1:8b",
+    # Open-weight model on Groq's free tier, used by the B7 ablation (D-086) because the
+    # Gemini free tier cannot afford ~1,000 calls. Not the model that writes the prose.
+    "groq": "openai/gpt-oss-120b",
 }
 
 #: Every provider call gets a wall-clock ceiling and a bounded retry count. Without them
@@ -47,11 +55,87 @@ REQUIRED_KEY = {
     "gemini": "GEMINI_API_KEY",
     "anthropic": "ANTHROPIC_API_KEY",
     "ollama": None,
+    "groq": "GROQ_API_KEY",
 }
 
 
 class LLMNotConfigured(RuntimeError):
     """Raised when the selected provider has no usable credentials."""
+
+
+GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
+
+
+class ProviderRateLimited(RuntimeError):
+    """The provider kept answering 429 after the allowed waits (a daily cap, usually)."""
+
+
+class GroqChat(BaseChatModel):
+    """Groq's OpenAI-compatible chat endpoint over httpx, as a langchain chat model.
+
+    Written directly instead of adding a dependency: it needs one POST. A 429 is waited out
+    using the provider's own ``retry-after`` (capped), then retried a bounded number of
+    times; a wait the provider says is longer than ``max_wait_s`` raises
+    :class:`ProviderRateLimited` instead of sleeping for hours.
+    """
+
+    model: str
+    api_key: SecretStr
+    temperature: float = 0.0
+    reasoning_effort: str | None = "low"
+    max_tokens: int = 600
+    timeout_s: float = REQUEST_TIMEOUT_S
+    max_attempts: int = 6
+    max_wait_s: float = 90.0
+
+    @property
+    def _llm_type(self) -> str:
+        return "groq-httpx"
+
+    def _generate(self, messages, stop=None, run_manager=None, **kwargs):  # type: ignore[no-untyped-def]
+        payload: dict = {
+            "model": self.model,
+            "messages": [{"role": "user", "content": m.content} for m in messages],
+            "temperature": self.temperature,
+            "max_completion_tokens": self.max_tokens,
+        }
+        if self.reasoning_effort:
+            payload["reasoning_effort"] = self.reasoning_effort
+        headers = {"Authorization": f"Bearer {self.api_key.get_secret_value()}"}
+        last = ""
+        for attempt in range(self.max_attempts):
+            response = httpx.post(GROQ_URL, json=payload, headers=headers, timeout=self.timeout_s)
+            if response.status_code == 429 or response.status_code >= 500:
+                last = f"HTTP {response.status_code}"
+                wait = _retry_after_s(response, attempt)
+                if wait > self.max_wait_s:
+                    raise ProviderRateLimited(f"{last}; provider asks for a {wait:.0f}s wait")
+                time.sleep(wait)
+                continue
+            response.raise_for_status()
+            body = response.json()
+            usage = body.get("usage", {})
+            message = AIMessage(
+                content=body["choices"][0]["message"].get("content") or "",
+                usage_metadata={
+                    "input_tokens": int(usage.get("prompt_tokens", 0)),
+                    "output_tokens": int(usage.get("completion_tokens", 0)),
+                    "total_tokens": int(usage.get("total_tokens", 0)),
+                },
+            )
+            return ChatResult(generations=[ChatGeneration(message=message)])
+        raise ProviderRateLimited(f"{last} after {self.max_attempts} attempts")
+
+
+def _retry_after_s(response: httpx.Response, attempt: int) -> float:
+    """Seconds to wait before retrying: the provider's hint if present, else backoff."""
+    header = response.headers.get("retry-after")
+    if header:
+        try:
+            return float(header) + 0.5
+        except ValueError:
+            pass
+    return min(2.0 * 2**attempt, 60.0)
 
 
 def available_providers() -> list[str]:
@@ -79,7 +163,6 @@ def _build(provider: str, model: str, temperature: float) -> BaseChatModel:
 
     if provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
-        from pydantic import SecretStr
 
         key = os.environ.get("ANTHROPIC_API_KEY")
         if not key:
@@ -107,6 +190,12 @@ def _build(provider: str, model: str, temperature: float) -> BaseChatModel:
             temperature=temperature,
             base_url=os.environ.get("OLLAMA_HOST", "http://localhost:11434"),
         )
+
+    if provider == "groq":
+        key = os.environ.get("GROQ_API_KEY")
+        if not key:
+            raise LLMNotConfigured("GROQ_API_KEY is not set")
+        return GroqChat(model=model, api_key=SecretStr(key), temperature=temperature)
 
     raise LLMNotConfigured(
         f"Unknown LLM_PROVIDER {provider!r}. Expected one of {sorted(DEFAULT_MODELS)}."

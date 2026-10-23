@@ -1,3 +1,9 @@
+> **Historical.** This file predates the upgrade pass and the LaTeX manuscripts (`paper/`); its claims about the audit (273 confirmed bottlenecks) and the model margin (6.5%) were revised. See [`paper_draft.md`](paper_draft.md) for where the paper now lives.
+
+> **HISTORICAL planning document (written before WP-02, WP-10 and the upgrade work).** The numbers below are
+> what the evaluation said at the time; the current figures are in `benchmarks/final_tables.md`, `benchmarks/agent_evaluation.md`
+> and the LaTeX manuscripts under `paper/`.
+
 # Paper skeleton — methodology and results (W8 D5)
 
 **Owner: Lahari.** Companion to `docs/paper_outline.md`. This is the draft's scaffolding:
@@ -23,7 +29,7 @@ records do not contain.
   `rows_dropped_total: 0` so that claim is checkable.
 - Reconstruction: segments → **26,369 OD legs** across **2,783 corridors**
   `[w2_audit_report.json]`.
-- Each leg carries a planned time (`osrm_time`, the production routing engine's estimate)
+- Each leg carries a planned time (`osrm_time`, the OSRM estimate recorded in the dataset)
   and a realised time (`actual_time`), and the target is their difference.
 - **Dwell is separated from movement.** `actual_time` is moving time; hub dwell is
   `start_scan_to_end_scan − actual_time`, median **49 minutes, 34.6% of wall clock**
@@ -178,7 +184,8 @@ rather than reopened once the test score was known.
 - Invoice audit: **100% precision, 82.2% recall**; all eight misses are one seeded kind, an
   overcharge inside the auditor's own 15% tolerance `[w6_invoice_eval.json]`.
 - Document extraction: **98.0%** of fields correct, clean 97.6% vs noisy 98.6%, **zero
-  hallucinated fields** on 11 of 40 planned rows `[w7_doc_extraction_eval.json]`.
+  hallucinated fields** on 11 of 40 planned rows (historical; at 20 rows it is 97.9% overall, clean 98.7% vs noisy 96.9%, one
+  hallucinated field in 280) `[w7_doc_extraction_eval.json]`.
 - Analytics assistant: route **90%**, source **83.3%**, refusal precision **100%** and
   recall **50%** `[w7_assistant_run_no_llm.json]`. The recall number is the interesting
   one and §5 discusses it.

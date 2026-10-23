@@ -1,0 +1,11 @@
+# gitleaks configuration: the default rules, plus one reviewed exception.
+#
+# benchmarks/results_freeze_v*.json record the first 16 hex characters of the SHA-256 of each result
+# file they freeze, so that `results_freeze --verify` can tell when a file changed. Those digests look
+# like generic API keys to the entropy rule. They are public by design and open nothing.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "file digests in the results freezes"
+paths = ['''benchmarks/results_freeze_v\d+\.json''']

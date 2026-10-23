@@ -182,10 +182,10 @@ publish the number rather than tuning the gate on our own test set.
 
 ## 6 · Close (45 s, back to Overview or the India map)
 
-> "Three things to take away. The audit localises a production planner's error to specific
+> "Three things to take away. The audit localises the recorded OSRM estimate's error to specific
 > corridors, with a stated significance method and a stated sensitivity. The agent layer is
-> deterministic at its core and measured everywhere. And the same aggregation code runs
-> unchanged on 56 million rows — the architecture is not justified by our 26,000."
+> deterministic at its core and measured everywhere. And the same aggregation stage runs
+> unchanged on 56 million proxy rows — the architecture is not justified by our 26,000."
 
 ---
 

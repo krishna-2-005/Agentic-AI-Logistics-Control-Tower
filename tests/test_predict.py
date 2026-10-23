@@ -13,6 +13,10 @@ from __future__ import annotations
 
 from datetime import datetime
 
+import pytest
+
+pytest.importorskip("pyspark")  # the fast job runs without PySpark: skip, do not error
+
 from src.ml.predict import base_row, build_result
 
 

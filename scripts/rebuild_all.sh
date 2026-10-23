@@ -56,6 +56,33 @@ if [ "$QUICK" != "--quick" ]; then
   step "features v2"        -m src.pipeline.features_v2
   step "model sprint v2"    -m src.ml.models_v2
   step "adopted model"      -m src.ml.models_v2_stepsize
+
+  # Upgrade pass (D-075 to D-089): the fair back-off bar, the model zoo, intervals, the dependence-aware
+  # audit, empirical-Bayes ranking, temporal stability and the agent statistics. Order matters:
+  # significance reads the predictions the baseline, v3 and zoo stages write.
+  step "backoff baseline"   -m src.ml.backoff_baseline
+  step "model v3"           -m src.ml.models_v3
+  step "model zoo"          -m src.ml.model_zoo
+  step "significance"       -m src.ml.significance
+  step "rolling origin"     -m src.ml.rolling_origin
+  step "rolling origin zoo" -m src.ml.rolling_origin_zoo
+  step "audit dependence"   -m src.ml.audit_data
+  step "audit robust"       -m src.ml.audit_robust
+  step "audit robust 1e6"   -m src.ml.audit_robust --permutations 1000000 --placebo 0 --suffix _1e6
+  step "eb ranking"         -m src.ml.eb_ranking
+  step "stability"          -m src.ml.stability
+  step "exception stats"    -m src.ml.exception_stats
+  step "b7 hard sets"       -m src.ml.b7_hard_sets --build --score
+  # Zero model calls: rebuilds the ablation files from the cached responses. The live runs are not
+  # part of a rebuild (they need a key and a day's quota); see docs/HUMAN_ACTIONS.md 6.11.
+  if [ -d data/b7_cache ]; then
+    step "agent ablation"     -m src.ml.agent_ablation --llm-verdict --cache-only
+  else
+    echo "==> agent ablation: no data/b7_cache here, keeping the committed result files"
+  fi
+  step "figures audit"      -m src.report.figures_audit
+  step "figures agents"     -m src.report.figures_agents
+  step "figures paper"      -m src.report.figures_paper
 fi
 
 # Reported, not fatal: a fresh clone has no LLM key, which boot correctly lists as missing

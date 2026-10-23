@@ -2,19 +2,17 @@ import type { Metadata } from "next";
 
 import { CorridorTable } from "@/components/CorridorTable";
 import { Evidence, Kpi, KpiRow, PageHeader, Section } from "@/components/ui";
-import { getCorridors, getCorridors30, getOverview } from "@/lib/data";
+import { frozen, getCorridors, getCorridors30, getEvidence, getOverview } from "@/lib/data";
 import { num, pct } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Corridor audit",
-  description:
-    "Every corridor tested against the rest of the network, with Benjamini–Hochberg control at 5%.",
-};
+export const metadata: Metadata = pageMeta("Corridor audit", "Every corridor tested against the rest of the network, with Benjamini–Hochberg control at 5%.");
 
 export default function CorridorsPage() {
   const ten = getCorridors();
   const thirty = getCorridors30();
   const o = getOverview().data;
+  const legsCovered = frozen(getEvidence().data, "legs_covered") as number;
 
   // The headline claim of D-018: the two support floors do not merely rank the
   // same corridors differently, they describe different networks.
@@ -57,7 +55,7 @@ export default function CorridorsPage() {
           <Kpi
             value={num(o.faster_corridors)}
             label="significantly faster"
-            sub="the planner is pessimistic here, not optimistic"
+            sub="the OSRM estimate is pessimistic here, not optimistic"
           />
           <Kpi
             value={num(o.corridors_tested)}
@@ -65,7 +63,7 @@ export default function CorridorsPage() {
             sub={`of ${num(o.corridors)} in the data — those with at least 10 legs`}
           />
           <Kpi
-            value={pct(20739 / o.legs, 1)}
+            value={pct(legsCovered / o.legs, 1)}
             label="of legs covered"
             sub="the audit speaks for most of the network, not a busy core"
           />

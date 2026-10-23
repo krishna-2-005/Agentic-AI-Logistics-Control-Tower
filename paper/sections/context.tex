@@ -1,0 +1,12 @@
+\section{System Context}\label{sec:context}
+
+The batch analyses sit inside a small system: a streaming job that scores each new leg from event-time state and reproduces the batch predictions of the \emph{served} model on all \fzStreamAllLegsIdentical{} legs, a public interface for it, and five language-model agents built on one rule, that code computes every verdict and a model only words it. We describe them in the journal version; they matter here because both evaluation pitfalls (Section~\ref{sec:pitfalls}) arose in them. The agents' evaluation sets are synthetic, and a pilot ablation of letting a model decide in place of the rules was too small to settle anything beyond the order task.
+
+\ifjournal
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_architecture.pdf}
+\caption{System architecture: batch audit and models, streaming replay and serving, and the agent layer.}
+\label{fig:arch}
+\end{figure}
+\fi

@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 
+import { Lazy } from "@/components/Lazy";
 import type { Corridor } from "@/lib/types";
 
 /**
@@ -23,9 +24,11 @@ const CorridorMap = dynamic(
 export function HeroMap({ corridors }: { corridors: Corridor[] }) {
   return (
     <div className="relative">
-      <CorridorMap corridors={corridors} height={420} interactive={false} />
+      <Lazy height={420} label="Map of the worst corridors loading">
+        <CorridorMap corridors={corridors} height={420} interactive={false} />
+      </Lazy>
       <div className="pointer-events-none absolute right-3 top-3 rounded-lg border border-[var(--line)] bg-[var(--surface)]/85 px-3 py-2 text-xs backdrop-blur">
-        <p className="font-medium">The eight worst corridors</p>
+        <p className="font-medium">The {corridors.length} worst corridors</p>
         <p className="mt-0.5 text-[var(--ink-faint)]">
           thickness and colour = how far over plan
         </p>

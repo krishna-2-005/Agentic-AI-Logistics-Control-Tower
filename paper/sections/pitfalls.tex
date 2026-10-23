@@ -1,0 +1,16 @@
+\section{Two Evaluation Pitfalls}\label{sec:pitfalls}
+
+\subsection{An optimiser setting that disabled the loss}\label{sec:optimiser}
+Our first distributed residual model used absolute-loss boosting at a step size of 0.05 and reached 32.52 minutes, clearing the then bar by 1.6\% while losing to it on every corridor with history; its whole margin came from 294 legs on unseen corridors. Reading the saved model explained it. The library's absolute-loss boosting fits its first tree to the raw target with squared error (leaf values from $-1{,}382$ to $+2{,}605$ minutes) and every later tree to the \emph{sign} of the error, with leaf values in $[-1,1]$ scaled by the step size. At 0.05 the 199 corrective trees can move a prediction by at most 9.95 minutes in total, so the loss the model was chosen for was barely switched on. Validation over step sizes $\{0.05,0.3,1.0\}$, with correction caps of 9.95, 59.7 and 199 minutes, confirmed the mechanism in the ordering of the results, and 1.0 was chosen on validation. The general lesson: when a loss is chosen to match the metric, check that the optimiser can reach it; a default can silently cap the effect.
+
+\subsection{A replay that scored the past with the future}\label{sec:replay}
+The exception agent grades each predicted delay and alerts on it. Its notification precision was first measured at 72.1\% against 54.1\% for alerting on every leg. The measurement replayed the earliest 2,000 legs through a version of the streaming job that joined each query to the latest history snapshot: live, that is history up to now; in a replay it is history up to the end of the data. Of the 2,000 replayed legs, 1,290 had no corridor history at their own creation time and were scored as if they had fourteen prior legs. With only the history each leg had at its own time the precision is \textbf{\fzExcPrecisionAsOfRatePct{}\%} (Wilson 95\% interval [\fzExcPrecisionCiLowPct{}, \fzExcPrecisionCiHighPct{}] on \fzExcAlerts{} alerts). The snapshot run reproduces the first measurement exactly, so the gap is the leak and nothing else.
+
+Precision rises with severity (Fig.~\ref{fig:severity}; Cochran--Armitage trend test~\cite{cochran1954some,armitage1955tests}, $p<10^{-40}$), so the grade is a useful filter, but the lowest grade falls \emph{below} the alert-everything policy. The gain over alerting on every leg is \fzExcGainPointsDpTwo{} percentage points, not 18. Because the two policies overlap (the alerted legs are a subset of all legs), an independent two-proportion test is invalid; the valid test compares alerted with not-alerted legs ($z=\fzExcGainZDpTwo{}$, bootstrap 95\% interval of the gain [\fzExcGainCiLowPct{}, \fzExcGainCiHighPct{}] points). Legs share corridors, so these intervals are optimistic and we had no corridor identifiers in the counts file to cluster on. A replay is an evaluation only if every join inside it is as-of the event being replayed~\cite{kaufman2012leakage,kapoor2023leakage}.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.72\columnwidth]{fig_b8_severity_ci.pdf}
+\caption{Notification precision by severity grade with Wilson 95\% intervals, as measured with as-of history, against the alert-every-leg policy (source: \texttt{b8\_exception\_stats.json}).}
+\label{fig:severity}
+\end{figure}

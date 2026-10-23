@@ -1,0 +1,54 @@
+\appendix
+\section{Supplementary Results}\label{app:supp}
+
+\subsection{Feature-group ablation}
+Table~\ref{tab:ablation_groups} gives the change in test MAE when a group of inputs is removed from the LightGBM model (day-block 95\% intervals; source: \texttt{b6\_feature\_ablation.json}). Groups whose interval includes zero are not distinguishable from no effect at this sample size.
+
+\begin{table}[t]
+\caption{Change in test MAE (minutes) on removing a feature group from the reported model. A positive value means the group helped.}
+\label{tab:ablation_groups}
+\centering
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Group removed & $\Delta$ MAE & Interval excludes 0 \\
+\midrule
+Time of day and week & \fzAblationTimeDeltaDpTwo{} & yes \\
+Hub history & \fzAblationHubDeltaDpTwo{} & yes \\
+Dispersion and dwell & \fzAblationDispersionDeltaDpTwo{} & yes \\
+Corridor history & \fzAblationCorridorDeltaDpTwo{} & no \\
+Plan and route; distance; baseline descriptors & $<0.07$ in size & no \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Permutation-test resolution}
+\input{../sections/perm1e6.tex}
+
+\subsection{Audit figures}
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{b3_audit_robust.pdf}
+\caption{Corridors by original and cluster-aware evidence (source: \texttt{b3\_audit\_robust.json}).}
+\label{fig:b3}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{b4_eb_shrinkage.pdf}
+\caption{Empirical-Bayes posterior against raw corridor means: the shrinkage is small (source: \texttt{b4\_eb\_ranking.json}).}
+\label{fig:b4}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{b5_stability_scatter.pdf}
+\caption{Corridor effects in the first half of the period against the second half (source: \texttt{b5\_stability.json}).}
+\label{fig:b5}
+\end{figure}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{fig_architecture.pdf}
+\caption{System architecture: batch audit and models, streaming replay and serving, and the agent layer.}
+\label{fig:arch}
+\end{figure}

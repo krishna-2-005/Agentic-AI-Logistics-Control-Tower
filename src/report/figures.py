@@ -40,34 +40,15 @@ import pandas as pd
 
 from src.common import config
 from src.common.logging_setup import get_logger
+from src.report.style import AQUA, BLUE, GREY, INK, MUTED, ORANGE, YELLOW, apply_style
 
 log = get_logger("report.figures")
 
 RAW = config.BENCHMARKS_RAW_DIR
 OUT = config.DOCS_DIR / "figures"
 
-BLUE, ORANGE, AQUA, YELLOW = "#2a78d6", "#eb6834", "#1baf7a", "#eda100"
-GREY, INK, MUTED = "#c9c9c4", "#0b0b0b", "#52514e"
-
-plt.rcParams.update({
-    "figure.dpi": 150,
-    "savefig.dpi": 300,
-    "savefig.bbox": "tight",
-    "font.size": 9,
-    "axes.titlesize": 10,
-    "axes.titleweight": "bold",
-    "axes.labelsize": 9,
-    "axes.edgecolor": MUTED,
-    "axes.labelcolor": INK,
-    "text.color": INK,
-    "xtick.color": MUTED,
-    "ytick.color": MUTED,
-    "axes.spines.top": False,
-    "axes.spines.right": False,
-    "grid.color": "#e8e8e4",
-    "grid.linewidth": 0.8,
-    "figure.facecolor": "white",
-})
+# The palette and rcParams live in `src.report.style`, shared with every other figure module.
+apply_style()
 
 
 def _finish(fig, name: str, caption: str) -> dict:
@@ -95,7 +76,7 @@ def _bar_labels(ax, bars, values, fmt="{:.2f}", pad=0.01, inside=False):
 
 # ── 1 · the premise ──────────────────────────────────────────────────────────
 def fig1_gap_ratio() -> dict:
-    """How far the production planner is from realised time, over every leg."""
+    """How far the recorded OSRM estimate is from realised time, over every leg."""
     legs = pd.read_csv(RAW / "w1_leg_summary.csv")
     ratio = (legs["actual_time"] / legs["osrm_time"]).replace([np.inf, -np.inf], np.nan).dropna()
     over = float((ratio > 1).mean())

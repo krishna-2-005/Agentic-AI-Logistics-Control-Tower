@@ -25,6 +25,7 @@ import pandas as pd
 
 from src.common import config
 from src.common.logging_setup import get_logger
+from src.ml.stats import wilson
 
 log = get_logger("report.tables")
 
@@ -33,18 +34,84 @@ OUT = config.BENCHMARKS_DIR / "final_tables.md"
 
 #: Model key -> (display name, what it is). Order is the order of the table.
 MODEL_ROWS = [
-    ("OSRM", "OSRM plan", "the production routing engine's estimate, as a prediction"),
+    ("OSRM", "OSRM plan", "the OSRM estimate recorded in the data, as a prediction"),
     ("v1_rf_raw_target", "Random Forest (W4)", "MLlib, squared loss, raw target — Week 4's reported model"),
     ("corridor_mean", "corridor mean", "past-only mean gap per corridor (D-023)"),
     ("corridor_median", "**corridor median**", "**the bar**: MAE is minimised by the median (D-048)"),
     ("v2_gbt_residual_absolute", "v2 GBT residual, step 0.05", "absolute loss on the median residual"),
-    ("v2_gbt_residual_absolute_step1", "**v2 GBT residual, step 1.0**", "**the reported model** (D-050)"),
-    ("histgbr_residual_reference", "sklearn HistGBR (reference)", "single-node ceiling, not a candidate"),
+    ("v2_gbt_residual_absolute_step1", "**v2 GBT residual, step 1.0**", "**the served model** (the stream and the API run it; D-050)"),
+    ("histgbr_residual_reference", "sklearn HistGBR (v1.0 reference)", "single-node; now one of the zoo candidates (D-077)"),
 ]
 
 
 def _json(name: str) -> dict:
     return json.loads((RAW / name).read_text(encoding="utf-8"))
+
+
+def layer1_upgrade() -> list[str]:
+    """The upgrade pass's headline tables: the bar, the zoo with intervals, rolling origin, the audit variants."""
+    b1 = _json("b1_backoff_baseline.json")
+    zoo = _json("b6_model_zoo.json")
+    sig = _json("b2_significance.json")["models"]
+    v3 = _json("b1_model_v3.json")
+    bar = b1["test_mae"]["backoff"]
+    lines = ["## Layer 1 — the upgrade pass (D-075 to D-098)", "",
+             ("The bar is a hierarchical **back-off median** (D-075): "
+              f"{bar:.2f} min on the {b1['split']['test']:,} test legs, "
+              f"against {b1['test_mae']['old_median']:.2f} for the old median, which predicted 0.0 minutes on a corridor with no history. "
+              "Intervals are day-block bootstrap 95% (six India-time calendar days of test legs; D-076). "
+              "The **reported model** is the candidate with the lowest validation MAE whatever its library (D-077); the **served** "
+              "model is what the stream and the API run."), "",
+             "| model | validation MAE | test MAE | test minus bar | 95% interval | comparisons won (of 14, Holm) |",
+             "|---|---|---|---|---|---|"]
+
+    def row(name: str, key: str, validation: float | None) -> str:
+        m = sig[key]
+        val = "—" if validation is None else f"{validation:.2f}"
+        if key == "backoff":
+            return f"| {name} | {val} | {m['own_mae']['mae']:.2f} | — | — | — |"
+        over = m["vs_bar"]["overall"]
+        delta = f"{over['delta_mae']:+.2f}"
+        ci = f"[{over['ci_block_day'][0]:+.2f}, {over['ci_block_day'][1]:+.2f}]"
+        won = str(m["summary"]["wins_after_holm_block"])
+        return f"| {name} | {val} | {m['own_mae']['mae']:.2f} | {delta} | {ci} | {won} |"
+
+    lines.append(row("old median (0.0 cold fallback)", "old_median", b1["validation_mae"]["old_median"]))
+    lines.append(row("**hard back-off (the bar)**", "backoff", b1["validation_mae"]["backoff"]))
+    lines.append(row("Spark GBT over the old median (**served**)", "v2_gbt", v3["validation_mae"]["v2_gbt_step1"]))
+    lines.append(row("Spark GBT over back-off", "v3_gbt", v3["validation_mae"]["v3_gbt"]))
+    names = {"lightgbm_l1": "LightGBM, L1", "lightgbm_huber": "LightGBM, Huber", "xgboost_l1": "XGBoost, L1",
+             "histgbr_l1": "histogram GBT, L1", "quantile_linear": "linear median regression"}
+    for key, label in names.items():
+        stats = zoo["secondary"][key]
+        star = "**" if key == "lightgbm_l1" else ""
+        tag = " (**reported**)" if key == "lightgbm_l1" else ""
+        lines.append(row(f"{star}{label}{star}{tag}, over the old median", f"{key}_oldbase", stats["validation_mae"]))
+    for key, label in names.items():
+        stats = zoo["primary"][key]
+        lines.append(row(f"{label}, over back-off", key, stats["validation_mae"]))
+
+    ro = _json("b2_rolling_origin.json")["summary"]
+    rz = _json("b2_rolling_origin_zoo.json")["summary"]
+    lines += ["", "### Rolling origin: four expanding windows (D-076, D-098)", "",
+              "| | mean test MAE | mean minus bar | sd over folds | folds beating the bar |", "|---|---|---|---|---|",
+              f"| back-off bar | {ro['mae_backoff']['mean']:.2f} | — | — | — |",
+              f"| served (Spark over old median) | {ro['mae_v2_gbt']['mean']:.2f} | {ro['delta_v2_vs_backoff']['mean']:+.2f} | "
+              f"{ro['delta_v2_vs_backoff']['sd']:.2f} | {ro['v2_gbt_beats_backoff_in_folds']} of 4 |",
+              f"| Spark over back-off | {ro['mae_v3_gbt']['mean']:.2f} | {ro['delta_v3_vs_backoff']['mean']:+.2f} | "
+              f"{ro['delta_v3_vs_backoff']['sd']:.2f} | {ro['v3_gbt_beats_backoff_in_folds']} of 4 |",
+              f"| **reported (LightGBM, L1)** | {rz['mae_model']['mean']:.2f} | {rz['delta_vs_backoff']['mean']:+.2f} | "
+              f"{rz['delta_vs_backoff']['sd']:.2f} | {rz['model_beats_backoff_in_folds']} of 4 |", ""]
+
+    audit = _json("b3_audit_robust.json")["variants"]
+    fine = _json("b3_audit_robust_1e6.json")["variants"]
+    lines += ["### Corridor audit under dependence (D-080, D-084)", "",
+              "| variant | slower | faster |", "|---|---|---|"]
+    for key, label in (("bh_welch", "Welch, BH (the original audit)"), ("by_welch", "Welch, BY"),
+                       ("bh_perm", "cell permutation, BH"), ("by_perm", "**cell permutation, BY (headline)**")):
+        lines.append(f"| {label} | {audit[key]['significant_slower']} | {audit[key]['significant_faster']} |")
+    lines += [f"| cell permutation, BY, 10^6 permutations | {fine['by_perm']['significant_slower']} | {fine['by_perm']['significant_faster']} |", ""]
+    return lines
 
 
 def layer1() -> list[str]:
@@ -66,11 +133,11 @@ def layer1() -> list[str]:
         delta = "—" if key == "corridor_median" else f"{mae - bar:+.2f}"
         lines.append(f"| {name} | **{mae:.2f}** | {delta} | {what} |")
 
-    lines += ["", "### Where the reported model wins, slice by slice", "",
+    lines += ["", "### Where the served model wins, slice by slice (v1.0 slice table)", "",
               ("Every slice the adoption rule looks at, and the two it does not "
               "(distance, hour) — reported because a model that wins overall by losing "
               "somewhere should have to show it."), "",
-              "| dimension | slice | legs | corridor median | reported model | delta |",
+              "| dimension | slice | legs | corridor median | served model | delta |",
               "|---|---|---|---|---|---|"]
     table = pd.read_csv(RAW / "w7_model_metrics_v2_stepsize.csv")
     median = table[table["model"] == "corridor_median"].set_index(["dimension", "slice"])
@@ -84,7 +151,7 @@ def layer1() -> list[str]:
 
     report = _json("w7_model_v2_stepsize_report.json")
     validation = report["validation"]
-    lines += ["", "### How the reported model was selected", "",
+    lines += ["", "### How the served model's step size was selected", "",
               ("`stepSize` was chosen on a chronological validation cut of the training "
               "split and scored once on test, fixed in D-049 before it ran."), "",
               "| stepSize | max correction (min) | validation MAE | ",
@@ -96,8 +163,9 @@ def layer1() -> list[str]:
         lines.append(f"| {step_size}{chosen} | {cap} | {mae:.2f} |")
     lines += ["",
               ("**Read this table before the one above it.** On validation every step size "
-              "loses to the median; on test the chosen one wins by 6.5%. The rule was "
-              "applied as written rather than re-opened once the test score was known."), ""]
+              "loses to the median; on test the chosen one wins by 6.5% against the old median "
+              "(4.6% against the back-off bar, D-075). The rule was applied as written rather than "
+              "re-opened once the test score was known."), ""]
     return lines
 
 
@@ -113,11 +181,20 @@ def layer2() -> list[str]:
 
     doc = _json("w7_doc_extraction_eval.json")
     rows_scored = doc["documents_evaluated"]
+    # One overall number with its n and interval leads (the clean and noisy rows are splits of
+    # it, not alternative headlines): clean-only used to be quoted alone as 98.7% (UPGRADE A2).
+    overall = wilson(doc["overall"]["correct"], doc["overall"]["fields_in_truth"])
     lines += [
-        (f"| Document extraction | per-field accuracy, clean PDF | **{_pct(doc['by_split']['clean']['accuracy'])}** "
-        f"| predict nothing: 0.0% | {rows_scored} of {doc['rows_planned']} rows |"),
-        (f"| Document extraction | per-field accuracy, noisy scan | **{_pct(doc['by_split']['noisy']['accuracy'])}** "
-        f"| predict nothing: 0.0% | the same rows |"),
+        (f"| Document extraction | per-field accuracy, overall (clean + noisy) | "
+         f"**{overall.point:.1%}** [{overall.lower:.1%}–{overall.upper:.1%}] "
+         f"| predict nothing: 0.0% | {doc['overall']['correct']} of {doc['overall']['fields_in_truth']} fields, "
+         f"{rows_scored} of {doc['rows_planned']} rows |"),
+        (f"| Document extraction | per-field accuracy, clean PDF (split) | **{_pct(doc['by_split']['clean']['accuracy'])}** "
+        f"| predict nothing: 0.0% | {doc['by_split']['clean']['correct']} of "
+        f"{doc['by_split']['clean']['fields_in_truth']} fields |"),
+        (f"| Document extraction | per-field accuracy, noisy scan (split) | **{_pct(doc['by_split']['noisy']['accuracy'])}** "
+        f"| predict nothing: 0.0% | {doc['by_split']['noisy']['correct']} of "
+        f"{doc['by_split']['noisy']['fields_in_truth']} fields |"),
         (f"| Document extraction | hallucinated fields | **{_pct(doc['overall']['hallucination_rate'])}** "
         f"| — | {doc['overall']['fields_in_truth']} fields |"),
     ]
@@ -185,6 +262,7 @@ def run(out: Path = OUT) -> Path:
              "", (f"Generated {datetime.now(UTC).date().isoformat()}. Every value is read from a "
              "file in `benchmarks/raw/`; `benchmarks/experiments_appendix.md` maps each one to the "
              "command that writes it."), ""]
+    lines += layer1_upgrade()
     lines += layer1()
     lines += layer2()
     out.write_text("\n".join(lines) + "\n", encoding="utf-8")

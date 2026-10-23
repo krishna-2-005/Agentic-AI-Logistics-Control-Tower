@@ -1,0 +1,2133 @@
+id,question,context_given_to_the_assistant,assistant_answer,verdict,reason
+T01,Which corridors are the worst bottlenecks?,"rank 1: corridor IND208012AAA>IND209304AAA (Kanpur to Kanpur) -- 13.88x the network's typical overrun over 13 legs, median gap ratio 41.50
+rank 2: corridor IND212402AAA>IND211002AAB (Phulpur to Allahabad) -- 13.32x the network's typical overrun over 13 legs, median gap ratio 29.14
+rank 3: corridor IND416606AAA>IND416510AAA (Malvan to Sawantwadi) -- 12.15x the network's typical overrun over 10 legs, median gap ratio 26.72
+rank 4: corridor IND425405AAA>IND424006AAA (Shirpur to Dhule) -- 7.55x the network's typical overrun over 14 legs, median gap ratio 21.20
+rank 5: corridor IND792121AAB>IND786181AAC (Jairampur to Margherita) -- 5.25x the network's typical overrun over 11 legs, median gap ratio 28.90","Based on the network data, the top bottleneck corridors are:
+
+1. **IND208012AAA>IND209304AAA (Kanpur to Kanpur)**: 13.88x the network's typical overrun over 13 legs, with a median gap ratio of 41.50 *(Retrieved context, rank 1)*.
+2. **IND212402AAA>IND211002AAB (Phulpur to Allahabad)**: 13.32x the network's typical overrun over 13 legs, with a median gap ratio of 29.14 *(Retrieved context, rank 2)*.
+3. **IND416606AAA>IND416510AAA (Malvan to Sawantwadi)**: 12.15x the network's typical overrun over 10 legs, with a median gap ratio of 26.72 *(Retrieved context, rank 3)*.
+4. **IND425405AAA>IND424006AAA (Shirpur to Dhule)**: 7.55x the network's typical overrun over 14 legs, with a median gap ratio of 21.20 *(Retrieved context, rank 4)*.
+5. **IND792121AAB>IND786181AAC (Jairampur to Margherita)**: 5.25x the network's typical overrun over 11 legs, with a median gap ratio of 28.90 *(Retrieved context, rank 5)*.",,
+T02,What are the top 3 slowest corridors in the network?,"rank 1: corridor IND208012AAA>IND209304AAA (Kanpur to Kanpur) -- 13.88x the network's typical overrun over 13 legs, median gap ratio 41.50
+rank 2: corridor IND212402AAA>IND211002AAB (Phulpur to Allahabad) -- 13.32x the network's typical overrun over 13 legs, median gap ratio 29.14
+rank 3: corridor IND416606AAA>IND416510AAA (Malvan to Sawantwadi) -- 12.15x the network's typical overrun over 10 legs, median gap ratio 26.72","Based on the measured network data, the top 3 slowest corridors are:
+
+1. **IND208012AAA>IND209304AAA (Kanpur to Kanpur)**: 13.88x the network's typical overrun over 13 legs, with a median gap ratio of 41.50 *(retrieved context, rank 1)*.
+2. **IND212402AAA>IND211002AAB (Phulpur to Allahabad)**: 13.32x the network's typical overrun over 13 legs, with a median gap ratio of 29.14 *(retrieved context, rank 2)*.
+3. **IND416606AAA>IND416510AAA (Malvan to Sawantwadi)**: 12.15x the network's typical overrun over 10 legs, with a median gap ratio of 26.72 *(retrieved context, rank 3)*.",,
+T03,Which hub has the longest dwell time?,"longest median outbound dwell #1: hub IND580028AAA (Hubli, Karnataka) -- median outbound dwell 373 min (76% of leg time), p90 776 min, over 78 legs, friction rank 2
+longest median outbound dwell #2: hub IND683511AAA (Aluva, Kerala) -- median outbound dwell 350 min (82% of leg time), p90 467 min, over 86 legs, friction rank 1
+longest median outbound dwell #3: hub IND431136AAC (Aurangabad, Maharashtra) -- median outbound dwell 257 min (63% of leg time), p90 457 min, over 58 legs, friction rank 11
+longest median outbound dwell #4: hub IND244901AAB (Rampur, Uttar Pradesh) -- median outbound dwell 218 min (66% of leg time), p90 407 min, over 67 legs, friction rank 7
+longest median outbound dwell #5: hub IND632006AAA (Vellore, Tamil Nadu) -- median outbound dwell 204 min (59% of leg time), p90 514 min, over 44 legs, friction rank 18","Hub IND580028AAA (Hubli, Karnataka) has the longest dwell time, with a median outbound dwell of 373 min and a p90 outbound dwell of 776 min over 78 legs *(retrieved context, rank 2)*. By comparison, hub IND683511AAA (Aluva, Kerala) records a lower median outbound dwell of 350 min and a p90 outbound dwell of 467 min over 86 legs *(retrieved context, rank 1)*.",,
+T04,List the 5 most congested hubs by friction.,"friction rank #1: hub IND683511AAA (Aluva, Kerala) -- median outbound dwell 350 min (82% of leg time), p90 467 min, over 86 legs, friction rank 1
+friction rank #2: hub IND580028AAA (Hubli, Karnataka) -- median outbound dwell 373 min (76% of leg time), p90 776 min, over 78 legs, friction rank 2
+friction rank #3: hub IND691001AAB (Kollam, Kerala) -- median outbound dwell 139 min (73% of leg time), p90 284 min, over 32 legs, friction rank 3
+friction rank #4: hub IND560058AAD (Bengaluru, Karnataka) -- median outbound dwell 112 min (70% of leg time), p90 393 min, over 36 legs, friction rank 4
+friction rank #5: hub IND506002AAA (Warangal, Telangana) -- median outbound dwell 119 min (69% of leg time), p90 250 min, over 39 legs, friction rank 5","The 5 hubs listed in the project data are:
+
+1. **IND683511AAA (Aluva, Kerala)** — median outbound dwell 350 min, p90 467 min, over 86 legs *(rank 1)*
+2. **IND580028AAA (Hubli, Karnataka)** — median outbound dwell 373 min, p90 776 min, over 78 legs *(rank 2)*
+3. **IND691001AAB (Kollam, Kerala)** — median outbound dwell 139 min, p90 284 min, over 32 legs *(rank 3)*
+4. **IND560058AAD (Bengaluru, Karnataka)** — median outbound dwell 112 min, p90 393 min, over 36 legs *(rank 4)*
+5. **IND506002AAA (Warangal, Telangana)** — median outbound dwell 119 min, p90 250 min, over 39 legs *(rank 5)*",,
+T05,Which corridors run fastest compared with the network?,"corridor IND246761AAA>IND244501AAA (Dhampur to Kanth) -- 0.22x the network's typical overrun over 10 legs (statistically confirmed faster)
+corridor IND792103AAB>IND792001AAA (Namsai to Tezu) -- 0.31x the network's typical overrun over 11 legs (statistically confirmed faster)
+corridor IND244412AAA>IND243301AAB (Chandausi to Aonla) -- 0.34x the network's typical overrun over 10 legs (statistically confirmed faster)
+corridor IND151001AAA>IND151302AAA (Bhatinda to TalwandiSabo) -- 0.35x the network's typical overrun over 17 legs (statistically confirmed faster)
+corridor IND624601AAA>IND624101AAA (Palani to Kodaikanal) -- 0.36x the network's typical overrun over 15 legs (statistically confirmed faster)","The corridors that run fastest compared with the network's typical overrun are:
+
+* **IND246761AAA>IND244501AAA (Dhampur to Kanth)**: 0.22x the network's typical overrun over 10 legs *(Retrieved context)*
+* **IND792103AAB>IND792001AAA (Namsai to Tezu)**: 0.31x the network's typical overrun over 11 legs *(Retrieved context)*
+* **IND244412AAA>IND243301AAB (Chandausi to Aonla)**: 0.34x the network's typical overrun over 10 legs *(Retrieved context)*
+* **IND151001AAA>IND151302AAA (Bhatinda to TalwandiSabo)**: 0.35x the network's typical overrun over 17 legs *(Retrieved context)*
+* **IND624601AAA>IND624101AAA (Palani to Kodaikanal)**: 0.36x the network's typical overrun over 15 legs *(Retrieved context)*",,
+T06,Show the 10 worst bottleneck routes.,"rank 1: corridor IND208012AAA>IND209304AAA (Kanpur to Kanpur) -- 13.88x the network's typical overrun over 13 legs, median gap ratio 41.50
+rank 2: corridor IND212402AAA>IND211002AAB (Phulpur to Allahabad) -- 13.32x the network's typical overrun over 13 legs, median gap ratio 29.14
+rank 3: corridor IND416606AAA>IND416510AAA (Malvan to Sawantwadi) -- 12.15x the network's typical overrun over 10 legs, median gap ratio 26.72
+rank 4: corridor IND425405AAA>IND424006AAA (Shirpur to Dhule) -- 7.55x the network's typical overrun over 14 legs, median gap ratio 21.20
+rank 5: corridor IND792121AAB>IND786181AAC (Jairampur to Margherita) -- 5.25x the network's typical overrun over 11 legs, median gap ratio 28.90
+rank 6: corridor IND844505AAB>IND842001AAA (HazratJandaha to Muzaffrpur) -- 5.23x the network's typical overrun over 14 legs, median gap ratio 11.54
+rank 7: corridor IND134109AAA>IND160002AAC (Chandigarh to Chandigarh) -- 4.63x the network's typical overrun over 15 legs, median gap ratio 12.84
+rank 8: corridor IND847223AAA>IND842001AAA (Benipatti to Muzaffrpur) -- 4.50x the network's typical overrun over 15 legs, median gap ratio 10.30
+rank 9: corridor IND395001AAA>IND395023AAD (Surat to Surat) -- 4.35x the network's typical overrun over 14 legs, median gap ratio 10.00
+rank 10: corridor IND847226AAA>IND842001AAA (Jaynagar to Muzaffrpur) -- 4.08x the network's typical overrun over 21 legs, median gap ratio 8.98","rank 1: corridor IND208012AAA>IND209304AAA (Kanpur to Kanpur) -- 13.88x the network's typical overrun over 13 legs, median gap ratio 41.50
+rank 2: corridor IND212402AAA>IND211002AAB (Phulpur to Allahabad) -- 13.32x the network's typical overrun over 13 legs, median gap ratio 29.14
+rank 3: corridor IND416606AAA>IND416510AAA (Malvan to Sawantwadi) -- 12.15x the network's typical overrun over 10 legs, median gap ratio 26.72
+rank 4: corridor IND425405AAA>IND424006AAA (Shirpur to Dhule) -- 7.55x the network's typical overrun over 14 legs, median gap ratio 21.20
+rank 5: corridor IND792121AAB>IND786181AAC (Jairampur to Margherita) -- 5.25x the network's typical overrun over 11 legs, median gap ratio 28.90
+rank 6: corridor IND844505AAB>IND842001AAA (HazratJandaha to Muzaffrpur) -- 5.23x the network's typical overrun over 14 legs, median gap ratio 11.54
+rank 7: corridor IND134109AAA>IND160002AAC (Chandigarh to Chandigarh) -- 4.63x the network's typical overrun over 15 legs, median gap ratio 12.84
+rank 8: corridor IND847223AAA>IND842001AAA (Benipatti to Muzaffrpur) -- 4.50x the network's typical overrun over 15 legs, median gap ratio 10.30
+rank 9: corridor IND395001AAA>IND395023AAD (Surat to Surat) -- 4.35x the network's typical overrun over 14 legs, median gap ratio 10.00
+rank 10: corridor IND847226AAA>IND842001AAA (Jaynagar to Muzaffrpur) -- 4.08x the network's typical overrun over 21 legs, median gap ratio 8.98",,
+F01,What does the corridor audit say about IND212402AAA>IND211002AAB?,"[1] (W2_lahari_corridor_audit.md -- 2. What the audit found)
+### 2. What the audit found
+
+
+| Result | Value |
+|---|---|
+| Corridors in the network | 2,783 |
+| Corridors with >= 10 legs (tested) | **1,130** (40.6%) |
+| Legs those corridors cover | 20,739 of 26,369 (78.6%) |
+| Differ from the network at FDR 0.05 | **785** of 1,130 (69%) |
+| — significantly **slower** (bottlenecks) | **273** |
+| — significantly **faster** | **512** |
+| Worst corridor's excess ratio | 13.88x the network's typical overrun |
+
+**The error localises.** 785 of 1,130 tested corridors are distinguishable from the network baseline after correction, which is the result the rest of the project stands on: a systematic planner error that varies by corridor is one a model can learn and an agent can act on. Had the gap been uniform noise, Week 4's per-corridor claim would have had nothing to say.
+
+**It localises in both directions, and the report has to say so.** 512 corridors are significantly *faster* than the network — the planner is not uniformly optimistic by a varying amount, it is differently wrong in different places. Calling this a “bottleneck audit” and showing only the slow half would misdescribe what was measured.
+
+[2] (W3_mounika_feature_pipeline_and_tms.md -- D1–D2 · Why this stage exists at all)
+## D1–D2 · Why this stage exists at all
+
+
+D-018 widened the audited set and closed with an open item addressed to me: the
+corridor audit's `excess_ratio` is the single most predictive number in the project —
+it says how badly a corridor overruns — and it is fitted over the **whole** 26-day
+observation window. Handed to a model as a feature exactly as it stands, it would be
+training on a column that already contains part of the answer for every leg the model
+is later asked to predict (D-005). Beating OSRM with that column in the table would
+not be a result, it would be a leak with a headline number attached.
+
+So corridor (and hub) history is recomputed from scratch here, **as of each leg's own
+`trip_creation_time`** — nothing in this table may hand a model a statistic fitted on
+the full period.
+
+[3] (paper_skeleton.md -- 3.3 The corridor audit)
+## 3.3 The corridor audit
+
+
+**Topic sentence:** ""this corridor is slow"" is a statistical claim and is tested as one.
+
+- Statistic: log of realised ÷ planned time per leg, so the comparison is multiplicative
+  and symmetric.
+- Test: Welch's t-test of each corridor against **the rest of the network**, with the
+  comparison group derived by subtracting the corridor's sums from the network totals
+  rather than rescanning 1,130 times.
+- Multiplicity: Benjamini-Hochberg at **FDR 0.05** across all tested corridors.
+- Support floor: **10 legs**, lowered from 30 during the work (D-018), and §4.2 reports
+  what that choice does to the answer.
+
+[4] (decisions.md -- D-004 · Minimum corridor support for the audit — `SUPERSEDED by D-018`)
+## D-004 · Minimum corridor support for the audit — `SUPERSEDED by D-018`
+
+**Week 1 · Lahari**
+
+Corridors with fewer than **30 observed legs** are excluded from the Stage 3 audit.
+
+**Why:** a ""worst corridor"" ranking over 2,783 corridors, most seen once or twice,
+ranks noise. 30 legs is the smallest support at which a Welch t-test on log-ratios is
+worth reporting.
+
+**The cost, stated openly:** 30 legs retains 99 of 2,783 corridors (3.6%) covering
+18.9% of legs. **The audit is therefore a claim about the busy core of the network,
+not about the whole of it, and the report must say exactly that.** A threshold of 10
+legs would retain 40.6% of corridors and 78.6% of legs with weaker per-corridor tests.
+
+**Revisited at the Week 2 gate, on results.** The audit was re-run end to end at each
+threshold — aggregate, Welch, and a fresh BH correction over whatever family the
+threshold defines — and the trade-off is not the one this entry assumed. The share of
+tests that come back significant barely moves between 10 and 30 legs (70% against 71%),
+so the looser threshold is not buying significance with noise; what the 30-leg floor
+costs is the finding itself. The worst corridor at 30 legs runs 1.92× the network's
+typical overrun, at 10 legs it runs 13.9×. The genuinely broken corridors are mostly
+rare corridors, and the floor removes them before the test runs.
+
+`MIN_CORRIDOR_SUPPORT` moved to 10 at the Week 2 sync — see **D-018**, which carries the
+decision and the caveats it commits us to. This entry is left as written, per the rule at
+the top of this file: the reasoning for a 30-leg floor is still sound reasoning, and the
+report needs to be able to reconstruct why the project believed it.
+
+Evidence: `docs/W2_lahari_corridor_audit.md` §4,
+`benchmarks/raw/w2_support_sensitivity.csv`.
+
+---
+
+[5] (corridor_audit (IND212402AAA>IND211002AAB))
+Corridor IND212402AAA>IND211002AAB runs from Phulpur_Shekhpur_D (Uttar Pradesh) in Phulpur to Allahabad_Central_H_1 (Uttar Pradesh) in Allahabad, Uttar Pradesh. Over 13 legs it averages 1051 minutes against an OSRM plan of 36 minutes, a median gap ratio of 29.14. It runs 13.32 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0000). It is bottleneck rank 2. 0% of its legs are FTL.","Corridor IND212402AAA>IND211002AAB runs from Phulpur_Shekhpur_D (Uttar Pradesh) in Phulpur to Allahabad_Central_H_1 (Uttar Pradesh) in Allahabad, Uttar Pradesh *(corridor_audit (IND212402AAA>IND211002AAB))*. Over 13 legs, it averages 1051 minutes against an OSRM plan of 36 minutes, with a median gap ratio of 29.14 *(corridor_audit (IND212402AAA>IND211002AAB))*. It runs 13.32 times the network's typical overrun, is statistically confirmed slower than the network (q = 0.0000), holds bottleneck rank 2, and has 0% FTL legs *(corridor_audit (IND212402AAA>IND211002AAB))*.",,
+F02,"How many legs does the Malvan to Sawantwadi corridor have, and how late does it run?","[1] (corridor_audit (IND176303AAA>IND176310AAA))
+Corridor IND176303AAA>IND176310AAA runs from Dalhousie_Banikhet_D (Himachal Pradesh) in Dalhousie to Chamba_Bangotu_D (Himachal Pradesh) in Chamba, Himachal Pradesh. Over 10 legs it averages 331 minutes against an OSRM plan of 68 minutes, a median gap ratio of 1.33. It runs 0.85 times the network's typical overrun and is not statistically distinguishable from the network (q = 0.6655). 100% of its legs are FTL.
+
+[2] (corridor_audit (IND842001AAA>IND847212AAA))
+Corridor IND842001AAA>IND847212AAA runs from Muzaffrpur_Bbganj_I (Bihar) in Muzaffrpur to Madhubani_Bardivan_D (Bihar) in Madhubani, Bihar. Over 22 legs it averages 167 minutes against an OSRM plan of 73 minutes, a median gap ratio of 2.19. It runs 1.03 times the network's typical overrun and is not statistically distinguishable from the network (q = 0.6171). 100% of its legs are FTL.
+
+[3] (corridor_audit (IND416606AAA>IND416510AAA))
+Corridor IND416606AAA>IND416510AAA runs from Malvan_BllvMarg_D (Maharashtra) in Malvan to Sawantwadi_LaxmiNgr_D (Maharashtra) in Sawantwadi, Maharashtra. Over 10 legs it averages 1280 minutes against an OSRM plan of 46 minutes, a median gap ratio of 26.72. It runs 12.15 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0000). It is bottleneck rank 3. 0% of its legs are FTL.
+
+[4] (corridor_audit (IND000000ACB>IND842001AAA))
+Corridor IND000000ACB>IND842001AAA runs from Gurgaon_Bilaspur_HB (Haryana) in Gurgaon to Muzaffrpur_Bbganj_I (Bihar) in Muzaffrpur, Bihar. Over 19 legs it averages 1512 minutes against an OSRM plan of 737 minutes, a median gap ratio of 2.05. It runs 0.94 times the network's typical overrun and is statistically confirmed faster than the network (q = 0.0000). 100% of its legs are FTL.
+
+[5] (corridor_audit (IND174021AAA>IND176048AAA))
+Corridor IND174021AAA>IND176048AAA runs from Ghumarwin_Gndhichk_D (Himachal Pradesh) in Ghumarwin to Jahu_Sulgwan_D (Himachal Pradesh) in Jahu, Himachal Pradesh. Over 12 legs it averages 57 minutes against an OSRM plan of 27 minutes, a median gap ratio of 2.04. It runs 0.95 times the network's typical overrun and is not statistically distinguishable from the network (q = 0.3868). 100% of its legs are FTL.","The Malvan to Sawantwadi corridor (`IND416606AAA>IND416510AAA`) has 10 legs *(corridor_audit (IND416606AAA>IND416510AAA))*. It averages 1280 minutes against an OSRM plan of 46 minutes, with a median gap ratio of 26.72 and running 12.15 times the network's typical overrun *(corridor_audit (IND416606AAA>IND416510AAA))*.",,
+F03,Tell me about dwell at the Hubli hub.,"[1] (hub_friction (IND580028AAA))
+Hub IND580028AAA in Hubli, Karnataka is rank 2 in the network's hub-friction table. Shipments leaving it sit a median of 373 minutes (76% of leg time), and 776 minutes at the 90th percentile. It serves 8 outbound corridors over 78 legs. Its chain-break rate is 0.0%.
+
+[2] (hub_friction (IND683511AAA))
+Hub IND683511AAA in Aluva, Kerala is rank 1 in the network's hub-friction table. Shipments leaving it sit a median of 350 minutes (82% of leg time), and 467 minutes at the 90th percentile. It serves 7 outbound corridors over 86 legs.
+
+[3] (hub_friction (IND691001AAB))
+Hub IND691001AAB in Kollam, Kerala is rank 3 in the network's hub-friction table. Shipments leaving it sit a median of 139 minutes (73% of leg time), and 284 minutes at the 90th percentile. It serves 4 outbound corridors over 32 legs. Its chain-break rate is 0.0%.
+
+[4] (hub_friction (IND395023AAD))
+Hub IND395023AAD in Surat, Gujarat is rank 20 in the network's hub-friction table. Shipments leaving it sit a median of 46 minutes (58% of leg time), and 90 minutes at the 90th percentile. It serves 5 outbound corridors over 63 legs.
+
+[5] (hub_friction (IND431136AAC))
+Hub IND431136AAC in Aurangabad, Maharashtra is rank 11 in the network's hub-friction table. Shipments leaving it sit a median of 257 minutes (63% of leg time), and 457 minutes at the 90th percentile. It serves 5 outbound corridors over 58 legs. Its chain-break rate is 0.0%.","Hub IND580028AAA in Hubli, Karnataka ranks 2 in the network's hub-friction table, where shipments leaving it sit for a median dwell of 373 minutes (76% of leg time) and 776 minutes at the 90th percentile *(hub_friction (IND580028AAA))*. The hub serves 8 outbound corridors over 78 legs with a chain-break rate of 0.0% *(hub_friction (IND580028AAA))*.",,
+F04,Is the Dhampur to Kanth corridor faster or slower than the network?,"[1] (corridor_audit (IND246761AAA>IND244501AAA))
+Corridor IND246761AAA>IND244501AAA runs from Dhampur_NaginaRD_D (Uttar Pradesh) in Dhampur to Kanth_Dayanand_D (Uttar Pradesh) in Kanth, Uttar Pradesh. Over 10 legs it averages 48 minutes against an OSRM plan of 99 minutes, a median gap ratio of 0.45. It runs 0.22 times the network's typical overrun and is statistically confirmed faster than the network (q = 0.0000). 100% of its legs are FTL.
+
+[2] (corridor_audit (IND848101AAA>IND844505AAB))
+Corridor IND848101AAA>IND844505AAB runs from Samastipur_Haripur_D (Bihar) in Samastipur to HazratJandaha_HajiprRD_D (Bihar) in HazratJandaha, Bihar. Over 16 legs it averages 63 minutes against an OSRM plan of 18 minutes, a median gap ratio of 3.16. It runs 1.53 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0001). It is bottleneck rank 105. 100% of its legs are FTL.
+
+[3] (corridor_audit (IND262802AAA>IND262723AAB))
+Corridor IND262802AAA>IND262723AAB runs from Gola_BkgnRoad_D (Uttar Pradesh) in Gola to Dhaurahara_TahsilRD_D (Uttar Pradesh) in Dhaurahara, Uttar Pradesh. Over 21 legs it averages 180 minutes against an OSRM plan of 69 minutes, a median gap ratio of 2.54. It runs 1.19 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0000). It is bottleneck rank 227. 100% of its legs are FTL.
+
+[4] (corridor_audit (IND246763AAA>IND246761AAA))
+Corridor IND246763AAA>IND246761AAA runs from Najibabad_KotdwrRD_D (Uttar Pradesh) in Najibabad to Dhampur_NaginaRD_D (Uttar Pradesh) in Dhampur, Uttar Pradesh. Over 11 legs it averages 79 minutes against an OSRM plan of 31 minutes, a median gap ratio of 2.52. It runs 1.17 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0016). It is bottleneck rank 236. 100% of its legs are FTL.
+
+[5] (corridor_audit (IND842001AAA>IND843109AAB))
+Corridor IND842001AAA>IND843109AAB runs from Muzaffrpur_Bbganj_I (Bihar) in Muzaffrpur to Kanti_Central_DPP_2 (Bihar) in Kanti, Bihar. Over 15 legs it averages 37 minutes against an OSRM plan of 10 minutes, a median gap ratio of 3.40. It runs 1.60 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0002). It is bottleneck rank 94. 0% of its legs are FTL.","The Dhampur to Kanth corridor (IND246761AAA>IND244501AAA) is statistically confirmed faster than the network (q = 0.0000) *(corridor_audit (IND246761AAA>IND244501AAA))*. Over 10 legs, it averages 48 minutes against an OSRM plan of 99 minutes, achieving a median gap ratio of 0.45 and running 0.22 times the network's typical overrun *(corridor_audit (IND246761AAA>IND244501AAA))*.",,
+F05,How many corridors are statistically slower than the network?,"[1] (paper_draft.md -- 4.2 Result)
+### 4.2 Result
+
+
+**273 corridors are significantly slower and 512 significantly faster** than the network, of
+1,130 tested, and the tested corridors cover **20,739 of 26,369 legs (78.6%)**
+`[w2_audit_report.json]` (**Figure 2**). The worst corridor runs **13.9×** the network's
+typical overrun (**Figure 3**) `[w2_top20_bottlenecks.csv]`; 70 of the 273 slow corridors are
+intra-city, an operational problem distinct from long-haul delay.
+
+That more corridors are confirmed *faster* than slower is itself informative: the planner's
+optimism is not uniform, and a network-wide correction factor would make 512 corridors worse.
+
+[2] (paper_draft.md -- Abstract)
+# Where is the planner wrong? Corridor-level localisation of systematic routing error in a national logistics network
+
+*Draft v0.1 for ICCCI 2027 (D-052). Authors withheld for double-blind review. Every number
+below is read from a file in `benchmarks/raw/`; `benchmarks/experiments_appendix.md` maps
+each file to the command that regenerates it. Figures are in `docs/figures/`.*
+
+---
+
+## Abstract
+
+
+Production routing engines estimate how long a road-freight leg should take, and on the
+network studied here they are wrong in one direction almost every time: 98.3% of 26,369
+origin-destination legs run over plan, and the median leg takes 2.00× its planned time.
+One-sided error is systematic, and systematic error should be localisable. We test every
+corridor with at least ten legs against the rest of the network, using Welch's t-test on
+log time ratios with Benjamini-Hochberg control at 5%, and find **273 corridors
+significantly slower and 512 significantly faster** than the network, covering 78.6% of
+legs. We then show that this answer depends heavily on one parameter: raising the support
+floor from ten legs to thirty produces a top-20 list with **no corridor in common**. On the
+prediction side, a gradient-boosted model trained on the residual over a per-corridor median
+reaches 30.90 minutes mean absolute error against the median's 33.04, winning on all fourteen
+evaluation slices, with most of the gain on corridors that have no history. We report two
+engineering findings that affect how such systems are evaluated: a default optimiser setting
+that silently disabled the loss function the model was chosen for, and a replay-based
+evaluation that scored early events against later history and inflated a reported alert
+precision from 58.6% to 72.1%. The pipeline runs unchanged on 56.4 million rows.
+
+---
+
+[3] (corridor_audit (IND416012AAA>IND415612AAA))
+Corridor IND416012AAA>IND415612AAA runs from Kolhapur_Shivaji_I (Maharashtra) in Kolhapur to Ratnagiri_MjgaonRd_D (Maharashtra) in Ratnagiri, Maharashtra. Over 10 legs it averages 302 minutes against an OSRM plan of 96 minutes, a median gap ratio of 2.85. It runs 1.41 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0008). It is bottleneck rank 133. 100% of its legs are FTL.
+
+[4] (corridor_audit (IND208012AAA>IND209304AAA))
+Corridor IND208012AAA>IND209304AAA runs from Kanpur_Central_D_7 (Uttar Pradesh) in Kanpur to Kanpur_Central_H_6 (Uttar Pradesh) in Kanpur, Uttar Pradesh. Over 13 legs it averages 613 minutes against an OSRM plan of 20 minutes, a median gap ratio of 41.50. It runs 13.88 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0000). It is bottleneck rank 1. 0% of its legs are FTL.
+
+[5] (corridor_audit (IND203131AAA>IND203135AAA))
+Corridor IND203131AAA>IND203135AAA runs from Khurja_Pnjbiyon_D (Uttar Pradesh) in Khurja to Jewar_SJRoad_D (Uttar Pradesh) in Jewar, Uttar Pradesh. Over 16 legs it averages 60 minutes against an OSRM plan of 38 minutes, a median gap ratio of 1.43. It runs 0.71 times the network's typical overrun and is statistically confirmed faster than the network (q = 0.0000). 100% of its legs are FTL.","Based on the retrieved context, 3 corridors are statistically confirmed slower than the network:
+
+1. **IND416012AAA>IND415612AAA** *(corridor_audit (IND416012AAA>IND415612AAA))*
+2. **IND208012AAA>IND209304AAA** *(corridor_audit (IND208012AAA>IND209304AAA))*
+3. **IND851127AAA>IND842001AAA** *(corridor_audit (IND851127AAA>IND842001AAA))*",,
+F06,Why was the audited-corridor support floor lowered to 10 legs?,"[1] (decisions.md -- D-018 · Lower the audited-corridor support floor to 10 legs — `DECIDED`)
+## D-018 · Lower the audited-corridor support floor to 10 legs — `DECIDED`
+
+**Week 2 · raised by Lahari · agreed by all three at the Week 2 sync · supersedes D-004**
+
+D-004's 30-leg floor was set in the abstract, before any significance test existed. Now
+that one does, the whole audit re-run at each threshold says the floor is not trading
+power for coverage — it is removing the bottlenecks.
+
+| Min legs | Corridors tested | % of legs covered | % of tests significant | Bottlenecks | Worst excess ratio |
+|---|---|---|---|---|---|
+| **10** (recommended) | 1,130 | **78.6%** | 70% | 273 | **13.9×** |
+| 20 | 268 | 33.4% | 74% | 78 | 4.08× |
+| **30** (D-004, current) | 99 | **18.9%** | 71% | 34 | **1.92×** |
+| 50 | 33 | 9.8% | 70% | 11 | 1.54× |
+| 100 | 8 | 3.5% | 88% | 1 | 1.17× |
+
+**Recommendation: move the audited set to 10 legs, and print the leg count in every
+ranked row.** Welch is valid at n = 10, the comparison group is the whole 26,369-leg
+network either way, and the significant share barely moves — so the extra corridors are
+not noise passing a weaker test. What they are is the finding: at 30 legs the audit
+speaks for 18.9% of the network and its worst corridor runs 1.92× the network's typical
+overrun; at 10 it speaks for 78.6% and the worst runs 13.9×.
+
+**The one real cost, stated so the sync can weigh it.** Winner's curse at the top: with
+1,130 corridors tested, the single largest `excess_ratio` is the likeliest of all of
+them to be a lucky sample, so the first few rows of the loose table are provisional in
+a way the 30-leg table's are not. The leg count in every row is what lets a reader see
+that; a top-20 map built off the loose table should carry it too.
+
+**Decided: the floor moves to 10.** `config.MIN_CORRIDOR_SUPPORT = 10`, and the audit
+was re-run end to end at it. The Week 2 headline is now **273 bottlenecks and 512
+significantly faster corridors of 1,130 tested, covering 78.6% of the network's legs,
+worst corridor 13.88×** — Kanpur → Kanpur, on 13 legs.
+
+D-004 is **superseded, not overturned.** Its reasoning — that ranking 2,783 mostly
+singleton corridors ranks noise — still holds, and a floor is still needed. What the
+sweep showed is that the floor was one notch higher than the thing it was built to
+find.
+
+**Three things the decision commits us to, because the cost is real:**
+
+1. **Every ranked row prints its leg count.** With 1,130 tests in the family, the
+   single largest `excess_ratio` is by construction the likeliest of all of them to be
+   a lucky sample. The leg count is what lets a reader discount a 13.9× on 13 legs
+   against a 1.5× on 100.
+2. **The 30-leg audit stays, as `benchmarks/raw/w2_corridor_audit_support30.csv`.**
+   Not as an archive — as the comparison view whose top rows carry no winner's curse
+   worth naming. A claim that survives both tables goes in the paper; a claim that
+   appears only at the top of the loose table is a lead.
+3. **Both tables are cited in the report, because they describe different networks.**
+   This was not anticipated when the recommendation was written and is the most
+   interesting thing to come out of it: *the two top-20 tables share no corridor at
+   all.* The 30-leg table is metro — Maharashtra 11 of 20, Mumbai/Bhiwandi,
+   Delhi/Gurgaon, intra-Hyderabad — and reads as a story about urban congestion. The
+   10-leg table is district feeders between towns — Bihar 4, Maharashtra 3, Uttar
+   Pradesh 2 — Phulpur → Allahabad, Malvan → Sawantwadi, three separate corridors into
+   Muzaffarpur. **What the busy core suffers from and what the network's worst
+   corridors suffer from are not the same thing**, and Week 4's error analysis must not
+   assume one model explains both.
+
+**Consequences for the rest of the project.** Week 3's corridor-history feature now has
+78.6% of legs with a corridor it has seen before rather than 18.9% — the single largest
+gain from this decision, and it is a coverage gain, not a significance one. Week 6's
+Invoice Auditor can price far more corridors from measured history. Krishna's India map
+follows the CSV without a code change, but its colour ramp and its coordinate table both
+needed work at the wider range — see P-22 and P-23.
+
+Evidence: `docs/W2_lahari_corridor_audit.md` §4,
+`benchmarks/raw/w2_support_sensitivity.csv`, `w2_corridor_audit_support30.csv`.
+
+---
+
+[2] (paper_draft.md -- 4.1 Method)
+## 4 · The corridor audit
+
+### 4.1 Method
+
+
+For each leg the statistic is the log of realised ÷ planned time, which makes the comparison
+multiplicative and symmetric. Each corridor with at least ten legs is tested against **the
+rest of the network** with Welch's unequal-variance t-test; the comparison group's sums are
+derived by subtracting the corridor's own from the network totals, so 1,130 tests need one
+pass over the data. p-values are corrected by Benjamini-Hochberg at 5%. The support floor was
+lowered from 30 to 10 legs during the work; §4.3 reports what that choice does.
+
+[3] (paper_skeleton.md -- 3.3 The corridor audit)
+## 3.3 The corridor audit
+
+
+**Topic sentence:** ""this corridor is slow"" is a statistical claim and is tested as one.
+
+- Statistic: log of realised ÷ planned time per leg, so the comparison is multiplicative
+  and symmetric.
+- Test: Welch's t-test of each corridor against **the rest of the network**, with the
+  comparison group derived by subtracting the corridor's sums from the network totals
+  rather than rescanning 1,130 times.
+- Multiplicity: Benjamini-Hochberg at **FDR 0.05** across all tested corridors.
+- Support floor: **10 legs**, lowered from 30 during the work (D-018), and §4.2 reports
+  what that choice does to the answer.
+
+[4] (W1_lahari_data_dictionary_and_eda.md -- 4. Corridor support)
+### 4. Corridor support
+
+
+| Minimum legs per corridor | Corridors retained | % of corridors | % of legs covered |
+|---|---|---|---|
+| 1 | 2,783 | 100.0% | 100.0% |
+| 10 | 1,130 | 40.6% | 78.6% |
+| 20 | 268 | 9.6% | 33.4% |
+| 30 | 99 | 3.6% | 18.9% |
+| 50 | 33 | 1.2% | 9.8% |
+| 100 | 8 | 0.3% | 3.5% |
+
+**Decision (D-018, superseding D-004): minimum support = 10 legs.** That keeps 1,130 of 2,783 corridors (40.6%), covering 78.6% of all legs. A floor is still needed — the long tail of once-seen corridors cannot support a significance test and would dominate any worst-corridor ranking with noise — but the Week 2 audit re-ran the whole test at every threshold and found 30 legs was removing the finding rather than the noise. See D-018 and `W2_lahari_corridor_audit.md` §4.
+
+[5] (decisions.md -- D-004 · Minimum corridor support for the audit — `SUPERSEDED by D-018`)
+## D-004 · Minimum corridor support for the audit — `SUPERSEDED by D-018`
+
+**Week 1 · Lahari**
+
+Corridors with fewer than **30 observed legs** are excluded from the Stage 3 audit.
+
+**Why:** a ""worst corridor"" ranking over 2,783 corridors, most seen once or twice,
+ranks noise. 30 legs is the smallest support at which a Welch t-test on log-ratios is
+worth reporting.
+
+**The cost, stated openly:** 30 legs retains 99 of 2,783 corridors (3.6%) covering
+18.9% of legs. **The audit is therefore a claim about the busy core of the network,
+not about the whole of it, and the report must say exactly that.** A threshold of 10
+legs would retain 40.6% of corridors and 78.6% of legs with weaker per-corridor tests.
+
+**Revisited at the Week 2 gate, on results.** The audit was re-run end to end at each
+threshold — aggregate, Welch, and a fresh BH correction over whatever family the
+threshold defines — and the trade-off is not the one this entry assumed. The share of
+tests that come back significant barely moves between 10 and 30 legs (70% against 71%),
+so the looser threshold is not buying significance with noise; what the 30-leg floor
+costs is the finding itself. The worst corridor at 30 legs runs 1.92× the network's
+typical overrun, at 10 legs it runs 13.9×. The genuinely broken corridors are mostly
+rare corridors, and the floor removes them before the test runs.
+
+`MIN_CORRIDOR_SUPPORT` moved to 10 at the Week 2 sync — see **D-018**, which carries the
+decision and the caveats it commits us to. This entry is left as written, per the rule at
+the top of this file: the reasoning for a 30-leg floor is still sound reasoning, and the
+report needs to be able to reconstruct why the project believed it.
+
+Evidence: `docs/W2_lahari_corridor_audit.md` §4,
+`benchmarks/raw/w2_support_sensitivity.csv`.
+
+---","The audited-corridor support floor was lowered from 30 to 10 legs because re-running the audit across thresholds showed the higher floor was removing genuine findings rather than noise, with the significant test share barely moving from 71% to 70% *(decisions.md D-018)*. 
+
+At a 10-leg floor, network leg coverage increased from 18.9% to 78.6%, detected bottlenecks grew from 34 to 273, and the worst excess ratio rose from 1.92× to 13.9× *(decisions.md D-018, results.md)*. Additionally, lowering the threshold expanded Week 3's corridor-history feature coverage to 78.6% of legs with a seen corridor instead of 18.9% *(decisions.md D-018)*.",,
+D01,Why was the delay threshold set to 2x planned time?,"[1] (W1_lahari_data_dictionary_and_eda.md -- The blueprint's 1.25 threshold did not survive contact with the data)
+#### The blueprint's 1.25 threshold did not survive contact with the data
+
+
+The blueprint proposed `T = 1.25`. At leg grain that labels **93.6% of legs delayed** — because the *median* leg already runs at 2.00x plan, so a 25% overrun is not an exception on this network, it is the norm.
+
+That makes the classifier close to meaningless: a model that outputs “delayed” for every shipment scores **93.6% accuracy** while carrying zero information. Precision would look excellent and mean nothing, and the Exception Agent built on it in Week 6 would flag essentially every shipment — which is the same as flagging none.
+
+**Decided at the Week 2 sync — D-003: `config.DELAY_THRESHOLD` is 2.00.** That splits the legs 49.6% / 50.4%, so the majority-class baseline falls from 93.6% to 50.4% and the label becomes something a model can be wrong about. Interpretation stays honest: “takes at least twice the planned time” is a defensible definition of *operationally late* on a network whose planner is biased this hard.
+
+**Two supporting moves, adopted with it:**
+
+1. **Lead with regression, not classification.** `gap_min` (median 42 min, mean 110 min) has no threshold problem at all, and the headline the blueprint actually wants — *our MAE against OSRM's MAE* — is a regression result. The classifier is the secondary framing; it exists because Week 6's Exception Agent needs a flag to act on.
+2. **Report the trivial baseline next to every classifier number, permanently.** An accuracy quoted without the majority-class rate — now 50.4% — beside it is unreadable, and a viva panel will ask.
+
+**Why 2.00 and not 1.50.** 1.50 leaves 83.6% positive — better, and still a classifier that scores in the eighties by answering “delayed” every time. The threshold is chosen to make the *label* informative, not to make the network look better or worse than it is. On this data the balanced point and the defensible English sentence are the same number, which is the only reason to prefer a round 2.00 to a tuned one.
+
+**The 1.25 row stays in the report.** The finding is that the blueprint's threshold labels 93.6% of legs delayed — not that the project settled on 2.00. A reader who cannot see the first cannot judge the second. Week 5's sensitivity run covers 1.15 / 1.25 / 1.50 / 2.00 so the choice is shown to be a choice.
+
+[2] (decisions.md -- D-003 · Delay label threshold — `DECIDED`)
+## D-003 · Delay label threshold — `DECIDED`
+
+**Week 1 · raised by Lahari · closed at the Week 2 sync, all three agreed**
+
+Label: `actual_time > T × osrm_time` at leg grain. The blueprint proposes `T = 1.25`.
+
+**The problem the data revealed.** At `T = 1.25`, **93.6% of legs are labelled
+delayed**, because the median leg already runs at 2.00× plan. A model that predicts
+""delayed"" for everything scores 93.6% accuracy while carrying zero information, and
+the Week 6 Exception Agent built on it would flag essentially every shipment — the
+same as flagging none.
+
+| T | % legs delayed |
+|---|---|
+| 1.10 | 96.9% |
+| 1.15 | 96.0% |
+| **1.25** (blueprint) | **93.6%** |
+| 1.50 | 83.6% |
+| **2.00** (recommended) | **49.6%** |
+
+**Recommendation on the table:**
+1. Move the classification threshold to `T = 2.00` — a 49.6 / 50.4 split, and
+   ""takes at least twice the planned time"" is defensible as *operationally late* on a
+   network whose planner is biased this hard.
+2. **Lead with regression, not classification.** `gap_min` (median 42 min, mean
+   110 min) has no threshold problem, and the headline the blueprint actually wants —
+   *our MAE vs OSRM's MAE* — is a regression result anyway.
+3. Report the majority-class rate beside every classifier metric, permanently.
+
+**Decided: all three recommendations are adopted.**
+
+1. `config.DELAY_THRESHOLD = 2.00`. The label is now ""took at least twice the planned
+   time"", which splits the legs 49.6 / 50.4 and is defensible as *operationally late*
+   on a network whose median leg already runs at 2.00× plan.
+2. **The project leads with regression.** The headline result of Week 4 is MAE on
+   `gap_min` against OSRM's MAE — a comparison with no threshold in it at all.
+   Classification is the secondary framing, kept because Week 6's Exception Agent needs
+   a flag to act on, not because it is the stronger result.
+3. **The majority-class rate is reported beside every classifier metric, permanently.**
+   At T = 2.00 that is 50.4%, so an accuracy of 0.72 now reads as what it is. This is a
+   rule for the report and the paper, not a one-off caveat.
+
+**Why 2.00 and not 1.50.** 1.50 leaves 83.6% positive — better than 93.6% and still a
+classifier that can score in the eighties by answering ""delayed"" every time. The
+threshold is chosen to make the *label* informative, not to make the network look
+better or worse than it is; on this data the balanced point and the defensible English
+sentence happen to be the same number, which is the only reason to prefer a round 2.00
+to a tuned one.
+
+**What it does not change.** The Week 1 finding stands exactly as written and is the
+reason for this decision: at the blueprint's 1.25, **93.6% of legs are labelled
+delayed**. That number stays in `results.md` and in the paper, because a reader has to
+see why the threshold moved. The full sweep is in
+`benchmarks/raw/w1_delay_threshold_sensitivity.csv` and nothing about it was recomputed
+— only which row the project builds on.
+
+**Carried to Week 5:** the sensitivity run is extended to 1.15 / 1.25 / 1.50 / 2.00, so
+the choice is shown to be a choice rather than a hyperparameter nobody revisited.
+
+Evidence: `docs/W1_lahari_data_dictionary_and_eda.md` §3,
+`benchmarks/raw/w1_delay_threshold_sensitivity.csv`.
+
+---
+
+[3] (decisions.md -- D-025 · Delay classifier v1 is logistic regression, scored beside every model's implied threshold call — `DECIDED`)
+## D-025 · Delay classifier v1 is logistic regression, scored beside every model's implied threshold call — `DECIDED`
+
+**Week 3 · Lahari**
+
+The execution plan's W3 D3-D4 asks for a delay classifier and an evaluation harness
+computing precision/recall/F1 for every model, alongside the MAE/RMSE regression
+table D-022 through D-024 already closed. `is_delayed` is D-003's label, unchanged:
+`actual_time > 2.00x planned_min`, 49.7% positive over all 26,369 legs — close enough
+to even that D-003's own concern (report the majority rate beside every classifier
+metric, permanently) actually bites here, unlike at the blueprint's 93.6%-positive
+1.25 threshold.
+
+**Decided: logistic regression over the same `FEATURES` as the Week 3 linear
+regressor is delay classifier v1**, and every regression baseline in the table — OSRM,
+corridor mean, linear regression — gets its classification score by thresholding its
+own `gap_min` prediction against the identical rule the label is built from
+(`threshold_to_label`), rather than fitting a second, separately-calibrated model
+under each baseline's name. `LogisticRegression`'s solver needed the features
+standardised first (`StandardScaler` in a pipeline) to converge — `FEATURES` mixes
+minutes, kilometres and 0/1 indicators on scales OLS's closed-form fit above never had
+to care about.
+
+**Result: the fitted classifier is the strongest model in the table, and the
+corridor-mean threshold is close behind on a different trade-off.** Logistic
+regression reaches 0.764 F1 on test (0.761 precision, 0.767 recall) against the
+majority class's 0.000; thresholding the corridor mean reaches 0.762 F1 with more
+recall (0.831) and less precision (0.704). `OSRM`'s threshold and the majority class
+make the identical degenerate call — ""not delayed"" for every leg — since OSRM's own
+estimate never disagrees with itself by 2x. Unlike D-024, MAE and F1 do not disagree
+about which model is better here: logistic regression is not the same object as the
+linear regressor (it is fit on `is_delayed` directly, not thresholded from `gap_min`),
+so this is a separate result rather than the same finding restated.
+
+**Consequence for Week 4.** Random Forest and GBT owe this same classifier table,
+scored with `add_delay_label` and `threshold_to_label` rather than a redefined label —
+the model to clear is logistic regression's 0.764 F1, not the majority class's 0.000.
+
+Evidence: `docs/W3_lahari_baselines.md` §5, `benchmarks/raw/w3_classifier_metrics.csv`,
+`w3_baseline_report.json`.
+
+---
+
+[4] (results.md -- Both Week 2 decisions are closed)
+### Both Week 2 decisions are closed
+
+
+- **D-018 decided** — the support floor is 10 legs; every number in this section is at
+  that floor, and the 30-leg table is retained beside it.
+- **D-003 decided** — `DELAY_THRESHOLD` moves to 2.00 (49.6 / 50.4), the project leads
+  with regression on `gap_min`, and the majority-class rate is reported beside every
+  classifier metric permanently. The Week 1 finding that 1.25 labels 93.6% of legs
+  delayed stays in the report as the evidence for the move.
+
+[5] (problems.md -- P-42 · The stream was about to publish a label computed at the threshold the project rejected in Week 2)
+### P-42 · The stream was about to publish a label computed at the threshold the project rejected in Week 2
+
+**Week 5 · Mounika · resolved**
+
+- **Symptom.** Scoring the replay's alerts against the `is_delayed` its own fact events
+  carried gave precision 0.981 and recall 0.688. Both numbers were wrong, and the tell
+  was the base rate beside them: **93.6% of the 26,369 replayed legs came back
+  ""delayed""**, against the 49.7% D-003 records for the decided threshold. 93.6% is not
+  a near miss. It is *exactly* the figure D-003's own table gives for `T = 1.25` —
+  the blueprint's threshold, which the team rejected at the Week 2 sync.
+- **Cause.** `src.pipeline.reconstruct` writes `is_delayed` into the parquet using
+  `config.DELAY_THRESHOLD` **as it stood when the cache was built**. D-003 moved that
+  constant from 1.25 to 2.00; the frozen caches (D-016) were never rebuilt, so the
+  column has been stale ever since. 11,583 of 26,369 legs — 43.9% — carry a
+  label that contradicts the same threshold recomputed from `gap_min` and `planned_min`.
+- **Why eight weeks passed without anyone noticing.** `src.ml.baselines.add_delay_label`
+  recomputes the label from `gap_min` before every fit, on purpose. So every model in
+  Weeks 3 and 4 trained and scored on the *correct* label, and the stale column was
+  overwritten on the only code path that had ever read it. It was not hidden by luck;
+  it was hidden by a downstream correction working exactly as designed. `fact_event` was
+  the first consumer to read the column straight from the parquet and put it on the wire.
+- **Fix.** `fact_event` recomputes the label rather than carrying it, and `is_delayed`
+  was **removed from `EXAMPLE_COLUMNS` altogether** — not loading a stale column is
+  a stronger guarantee than remembering not to use it. Four tests pin the behaviour, and
+  the fixture row deliberately carries the *wrong* stale value, because a fixture holding
+  the right answer cannot tell ""recomputes"" from ""copies"". With the label corrected the
+  same comparison reads precision 0.686, recall 0.907 — a different system's worth
+  of difference from what the stale label showed.
+- **Not fixed here, deliberately: the parquet still holds the stale column.** Rebuilding
+  it means re-running the pipeline and unfreezing a cache D-016 froze on purpose, and the
+  two consumers that matter now both recompute. The remaining risk is a *third* consumer
+  reading it directly, which is why this entry exists and why the column is no longer
+  loaded on the path that would have.
+- **Carry.** A cached column computed from a constant is a snapshot of that constant, not
+  a definition of it. Anywhere a decision changes a threshold, every derived cache is
+  stale from that moment — and a downstream recomputation that quietly papers over
+  it removes the only symptom anyone would have seen.","The original proposed threshold of `T = 1.25` labeled 93.6% of legs as delayed because the median leg on the network already runs at 2.00x plan *(W1_lahari_data_dictionary_and_eda.md)*. At 1.25, a classifier predicting ""delayed"" for every shipment would achieve 93.6% accuracy while carrying zero information *(W1_lahari_data_dictionary_and_eda.md)*. Setting `config.DELAY_THRESHOLD` to 2.00 creates a 49.6% delayed / 50.4% not delayed split, dropping the majority-class baseline to 50.4% and establishing a defensible operational definition of lateness where the label becomes informative *(decisions.md -- D-003)*.",,
+D02,Why does the streaming job drop fact events?,"[1] (W5_lahari_stream_validation.md -- The day-of-week trap this test caught)
+#### The day-of-week trap this test caught
+
+
+The event carries the temporal features as explicit fields, but a streaming job could just as reasonably recompute them from `event_time`. Written the obvious way -- `datetime.weekday()` -- that recomputation disagrees with the carried value on **500 of 500 rows**, because Stage 4 built the feature with Spark's `dayofweek` (**Sunday = 1**, Saturday = 7) and Python's `weekday()` counts from **Monday = 0**. On a Wednesday that is 4 against 2.
+
+Nothing raises when this happens. The model receives a number on a different scale for every event and answers confidently and wrongly -- no exception, no null, no row count that looks off. `src.streaming.schema.temporal_features()` is now the one place that conversion lives, so the streaming job and the batch pipeline cannot drift apart on it, and the row above is the regression guard. Full account: `docs/problems.md` P-39.
+
+Full per-leg output: `benchmarks/raw/w5_stream_equals_batch.csv`, `w5_stream_temporal_check.csv`, `w5_stream_validation_report.json`.
+<!-- /section: stream-equals-batch -->
+
+<!-- section: threshold-sensitivity -->
+
+[2] (W5_mounika_kafka_streaming.md -- Nothing here re-invents the event)
+## Nothing here re-invents the event
+
+
+`src.streaming.schema` owns `query_event` / `fact_event` / `validate_event`, and this
+module calls them. That was the whole point of writing the schema in Week 4 D5 before
+a producer existed to consume it — D-031 argued the streaming layer should answer to
+the same fact/query contract Stage 4's batch join already proved leak-free (D-020),
+and the way to keep that true is one shared source, not two that agree today.
+
+`--validate` runs every event through the JSON Schema before any of them are emitted.
+On the smoke run below, all 600 validated.
+
+[3] (W5_mounika_kafka_streaming.md -- First real run)
+## First real run
+
+
+300 legs → 600 events, replayed over 6 seconds:
+
+| | |
+|---|---|
+| Events | 600 (300 query + 300 fact), all schema-validated |
+| Real span replayed | 61.9 hours |
+| Wall clock | 5.5s across 10 ticks |
+| Sustained rate | **109 events/sec** |
+| Time compression | **~40,000×** |
+| Files written | 10 `.jsonl`, 0 `.tmp` left behind |
+
+These are smoke-run numbers on a deliberately small slice, not the headline. The real
+sustained-throughput and event-to-alert latency figures are D5's harness, measured
+against the full 52,738-event replay with the streaming job actually consuming — this
+table only says the producer works.
+
+**One real bug, caught by running it** (P-38): the first run died parsing its own
+event timestamps. A query event carries microseconds; a fact event lands on a whole
+second whenever the leg's duration is a whole number of minutes, which on this data it
+usually is. `pd.to_datetime` inferred one format from the first element and threw on
+the other. **This is P-09 from Week 1 arriving by a different route** — that time from
+the publisher's file, this time from our own two event builders — and the carry from
+P-09 (""one explicit format, never an inferred one"") had only ever been applied to the
+Spark reader. Now stated as a rule that covers both halves of the codebase: anywhere a
+timestamp is parsed from a collection, name the format.
+
+[4] (W7_mounika_scale_and_streaming.md -- 2. The finish-time bug (P-52))
+## 2. The finish-time bug (P-52)
+
+
+Lahari's as-of reconstruction agreed with Stage 4 on 95.2% of legs, not 100%, and tracking
+that down found a bug in my streaming schema: a fact event's time was
+`od_start_time + actual_time`, with a comment calling it exact.
+
+It is not. `actual_time` is *moving* time — `reconstruct.py` computes dwell as
+`start_scan_to_end_scan − actual_time` — so the derived finish excludes every minute the
+truck sat at a hub. Measured against the real `od_end_time`:
+
+- the derived time was **early on 26,298 of 26,369 legs**;
+- median **49.6 minutes** early, mean 98.1, p95 345.2.
+
+49.6 minutes is the median hub dwell Week 2 reported. The bug was re-deriving a column the
+data already contains.
+
+Facts are dropped by the streaming job today (D-037), so nothing published was wrong yet —
+but the moment live history is built from fact events, a leg still on the road would be
+counted as finished history, which is the leakage the whole as-of design exists to prevent.
+`fact_event` now refuses a row with no finish time rather than deriving one, and both the
+producer and the sample-event writer join `od_end_time` from `trips_v1`. The join is exact
+on all 26,369 legs.
+
+[5] (W5_mounika_kafka_streaming.md -- What I built (D1-D2))
+# W5 · Mounika — trip-replay producer, streaming job, throughput harness
+
+Week 5 is my hard week (execution plan §1). D1-D2 is the producer — the stream's
+left-hand end; the Structured Streaming job (D3-D4) and the throughput/latency
+harness (D5) land in later sections of this same file, per GIT_RULES §2.
+
+## What I built (D1-D2)
+
+
+**`src/streaming/producer.py`.** Reads the frozen `features_v1` cache, turns every
+leg into the query + fact event pair the Week 4 schema already defines (D-031), and
+replays them **time-compressed** — the dataset's real ~26-day window emitted over N
+wall-clock seconds.
+
+```bash
+python -m src.streaming.producer --duration 60                   # whole window in 60s
+python -m src.streaming.producer --limit 300 --duration 6 --validate --clean
+python -m src.streaming.producer --sink kafka                    # when a broker exists
+```
+
+Writes JSON-lines batches to `data/stream/trips/` (gitignored, like every generated
+artefact under `data/`). The committed evidence is the five-leg sample Week 4 already
+put in `demo/sample_events/`, not the replay output.","#### The day-of-week trap this test caught The event carries the temporal features as explicit fields, but a streaming job could just as reasonably recompute them from `event_time`. Written the obvious way -- `datetime.weekday()` -- that recomputation disagrees with the carried value on **500 of 500 rows**, because Stage 4 built the feature with Spark's `dayofweek` (**Sunday = 1**, Saturday = 7) and Python's `weekday()` counts from **Monday = 0**. On a Wednesday that is 4 against 2. (W5_lahari_stream_validation.md -- The day-of-week trap this test caught)",,
+D03,What sustained throughput did the streaming pipeline reach?,"[1] (decisions.md -- D-038 · Throughput is reported as a saturated scoring rate with the stage breakdown beside it, never as one events/sec headline — `DECIDED`)
+## D-038 · Throughput is reported as a saturated scoring rate with the stage breakdown beside it, never as one events/sec headline — `DECIDED`
+
+**Week 5 · Mounika · D5**
+
+The plan asks for ""events/sec sustained"" and ""event-to-alert ms"". Both are easy to
+report in a way that is technically true and practically meaningless.
+
+**The trap.** Run the replay at a comfortable rate, watch the job keep up, divide
+events by wall-clock seconds, publish it. That number is the *producer's* pacing
+wearing the job's name: offer 100 events/sec to a pipeline that can do 700 and it
+measures 100. The first version of this harness did exactly that and reported
+figures between 98 and 179 events/sec that varied with the offered load and told us
+nothing about capacity.
+
+**Decided: three numbers, each with a stated denominator.**
+1. **Produced rate** — what the producer actually achieved, from its own wall
+   clock, not its schedule.
+2. **Saturated scoring rate** — events divided by the seconds actually spent
+   inside `process_batch`, excluding every second the stream sat waiting for a file.
+   This is the capacity figure and the only one that does not move with the offered
+   load.
+3. **Event-to-alert latency** — tick-file modification time to alert write,
+   including file-source discovery and the trigger interval, because a consumer
+   waiting for an alert waits for those too.
+
+**Decided: a stage breakdown ships with every measurement.** ""14 seconds per
+micro-batch"" is a complaint; ""13.2 of those 14 seconds are inside
+`createDataFrame` + `transform` + `collect`, and 0.06 is the pandas round trip"" is a
+finding. It settled the one design question D-037 left open, and it is what shows the
+pipeline is bound by a **fixed per-batch cost** rather than by event volume — the
+same batch takes ~14s whether it holds 1,618 events or 4,000.
+
+**Consequence: this pipeline gets faster with *fewer, larger* batches**, which is the
+opposite of the usual latency instinct and is why `max_files_per_trigger` is an exposed
+dial rather than a constant. Capping it at 4 files to chase latency made a 20-second
+replay undrainable — 9 batches at ~14s each — while the uncapped run finished
+the same work in 2. Both configurations are kept in `benchmarks/raw/`, because the
+trade-off *is* the result.
+
+**Decided: `kept_up` is computed, not asserted**, from whether the job drained
+everything offered inside the replay plus a drain window of four batch times. Two
+attempts at that verdict were wrong before this one (P-43, P-44), which is the argument
+for the harness returning structured stats a test can hold rather than a log line a
+human reads.
+
+Evidence: `src/streaming/throughput.py`, `benchmarks/raw/w5_stream_throughput*.json`,
+`tests/test_stream_job.py`, `docs/W5_mounika_kafka_streaming.md`.
+
+---
+
+[2] (W5_mounika_kafka_streaming.md -- Three numbers, three denominators)
+### Three numbers, three denominators
+
+
+""Events per second"" is easy to report meaninglessly. Offer 100 events/sec to a pipeline
+that can do 740 and you measure 100 — the *producer's* pacing wearing the job's name.
+The first version of this harness did exactly that and reported figures between 98 and
+179 that moved with the offered load and said nothing about capacity. So each number
+here names its denominator: **produced rate** is over the producer's own wall clock,
+**saturated scoring rate** is over the seconds actually spent inside `process_batch`,
+and **latency** is tick-file modification time to alert write — including file discovery
+and the trigger interval, because a consumer waiting for an alert waits for those too.
+D-038 has the argument.
+
+[3] (W5_mounika_kafka_streaming.md -- The counter-intuitive result: fewer, larger batches)
+### The counter-intuitive result: fewer, larger batches
+
+
+A micro-batch costs **~14 seconds almost regardless of what is in it** — the same ~14s
+whether it holds 1,618 events or 4,000. The cost is fixed, not per-event. So throughput
+scales with batch size, and this pipeline gets *faster* with fewer, larger batches,
+which is the opposite of the usual latency instinct.
+
+Measured on 2,000 legs (4,000 events), the same replay at two settings of
+`max_files_per_trigger`:
+
+| offered | tick files | cap | batches | processed | scoring rate | latency p50 | drained? |
+|---|---|---|---|---|---|---|---|
+| 200/s | 36 | 4 | 5 | 3,808 / 4,000 | 52/s | 46.8s | **no** |
+| 200/s | 36 | none | 2 | 4,000 / 4,000 | 120/s | 32.3s | yes |
+| 800/s | 10 | 4 | 4 | 4,000 / 4,000 | 143/s | 28.4s | yes |
+| 800/s | 10 | none | 2 | 4,000 / 4,000 | 145/s | 28.2s | yes |
+| 2000/s | 4 | 4 | 2 | 4,000 / 4,000 | 287/s | 15.3s | yes |
+| 2000/s | 4 | none | 2 | 4,000 / 4,000 | 286/s | 15.1s | yes |
+
+Capping batches at 4 files to chase latency made the *slowest* offered rate the one the
+job could not drain: 36 tick files at 4 per batch is 9 batches, ~126 seconds of fixed
+cost for a 20-second replay. Both configurations are kept in `benchmarks/raw/` because
+the trade-off is the result. It is also why the full run above uses no cap and reaches
+740 events/sec against 287 on the small one — same pipeline, bigger batches.
+
+[4] (W5_mounika_kafka_streaming.md -- D5 · What the full replay actually did)
+## D5 · What the full replay actually did
+
+
+`src/streaming/throughput.py` runs the real producer and the real job against each
+other in one process and reports what happened.
+
+```bash
+python -m src.streaming.throughput --legs-all --durations 60 \
+    --max-files-per-trigger 1000 --drain 300
+```
+
+**The whole dataset, replayed end to end:**
+
+| | |
+|---|---|
+| Legs replayed | **26,369** (the complete `features_v1`) |
+| Events | **52,738** query + fact |
+| Producer wall clock | 59.5s → **886 events/sec**, ~38,000× time compression |
+| Events processed | **52,738 of 52,738** — nothing dropped |
+| Queries scored / facts dropped | 26,369 / 26,369 |
+| Alerts written | **17,317** |
+| Micro-batches | 4 |
+| **Saturated scoring rate** | **740 events/sec** |
+| **Event-to-alert latency** | **p50 28.9s, p95 38.0s, max 40.5s** |
+
+[5] (paper_skeleton.md -- 4.7 Streaming and scale)
+## 4.7 Streaming and scale
+
+
+- **886 events/sec** sustained, **740/sec** scoring, event-to-alert p50 **28.9 s**, p95
+  **38.0 s**, on 20 cores and a 4 GB driver, from a file source
+  `[w5_stream_throughput_full.json]`.
+- The same aggregation, unchanged, on **56,353,613 rows in 14.32 s**; and on 4 cores,
+  17.75 s — a **1.24× speedup for 5× the parallelism**, because 914 MB from one disk is
+  IO-bound `[w7_scale_benchmark.json]`. **Figure 8.**
+
+---
+
+# 5 · Discussion — the three places we would be challenged
+
+1. **""Your model barely beats a lookup table.""** On corridors with history, correct, and
+   the paper says so in the same sentence as the headline. The defensible claim is the
+   cold-start one: −35 minutes where a lookup has nothing to say.
+2. **""Your agents are not agents.""** Also correct, and it is the design position: verdicts
+   computed, prose generated, therefore reproducible and scorable. The refusal gate's 50%
+   recall is the cost of the same honesty — we publish it rather than tuning the gate on
+   the test set.
+3. **""145,000 rows is not big data.""** Correct, which is why the scale appendix exists and
+   why the word is ""distributed"" without it.","Under decision D-038, pipeline throughput is reported as a saturated scoring rate rather than a single headline figure *(decisions.md, D-038)*. On the full 52,738-event replay, the pipeline reached a saturated scoring rate of 740 events/sec, while the producer wall clock rate was 886 events/sec *(W5_mounika_kafka_streaming.md, D5 · What the full replay actually did)*. On an earlier small smoke run, a sustained rate of 109 events/sec was recorded *(W5_mounika_kafka_streaming.md, First real run)*.",,
+D04,Why does the alert bot send only a shortlist of alerts?,"[1] (decisions.md -- D-039 · The alert bot sends a shortlist, not the stream, and says which channel actually ran — `DECIDED`)
+## D-039 · The alert bot sends a shortlist, not the stream, and says which channel actually ran — `DECIDED`
+
+**Week 5 · Krishna · D3-D4 and D5**
+
+Mounika's full replay produced **17,317 alerts from 26,369 legs** (D-037, D-038). That
+number is the design input for everything downstream of it: a panel that lists them
+all is a log, and a bot that forwards them all is a firehose with a phone number. The
+dependable outcome of paging someone for two of every three shipments is that they stop
+reading, at which point the alerting system has negative value — it costs attention
+and trains people to ignore it.
+
+**Decided: the bot sends a shortlist, and every part of the shortlist is a stated rule.**
+1. **New only**, keyed on `alert_id` — the idempotency key `alert.schema.json`
+   defines for exactly this. Seen ids persist in a small state file, so a restart or a
+   re-emitted micro-batch does not page anybody twice. Verified by running it twice
+   against the real sink: 10 sent, then the *next* 10, 20 distinct ids, no repeats.
+2. **Worst first, by excess over the leg's own threshold**, not by raw predicted
+   minutes. A 400-minute haul running 30 minutes long is ordinary; a 40-minute run doing
+   the same is not. `excess_min` is the quantity D-003's rule already tests, so the
+   ranking and the flag are the same measurement.
+3. **A hard cap per run** (`--top`, default 10), with the held-back count logged
+   (`1344 held back by the cap`). A cap that truncates visibly is a policy; a bot that
+   silently drops is a bug nobody can see.
+
+**Decided: the message carries two things the plan did not ask for.** The plan says
+""shipment, corridor, predicted delay"". A delay with no scale is unreadable — ""+511
+min"" means something different on a 132-minute leg than on a 900-minute one — so
+the planned time rides along. And a prediction made off a cold history says so, because
+D-023 already established that a zero-filled history is not the same claim as a
+corridor that runs on time.
+
+**Decided: the file channel is what runs, and the documentation says so.** Telegram
+and email are implemented, and the SMTP and Bot API calls are real code, but this
+project has no bot account and no SMTP credentials, so **neither has ever been run
+against a live service**. That is D-035's rule for the Kafka sink applied a second
+time: the choice is one flag, and the write-up says which flag was actually pulled
+rather than letting three channel classes imply three working integrations. A channel
+selected without its variables refuses at start-up naming what it needs (`telegram
+channel needs TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID`), rather than failing per message
+halfway through a send loop and leaving the state file half-written.
+
+**Decided: the panel and the bot read the sink through one module**,
+`src.dashboard.alerts`. Parsing two differently-natured clocks, deduplicating replayed
+batches and ranking by severity are each easy to get subtly wrong, and getting them
+wrong in two places is how the panel and the bot would come to disagree about which
+alert is worst. The page also stays inside D-009: no Spark on a page that only reads a
+directory.
+
+Evidence: `src/dashboard/alerts.py`, `src/agents/alert_bot.py`, the Live alerts page in
+`src/dashboard/app.py`, `tests/test_alerts_panel.py`, `docs/W5_krishna_order_entry.md`.
+
+---
+
+[2] (W5_krishna_order_entry.md -- 7. Alert bot (D5))
+## 7. Alert bot (D5)
+
+
+`src/agents/alert_bot.py` reads the same sink, picks the alerts worth a person's
+attention, and sends each as a message naming the shipment, the corridor and the
+predicted delay.
+
+```bash
+python -m src.agents.alert_bot --top 10         # send the 10 worst new alerts
+python -m src.agents.alert_bot --dry-run        # show them, send and remember nothing
+```
+
+**It sends a shortlist, not the stream** (D-039). 17,317 alerts from 26,369 legs is
+two pages for every three shipments, and the reliable result of that is a recipient who
+stops reading. Three rules, each stated rather than emergent:
+
+1. **New only.** Keyed on `alert_id`, persisted in a small state file. Run twice
+   against the real sink it sent 10, then the *next* 10: 20 distinct ids, no repeats.
+2. **Worst first**, by excess over the leg's own threshold, the same measure the panel
+   ranks by.
+3. **Capped per run**, with the held-back count in the log rather than silently dropped
+   (`1347 alert(s) in the sink, 1347 new, 3 sent via file (1344 held back by the cap)`).
+
+A real message, from the fresh replay, sent a minute after the job flagged it:
+
+```
+[1/3] DELAY PREDICTED - IND712311AAA>IND781018AAB
+  shipment trip-153680212532637033 (FTL), leg trip-153680212532637033|20180913012845|IND712311AAA>IND781018AAB
+  planned 688 min; predicted 2028 min (+1340 min, +652 past the 688 min threshold)
+  created 2018-09-13 01:28 (replayed), flagged 06:34:22
+```
+
+The planned time is there because ""+1340 min"" has no scale without it. When the
+prediction was made with no history for the corridor, origin or destination, the message
+adds a line saying so (D-023).
+
+**Which channel actually ran, stated plainly:** the **file** channel, which appends to
+`data/stream/alert_messages.log`. Telegram (Bot API `sendMessage`) and email (SMTP) are
+implemented, but this project has no bot account and no SMTP credentials, so **neither
+has been run against a live service**. That is D-035's rule for the Kafka sink applied
+a second time. Pick Telegram without credentials and the bot refuses before sending
+anything, naming what it needs: `telegram channel needs TELEGRAM_BOT_TOKEN,
+TELEGRAM_CHAT_ID`. The seen-id state is left untouched.
+
+[3] (W5_krishna_order_entry.md -- 6. Live alerts panel (D3-D4))
+## 6. Live alerts panel (D3-D4)
+
+
+The dashboard's **Live alerts** page, until now a placeholder, reads the streaming job's
+alert sink and nothing else. Two pieces:
+
+- **`src/dashboard/alerts.py`** — the reader. Loads every `alerts_*.jsonl` micro-batch
+  file, deduplicates on `alert_id`, parses the two clocks, and computes severity, a
+  corridor rollup and freshness. No Streamlit, no Spark, so it is testable. It is also
+  shared with the bot (§7), so the panel and the bot cannot come to disagree about which
+  alert is worst.
+- **The page** — four numbers (alerts, corridors, worst overrun, age of the newest
+  alert), the most severe alerts, and the worst corridors. No SparkSession, so it stays
+  inside D-009.
+
+```bash
+python -m src.streaming.producer --limit 2000 --duration 20 --clean
+python -m src.streaming.job --once
+streamlit run src/dashboard/app.py          # -> Live alerts
+```
+
+[4] (W5_mounika_kafka_streaming.md -- Alerts have a written contract)
+### Alerts have a written contract
+
+
+`docs/schemas/alert.schema.json`. Krishna's panel (D3-D4) and bot (D5) read that
+directory and nothing else of this module, so the shape is written down for the same
+reason D-031 wrote the event shape down. `tests/test_stream_job.py` pins the Python and
+the schema to each other in both directions — a contract living in two files drifts, and
+a field that drifts silently arrives as a column of nulls rather than as an error.
+
+Each alert carries the prediction, the threshold that produced it, and the three
+`is_cold` flags, because ""we have never seen this corridor"" and ""this corridor is
+normally on time"" are different claims that a zeroed history makes look identical
+(D-023). One JSON-lines file per micro-batch, named by `batch_id`, staged and renamed:
+`foreachBatch` is at-least-once, so a replayed batch overwrites its own file instead of
+appending a second copy of every alert.
+
+[5] (W5_krishna_order_entry.md -- 10. What is not in this section)
+## 10. What is not in this section
+
+
+- **The 6-of-6 order-entry result is a smoke test, not an accuracy number.** The number
+  that counts is Lahari's, on the 50-case set she authors at D5, which the agent has
+  never seen.
+- **Telegram and email have never been sent to a live service** (§7). The first real
+  send is when a bot token exists.
+- **The alert counts describe the sink, not the model's accuracy.** The streaming job
+  scores replayed history against an end-of-window snapshot (D-037), so what the panel
+  and bot show is how the alert stream behaves, not how well delays are predicted.
+
+**Decisions:** D-036, D-039. **Problems:** P-40, P-41, P-46.","The full replay produced 17,317 alerts from 26,369 legs, which amounts to paging someone for two of every three shipments *(decisions.md -- D-039)*. Forwarding every alert acts as a firehose that causes recipients to stop reading and trains them to ignore the alerting system, giving it negative value *(decisions.md -- D-039)*. To protect user attention, the bot sends a shortlist governed by stated rules: sending new alerts only, ranking worst first by excess over threshold, and enforcing a hard cap per run *(decisions.md -- D-039, W5_krishna_order_entry.md -- 7. Alert bot (D5))*.",,
+D05,Why do the agents compute their verdicts instead of letting the model decide?,"[1] (paper_draft.md -- 7.1 Verdicts computed, prose generated)
+## 7 · The agent layer as a design position
+
+### 7.1 Verdicts computed, prose generated
+
+
+Five agents — document extraction, order entry, exception triage, invoice audit and an
+analytics assistant — share one rule: **every verdict is computed, and a language model
+writes only the sentence a person reads**. Severity is arithmetic over how far past its
+threshold a leg is predicted to run; an invoice verdict is four comparisons. The rule makes
+each agent decision reproducible, and therefore scorable, and it bounds what a model error
+can do to a sentence. Evaluation sets are authored by someone other than each agent's builder.
+
+Measured against trivial policies on the same sets `[agent_evaluation.md]`: order entry filed
+or clarified **50 of 50** templated emails correctly, with no invented order (always-file:
+50%); invoice audit disputed with **100% precision and 82.2% recall**, all misses being one
+seeded kind that falls inside the auditor's own tolerance; document extraction scored
+**97.9% of fields** (clean 98.7%, degraded scan 96.9%) with one hallucinated field in 280, on
+20 of 40 planned rows; the analytics assistant's model-written answers were judged grounded
+in **17 of 18** cases, and its two refusal layers together refused **all six** out-of-scope
+questions.
+
+The one groundedness failure is worth describing: asked how many corridors are
+statistically slower, the model counted the three slower corridors among its five retrieved
+passages and answered ""3"". Every number was in its context, so a mechanical check passed it;
+the error was the generalisation. Conversely, asked which hub has the longest dwell *time*,
+the model answered from the numbers it was given and was right where our own table route —
+which sorted by dwell *share* — and our own expected answer were wrong.
+
+[2] (paper_outline.md -- 7. The agent layer as a design position)
+### 7. The agent layer as a design position
+
+The argument, not the feature list: **verdicts are computed and only prose is generated**,
+which is what makes an agent decision reproducible and therefore scorable. Five agents with
+their trivial policies. The two places this costs us — the invoice auditor's 15% tolerance
+blind spot, and the assistant's 50% refusal recall on domain-adjacent questions — are
+reported as results, not omitted. Claim 6, figure 9.
+
+[3] (demo_script.md -- 3 · The agents: an email to a booked order (2 min))
+## 3 · The agents: an email to a booked order (2 min)
+
+
+Terminal 2:
+
+```bash
+python -m src.agents.orchestrator --cases 1
+```
+
+> ""One customer email. The agent extracts the order, validates it, files it in the TMS,
+> the stream flags its corridor, the exception agent investigates and writes the
+> notification, and a ticket is filed. No human between any two of those steps.""
+
+Then the point that matters:
+
+> ""The verdicts are **computed, not generated**. Severity is arithmetic on how far past its
+> threshold a leg is predicted to run; an invoice verdict is four comparisons. A language
+> model writes only the sentence a person reads. That is a deliberate design position: it
+> is why every agent decision is reproducible and can be scored at all.""
+
+Numbers to have ready: **50 of 50** order-entry cases correct, clarification precision and
+recall **100%**; exception notification precision **59%** overall and **85%** at critical,
+against 54% for alerting every leg — and if asked, the 72% first published came from a
+replay that scored early legs with the future (D-054). Say it before anyone else does;
+invoice verdicts **100% precision, 82% recall**, with the one blind spot published.
+
+**Say what is not live:** the notification goes to a file channel. Email and Telegram are
+implemented and unconfigured — no credential has been committed to this repository, and we
+would rather show a file than fake a send.
+
+[4] (paper_skeleton.md -- 3.5 The agent layer)
+## 3.5 The agent layer
+
+
+**Topic sentence:** each agent computes its verdict and generates only the sentence a
+person reads.
+
+- Five agents and an orchestrator; what each decides arithmetically and what the model
+  writes (D-041).
+- Evaluation sets are authored by someone other than the agent's builder (D-028), and every
+  metric is reported beside the trivial policy on the same set.
+
+[5] (references.md -- 6 · Our own decisions, as citations)
+## 6 · Our own decisions, as citations
+
+
+The paper cites its own decision log where a choice would otherwise look arbitrary. These
+are the ones a reviewer is most likely to ask about:
+
+| id | what it settles |
+|---|---|
+| D-003 | the 2.0× delay threshold, and the 1.25× one that was rejected |
+| D-018 | the 10-leg support floor, and the instability it exposed |
+| D-022 | chronological split, not random |
+| D-024 | MAE as the metric |
+| D-028 | builder and judge are different people |
+| D-041 | verdicts computed, prose generated |
+| D-048 | the median is the fair baseline |
+| D-049 | the selection protocol, fixed before it ran |
+| D-050 | what was adopted, and why the served model is still the old one |
+| D-052 | the venue and the preprint ordering |","The project computes verdicts deterministically using arithmetic rather than letting a model decide for three primary reasons, ordered by importance: first, model-assigned severities are not reproducible, which would invalidate evaluation scores if re-running the same input produced a different grade; second, arithmetic calculations like divisions and rate-band comparisons have exact right answers that a model would only approximate *(decisions.md -- D-041)*. Finally, computing verdicts allows the workflow to fit within a 20-call-a-day free tier (D-032), enabling the entire lifecycle to run with zero model calls using `--no-llm` or `--no-draft` *(decisions.md -- D-041; W6_krishna_orchestrator.md)*.",,
+D06,Is the invoice auditor's rate band evidence about real freight pricing?,"[1] (decisions.md -- D-043 · The invoice rate band is the corpus's own generator model, which makes v1 exact and circular at the same time — `DECIDED`)
+## D-043 · The invoice rate band is the corpus's own generator model, which makes v1 exact and circular at the same time — `DECIDED`
+
+**Week 6 · Krishna · D5**
+
+The auditor needs to answer ""is this freight charge too high for this corridor"". It
+does so with a band: the corridor's audited `mean_osrm_km` (Week 2) times the rate model
+`src/agents/doc_corpus/records.py` uses to generate invoices — FTL at 28-45 per km,
+Carting at 6-10 per km-tonne plus 2-4 per kg — widened by 15%.
+
+**This is exact for these invoices and worthless as a claim about real freight
+pricing**, because the generator and the auditor share one model. It measures whether
+the auditor catches an invoice that departs from the network's own observed rates. It
+does not show those rates are right. Stating that plainly is the decision: the
+alternative was to quietly present 20-of-20 as though it were evidence about pricing.
+
+**Decided anyway, for v1**, because the auditor's job this week is to be *wired and
+measurable*, and a band fitted from billed history is a Week 7+ piece of work that needs
+billed history the project does not have. The 15% tolerance is set so that no clean
+invoice in the corpus is disputed: a false dispute costs a supplier relationship, which
+is worth more than the few hundred rupees a missed marginal overcharge represents.
+
+**Decided: a corridor with no audited distance produces no finding at all.** Not a
+dispute, not a warning-that-becomes-a-dispute. ""We cannot check this"" and ""this is
+wrong"" are different statements, and the TMS has only `approved`/`disputed` to say them
+in. Disputing an invoice because the network lacks history on its corridor would bill a
+supplier for our own data gap.
+
+Result on the development corpus: **20 of 20 verdicts matched the seeded ground truth**
+(10 disputed, 10 approved, no clean invoice disputed). Lahari's D5 evaluation is the one
+that counts, on a set this auditor's author did not write (D-028).
+
+Evidence: `src/agents/invoice_auditor.py`, `tests/test_invoice_auditor.py`,
+`benchmarks/raw/w6_invoice_audit_runs.json`.
+
+---
+
+[2] (W6_krishna_orchestrator.md -- 4. Freight Invoice Auditor (D5))
+## 4. Freight Invoice Auditor (D5)
+
+
+Four checks, all arithmetic: the invoice's own sum against its parts; the freight charge
+against the corridor's audited rate band; the share taken by other charges; and repeated
+invoice numbers.
+
+**20 of 20 verdicts matched the seeded ground truth** — 10 disputed, 10 approved,
+and **no clean invoice was disputed**, which is the direction that matters: a false
+dispute costs a supplier relationship, a missed marginal overcharge costs a few hundred
+rupees.
+
+**The limitation is structural and is stated in D-043 rather than buried.** The rate band
+comes from the same generator model that produced the invoices, so it is exact for this
+corpus and **circular as a claim about real freight pricing**. It shows the auditor
+catches invoices that depart from the network's own observed rates. It does not show
+those rates are correct.
+
+One deliberate non-finding: a corridor with no audited distance produces **no finding at
+all**. ""We cannot check this"" is a different statement from ""this is wrong"", and the TMS
+has only approve/dispute to say them in. Disputing an invoice because we lack history on
+its corridor would bill a supplier for our own data gap.
+
+[3] (paper_draft.md -- 9 · Limitations and threats to validity)
+## 9 · Limitations and threats to validity
+
+
+One operator, one country, and just over three weeks of data (legs created 12 September to 3 October 2018, 22 calendar days). The support-floor
+result applies to our own rankings. The agent evaluations use synthetic and templated corpora
+we generated, so they measure the pipeline rather than the world; the invoice auditor's rate
+band is the corpus's own pricing model and says nothing about real freight rates. The
+reported model is not yet the one the streaming job serves: two of its features are
+seven-day windows over event time and two are keyed by hub and hour, which a stateless
+history lookup cannot supply. Language-model results come from one free-tier model and a
+daily call budget, which bounded sample sizes.
+
+[4] (W6_lahari_agent_eval.md -- What is not in this section)
+## What is not in this section
+
+
+- **Neither evaluation measures the language.** Both agents' wording is drafted by a
+  model and neither draft was scored: today's quota went to Week 5's order evaluation, so
+  every run here used the template fallback. Prompt quality is Week 7's problem.
+- **The Exception Agent's recall is bounded by the stream.** It cannot notify about a leg
+  nobody flagged, so 89.7% is a statement about the pair, not the agent.
+- **The invoice rate band is still circular** (D-043): the auditor and the corpus share a
+  rate model, so this measures consistency with the network's own observed rates, not
+  correctness of those rates.
+- **The freeze covers Layer 1 only.** Week 7's RAG and scale numbers are not in it yet,
+  and adding a reported number to the paper means adding a line to `ENTRIES` — a
+  number that is not there is not frozen.
+
+**Decisions:** D-046, D-047.
+
+[5] (problems.md -- P-27 · A seeded ""invoice error"" printed a negative total)
+### P-27 · A seeded ""invoice error"" printed a negative total
+
+**Week 3 · Lahari, reviewing Krishna's D-021 · resolved**
+
+- **Symptom.** `total_mismatch` (D-021's seeded-error taxonomy) picked a delta from a
+  fixed `+/-50..500` range and added it to the invoice's `total_amount`. Nothing raised.
+  Checking the actual 120-record run against its own manifest, one of the five
+  `total_mismatch` invoices (`w3_00059`, a small Carting shipment: freight 230.00 +
+  other 29.07 = 259.07) printed `total_amount = -116.40`.
+- **Cause.** The delta's range was picked to look reasonable against a typical
+  mid-sized invoice and never checked against the smallest ones. This network's
+  Carting shipments run as low as ~₹30 in `freight_charge` (Week 1's route-type split
+  already showed Carting is proportionally the worse-behaved route type); a delta of
+  up to 500 absolute rupees dwarfs a total that size.
+- **Fix.** The delta is now a percentage of the invoice's own `total_amount`
+  (5-30%, either sign) rather than a fixed rupee amount, so it scales with the invoice
+  it lands on and cannot cross zero at this magnitude. Same two `rng` calls as the
+  version it replaces (a `choice` then a `uniform`), so which records get which seeded
+  error kind — the part everything else in the corpus depends on being reproducible —
+  is unchanged; only the `total_mismatch` records' printed totals moved.
+- **Cost.** ~20 minutes once the manifest was actually checked against the label JSON
+  rather than trusted because the generator ran cleanly. **A negative total is the
+  wrong kind of ""wrong""** for what this error is supposed to test: rule 5 asks an
+  extraction agent to report an arithmetic mismatch exactly as printed rather than
+  reconcile it, and a mismatch has to look like a plausible clerical error for that to
+  be a meaningful test — a negative grand total reads as an obviously broken document
+  before any extraction is attempted, on this document alone giving away the exact
+  thing the corpus is supposed to be testing whether an agent can catch quietly.
+
+---","## D-043 · The invoice rate band is the corpus's own generator model, which makes v1 exact and circular at the same time — `DECIDED` **Week 6 · Krishna · D5** The auditor needs to answer ""is this freight charge too high for this corridor"". It does so with a band: the corridor's audited `mean_osrm_km` (Week 2) times the rate model `src/agents/doc_corpus/records.py` uses to generate invoices — FTL at 28-45 per km, Carting at 6-10 per km-tonne plus 2-4 per kg — widened by 15%. **This is exact for these invoices and worthless as a claim about real freight pricing**, because the generator and the auditor share one model. (decisions.md -- D-043 · The invoice rate band is the corpus's own generator model, which makes v1 exact and circular at the same time — `DECIDED`)",,
+D07,Does the exception agent's severity grade track real lateness?,"[1] (decisions.md -- D-047 · Severity earns its place as a filter; the invoice tolerance has a measured cost — `DECIDED`)
+## D-047 · Severity earns its place as a filter; the invoice tolerance has a measured cost — `DECIDED`
+
+**Week 6 · Lahari · D3-D4 and D5**
+
+Two evaluations, two numbers that should change what Week 7 builds.
+
+**1. The Exception Agent's severity grades track real lateness, so they should be used
+as a filter.** Scored against the replay's own fact events — 2,000 legs, 1,082
+genuinely delayed — the agent's notification precision is **72.1%** overall, which
+is the stream's precision, because the agent notifies on everything it is handed. But
+precision by grade is **monotone**:
+
+| grade | notified | precision |
+|---|---|---|
+| low | 434 | 53.2% |
+| medium | 344 | 68.6% |
+| high | 275 | 85.1% |
+| critical | 294 | 91.8% |
+
+**Decided: a severity floor is a real policy lever and should be one.** Notifying at
+`high` or above sends 42% of the volume at **88.6%** precision, reaching 46.6% of all
+delayed legs; at `critical` only, 22% of the volume at **91.8%**. The arithmetic severity
+rule (D-041) is not just reproducible, it is *informative* — which is the thing a
+model-assigned severity could never have demonstrated, because there would have been no
+stable grade to measure.
+
+Not decided here: **where** the floor goes. That is an operations question about how many
+notifications a desk can act on, and nobody on this team is the customer. The table is
+the deliverable; the threshold is theirs.
+
+**2. The Invoice Auditor's 15% tolerance hides overcharges up to 15%, and now that is a
+number.** On a 60-invoice set the auditor's author never saw: **86.7% accuracy, zero
+false disputes, 8 misses — and all 8 are the same kind**, `overcharge_hidden`, an
+invoice 10% above the corpus's rate band and therefore inside the auditor's tolerance.
+
+**Decided: the tolerance stays for v1, and the miss is published beside the accuracy.**
+Zero false disputes is the right direction to be wrong in (D-043's argument), and
+tightening the band would trade that away. But ""86.7% accurate"" alone would be a
+misleading headline: the auditor is perfect on eight of ten kinds and blind on one, and
+the blindness is a design choice with a price tag. A v2 fitted from billed history can
+narrow the band on evidence rather than on a guessed 15%.
+
+**Both evaluations cost nothing to re-run** — no model, no TMS, no quota —
+because both agents compute their verdicts (D-041). That is the return on that decision,
+and it is why these numbers exist at all in a week with 20 API calls a day.
+
+Evidence: `src/ml/exception_eval.py`, `src/ml/invoice_eval.py`,
+`benchmarks/raw/w6_exception_eval.json`, `benchmarks/raw/w6_invoice_eval.json`.
+
+---
+
+> **Correction, Week 8 (D-054):** the precision figures in D-047 were measured on a replay that joined each alert to end-of-data history. As-of, overall precision is 58.6% (not 72.1%) and by grade 39.7 / 51.3 / 76.6 / 85.3%. The ordering this decision rests on holds; the levels do not.
+
+[2] (W6_lahari_agent_eval.md -- What a severity policy would buy)
+#### What a severity policy would buy
+
+
+The agent notifies on every alert it is handed. If its grades track real lateness, notifying only at a grade or above trades volume for precision -- this is the table that says whether they do.
+
+| notify at or above | alerts sent | share | precision | recall of all delayed |
+|---|---|---|---|---|
+| low | 1,347 | 100.0% | 72.1% | 89.7% |
+| medium | 913 | 67.8% | 81.0% | 68.4% |
+| high | 569 | 42.2% | 88.6% | 46.6% |
+| critical | 294 | 21.8% | 91.8% | 24.9% |
+
+Per-alert verdicts: `benchmarks/raw/w6_exception_eval_cases.csv`.
+<!-- /section: exception-eval -->
+
+[3] (W6_lahari_agent_eval.md -- Exception Agent evaluation (D3-D4))
+### Exception Agent evaluation (D3-D4)
+
+
+*Generated by `python -m src.ml.exception_eval` -- regenerate rather than editing numbers by hand.*
+
+Generated: 2026-09-13T16:05:07+05:30
+
+Scored against the replay's own fact events: 2,000 legs, 1,082 of them genuinely delayed at D-003's 2.00x. The agent graded 1,347 alerts. No model and no TMS -- severity is arithmetic (D-041), so this is reproducible to the digit.
+
+| | |
+|---|---|
+| **Notification precision** | **72.1%** |
+| Recall of all delayed legs | 89.7% |
+| Event-to-alert, median | 60.32 s |
+| Event-to-alert, p95 | 63.33 s |
+| The agent's own decision | 0.04 ms (p50) |
+
+[4] (decisions.md -- D-040 · 2.00× stays, the alert flag should not come from the regressor, and the order agent is judged on a set its builder never saw — `DECIDED`)
+## D-040 · 2.00× stays, the alert flag should not come from the regressor, and the order agent is judged on a set its builder never saw — `DECIDED`
+
+**Week 5 · Lahari · D3-D4 and D5**
+
+Three conclusions from two measurements. The first two need to reach Week 6 before the
+Exception Agent is built on top of the alert stream.
+
+**1. D-003's threshold is right, and for a different reason than D-003 gave.** D-003 moved
+from 1.25× to 2.00× on the base rate alone, in Week 1, with no model to test it
+on. The sweep re-scored every classifier at 1.15, 1.25, 1.50 and 2.00 on the same test
+legs. **The best classifier's MCC barely moves: 0.507, 0.528, 0.540, 0.536.** So the
+threshold does not change how much signal a model can find; the data holds about the
+same amount of information about lateness wherever the line is drawn. What the threshold
+does change is **volume**: the best model flags 97.9% of legs at 1.15× and 49.3% at
+2.00×. A flag raised for nearly every leg carries no information for whoever
+receives it, which is D-003's operational argument, now backed by measurement instead of
+inference. The base rates also reproduce D-003's Week 1 table to the decimal (96.0, 93.6,
+83.6, 49.7%).
+
+**MCC, not F1, is the metric for any threshold question in this project.** At
+1.15× the majority class (the classifier that says ""delayed"" for every leg) scores
+F1 **0.977** and MCC **0.000**. F1 rewards the trivial classifier precisely when
+positives dominate, which is exactly the situation a threshold sweep creates. From here
+on every classifier table carries MCC beside F1, the same way D-003 rule 3 already makes
+every table carry the majority-class rate.
+
+**2. The stream's alert flag should not be the champion regressor's threshold crossing.**
+This is the result that matters for Week 6. The model the stream actually runs (D-037) is
+the champion GBT *regressor*, and it flags a leg when its predicted gap crosses the line.
+On the held-out test set, at the decided 2.00×:
+
+| | MCC | alert rate | precision | recall |
+|---|---|---|---|---|
+| champion, thresholded | 0.477 | **67.6%** | 0.654 | 0.904 |
+| logistic regression | **0.536** | 49.3% | — | — |
+| corridor mean, thresholded | 0.502 | — | — | — |
+| true rate | — | 48.9% | — | — |
+
+The champion was chosen for regression (D-029), where it is genuinely best, but as an
+alarm it is **beaten by logistic regression and even by the corridor-mean baseline**. It
+over-alerts by about a third, which matches the 65.7% alert rate Mounika's full replay
+showed and the 2-of-3 flood Krishna's bot had to shortlist (D-039). This is a
+held-out-test-set measurement, so it is a valid accuracy claim; the replay's numbers were
+not (D-037).
+
+**Decided: Week 6 flags alerts with a classifier, or with a recalibrated cut on the
+champion's gap, chosen by MCC on the validation split.** It must not keep the raw
+`gap > (T - 1) × planned` crossing. This changes what the stream flags, not what it
+predicts; the champion stays the regressor behind the ""+N min"" every alert shows. Not
+changed this week: the gate is about plumbing, and swapping the flag after the stream,
+panel and bot were measured would invalidate every figure they report.
+
+**3. The order agent is judged on an authored set, 20 cases a day, on its own model.**
+Fifty cases: ten templates, each testing something Krishna's corpus never does (tonnes,
+pieces in words, a forwarded correction, a city-only *destination*, two missing fields
+where rule 2 fixes which question comes first). Each template is instantiated on five
+real records drawn with a different seed from his. That is D-028's builder/judge split,
+applied to the second agent. The set runs **only on Gemini**, the model the agent was
+built on, at 20 calls a day. The harness resumes where it stopped and **never records a
+quota refusal as a result**, so a 429 cannot turn into a scored failure. Cases run
+`dry_run`: the judgement is on the decision and the fields, because `POST` was verified
+end to end at D1-D2.
+
+**40 of 50 run, 40 succeeded** (2026-09-11 and 2026-09-13, 20 a day). Four of four on
+every one of the ten templates. Every should-file case filed with every field right,
+including the tonnes conversions, the corrected weight and pieces written as words.
+Every should-ask case asked about exactly the right field, and no `missing_two` case
+asked about service before weight. No order was filed on an invented value; no question
+was needless. **A perfect score on 40 templated cases is a ceiling, not a verdict.** It
+says these ten failure modes are handled. It cannot distinguish a good agent from an
+excellent one, and the next eval should be built from email the agent gets wrong.
+
+**Week 5 was closed at 40 of 50 rather than held open another day** for the last
+10 cases, which ran as follow-up commits. Every generated table says how many had actually
+run where it quotes a rate, so the partial state was visible wherever the number was, not
+only here.
+
+**Closed 2026-09-18 (G-02): 50 of 50 run, 50 succeeded**, over five quota days
+(2026-09-11, 09-13, 09-16, 09-17, 09-18). Five of five on every template; clarification
+recall and precision both 1.00; still no invented order and no needless question. The last
+10 cases changed nothing about the reading above — which is itself the useful part, since
+a perfect score that survives a 25% larger sample is less likely to be luck.
+
+Evidence: `src/ml/threshold_sensitivity.py`, `src/ml/order_eval.py`,
+`src.ml.baselines.delay_label`, `benchmarks/raw/w5_threshold_sensitivity.csv`,
+`benchmarks/raw/w5_order_eval_*.json*`, `docs/W5_lahari_stream_validation.md`.
+
+---
+
+[5] (W6_lahari_agent_eval.md -- What the Exception Agent evaluation says)
+## What the Exception Agent evaluation says
+
+
+**The headline is not the headline.** 72.1% notification precision is *the stream's*
+precision, not the agent's: the agent notifies on every alert it is handed, so as an
+alerting system it inherits whatever the streaming job flagged. D-040 already showed that
+flag is the weakest real classifier in the project.
+
+**The useful result is that its severity grades work.** Precision climbs monotonically
+from 53.2% at `low` to 91.8% at `critical`, and the policy table prices the trade: notify
+at `high` or above and you send 42% of the volume at 88.6% precision, still reaching 46.6%
+of every delayed leg in the replay. A severity floor is a real lever, and Week 7 should
+pull it (D-047).
+
+That is a result the arithmetic severity rule made possible. A model-assigned grade could
+not have been evaluated this way at all, because re-running it would produce different
+grades and there would be nothing stable to score.
+
+**One number in the generated table needs a caveat.** Event-to-alert reads 60.3 s median
+here because this replay landed in a single large micro-batch; latency is one batch time,
+and the batch held 4,000 events. The properly measured figure is Mounika's D5 harness at
+**28.9 s** median with the batch size controlled. The agent's own contribution is 0.04 ms,
+which is the only part of that number this evaluation is really about.
+
+**What it does not measure.** Recall against *all* delayed legs (89.7%) is a property of
+the stream plus the agent, not of the agent alone — the agent cannot notify about a
+leg nobody flagged. And a notification's *usefulness* is untested: precision says the
+shipment really was late, not that telling someone helped.","## D-047 · Severity earns its place as a filter; the invoice tolerance has a measured cost — `DECIDED` **Week 6 · Lahari · D3-D4 and D5** Two evaluations, two numbers that should change what Week 7 builds. **1. The Exception Agent's severity grades track real lateness, so they should be used as a filter.** Scored against the replay's own fact events — 2,000 legs, 1,082 genuinely delayed — the agent's notification precision is **72.1%** overall, which is the stream's precision, because the agent notifies on everything it is handed. (decisions.md -- D-047 · Severity earns its place as a filter; the invoice tolerance has a measured cost — `DECIDED`)",,
+D08,What is the fair baseline for the ML model and what MAE does it reach?,"[1] (paper_skeleton.md -- 4.3 The baseline that a model has to beat)
+## 4.3 The baseline that a model has to beat
+
+
+**Topic sentence:** the fair baseline for an MAE table is the per-corridor median, and it
+is stronger than either model the project trained first.
+
+| baseline | test MAE (min) | source |
+|---|---|---|
+| OSRM plan | 107.09 | `[w7_model_metrics_v2_stepsize.csv]` |
+| corridor mean | 36.13 | same |
+| **corridor median** | **33.04** | same |
+
+- MAE is minimised by the median; using the mean as the bar would have flattered every
+  model by 3.1 minutes.
+
+[2] (paper_skeleton.md -- 3.4 Prediction)
+## 3.4 Prediction
+
+
+**Topic sentence:** the model is asked for the correction to a strong baseline, not for
+the time.
+
+- Split: chronological 80/20 on creation time — **21,095 train, 5,274 test**
+  `[w3_baseline_report.json]`. Not random: a random split scores a model on legs
+  interleaved with its training data, which is not how it would be deployed.
+- Metric: **MAE in minutes** (D-024). The choice matters twice over: it sets the fair
+  baseline (§4.3) and it makes squared-loss training a mismatch (§4.4).
+- Baselines, in increasing strength: OSRM plan, per-corridor mean, **per-corridor median**.
+- Target: `gap_min − corridor median`, so a model that learns nothing reproduces the
+  baseline exactly.
+- Selection protocol, fixed before it ran (D-049): a second chronological cut of the
+  training split chooses the one hyperparameter; the winner is refit and scored **once** on
+  test; whatever that score says is adopted.
+
+[3] (paper_draft.md -- 5.1 Setup and baselines)
+## 5 · Predicting the gap
+
+### 5.1 Setup and baselines
+
+
+The split is chronological — the last 20% of legs by creation time, **21,095 train and
+5,274 test** `[w3_baseline_report.json]` — because a random split scores a model on legs
+interleaved in time with its training data, which is not how it would be deployed. The metric
+is mean absolute error in minutes.
+
+The fair baseline follows from the metric. MAE is minimised by the median, so the right
+comparator is the **per-corridor as-of median**, not the mean (**Table 1**,
+`[w7_model_metrics_v2_stepsize.csv]`, `[w7_model_metrics_v2.csv]`):
+
+| model | test MAE (min) |
+|---|---|
+| OSRM plan (context, not a comparator) | 107.09 |
+| Random Forest, squared loss, raw target | 36.89 |
+| per-corridor mean | 36.13 |
+| **per-corridor median (the bar)** | **33.04** |
+| GBT on the median residual, stepSize 0.05 | 32.52 |
+| **GBT on the median residual, stepSize 1.0 (reported)** | **30.90** |
+| single-node reference, absolute loss (not a candidate) | 29.52 |
+
+Using the mean as the bar would have flattered every model by 3.1 minutes.
+
+[4] (decisions.md -- D-024 · Week 4 is judged on MAE, not RMSE or R2 — `DECIDED`)
+## D-024 · Week 4 is judged on MAE, not RMSE or R2 — `DECIDED`
+
+**Week 3 · Lahari · forced by a real disagreement between the two**
+
+The Week 3 linear regression scores worse than the much simpler corridor-mean baseline
+on MAE (41.2 vs 36.1 min) while scoring *better* on RMSE (96.8 vs 101.7) and R2 (0.811
+vs 0.791) — the two families of metric rank the same two models in opposite order, on
+the same test split. This is not a bug in either model: OLS minimises squared error,
+which is RMSE and R2's objective and not MAE's, and the network's own heavy-tailed
+corridors (up to 13.9x per D-018) are exactly the shape of data where that distinction
+shows up — a few extreme legs are worth trading a little bias on ordinary legs to fit
+under a squared loss, and worth nothing under an absolute one.
+
+**Decided: `benchmarks/ml_results.md`'s baseline table, and every Week 4 comparison
+against it, ranks on MAE.** It is the metric the table was already reporting before
+this conflict surfaced, and it is the one a plain reading of ""average error in minutes""
+means. RMSE and R2 are still reported beside it as diagnostics — the disagreement
+itself is informative, per this entry — but they do not decide which model is called
+better.
+
+**Consequence for Week 4.** A Random Forest or GBT that improves RMSE without
+improving MAE over the corridor-mean baseline is not a result. Both metrics go in the
+report for every model, exactly as this entry's numbers do, so the choice is visible
+rather than assumed.
+
+Evidence: `docs/W3_lahari_baselines.md` §3, `benchmarks/raw/w3_baseline_metrics.csv`.
+
+---
+
+[5] (results.md -- The headline, reported as it actually landed)
+### The headline, reported as it actually landed
+
+
+| Result | Value |
+|---|---|
+| Best Week 4 model vs OSRM | Random Forest (MLlib) **36.9 min MAE** vs OSRM's 107.1 — a 65.5% reduction |
+| Best Week 4 model vs the real bar | **Does not clear** the corridor-mean baseline's 36.1 min (D-024) — trails by 0.8 min, reported as such rather than reframed |
+| Per-corridor gains | 1,369 of 1,646 test corridors improve over OSRM (83%) |
+| Feature-block ablations | Corridor-history costs 3.30 (RF) / 2.43 (GBT) min MAE if dropped; temporal costs only 0.11 / 0.72 |
+| Delay classifier table | GBT-thresholded reaches 0.771 F1, edging logistic regression's 0.764 (D-025) — a different ranking from the MAE table, and not a contradiction (D-024/P-28's own lesson) |
+| Document Intelligence Agent v1→v2 | Field-extraction F1 **0.853 → 0.929** (micro-averaged); `document_number` accuracy 1/16 → 16/16 on the paired comparison (D-033) |
+| Auto-retraining loop | First run promoted Random Forest as champion at 36.89 min MAE; hardened with a preflight check and bounded per-stage retry (D-030 on Mounika's branch) |
+
+**The batch-ML headline is an honest one, not a triumphant one, and that is the
+finding.** A tuned MLlib Random Forest beats OSRM by a wide margin and improves the
+large majority of individual corridors — but it does not beat a single per-corridor
+average computed with no model at all. Both facts are reported with equal weight,
+per D-024's decision to rank on MAE and P-28's lesson that a model can be a genuine
+improvement by one honest metric and not by another.
+
+**The agent-eval headline is a real, measured number, not a demo anecdote.** 0.853
+F1 on the first prompt version, improved to 0.929 by one iteration that fixed a
+single, concretely-identified failure mode (`document_number` transcribed as raw OCR
+noise) — and the harness that produced both numbers never touched the code that
+produced the predictions it scored (D-028).","The fair baseline for the ML model is the corridor-mean baseline, which reaches an MAE of 36.1 min *(decisions.md, results.md)*. The best Week 4 ML model (Random Forest) reaches 36.9 min MAE, trailing this baseline by 0.8 min and failing to clear it *(results.md)*.",,
+P01,What went wrong with the delay label on the stream?,"[1] (problems.md -- P-42 · The stream was about to publish a label computed at the threshold the project rejected in Week 2)
+### P-42 · The stream was about to publish a label computed at the threshold the project rejected in Week 2
+
+**Week 5 · Mounika · resolved**
+
+- **Symptom.** Scoring the replay's alerts against the `is_delayed` its own fact events
+  carried gave precision 0.981 and recall 0.688. Both numbers were wrong, and the tell
+  was the base rate beside them: **93.6% of the 26,369 replayed legs came back
+  ""delayed""**, against the 49.7% D-003 records for the decided threshold. 93.6% is not
+  a near miss. It is *exactly* the figure D-003's own table gives for `T = 1.25` —
+  the blueprint's threshold, which the team rejected at the Week 2 sync.
+- **Cause.** `src.pipeline.reconstruct` writes `is_delayed` into the parquet using
+  `config.DELAY_THRESHOLD` **as it stood when the cache was built**. D-003 moved that
+  constant from 1.25 to 2.00; the frozen caches (D-016) were never rebuilt, so the
+  column has been stale ever since. 11,583 of 26,369 legs — 43.9% — carry a
+  label that contradicts the same threshold recomputed from `gap_min` and `planned_min`.
+- **Why eight weeks passed without anyone noticing.** `src.ml.baselines.add_delay_label`
+  recomputes the label from `gap_min` before every fit, on purpose. So every model in
+  Weeks 3 and 4 trained and scored on the *correct* label, and the stale column was
+  overwritten on the only code path that had ever read it. It was not hidden by luck;
+  it was hidden by a downstream correction working exactly as designed. `fact_event` was
+  the first consumer to read the column straight from the parquet and put it on the wire.
+- **Fix.** `fact_event` recomputes the label rather than carrying it, and `is_delayed`
+  was **removed from `EXAMPLE_COLUMNS` altogether** — not loading a stale column is
+  a stronger guarantee than remembering not to use it. Four tests pin the behaviour, and
+  the fixture row deliberately carries the *wrong* stale value, because a fixture holding
+  the right answer cannot tell ""recomputes"" from ""copies"". With the label corrected the
+  same comparison reads precision 0.686, recall 0.907 — a different system's worth
+  of difference from what the stale label showed.
+- **Not fixed here, deliberately: the parquet still holds the stale column.** Rebuilding
+  it means re-running the pipeline and unfreezing a cache D-016 froze on purpose, and the
+  two consumers that matter now both recompute. The remaining risk is a *third* consumer
+  reading it directly, which is why this entry exists and why the column is no longer
+  loaded on the path that would have.
+- **Carry.** A cached column computed from a constant is a snapshot of that constant, not
+  a definition of it. Anywhere a decision changes a threshold, every derived cache is
+  stale from that moment — and a downstream recomputation that quietly papers over
+  it removes the only symptom anyone would have seen.
+
+[2] (W5_krishna_order_entry.md -- What it showed)
+### What it showed
+
+
+Rendered headlessly (Streamlit `AppTest`) against the real sink, no exceptions, both times:
+
+| | full replay, read 38 h later | fresh replay, read immediately |
+|---|---|---|
+| Alerts | 17,317 | 1,347 |
+| Corridors | 2,033 | 846 |
+| Worst overrun | 881 min | 652 min |
+| Newest alert | **38 h ago** + staleness warning | **just now**, no warning |
+
+The right-hand column is **Gate 5**: a replayed event at one end produced a live alert
+on the dashboard at the other. It came from a fresh 4,000-event replay run through the
+producer and the job together, with the page reading the sink straight afterwards.
+
+[3] (W5_krishna_order_entry.md -- Three design calls, each against a specific way it goes wrong)
+### Three design calls, each against a specific way it goes wrong
+
+
+- **Two clocks, parsed differently on purpose.** `event_time` is the leg's real 2018
+  creation time, a bare timestamp with no offset. `alert_time` is when this pipeline
+  flagged it, an offset-aware instant from this machine. Reading `event_time` as UTC
+  and converting to local time would silently shift every historical timestamp by 5h30.
+  So it stays naive, the wall-clock one is converted, and the page shows both under
+  labels that say which is which. A replay compresses ~26 days into a minute, so a panel
+  that mixed them up would read as a system with a broken clock.
+- **Severity is excess over the leg's own threshold**, not raw predicted minutes. Raw
+  minutes rank every long haul above every short run regardless of how late either is.
+- **Staleness is shown, never hidden.** When the newest alert is over five minutes old
+  the page says so: *""This panel is showing a finished replay, not a live stream.""* A
+  panel that hides staleness hides the one failure that matters most, which is that the
+  stream stopped.
+
+[4] (W5_krishna_order_entry.md -- 10. What is not in this section)
+## 10. What is not in this section
+
+
+- **The 6-of-6 order-entry result is a smoke test, not an accuracy number.** The number
+  that counts is Lahari's, on the 50-case set she authors at D5, which the agent has
+  never seen.
+- **Telegram and email have never been sent to a live service** (§7). The first real
+  send is when a bot token exists.
+- **The alert counts describe the sink, not the model's accuracy.** The streaming job
+  scores replayed history against an end-of-window snapshot (D-037), so what the panel
+  and bot show is how the alert stream behaves, not how well delays are predicted.
+
+**Decisions:** D-036, D-039. **Problems:** P-40, P-41, P-46.
+
+[5] (W8_lahari_paper_and_evaluation.md -- 3. Stream-equals-batch on the reported model)
+## 3. Stream-equals-batch on the reported model
+
+
+**500 of 500 identical**, maximum difference 0. The first run sampled the earliest 500 legs,
+where 484 corridors have no history — so the baseline was zero on 97% of rows and the run
+tested the correction alone while reporting both halves. Sampling across the timeline brings
+cold rows to 57 of 500. The summary records `served_by_the_streaming_job: false`, because the
+stream does not serve this model yet (D-053).","The stream was publishing `is_delayed` labels computed at a stale threshold of `T = 1.25`, causing 93.6% of 26,369 replayed legs to be marked as delayed with an incorrect precision of 0.981 and recall of 0.688 *(problems.md -- P-42)*. This happened because `src.pipeline.reconstruct` wrote `is_delayed` into parquet when the cache was built, and after decision D-003 changed `config.DELAY_THRESHOLD` from 1.25 to 2.00, the frozen parquet caches were never rebuilt—leaving 11,583 of 26,369 legs (43.9%) with stale labels *(problems.md -- P-42)*. `fact_event` was the first consumer to read the stale column directly from parquet rather than recomputing the label downstream as ML baselines had done *(problems.md -- P-42)*.",,
+P02,What is the day-of-week convention trap between Spark and Python?,"[1] (problems.md -- P-39 · Spark counts days from Sunday, Python from Monday, and nothing raises)
+### P-39 · Spark counts days from Sunday, Python from Monday, and nothing raises
+
+**Week 5 · Lahari · resolved**
+
+- **Symptom.** The stream-equals-batch test's second check came back
+  **0 agreements out of 500**. Predictions were bit-identical, but the temporal
+  features a streaming job would recompute from `event_time` disagreed with the ones
+  the event carries on *every single row*.
+- **Cause.** Not a bug in either computation — two different, both-correct
+  conventions for the same idea. Stage 4 builds the feature with Spark's
+  `F.dayofweek`, which is **Sunday = 1** through Saturday = 7. A Python consumer
+  reaching for `datetime.weekday()` gets **Monday = 0** through Sunday = 6. For
+  2018-09-12, a Wednesday, that is **4 against 2**. The model was trained on the
+  Spark encoding, so a consumer using the Python one would feed it a number on a
+  different scale for every event.
+- **Fix.** One shared `src.streaming.schema.temporal_features()` that both sides
+  import, using `isoweekday() % 7 + 1` to reproduce Spark's encoding exactly. The
+  streaming job (D3-D4) imports it rather than re-deriving day-of-week, which is the
+  same ""two lists holding one truth"" trap P-23 already cost this project once
+  — and this time the shared helper exists *before* the second consumer is
+  written, not after it drifted. `tests/test_stream_validation.py` pins all four
+  weekday values against Spark's convention.
+- **Cost.** ~20 minutes, and it was free in the sense that mattered: **the test was
+  written before the streaming job, so the trap was found before anything could fall
+  into it.** Had the job been built first, this would have surfaced as a model
+  quietly scoring every streamed event on a wrong day-of-week — no exception, no
+  null, no row count out of place, and a per-corridor error small enough to look like
+  ordinary model noise. `created_is_weekend` is genuinely convention-independent
+  (both readings mean Saturday-or-Sunday), which is exactly why only one of the three
+  fields disagreed and why a spot-check of the other two would have concluded
+  everything was fine.
+- **Carry:** *any* feature the batch pipeline computes with a Spark builtin and a
+  consumer recomputes in Python needs one shared implementation, not two that agree
+  on a test date. `created_hour` happens to agree in both; that is luck, not design.
+
+[2] (problems.md -- P-45 · The event schema declared Python's day-of-week while the pipeline emits Spark's)
+### P-45 · The event schema declared Python's day-of-week while the pipeline emits Spark's
+
+**Week 5 · Mounika · resolved**
+
+- **Symptom.** `python -m src.streaming.producer --limit 8000 --validate` died with
+  `7 is greater than the maximum of 6` on `created_dayofweek`.
+- **Cause.** `stream_event.schema.json` declared the field `minimum: 0, maximum: 6`
+  — `datetime.weekday()`'s range. Stage 4 builds it with Spark's `F.dayofweek`,
+  which is **1 through 7**. 3,607 of 26,369 legs (13.7%) are Saturday, value 7, and fail
+  validation against the contract that is supposed to describe them.
+- **Why D1-D2 did not catch it.** The producer's smoke run replayed 300 legs, and
+  `--limit` takes a *prefix* of the chronological order, so all 300 came from the first
+  3.9 hours of 2018-09-12 — a Wednesday, value 4, comfortably inside 0-6. Every
+  event validated. The validator was working; it was handed a slice that could not
+  disagree with the bug.
+- **Fix.** `minimum: 1, maximum: 7`, and the description now names the convention and
+  points at `temporal_features` for anyone recomputing the field. 16,000 events spanning
+  a full week validate.
+- **This is P-39's trap in a third place.** Lahari found it between Stage 4 and a Python
+  consumer and fixed it with a shared helper; it was also sitting in the *contract*, and
+  a shared helper does not fix a schema. **P-39's closing claim that the trap was found
+  ""before anything could fall into it"" was too strong** — two things already had.
+  This is the second; the first is `src.ml.predict`, still live on the what-if page.
+- **Carry.** When a convention mismatch is found, grep for the *values*, not just the
+  code: every place the range 0-6 or 1-7 is written down is a place the convention was
+  decided, including JSON Schemas, docstrings and test fixtures.
+
+[3] (problems.md -- P-46 · The what-if page has fed the model the wrong day of the week since Week 4)
+### P-46 · The what-if page has fed the model the wrong day of the week since Week 4
+
+**Week 5 · found by Krishna, owned by Krishna · resolved at the Week 5 merge**
+
+- **Symptom.** None visible, which is the problem. Found by reading, not by a failure:
+  after P-45 turned up the day-of-week convention in a JSON Schema, the carry from that
+  entry said to grep for every place the convention is decided, and
+  `src/ml/predict.py` builds the what-if row with
+  `""created_dayofweek"": departure.weekday()`.
+- **Cause.** `weekday()` is Monday = 0 through Sunday = 6. The champion was trained on
+  Spark's `F.dayofweek`, Sunday = 1 through Saturday = 7 (P-39). The two never agree on
+  any day — a Wednesday is 2 on the page and 4 to the model — so every what-if
+  prediction since Week 4 D5 has been made on a day-of-week value from a different scale
+  than the one the model learned. `created_is_weekend` is computed correctly on the same
+  line, because ""Saturday or Sunday"" means the same thing in both conventions; that is
+  exactly why the other two temporal fields looked fine at a glance.
+- **Why this is P-39's first victim, not a new trap.** P-39 says the convention was
+  caught ""before anything could fall into it"". This had already fallen in, a week
+  earlier, on a page a user can click. P-45's entry already corrects P-39's claim;
+  this is the case it refers to.
+- **Fixed at the Week 5 merge.** `src.ml.predict.base_row` builds the non-history half
+  of the row and takes its three temporal fields from
+  `src.streaming.schema.temporal_features` — the one shared helper, which landed with
+  Lahari's branch — rather than writing `isoweekday() % 7 + 1` a third time. A third
+  implementation of one convention is how P-39, P-45 and this entry all happened. Two
+  tests pin a Wednesday to 4 and Saturday and Sunday to 7 and 1.
+- **How much it mattered, measured rather than guessed.** All 5,274 test legs were scored
+  through the champion twice, once with the right encoding and once with what
+  `weekday()` would have supplied. The two encodings disagree on every leg:
+  - **35.9% of predictions move**, by **0.6 minutes** on average (median 0.0, 95th
+    percentile 2.9, worst 62.9);
+  - **13 delay calls flip (0.2%)**;
+  - test MAE is **36.9 minutes either way**.
+  The champion leans very little on day-of-week, so the damage was small. **That is luck,
+  not design.** Under a model that weighted the day heavily, the same bug would have
+  moved every what-if answer, and nothing would have raised.
+- **Carry.** Grep for the *values* a convention produces, not just the function that
+  produces them. `weekday()` appears nowhere near the word ""dayofweek"" in a way a
+  search for the schema field would find.
+
+[4] (W5_lahari_stream_validation.md -- The day-of-week trap this test caught)
+#### The day-of-week trap this test caught
+
+
+The event carries the temporal features as explicit fields, but a streaming job could just as reasonably recompute them from `event_time`. Written the obvious way -- `datetime.weekday()` -- that recomputation disagrees with the carried value on **500 of 500 rows**, because Stage 4 built the feature with Spark's `dayofweek` (**Sunday = 1**, Saturday = 7) and Python's `weekday()` counts from **Monday = 0**. On a Wednesday that is 4 against 2.
+
+Nothing raises when this happens. The model receives a number on a different scale for every event and answers confidently and wrongly -- no exception, no null, no row count that looks off. `src.streaming.schema.temporal_features()` is now the one place that conversion lives, so the streaming job and the batch pipeline cannot drift apart on it, and the row above is the regression guard. Full account: `docs/problems.md` P-39.
+
+Full per-leg output: `benchmarks/raw/w5_stream_equals_batch.csv`, `w5_stream_temporal_check.csv`, `w5_stream_validation_report.json`.
+<!-- /section: stream-equals-batch -->
+
+<!-- section: threshold-sensitivity -->
+
+[5] (W4_mounika_auto_retrain.md -- D1–D2 · One subprocess per stage, not one shared Spark session)
+## D1–D2 · One subprocess per stage, not one shared Spark session
+
+
+Each pipeline stage module owns and stops its own `SparkSession`
+(`src.common.spark.get_spark()` / `stop_spark()`). `get_spark()` is a `getOrCreate()`
+singleton per process, so importing four stage modules into one Python process and
+calling their `main()`s back to back would mean reasoning about whether the second
+stage's `get_spark()` call reuses the first stage's still-open session, conflicts with
+its config (`app_name`, `shuffle_partitions`), or leaks it. `subprocess.run([sys.
+executable, ""-m"", module])` per stage sidesteps the question entirely: every stage
+gets the same clean JVM and clean shutdown it already gets when a person runs it by
+hand from the command line, and this script differs from a person typing four commands
+only in also checking whether each one is necessary first.","The day-of-week convention trap occurs because Spark's `F.dayofweek` counts days starting from Sunday = 1 through Saturday = 7, whereas Python's `datetime.weekday()` counts from Monday = 0 through Sunday = 6 *(problems.md, P-39)*. For a Wednesday (such as 2018-09-12), Spark outputs 4 while Python outputs 2, causing Python consumers to silently feed models and validators numbers on a different scale without raising any errors or exceptions *(problems.md, P-39, P-45)*. The network resolved this across pipelines, JSON schemas, and predictions by using a shared implementation `isoweekday() % 7 + 1` to match Spark's encoding exactly *(problems.md, P-39, P-45, P-46)*.",,
+P03,Why did booking shipments return HTTP 500 in Week 6?,"[1] (problems.md -- P-27 · A seeded ""invoice error"" printed a negative total)
+### P-27 · A seeded ""invoice error"" printed a negative total
+
+**Week 3 · Lahari, reviewing Krishna's D-021 · resolved**
+
+- **Symptom.** `total_mismatch` (D-021's seeded-error taxonomy) picked a delta from a
+  fixed `+/-50..500` range and added it to the invoice's `total_amount`. Nothing raised.
+  Checking the actual 120-record run against its own manifest, one of the five
+  `total_mismatch` invoices (`w3_00059`, a small Carting shipment: freight 230.00 +
+  other 29.07 = 259.07) printed `total_amount = -116.40`.
+- **Cause.** The delta's range was picked to look reasonable against a typical
+  mid-sized invoice and never checked against the smallest ones. This network's
+  Carting shipments run as low as ~₹30 in `freight_charge` (Week 1's route-type split
+  already showed Carting is proportionally the worse-behaved route type); a delta of
+  up to 500 absolute rupees dwarfs a total that size.
+- **Fix.** The delta is now a percentage of the invoice's own `total_amount`
+  (5-30%, either sign) rather than a fixed rupee amount, so it scales with the invoice
+  it lands on and cannot cross zero at this magnitude. Same two `rng` calls as the
+  version it replaces (a `choice` then a `uniform`), so which records get which seeded
+  error kind — the part everything else in the corpus depends on being reproducible —
+  is unchanged; only the `total_mismatch` records' printed totals moved.
+- **Cost.** ~20 minutes once the manifest was actually checked against the label JSON
+  rather than trusted because the generator ran cleanly. **A negative total is the
+  wrong kind of ""wrong""** for what this error is supposed to test: rule 5 asks an
+  extraction agent to report an arithmetic mismatch exactly as printed rather than
+  reconcile it, and a mismatch has to look like a plausible clerical error for that to
+  be a meaningful test — a negative grand total reads as an obviously broken document
+  before any extraction is attempted, on this document alone giving away the exact
+  thing the corpus is supposed to be testing whether an agent can catch quietly.
+
+---
+
+[2] (W2_krishna_india_map.md -- Open for Week 6)
+### Open for Week 6
+
+
+Layouts are chosen; the templates themselves are not written — that is Week 6 work, not
+Week 2. Two decisions want raising at the sync before then: whether the synthetic GSTINs
+should be structurally valid (state code + PAN + check digit) or obviously fake, and
+whether the document set generates one consignment chain per shipment or deliberately
+seeds mismatches for the auditor to find.
+
+---
+
+[3] (results.md -- The split D-005 deferred, fixed)
+### The split D-005 deferred, fixed
+
+
+D-005 (Week 1) decided the split would be time-based rather than the dataset's own
+`data` column and left the exact cut to whichever week trains something first —
+**D-022 fixes it here**: the 80th percentile of `trip_creation_time`, giving 21,095
+training legs (up to 2018-09-28 23:12:35 UTC) and 5,274 held out. Every number below
+is on the held-out set unless marked otherwise, and Week 4 must reuse
+`src.ml.baselines.time_split(frac=0.80)` rather than define its own cut — comparing
+against these baselines only means something on the same held-out legs.
+
+[4] (W1_lahari_data_dictionary_and_eda.md -- The blueprint's 1.25 threshold did not survive contact with the data)
+#### The blueprint's 1.25 threshold did not survive contact with the data
+
+
+The blueprint proposed `T = 1.25`. At leg grain that labels **93.6% of legs delayed** — because the *median* leg already runs at 2.00x plan, so a 25% overrun is not an exception on this network, it is the norm.
+
+That makes the classifier close to meaningless: a model that outputs “delayed” for every shipment scores **93.6% accuracy** while carrying zero information. Precision would look excellent and mean nothing, and the Exception Agent built on it in Week 6 would flag essentially every shipment — which is the same as flagging none.
+
+**Decided at the Week 2 sync — D-003: `config.DELAY_THRESHOLD` is 2.00.** That splits the legs 49.6% / 50.4%, so the majority-class baseline falls from 93.6% to 50.4% and the label becomes something a model can be wrong about. Interpretation stays honest: “takes at least twice the planned time” is a defensible definition of *operationally late* on a network whose planner is biased this hard.
+
+**Two supporting moves, adopted with it:**
+
+1. **Lead with regression, not classification.** `gap_min` (median 42 min, mean 110 min) has no threshold problem at all, and the headline the blueprint actually wants — *our MAE against OSRM's MAE* — is a regression result. The classifier is the secondary framing; it exists because Week 6's Exception Agent needs a flag to act on.
+2. **Report the trivial baseline next to every classifier number, permanently.** An accuracy quoted without the majority-class rate — now 50.4% — beside it is unreadable, and a viva panel will ask.
+
+**Why 2.00 and not 1.50.** 1.50 leaves 83.6% positive — better, and still a classifier that scores in the eighties by answering “delayed” every time. The threshold is chosen to make the *label* informative, not to make the network look better or worse than it is. On this data the balanced point and the defensible English sentence are the same number, which is the only reason to prefer a round 2.00 to a tuned one.
+
+**The 1.25 row stays in the report.** The finding is that the blueprint's threshold labels 93.6% of legs delayed — not that the project settled on 2.00. A reader who cannot see the first cannot judge the second. Week 5's sensitivity run covers 1.15 / 1.25 / 1.50 / 2.00 so the choice is shown to be a choice.
+
+[5] (problems.md -- P-47 · The TMS database had drifted from its own models, and it blocked the entire Week 6 lifecycle)
+### P-47 · The TMS database had drifted from its own models, and it blocked the entire Week 6 lifecycle
+
+**Week 6 · found by Krishna, owned by Mounika · worked around**
+
+- **Symptom.** `POST /shipments` returned **HTTP 500** for every order. Under it:
+  `sqlite3.OperationalError: no such column: shipment.notes`.
+- **Cause.** `Shipment` gained a `notes` field in the model. `SQLModel.metadata.create_all`
+  creates missing *tables*; it never alters an existing one. `data/tms.sqlite` was
+  created before that field existed, so the file and the models had silently disagreed
+  ever since — harmless until the first code path actually wrote the column, which
+  was Week 6's first shipment.
+- **This is P-40's prediction coming true, almost word for word.** P-40 said: *""It will
+  not be fine in Week 6, when the agents have filed orders worth keeping and someone
+  re-runs the seed... they will either hit this error or reach for `--reset` and destroy
+  real agent-filed data.""* The database held three real agent-filed orders from Week 5.
+  `--reset` would have destroyed them, and it was the obvious move.
+- **Worked around without losing data.** A schema diff between
+  `SQLModel.metadata.tables` and `PRAGMA table_info` found exactly one drifted column,
+  added by `ALTER TABLE ... ADD COLUMN`. The three Week 5 orders survived; shipments
+  booked immediately afterwards.
+- **The actual fix, for its owner.** That diff is ten lines and belongs in Mounika's
+  end-to-end boot script (W6 D1-D2), which is the one place that already knows it is
+  about to start every service: check the schema against the models, add what is
+  missing, and refuse to start if a column has *changed type* rather than merely being
+  absent.
+- **Carry.** An ORM that creates tables but never alters them is a migration system that
+  works exactly once. Every model change after the first run is invisible until
+  something writes the new column, and the error surfaces in whichever feature happens
+  to touch it first — three weeks and two members away from the change that caused it.","### P-27 · A seeded ""invoice error"" printed a negative total **Week 3 · Lahari, reviewing Krishna's D-021 · resolved** - **Symptom.** `total_mismatch` (D-021's seeded-error taxonomy) picked a delta from a fixed `+/-50..500` range and added it to the invoice's `total_amount`. Nothing raised. Checking the actual 120-record run against its own manifest, one of the five `total_mismatch` invoices (`w3_00059`, a small Carting shipment: freight 230.00 + other 29.07 = 259.07) printed `total_amount = -116.40`. (problems.md -- P-27 · A seeded ""invoice error"" printed a negative total)",,
+P04,How was a leg's finish time computed wrongly?,"[1] (problems.md -- P-52 · A leg's finish time was computed as departure plus moving time, which is not when it finished)
+### P-52 · A leg's finish time was computed as departure plus moving time, which is not when it finished
+
+**Week 7 · found by Lahari, fixed by Mounika · resolved in both places**
+
+- **Symptom.** The as-of corridor history rebuilt for D-048's median baseline agreed with
+  Stage 4's `corr_n_prior` on only **95.2%** of warm legs. Every disagreement ran the same
+  way: 1,128 legs saw *more* prior history than Stage 4 gave them, never less.
+- **Cause.** The first version derived a leg's finish time as
+  `od_start + (gap_min + planned_min)`, i.e. departure plus `actual_time`. But
+  `actual_time` is **moving** time: `reconstruct.py` defines dwell as
+  `start_scan_to_end_scan - actual_time`. So every fact landed before the leg really
+  finished, and legs still on the road were counted as known history — which is
+  leakage, in the direction that flatters a baseline.
+- **Fix in the diagnostics.** Join the real `od_end_time` from `trips_v1`, the column
+  Stage 4's as-of join uses. Agreement: **100%** on both count and mean. The median
+  baseline moved only from 33.06 to 33.04 min, so this changed no conclusion — but a
+  baseline whose history is *provably identical* to the features' is worth the join.
+- **The same proxy was in the streaming schema, and is now gone.**
+  `src/streaming/schema.py::fact_event` stamped every fact event at
+  `od_start + actual_time`, with a docstring calling it ""exact, not an approximation"".
+  Measured against the real `od_end_time`, it was **early on 26,298 of 26,369 legs, by a
+  median of 49.6 minutes** (mean 98.1, p95 345.2) — which is the median hub dwell Week 2
+  reported, arriving as a bug. It cost nothing published, because the streaming job counts
+  and drops fact events (D-037); the moment fact-driven live history is built it would have
+  been the same leak as above, a query scored against legs that had not finished.
+  `fact_event` now refuses a row with no finish time rather than deriving one, and the
+  producer and sample-event writer join `od_end_time` from `trips_v1` — exact on all 26,369
+  legs. The merge of the two branches then caught a third caller: a threshold test that
+  built a fact row by hand.
+- **Carry.** A duration column is not a clock. `actual_time` answers ""how long was the
+  truck moving"", and adding it to a departure time answers a question nobody asked. When
+  a timestamp exists in the data, join it; do not reconstruct it from parts that happen to
+  have the right units.
+
+[2] (problems.md -- P-25 · The natural corridor-history clock leaks the future)
+### P-25 · The natural corridor-history clock leaks the future
+
+**Week 3 · Mounika · resolved**
+
+- **Symptom.** The obvious first draft of the Stage 4 feature pipeline ordered each
+  corridor's history by `od_start_time` — a leg ""knows about"" every corridor leg that
+  had already *departed* by the time it was created. It runs, produces plausible
+  numbers, and raises nothing.
+- **Cause.** Departure is not when a leg's outcome becomes knowable; *arrival*
+  (`od_end_time`) is, because the duration itself is not known until the leg lands.
+  Measured directly rather than argued: on the naive clock, **46.4% of legs** are
+  created and dispatched in the same second, so a leg reads its own departure as
+  already-known history; a further **8.4%** are handed the duration of a different
+  journey that had departed but not yet landed. **48.6% of the 26,369-leg table is
+  affected either way**, and the direction of the error only helps the model — a leg
+  that has partly seen its own answer scores *better*, not worse, so nothing about the
+  output would have looked wrong.
+- **Fix.** History is ordered on `od_end_time` instead: every leg emits a *fact* when
+  it finishes and a *query* when it is created, and a leg only ever sees facts that
+  landed before its own query. Verified with a hand-built adversarial case
+  (`tests/test_features.py::test_in_flight_leg_is_excluded`) — a leg still on the road
+  at query time must contribute nothing — and by an independent recomputation of
+  `corr_n_prior` on a 200-row sample with the predicate spelled out longhand
+  (`od_end_time <= trip_creation_time`), which matched the window's output exactly.
+  Recorded as D-020.
+- **Cost.** ~1.5 hours, entirely spent because the naive version *looked* finished — it
+  ran clean, the coverage numbers were plausible, and nothing about a leakage bug looks
+  different from a correct feature until it is checked against an independent
+  computation. The 46.4%/8.4% numbers now live in the feature report so the trap stays
+  visible even after the fix, rather than disappearing the moment the code is right.
+
+[3] (W3_mounika_feature_pipeline_and_tms.md -- D1–D2 · Two clocks, and the difference between them is the whole trap)
+## D1–D2 · Two clocks, and the difference between them is the whole trap
+
+
+A leg is predicted when the shipment is created. Checked across all 26,369 legs:
+`trip_creation_time <= od_start_time`, without exception — a genuine decision point,
+not a column that quietly post-dates dispatch.
+
+But a *prior* leg's outcome is not usable the moment that leg starts; it becomes
+usable when it **finishes**, at `od_end_time`, because that is the earliest anyone
+could know how long it actually took. Ordering a corridor's history by
+`od_start_time` — the natural thing to write — leaks a departing leg's own future
+into itself. I built that version first and measured it before trusting it:
+
+| What the naive clock (`od_start_time`) leaks | Legs | % of table |
+|---|---|---|
+| Reads its own departure as already-known history | 12,245 | **46.4%** |
+| Handed another journey's duration before it landed | 2,216 | **8.4%** |
+| Affected either way | 12,818 | **48.6%** |
+
+Caught before it reached Lahari's baselines, not after — this is P-25, and D-020
+carries the decision it forced: history is ordered on `od_end_time`.
+
+[4] (paper_outline.md -- 1. Introduction)
+## Section plan
+
+### 1. Introduction
+
+The premise in three numbers, all from `w1_leg_summary.csv`: 26,369 OD legs, **98.3% run
+over the plan**, median leg takes **2.00×** its planned time. One-sidedness is the argument
+— noise cancels, so a systematic error should be localisable. Contributions list above.
+
+[5] (problems.md -- P-62 · A replay scored early legs with the future, and inflated the agent layer's headline by 13.5 points)
+### P-62 · A replay scored early legs with the future, and inflated the agent layer's headline by 13.5 points
+
+**Week 8 · found by Lahari from Mounika's D-053 · resolved in the reporting**
+
+- **Symptom.** None, which is the problem. The Exception agent's evaluation reported 72.1%
+  notification precision against a 54.1% trivial policy, severity precision rising from 53.2%
+  to 91.8%, and all of it reproduced cleanly every time it was re-run.
+- **Cause.** The streaming job joins each query to the *latest* history snapshot per key.
+  Live, that is history up to now. On a replay it is history up to the **end of the data**,
+  and the producer replays the **earliest** legs first — so 1,290 of the 2,000 replayed legs,
+  which had no corridor history at their own creation time, were scored as if they had
+  fourteen prior legs, some of them finishing after the leg itself.
+- **How it was found.** Not by a test. D-053 was scoping whether the stream could serve the
+  adopted model, and reading `latest_history` for that purpose raised the question of what it
+  returns on a replay. Scoring the same legs as-of and via the snapshot answered it: MAE
+  47.29 against 32.81 min, precision 58.6% against 72.1%. The snapshot run reproduced the
+  published numbers *exactly*, which is what made the finding certain.
+- **Why the equality test missed it.** Stream-equals-batch compares a leg scored in batch
+  with the same leg scored through the event path — and both paths took the history from the
+  same `features_v1` row. It proved the event format was lossless. It never compared against
+  what the *running job* joins, which is where the leak was.
+- **Fix.** Reported numbers now come from the as-of run (D-054). D-047's conclusion survives
+  — precision still rises monotonically with severity — at lower levels, and the `low` grade
+  is now below the trivial policy. The superseded page and decision carry a note pointing
+  forward instead of being rewritten.
+- **Carry.** A replay is only an evaluation if every join inside it is as-of the event being
+  replayed. ""The same code as production"" is not the same as ""the same information as
+  production had at that moment"", and a pipeline can be bit-identical to itself while being
+  wrong about time.","### P-52 · A leg's finish time was computed as departure plus moving time, which is not when it finished **Week 7 · found by Lahari, fixed by Mounika · resolved in both places** - **Symptom.** The as-of corridor history rebuilt for D-048's median baseline agreed with Stage 4's `corr_n_prior` on only **95.2%** of warm legs. Every disagreement ran the same way: 1,128 legs saw *more* prior history than Stage 4 gave them, never less. - **Cause.** The first version derived a leg's finish time as `od_start + (gap_min + planned_min)`, i.e. (problems.md -- P-52 · A leg's finish time was computed as departure plus moving time, which is not when it finished)",,
+R01,Who is the CEO of Delhivery?,,I don't have that in the project data.,,
+R02,What will diesel prices be in India next month?,"[1] (W2_lahari_corridor_audit.md -- Top 20 hubs by dwell share)
+### Top 20 hubs by dwell share
+
+
+| # | Hub | City | State | Legs out | Dwell share (out) | Dwell min (out) | p90 min |
+|---|---|---|---|---|---|---|---|
+| 1 | `IND683511AAA` | Aluva | Kerala | 86 | **82%** | 350 | 467 |
+| 2 | `IND580028AAA` | Hubli | Karnataka | 78 | **76%** | 373 | 776 |
+| 3 | `IND691001AAB` | Kollam | Kerala | 32 | **73%** | 139 | 284 |
+| 4 | `IND560058AAD` | Bengaluru | Karnataka | 36 | **70%** | 112 | 393 |
+| 5 | `IND506002AAA` | Warangal | Telangana | 39 | **69%** | 119 | 250 |
+| 6 | `IND400072AAD` | Mumbai | Maharashtra | 99 | **67%** | 118 | 183 |
+| 7 | `IND244901AAB` | Rampur | Uttar Pradesh | 67 | **66%** | 218 | 407 |
+| 8 | `IND110037AAK` | Delhi | Delhi | 43 | **66%** | 159 | 468 |
+| 9 | `IND411036AAA` | Pune | Maharashtra | 33 | **64%** | 138 | 340 |
+| 10 | `IND811399AAA` | Noida | Uttar Pradesh | 50 | **63%** | 147 | 276 |
+| 11 | `IND431136AAC` | Aurangabad | Maharashtra | 58 | **63%** | 257 | 457 |
+| 12 | `IND411021AAA` | IND411021AAA | Maharashtra | 32 | **63%** | 48 | 156 |
+| 13 | `IND523002AAA` | Ongole | Andhra Pradesh | 39 | **63%** | 165 | 444 |
+| 14 | `IND421302AAR` | Mumbai | Maharashtra | 59 | **63%** | 60 | 93 |
+| 15 | `IND131021AAA` | Sonipat | Haryana | 58 | **62%** | 25 | 41 |
+| 16 | `IND641062AAD` | Coimbatore | Tamil Nadu | 64 | **60%** | 170 | 254 |
+| 17 | `IND382430AAB` | Ahmedabad | Gujarat | 280 | **60%** | 127 | 391 |
+| 18 | `IND632006AAA` | Vellore | Tamil Nadu | 44 | **59%** | 204 | 514 |
+| 19 | `IND560064AAD` | Bengaluru | Karnataka | 41 | **59%** | 47 | 108 |
+| 20 | `IND395023AAD` | Surat | Gujarat | 63 | **58%** | 46 | 90 |
+
+Read the share column as *the fraction of a typical leg's wall clock the shipment spent stationary at this hub before departing*. The top hub sits at 82% — most of that leg's elapsed time is dwell, not movement. Raw minutes stay in the table beside it because they are what a customer actually waits, and the report needs both framings.
+<!-- /section: hub-ranking -->
+
+[2] (corridor_audit (IND000000ACT>IND131028AAB))
+Corridor IND000000ACT>IND131028AAB runs from Delhi_Gateway_HB (Delhi) in Delhi to Sonipat_Kundli_H (Haryana) in Sonipat, Haryana. Over 39 legs it averages 97 minutes against an OSRM plan of 56 minutes, a median gap ratio of 1.65. It runs 0.76 times the network's typical overrun and is statistically confirmed faster than the network (q = 0.0000). 0% of its legs are FTL.
+
+[3] (hub_friction (IND244901AAB))
+Hub IND244901AAB in Rampur, Uttar Pradesh is rank 7 in the network's hub-friction table. Shipments leaving it sit a median of 218 minutes (66% of leg time), and 407 minutes at the 90th percentile. It serves 7 outbound corridors over 67 legs. Its chain-break rate is 0.0%.
+
+[4] (corridor_audit (IND781018AAB>IND110037AAM))
+Corridor IND781018AAB>IND110037AAM runs from Guwahati_Hub (Assam) in Guwahati to Delhi_Airport_H (Delhi) in Delhi, Delhi. Over 17 legs it averages 3370 minutes against an OSRM plan of 1323 minutes, a median gap ratio of 2.53. It runs 1.17 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0000). It is bottleneck rank 238. 100% of its legs are FTL.
+
+[5] (corridor_audit (IND110037AAM>IND110024AAA))
+Corridor IND110037AAM>IND110024AAA runs from Delhi_Airport_H (Delhi) in Delhi to Delhi_Lajpat_IP (Delhi) in Delhi, Delhi. Over 14 legs it averages 63 minutes against an OSRM plan of 24 minutes, a median gap ratio of 2.64. It runs 1.19 times the network's typical overrun and is statistically confirmed slower than the network (q = 0.0018). It is bottleneck rank 228. 0% of its legs are FTL.",I don't have that in the project data.,,
+R03,What is the GST rate on road freight?,"[1] (decisions.md -- D-043 · The invoice rate band is the corpus's own generator model, which makes v1 exact and circular at the same time — `DECIDED`)
+## D-043 · The invoice rate band is the corpus's own generator model, which makes v1 exact and circular at the same time — `DECIDED`
+
+**Week 6 · Krishna · D5**
+
+The auditor needs to answer ""is this freight charge too high for this corridor"". It
+does so with a band: the corridor's audited `mean_osrm_km` (Week 2) times the rate model
+`src/agents/doc_corpus/records.py` uses to generate invoices — FTL at 28-45 per km,
+Carting at 6-10 per km-tonne plus 2-4 per kg — widened by 15%.
+
+**This is exact for these invoices and worthless as a claim about real freight
+pricing**, because the generator and the auditor share one model. It measures whether
+the auditor catches an invoice that departs from the network's own observed rates. It
+does not show those rates are right. Stating that plainly is the decision: the
+alternative was to quietly present 20-of-20 as though it were evidence about pricing.
+
+**Decided anyway, for v1**, because the auditor's job this week is to be *wired and
+measurable*, and a band fitted from billed history is a Week 7+ piece of work that needs
+billed history the project does not have. The 15% tolerance is set so that no clean
+invoice in the corpus is disputed: a false dispute costs a supplier relationship, which
+is worth more than the few hundred rupees a missed marginal overcharge represents.
+
+**Decided: a corridor with no audited distance produces no finding at all.** Not a
+dispute, not a warning-that-becomes-a-dispute. ""We cannot check this"" and ""this is
+wrong"" are different statements, and the TMS has only `approved`/`disputed` to say them
+in. Disputing an invoice because the network lacks history on its corridor would bill a
+supplier for our own data gap.
+
+Result on the development corpus: **20 of 20 verdicts matched the seeded ground truth**
+(10 disputed, 10 approved, no clean invoice disputed). Lahari's D5 evaluation is the one
+that counts, on a set this auditor's author did not write (D-028).
+
+Evidence: `src/agents/invoice_auditor.py`, `tests/test_invoice_auditor.py`,
+`benchmarks/raw/w6_invoice_audit_runs.json`.
+
+---
+
+[2] (hub_friction (IND395023AAD))
+Hub IND395023AAD in Surat, Gujarat is rank 20 in the network's hub-friction table. Shipments leaving it sit a median of 46 minutes (58% of leg time), and 90 minutes at the 90th percentile. It serves 5 outbound corridors over 63 legs.
+
+[3] (references.md -- 3 · Corridor-level travel time and reliability)
+## 3 · Corridor-level travel time and reliability
+
+
+The transport-research strand that shares our unit of analysis.
+
+- **FHWA, Freight Performance Measurement: Travel Time in Freight-Significant Corridors.**
+  Corridor-level reliability measures from GPS probe data: planning-time index, buffer
+  index, percentile spreads. `[listed]`
+- **Developing corridor-level truck travel time estimates and other freight performance
+  measures from archived ITS data** (US DOT / ROSAP). `[listed]`
+- **Travel-time reliability for freight corridors** (TREC / Portland State; Pacific
+  Northwest corridors). Distribution fitting — gamma, log-logistic, log-normal, Weibull —
+  with goodness-of-fit testing. `[listed]`
+
+**Why they matter to us:** this literature measures corridors with *descriptive indices*.
+Our contribution in the same unit is **significance testing with multiplicity control** —
+the difference between ""this corridor looks unreliable"" and ""this corridor is slower than
+the network at FDR 5%"". Before submission, at least two of these need reading in full so
+the distinction is stated fairly rather than assumed.
+
+[4] (hub_friction (IND560064AAD))
+Hub IND560064AAD in Bengaluru, Karnataka is rank 19 in the network's hub-friction table. Shipments leaving it sit a median of 47 minutes (59% of leg time), and 108 minutes at the 90th percentile. It serves 1 outbound corridors over 41 legs.
+
+[5] (W6_krishna_orchestrator.md -- 4. Freight Invoice Auditor (D5))
+## 4. Freight Invoice Auditor (D5)
+
+
+Four checks, all arithmetic: the invoice's own sum against its parts; the freight charge
+against the corridor's audited rate band; the share taken by other charges; and repeated
+invoice numbers.
+
+**20 of 20 verdicts matched the seeded ground truth** — 10 disputed, 10 approved,
+and **no clean invoice was disputed**, which is the direction that matters: a false
+dispute costs a supplier relationship, a missed marginal overcharge costs a few hundred
+rupees.
+
+**The limitation is structural and is stated in D-043 rather than buried.** The rate band
+comes from the same generator model that produced the invoices, so it is exact for this
+corpus and **circular as a claim about real freight pricing**. It shows the auditor
+catches invoices that depart from the network's own observed rates. It does not show
+those rates are correct.
+
+One deliberate non-finding: a corridor with no audited distance produces **no finding at
+all**. ""We cannot check this"" is a different statement from ""this is wrong"", and the TMS
+has only approve/dispute to say them in. Disputing an invoice because we lack history on
+its corridor would bill a supplier for our own data gap.","I don't have that in the project data. I would need rate cards, tax documentation, or invoice breakdown data that specifies the GST rate applied to road freight.",,
+R04,What is the weather in Mumbai tomorrow?,,I don't have that in the project data.,,
+R05,Write Python code to sort a list.,,I don't have that in the project data.,,
+R06,How many trucks does Delhivery own?,"[1] (hub_friction (IND110037AAK))
+Hub IND110037AAK in Delhi, Delhi is rank 8 in the network's hub-friction table. Shipments leaving it sit a median of 159 minutes (66% of leg time), and 468 minutes at the 90th percentile. It serves 1 outbound corridors over 43 legs.
+
+[2] (hub_friction (IND244901AAB))
+Hub IND244901AAB in Rampur, Uttar Pradesh is rank 7 in the network's hub-friction table. Shipments leaving it sit a median of 218 minutes (66% of leg time), and 407 minutes at the 90th percentile. It serves 7 outbound corridors over 67 legs. Its chain-break rate is 0.0%.
+
+[3] (hub_friction (IND395023AAD))
+Hub IND395023AAD in Surat, Gujarat is rank 20 in the network's hub-friction table. Shipments leaving it sit a median of 46 minutes (58% of leg time), and 90 minutes at the 90th percentile. It serves 5 outbound corridors over 63 legs.
+
+[4] (hub_friction (IND811399AAA))
+Hub IND811399AAA in Noida, Uttar Pradesh is rank 10 in the network's hub-friction table. Shipments leaving it sit a median of 147 minutes (63% of leg time), and 276 minutes at the 90th percentile. It serves 2 outbound corridors over 50 legs. Its chain-break rate is 0.0%.
+
+[5] (hub_friction (IND431136AAC))
+Hub IND431136AAC in Aurangabad, Maharashtra is rank 11 in the network's hub-friction table. Shipments leaving it sit a median of 257 minutes (63% of leg time), and 457 minutes at the 90th percentile. It serves 5 outbound corridors over 58 legs. Its chain-break rate is 0.0%.",I don't have that in the project data. Fleet size or vehicle ownership data for Delhivery would be needed.,,

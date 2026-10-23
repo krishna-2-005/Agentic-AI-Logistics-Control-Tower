@@ -3,12 +3,9 @@ import type { Metadata } from "next";
 import { PromptLibrary } from "@/components/PromptLibrary";
 import { Notice, PageHeader, Section } from "@/components/ui";
 import { getPrompts } from "@/lib/data";
+import { pageMeta } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Prompt library",
-  description:
-    "Every prompt version, never overwritten — so a claimed improvement can be re-run.",
-};
+export const metadata: Metadata = pageMeta("Prompt library", "Every prompt version, never overwritten — so a claimed improvement can be re-run.");
 
 export default function PromptsPage() {
   const prompts = getPrompts();
