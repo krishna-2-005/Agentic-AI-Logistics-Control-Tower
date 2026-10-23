@@ -18,6 +18,8 @@ import json
 import jsonschema
 import pytest
 
+pytest.importorskip("pyspark")  # the fast job runs without PySpark: skip, do not error
+
 from src.ml.baselines import FEATURES
 from src.streaming import job
 from src.streaming import throughput as harness

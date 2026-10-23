@@ -4,12 +4,9 @@ import { AssistantChat } from "@/components/AssistantChat";
 import { Kpi, KpiRow, PageHeader, Section } from "@/components/ui";
 import { getAssistantEval } from "@/lib/data";
 import { pct } from "@/lib/format";
+import { pageMeta } from "@/lib/site";
 
-export const metadata: Metadata = {
-  title: "Analytics assistant",
-  description:
-    "Ask the project about its own data — and watch it refuse what it cannot ground.",
-};
+export const metadata: Metadata = pageMeta("Analytics assistant", "Ask the project about its own data — and watch it refuse what it cannot ground.");
 
 export default function AssistantPage() {
   const evalData = getAssistantEval();

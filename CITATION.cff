@@ -1,7 +1,7 @@
 cff-version: 1.2.0
 title: >-
-  Agentic AI Logistics Control Tower: corridor-level localisation of
-  systematic routing error, with a measured agent layer
+  Agentic AI Logistics Control Tower: dependence-aware localisation of
+  route-estimate error in road freight, with a measured agent layer
 message: >-
   If you use this software or its results, please cite it using the
   metadata below. Please also cite the Delhivery dataset separately —
@@ -11,34 +11,33 @@ authors:
   - family-names: Kuchuru
     given-names: Sai Krishna Reddy
     affiliation: Agentic AI Logistics Control Tower project
-  - family-names: Suresh
-    given-names: Lahari
+  - family-names: Lahari
+    given-names: Makkena
     affiliation: Agentic AI Logistics Control Tower project
   - family-names: Reddy
-    given-names: Mounika
+    given-names: Shery Mounika
     affiliation: Agentic AI Logistics Control Tower project
 repository-code: >-
   https://github.com/krishna-2-005/Agentic-AI-Logistics-Control-Tower
 url: https://control-tower-mu-rouge.vercel.app
 abstract: >-
-  Production routing engines estimate how long a road-freight leg should
-  take, and on the network studied here they are wrong in one direction
-  almost every time: 98.3% of 26,369 origin-destination legs run over plan
-  and the median leg takes 2.00 times its planned time. We test every
-  corridor with at least ten legs against the rest of the network using
-  Welch's t-test on log time ratios with Benjamini-Hochberg control at 5%,
-  and find 273 corridors significantly slower and 512 significantly faster,
-  covering 78.6% of legs. We show this answer depends heavily on one
-  parameter: raising the support floor from ten legs to thirty produces a
-  top-20 list with no corridor in common. A gradient-boosted model trained
-  on the residual over a per-corridor median reaches 30.90 minutes mean
-  absolute error against the median's 33.04, winning on all fourteen
-  evaluation slices. We report two engineering findings that affect how
-  such systems are evaluated: a default optimiser setting that silently
-  disabled the loss function the model was chosen for, and a replay-based
-  evaluation that scored early events against later history and inflated a
-  reported alert precision from 58.6% to 72.1%. The pipeline runs unchanged
-  on 56.4 million rows.
+  The OSRM route estimate recorded in Delhivery's public trip data runs
+  short almost every time: 98.3% of 26,369 origin-destination legs run over
+  it and the median leg takes 2.0 times the estimate. This repository
+  localises where that error concentrates and says how confidently. A Welch
+  audit with false-discovery control flags 273 corridors as slower than the
+  network, but legs of one recurring service are correlated and the same
+  procedure on placebo data returns about 680 discoveries; a cluster-aware
+  permutation test confirms none at its pre-registered strictness, while
+  corridor effects persist between halves of the period. A gradient-boosted
+  residual over a hierarchical back-off baseline reaches 29.66 minutes mean
+  absolute error against the baseline's 32.39 (day-block 95% interval for
+  the difference -3.41 to -2.11), with the gain on corridors without
+  history; the Spark model that the streaming job serves scores 30.90. The
+  repository also reports two evaluation pitfalls (an optimiser default that
+  disabled the chosen loss, and a replay that leaked future history into an
+  alert precision) and a measured, deterministic-core agent layer. Every
+  number is generated from a frozen results file.
 keywords:
   - big data
   - apache spark
@@ -46,8 +45,14 @@ keywords:
   - travel time prediction
   - route auditing
   - false discovery rate
+  - empirical bayes
   - llm agents
   - stream processing
 license: MIT
-version: 1.0.0
-date-released: '2026-09-19'
+version: 1.1.0
+# The release date and the DOI are filled in at the first archived release (HUMAN_ACTIONS 6.8):
+# publish a GitHub release with Zenodo switched on, then add
+#   identifiers:
+#     - type: doi
+#       value: 10.5281/zenodo.XXXXXXX
+date-released: '2026-10-21'

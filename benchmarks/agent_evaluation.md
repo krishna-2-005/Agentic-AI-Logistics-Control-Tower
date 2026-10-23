@@ -13,8 +13,9 @@ owed, the row says what it waits on instead of carrying an old number forward.
 |---|---|---|---|---|---|---|
 | Document Intelligence | field-level F1 (micro) | **0.929** | predict nothing: 0.000 | 16 of 20 scanned documents (W4, quota cap) | `doc_extraction/v2` | `gemini-3.6-flash` |
 | Document Intelligence | field-level F1 (micro), v1 | 0.853 | predict nothing: 0.000 | 22 of 40 scanned documents | `doc_extraction/v1` | `gemini-3.6-flash` |
-| Document Intelligence | per-field accuracy, clean PDF | **98.7%** | predict nothing: 0.0% | 20 of 40 rows so far (quota), 10 consignments stratified by seeded error type | `doc_extraction/v2` | `gemini-3.6-flash` |
-| Document Intelligence | per-field accuracy, noisy scan (Tesseract OCR) | **96.9%** | predict nothing: 0.0% | the same rows | `doc_extraction/v2` | `gemini-3.6-flash` |
+| Document Intelligence | per-field accuracy, **overall** (clean + noisy) | **97.9%** [95.4%–99.0%] (274/280 fields) | predict nothing: 0.0% | 20 of 40 rows so far (quota), 10 consignments stratified by seeded error type | `doc_extraction/v2` | `gemini-3.6-flash` |
+| Document Intelligence | per-field accuracy, clean PDF (split of the above, 151/153) | **98.7%** | predict nothing: 0.0% | 20 of 40 rows so far (quota), 10 consignments stratified by seeded error type | `doc_extraction/v2` | `gemini-3.6-flash` |
+| Document Intelligence | per-field accuracy, noisy scan (Tesseract OCR; split of the overall row, 123/127) | **96.9%** | predict nothing: 0.0% | the same rows | `doc_extraction/v2` | `gemini-3.6-flash` |
 | Document Intelligence | hallucinated fields (value returned where the document is blank) | **0.4%** (1 of 280) | | the same rows | `doc_extraction/v2` | `gemini-3.6-flash` |
 | Order Entry | end-to-end success rate | **100%** (50 of 50) | always file: 50.0% | all 50 cases; 25 file, 25 clarify | `order_entry/v1` | `gemini-3.6-flash` |
 | Order Entry | clarification recall / precision | **100% / 100%** | always file: 0% recall | the 25 clarify cases | `order_entry/v1` | `gemini-3.6-flash` |

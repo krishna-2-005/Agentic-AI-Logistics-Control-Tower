@@ -2117,6 +2117,11 @@ outline exists (G-09, this week).
 
 Evidence: `https://iccci.org/sub.html` (read 2026-09-18).
 
+**Update, 14 October 2026 (WP-10): the ICCCI 2027 call for papers is not yet published.**
+Searched the conference site and EasyChair. Past deadlines: 1 February 2024, 15 February 2025,
+15 March 2026, so the 2027 deadline is likely February–March 2027. That is an inference, not
+a date; confirm on <https://iccci.pwr.edu.pl> when the CFP appears and write it here.
+
 ## D-053 · Serving the adopted model needs rolling state, not a lookup; it moves to Phase 3 — `CLOSED by D-070`
 **Week 8 · Mounika · execution plan v3.1 §3, following D-050**
 
@@ -2549,3 +2554,805 @@ Text that described the AWS phase as upcoming (`docs/cost.md`, `docs/RELEASE_v1.
 `docs/deploy_dashboard.md`, a docstring) now says it was dropped. **Spend to date and planned:
 $0.**
 
+
+## D-075 · Pre-registration: a hierarchical back-off bar, and a residual model over it — `DECIDED`
+**Post-v1.0 (upgrade B1) · Mounika · written and committed before any back-off number was computed**
+
+**Why.** The bar the paper judges the model against, `baseline_median`, falls back to **0.0 minutes
+on a corridor with no history** (`models_v2.py`, `baselines.py`): on those legs the "fair
+baseline" predicts that the leg runs exactly on plan, which is OSRM. Most of the model's margin sits
+on exactly those legs (294 unseen-corridor test legs: 111.2 → 75.9 min). A reviewer can say the
+baseline has an unfair fallback. This entry fixes the baseline before it is measured.
+
+**Method (all as-of: a prior leg counts only once it has *finished*, at `od_end_time`, before the
+query leg's `trip_creation_time`; facts before queries on a tie, as D-020).**
+
+1. *Levels,* in order of preference, each a median of `gap_min` over the prior legs in its group
+   (the median is Spark's `percentile(0.5)`, the mean of the two middle values for an even count,
+   exactly what `corr_median_gap_min` uses):
+   L1 the leg's corridor; L2 its origin hub's outbound legs; L3 its destination hub's inbound
+   legs; L4 its route type × distance band (the three bands are the train-quantile terciles of
+   `planned_km` used by the paper's slice table); L5 the network, as-of.
+2. *Hard back-off (b):* use the first level with at least one prior leg.
+3. *Shrunken back-off (c):* each level's median is shrunk toward the next level's estimate with
+   weight `n/(n+k)` where `n` is that level's prior-leg count, applied from L5 up to L1 (so `n = 0`
+   reproduces the hard rule). `k` is chosen from {1, 2, 5, 10, 20, 50, 100} on the **validation**
+   cut only (the second chronological 80/20 cut inside the training split, the same cut D-049 used),
+   never on test.
+4. *Check before use:* the L1 median must reproduce `features_v2.corr_median_gap_min` on every
+   warm leg (to 1e-9), or the module refuses to write results (the builder-and-judge rule, D-028).
+
+**Report on the test split (5,274 legs, unchanged):** MAE of (a) the old median baseline with its
+0.0 cold fallback, (b) hard back-off, (c) shrunken back-off, (d) the v2 GBT (30.90) — overall, on
+*cold* legs (`corr_n_prior == 0`, as-of), on *warm* legs, on the "unseen in training" slice, and on
+all fourteen slices of the existing slice table. Output `b1_backoff_baseline.json` and
+`b1_backoff_slices.csv`; per-leg predictions `b1_test_predictions.csv` for the significance study.
+
+**Decision rule 1 — what "the bar" is.** The bar the paper, README and site use is the baseline
+with the **lowest test MAE among (a), (b), (c)**. It is chosen on test *deliberately*: the
+baselines have no fitted parameter except `k` (fixed on validation), and letting the bar be the
+best of three on test can only make the model's comparison harder, never easier. If back-off
+beats the old median, back-off becomes the bar everywhere and the old median is reported as a
+row, not removed.
+
+**Decision rule 2 — the residual model over the bar (`models_v3.py`).** A gradient-boosted
+residual model (Spark MLlib, absolute loss, 200 trees, depth 6, as v2) is trained on
+`gap − baseline`, where the baseline is the best of (a)/(b)/(c) **on validation** (so that choice
+never sees test). Inputs are the 38 v2 inputs plus two as-of descriptors of the baseline used: its
+level (1 to 5) and its prior-leg count. The only hyperparameter is the step size from
+{0.05, 0.3, 1.0}, chosen on validation; the chosen model is refit on the full training split and
+scored once on test (§5.3 of the paper, applied as written).
+
+**Decision rule 3 — which model is "the reported model".** Of the two gradient-boosted residual
+models, v2 (over the old median, step 1.0, already fixed) and v3 (over the validation-best
+baseline), the one with the **lower validation MAE** is the reported model, **even if its test MAE
+is higher than 30.90**. Both are reported with their test numbers.
+
+**Decision rule 4 — claims.** If the reported model does not beat the bar by a block-bootstrap
+confidence interval (by day) that excludes zero (study B2), the paper says so plainly and §5 is
+reframed as "a strong back-off baseline is hard to beat; the model's value is …". That is still a
+result. If the reported model changes from v2, the stream, the numpy tree reader, the API bundle
+and the stream-equals-batch validation are re-run and must again be bit-identical; if that cannot
+be done in this pass, v2 stays served and the paper and README state which model is served and
+which is reported.
+
+**Outcome (written after the runs, 2026-10-21).** Rule 1: on the 5,274 test legs the old median scores
+33.04 min, hard back-off 32.39 and shrunken back-off 32.92 (k = 1 chosen on validation; every larger k is
+worse, 31.41 rising to 69.29 at k = 100). Hard back-off is the bar, and it beats the old median, so the
+old median's 0.0-minute cold fallback was an unfair advantage to the model. The model's margin over the
+bar falls from 2.14 min (6.5%) to 1.49 min (4.6%). Where it sits: 204 cold legs (no prior leg on the
+corridor as of the query) score 132.97 under back-off against 100.16 for the v2 model, and warm legs
+28.35 against 28.12, so almost the whole gain is on cold legs. Rule 2: back-off has the lower validation
+MAE of the three (29.36), so it is the baseline under v3; step 1.0 won on validation (31.14 against 31.56
+and 32.52). Rule 3: validation MAE is 30.17 for v2 and 31.14 for v3, so **v2 stays the reported model**
+(v3 scores 31.40 on test, worse than v2's 30.90). Notably the back-off bar itself scores 29.36 on the
+validation cut, lower than either model, so on that cut the model does not beat the bar; the test split is
+where it does. The paper says both. Rule 4 (interval) is decided by D-076; the served model is
+unchanged because the reported model is unchanged, so the serving chain needs no re-validation.
+
+## D-076 · Pre-registration: uncertainty for every model comparison, and a rolling-origin evaluation — `DECIDED`
+**Post-v1.0 (upgrade B2) · Mounika · written and committed before any interval or test was computed**
+
+*Status of knowledge when written:* the B1 back-off numbers and the v2 GBT's test MAE are known; no
+confidence interval, p-value or fold result exists yet. Nothing below was chosen after seeing one.
+
+**Quantity.** For model `f` and the bar `b` (D-075 rule 1), the per-leg difference
+`d_i = |y_i − f_i| − |y_i − b_i|`, with `y` the realised gap. Negative favours the model; the mean of
+`d` is the MAE difference.
+
+**Intervals (module `src/ml/significance.py`, output `b2_significance.json`).**
+1. *Paired bootstrap over legs,* 10,000 resamples, seed 20261021, 95% percentile interval. Reported,
+   but legs are not independent (shared trips, vehicles, days), so it is **not** the paper's interval.
+2. *Block bootstrap by calendar day (IST) of leg creation,* same resample count and seed: whole days
+   are resampled with replacement. **This is the paper's interval.** The test split spans only about
+   six calendar days, which makes this interval crude; the module also reports a **six-hour-block**
+   version as a sensitivity check, and the paper says how many blocks each rests on.
+3. *Wilcoxon signed-rank* on `d_i` (zero differences dropped), reported with the caveat that legs are
+   dependent, so its p-values are optimistic.
+4. *Diebold–Mariano* on `d_i` ordered by creation time, normal reference distribution, Bartlett-kernel
+   (Newey–West) long-run variance with bandwidth equal to the **median number of legs per day** (the
+   day-level dependence the plan names), and the conventional `floor(n^(1/3))` bandwidth as a second row.
+5. *Holm correction* across the 13 non-overall slices, separately for each test. A slice "wins with
+   interval excluding zero" if its block-bootstrap interval is entirely below zero; "wins after Holm"
+   if its Holm-adjusted block-bootstrap p-value is below 0.05.
+
+**Where applied.** Every model against the bar on: overall; cold legs (`corr_n_prior == 0`, as-of);
+warm legs; legs on corridors unseen in training; and each of the paper's slices (support, route type,
+distance band, departure hour; 14 including overall). Each model's own MAE also gets a block-bootstrap
+interval (for Table 1).
+
+**Rolling-origin evaluation (module `src/ml/rolling_origin.py`, output `b2_rolling_origin.csv`).**
+The 22 calendar days of leg creation (IST; day 1 = 2018-09-12) are cut into four chronological folds,
+fixed here: fold 1 trains on days 1–10 and tests on 11–13; fold 2 trains 1–13, tests 14–16; fold 3
+trains 1–16, tests 17–19; fold 4 trains 1–19, tests 20–22. In each fold the baselines are recomputed
+(as-of by construction; the distance-band cut points come from that fold's training legs) and the two
+residual GBT **configurations are refit with their hyperparameters frozen, no retuning**: v2 (over the
+old median, step 1.0) and v3 (over the back-off baseline, the step size D-075 chose). Report per-fold
+MAE and the per-fold difference to the bar, and their mean ± standard deviation over folds. A fold's
+training legs are those *created* before its test window, the same convention as the headline split;
+a leg created just before a window may finish inside it, so its label is not strictly known at the cut,
+which the paper states as a limit.
+
+**Decision rule.** Report every interval and every fold, whatever they show. "The model wins all
+fourteen slices" is replaced by "wins N of 14 with a block-bootstrap interval below zero, M after
+Holm", with N and M as the module computes them. If the model's advantage over the bar is not
+significant by the block interval, or loses in a fold, the paper says so in those words.
+
+**Outcome (D-076 folds, 2026-10-21).** `python -m src.ml.rolling_origin` (about 2.5 hours; one earlier attempt was killed when a test run cleaned the shared Spark scratch directory, P-84). Per fold, test MAE of the back-off bar / Spark v2 (served) / Spark v3: days 11-13: 35.8746 / 35.9573 / 38.3785; days 14-16: 30.5641 / 31.4399 / 31.0827; days 17-19: 31.7161 / 30.4801 / 30.5956; days 20-22: 31.607 / 29.4843 / 31.141. **The served Spark model beats the bar in 2 of 4 folds** (mean difference -0.6001, sd 1.3376); v3 beats it in 2 of 4 (mean 0.3589). The back-off bar beats the old median in every fold (mean -0.606, sd 0.1116), which supports D-075 rule 1 independently of the headline split. On cold test legs (those with no corridor history in the fold's training window) the mean MAE is 115.172 for the bar and 80.6016 for v2, so the gain located on cold legs holds across folds even where the overall gain does not. Reading: the served model's margin over the bar on the headline split (-1.49) is not robust to the choice of window, with a fold-to-fold standard deviation about twice its mean; the reported single-node model (D-098) is robust (4 of 4). The paper says both, and the served model is described as 'no worse than the bar and better on cold legs', not as better.
+
+## D-077 · Pre-registration: stronger single-node baselines, a feature-group ablation, and the reporting rule — `DECIDED`
+**Post-v1.0 (upgrade B6) · Mounika · written and committed before any of these models was fitted**
+
+**Why.** A single-node `HistGradientBoostingRegressor` (29.52 on test) beats the reported MLlib model
+(30.90), and the paper called it "not a candidate" without a reason. There was also no LightGBM or
+XGBoost. A reviewer will ask whether the headline model is simply the weak one.
+
+**Models (module `src/ml/model_zoo.py`, output `b6_model_zoo.json`).** All on the same split, the same
+residual target and the same 40 inputs as v3 (the 38 v2 inputs plus the baseline's level and prior-leg
+count): LightGBM with L1 loss; LightGBM with Huber loss (delta = the median absolute training
+residual, computed on the inner training legs); XGBoost with `reg:absoluteerror`; scikit-learn
+`HistGradientBoostingRegressor` with absolute loss; and a linear median (quantile 0.5) regression on
+standardised inputs. **Identical tuning budget:** each boosted model gets 200 trees, depth 6, and
+three learning rates {0.03, 0.1, 0.3} selected on the validation cut only (D-049's protocol: fit on
+the inner training legs, score on the validation cut, refit the chosen setting on the full training
+split, score once on test). The linear model has no hyperparameter. A secondary table repeats the
+four boosted models over the *old* median with the 38 v2 inputs, so the 29.52 question is settled on
+equal footing as well as on the new one.
+
+**Reporting rule (supersedes the special case in D-075 rule 3, which assumed only v2 and v3).** The
+paper's **reported model is the candidate with the lowest validation MAE regardless of library**:
+Spark v2, Spark v3 or any model above. Its test MAE is reported whatever it is. If the reported
+model is single-node, the paper says so, says what Spark serves (v2 or v3, the better of the two
+by validation), and does not claim they are the same model. No model is labelled "not a candidate":
+anything left out of the headline is listed in Table 1 with its validation and test MAE.
+
+**Feature-group ablation (same module, `b6_feature_ablation.json`).** With the best boosted
+single-node model's chosen settings, refit with one group removed at a time and report the change in
+test MAE with a block-bootstrap interval (D-076) against the full model. Groups: *plan and route*
+(`planned_min`, `is_ftl`); *distance* (`planned_km`); *time* (`created_hour`, `created_dayofweek`,
+`created_is_weekend`); *corridor history* (the 12 `corr_*` v1 inputs and the corridor cold flag);
+*hub history* (the 12 `src_*`/`dst_*` v1 inputs and their cold flags); *v2 dispersion and dwell* (the
+eight v2 columns and their three missing-value flags); *baseline descriptors* (level, prior-leg count).
+A group whose removal does not move test MAE by an interval excluding zero is reported as such.
+
+**Outcome (written after the runs, 2026-10-21).** Over the old median with the 38 v2 inputs (the
+secondary setting) the four boosted models score 29.66 (LightGBM L1), 30.53 (LightGBM Huber), 29.71
+(XGBoost) and 29.75 (histogram GBT) on test, and the linear median regression 33.96; over the back-off
+baseline with 40 inputs they score 30.19, 31.06, 30.49, 30.33 and 33.63. The 29.52 question is settled:
+three independent libraries land within 0.1 minute of each other at 29.7, so the single-node figure
+was not a lucky seed, and the MLlib model's 30.90 is about 1.2 minutes behind the same recipe in
+another library. By the reporting rule the **reported model is LightGBM with L1 loss over the old
+median** (validation 27.24, the lowest of all candidates; test 29.66, day-block 95% interval
+[27.86, 31.12]; minus the bar -2.74 [-3.41, -2.11], wins on 14 of 14 slices). It is single-node. What
+the API serves and the streaming job scores is still Spark v2 (30.90; minus the bar -1.49
+[-2.25, -0.74], wins 10 of 14), which is the better Spark candidate by validation; the paper says the
+two are different models and does not claim the served model has the reported score. Putting the
+back-off descriptors in made every boosted model worse on validation, so the back-off bar is a fairer
+yardstick but not a better feature. Feature-group ablation (LightGBM, primary setting, test MAE change on
+removing the group, day-block interval): time -> +0.44 [0.14, 0.63]; hub history -> +0.15 [0.06, 0.26];
+dispersion and dwell -> +0.29 [0.23, 0.35]; all others (plan and route, distance, corridor history,
+baseline descriptors) move it by less than 0.07 with intervals that include zero. Corridor history alone
+is redundant once hub history and the dispersion block are present, which fits the finding that the
+gain over the bar sits on cold corridors.
+
+## D-083 · The audit's legs are clustered by recurring service, not by trip or day — `DECIDED`
+**Post-v1.0 · Mounika · inspected before the dependence-aware audit (D-080) was pre-registered**
+
+The dependence-aware audit was planned to cluster on the trip, or on day-by-corridor blocks if
+trips rarely repeat a corridor. Before choosing, `python -m src.ml.audit_data` measured the
+clustering in the 26,369 legs (`benchmarks/raw/b3_dependence_diagnostics.json`). Its reading
+reproduces the published audit first: 1,130 corridors, 273 slower, 512 faster, every
+statistic within 1e-9 of `w2_corridor_audit.csv`.
+
+* **Trips do not repeat corridors.** In all 1,130 tested corridors `n_trips = n_legs`; no trip
+  visits a corridor twice. A trip cannot cluster a corridor's own legs. Trips do link a
+  corridor to the rest of the network (1.78 legs per trip, intraclass correlation 0.072 of
+  corridor-demeaned log-ratios), which a permutation inside a corridor cannot model.
+* **The creation day is almost irrelevant.** 23 calendar dates, intraclass correlation 0.0036,
+  design effect on a corridor mean about 1.0006.
+* **The recurring service is the real cluster.** `route_schedule_uuid` repeats: a corridor has
+  a median of 1 schedule (680 of 1,130 corridors run under exactly one), and the median
+  (corridor, schedule) cell holds 11 legs. Within a cell the intraclass correlation is 0.095,
+  giving a design effect of about 2.05 at the median corridor, so a typical corridor's 15 legs
+  carry the information of about 7 independent ones. Where a corridor has a single schedule its
+  corridor effect and its service effect cannot be told apart, and the correlation estimate is
+  biased downward by demeaning on the corridor, so 2.05 is a floor for that reason.
+
+**Decided: the cluster unit for the dependence-aware test is the (corridor, route schedule)
+cell.** This replaces both clusterings named in the plan, on the evidence above. It is a
+deviation from the plan's wording and is logged as one. D-080 states the permutation scheme
+that uses it.
+
+## D-080 · Dependence-aware corridor audit: four variants, one pre-registered headline rule — `DECIDED`
+**Post-v1.0 · Mounika · B3 · written before `src/ml/audit_robust.py` is run**
+
+The published audit (D-018) tests each corridor against the rest of the network with Welch's
+t-test and Benjamini-Hochberg at 5%. Welch assumes independent legs; D-083 found legs of one
+corridor and one recurring service are correlated (design effect about 2 at the median
+corridor). This experiment asks how many of the 273 slower and 512 faster corridors survive.
+
+**Variants, all on the same 1,130 corridors (10-leg floor), two-sided, alpha 0.05:**
+1. `bh_welch`: the published audit, unchanged (reproduced to 1e-9 first).
+2. `by_welch`: the same p-values, Benjamini-Yekutieli (valid under arbitrary dependence).
+3. `bh_perm`: cell-permutation p-values, Benjamini-Hochberg.
+4. `by_perm`: cell-permutation p-values, Benjamini-Yekutieli.
+BH and BY come from `statsmodels.stats.multitest.multipletests` (`fdr_bh`, `fdr_by`).
+
+**Permutation scheme (fixed now).** The exchangeable unit is the (corridor, route schedule)
+cell of D-083, built over all 26,369 legs, because the "rest" group contains every other leg.
+Let `m_b` be a cell's leg count and `ybar_b` its mean log-ratio. Cells are put in strata by
+size: 1, 2, 3, 4, 5, 6, 7, 8 exact, then 9-11, 12-15, 16-22, 23 and over. One permutation
+shuffles the cell means `ybar_b` among the cells of the same stratum, each position keeping its
+own size and its corridor. A corridor's permuted statistic is
+`D = (sum of m_b * permuted ybar_b over its cells) / n_c - (network total minus that sum) /
+(N - n_c)`, the corridor's mean minus the mean of the rest; the network total is recomputed per
+permutation. The observed `D` uses the real `ybar_b`. The p-value is two-sided,
+`(1 + #{|D_perm| >= |D_obs|}) / (B + 1)`, with **B = 100,000 permutations, seed 20260801**, in
+chunks, vectorised. 100,000 rather than 10,000 because the smallest attainable p-value at
+10,000 permutations (1e-4) is too coarse for Benjamini-Yekutieli over 1,130 tests.
+This is a global-null permutation (no corridor effect anywhere); with real corridor effects in
+the pool it is conservative for the strongest corridors, and it treats cells of one stratum as
+equally noisy. Both are stated limits. Cells in different corridors that share a schedule or a
+trip stay independent in this scheme; BY is what covers that.
+
+**Size check (reported, not a gate).** On 200 placebo datasets (cell means permuted, within-cell
+deviations kept) the uncorrected Welch rejection rate at 0.05 and the mean BH-Welch discovery
+count are reported, to show how far Welch's size is off under the cluster structure.
+
+**Decision rule.** All four variants are declared valid for their own assumptions (BH-Welch is
+the original). **The headline is the variant with the fewest significantly slower corridors;
+ties go to the one with the fewest significantly faster.** If that variant is not `bh_welch`,
+the headline drops to its counts everywhere, and `bh_welch` stays as a reported row. A corridor
+is **robust** if it is significant, in the same direction, under both the headline variant and
+`bh_welch`; otherwise a `bh_welch` discovery is **fragile**. Also reported: how many of the 273
+and 512 survive each variant, and the pairwise Jaccard overlap of the top-20 slower lists
+(ranked by `excess_ratio` among each variant's significant slower corridors).
+
+**Amendment to D-080, made before the full run.** A 2,000-permutation smoke test of the code
+(not the experiment: `b3_audit_robust.json` was overwritten by the real run) showed the rule
+could end in a three-way tie at zero slower and zero faster, which D-080 does not resolve. The
+tie-break is therefore fixed now: if the rule still ties after "fewest slower, then fewest
+faster", the headline is the first of `by_perm`, `bh_perm`, `by_welch`, `bh_welch` (the more
+conservative correction, and the cluster-aware test, first). Nothing else in D-080 changes.
+
+**Outcome (D-080).** `python -m src.ml.audit_robust`, 100,000 permutations, seed 20260801,
+`b3_audit_robust.json`. The published audit reproduced first (273 / 512, p-values within 3e-14).
+Significant slower / faster by variant: `bh_welch` 273 / 512, `by_welch` 218 / 452, `bh_perm`
+1 / 0, `by_perm` 0 / 0. **By the rule the headline is `by_perm`, which is 0 slower and 0 faster.**
+No tie arose: `by_perm` alone has zero slower corridors (`bh_perm` has one), so the
+tie-break was not used. So no corridor is
+**robust** (significant under both the headline and the original): all 273 slower and 512
+faster `bh_welch` discoveries are **fragile**. The top-20 lists barely overlap across the
+independence and cluster-aware families (Jaccard 0.05 for `bh_welch` against `bh_perm`, 0 for
+the others; `bh_welch` against `by_welch` is 1.0 because BY only removes the weakest). Why the
+drop is so large: under 200 placebo datasets in which corridor membership is meaningless but
+the cell structure is kept, Welch rejects 63.9% of corridors uncorrected at 0.05 and BH finds
+680 discoveries on average (maximum 723, all 200 datasets non-empty), against 785 found on the
+real data. The permutation p-values are not empty: 81 corridors fall below 0.05 and 18 below
+0.01 (smallest 4e-5), and the top-20 slower corridors ranked by permutation p share a Jaccard
+of 0.74 with the Welch top-20. They do not clear a 5% false discovery rate over 1,130 tests.
+Reading, with the limits kept: 680 of the 1,130 corridors run under a single schedule, so for
+them the test compares one service with the spread of services of the same size, and a
+corridor effect cannot be separated from a service effect. The paper's headline becomes
+"0 corridors survive the cluster-aware test"; the 273 / 512 stay as the original row and as a
+screening list, not as confirmed bottlenecks.
+
+## D-084 · Sensitivity: the permutation test's resolution limits what B3 can reject — `DECIDED`
+**Post-v1.0 · Mounika · written before the 1,000,000-permutation run, after reading the B3 outcome**
+
+The B3 headline (D-080) is the most conservative valid variant, Benjamini-Yekutieli over permutation
+p-values, and it finds 0 of 273. With 100,000 permutations the smallest attainable p-value is
+1/100,001 = 1.0e-5 (`permutation_p_floor`), while the smallest Benjamini-Yekutieli threshold over 1,130
+tests is 0.05/(1,130 x H) = 5.8e-6 with H the 1,130th harmonic number (7.6), so **that variant cannot reject a
+single corridor however large its effect**; the Benjamini-Hochberg variant needs p <= 4.4e-5 for its
+first rejection and found one. A zero under the strictest variant is therefore partly a property of the
+resolution, and the paper must not read it as evidence that the corridors are null.
+
+**Run.** `python -m src.ml.audit_robust --permutations 1000000 --placebo 0 --suffix _1e6`, same seed,
+same cells, writing `b3_audit_robust_1e6.json` and its corridors file. **Rule.** The headline stays the
+100,000-permutation result because it was pre-registered; the 1,000,000 run is reported beside it as a
+sensitivity analysis with its own counts, and the paper states that the strictest variant is
+resolution-limited at 100,000. If the finer run rejects corridors, the paper says the headline is a lower
+bound and reports both; it does not replace the headline after seeing it.
+
+**Outcome (D-084, 2026-10-21).** `python -m src.ml.audit_robust --permutations 1000000 --placebo 0 --suffix _1e6`
+(495 s). The smallest attainable p is now 1.0e-6, below the smallest BY threshold (5.8e-6), so the
+strictest variant can reject. It still rejects nothing: `by_perm` 0 slower / 0 faster and `bh_perm`
+1 / 0, identical to the 100,000-permutation counts; the smallest permutation p is 3.3e-5 (4.0e-5
+before), 18 corridors below 0.01 and 82 below 0.05 (81 before). So the headline 0 / 0 is **not** a
+resolution artefact: it holds at ten times the resolution. The paper says both facts: at 10^5 the
+strictest variant could not have rejected, and a ten-fold finer run changes nothing.
+
+## D-098 · Pre-registration: the same four rolling-origin folds for the reported single-node model — `DECIDED`
+**Post-v1.0 (upgrade B2/B6) · Mounika · written before the run, after the reported model was named**
+
+D-076 fixed four chronological folds and refit the two Spark configurations in each. When D-077 named a
+single-node LightGBM model as the reported one, the fold study did not cover it, which a reviewer would
+notice. This entry adds it on the same footing and adds nothing else.
+
+**Run.** `python -m src.ml.rolling_origin_zoo`. For each of the folds of D-076 (train through day 10, 13, 16,
+19; test days 11-13, 14-16, 17-19, 20-22; days are India-time calendar days, day 1 = 2018-09-12), the
+baselines are recomputed from that fold's training legs exactly as in `rolling_origin.py`, and LightGBM with
+L1 loss (200 trees, depth 6, learning rate **0.03, the value chosen on validation in D-077 and frozen**; no
+retuning in any fold) is fitted over the old median with the 38 v2 inputs, the reported model's setting.
+**Report** per fold the MAE of that model, of the back-off bar and of the old median, and the difference to
+the bar, and across folds their mean, standard deviation and the number of folds in which the model beats the
+bar. **No decision rule changes:** the paper's claim about the reported model rests on the headline split and
+its day-block interval; this is the check on it. If the reported model fails to beat the bar in a majority
+of folds, the paper says so beside the headline.
+
+**Outcome (D-098, 2026-10-21).** `python -m src.ml.rolling_origin_zoo` (a few seconds, no Spark). The reported
+model beats the back-off bar in **4 of 4 folds**: fold MAE of the model against the bar was 34.0051 against 35.8746 (days 11-13); 28.3409 against 30.5641 (days 14-16); 28.5059 against 31.7161 (days 17-19); 29.2785 against 31.607 (days 20-22);
+the difference to the bar has mean -2.4079 and standard deviation 0.5698 over folds,
+the model's mean MAE is 30.0326 (sd 2.6797). The headline split's -2.74 is
+therefore not an outlier among folds. Each fold has three days of test legs, so no fold has an interval of its own.
+
+## D-081 · Empirical-Bayes ranking and its stability across support floors — `DECIDED`
+**Post-v1.0 · Mounika · B4 · written before `src/ml/eb_ranking.py` is run**
+
+The audit's support floor changes its answer: the top-20 at 10 legs and at 30 legs are
+disjoint (D-018). The hypothesis here is that this is mostly small-sample noise that
+shrinkage removes. It may be wrong, and the result is reported either way.
+
+**Model, per support floor `f` in {5, 10, 20, 30}, on exactly the corridors with at least `f`
+legs (the same set for the raw and the shrunk ranking).** For corridor `c` with `n_c` legs let
+`ybar_c` be the mean of `r = log(actual / osrm)`, `s_c^2` its leg-level sample variance and
+`v_c = s_c^2 / n_c`. Then `ybar_c ~ N(theta_c, v_c)` and `theta_c ~ N(mu, tau^2)`.
+* `mu`, `tau^2` by **REML (the headline)**, with DerSimonian-Laird method of moments and ML
+  reported beside it. If REML and the moments estimate differ in `tau^2` by more than 25%, the
+  top-20 overlap between the two estimators is reported too.
+* Posterior mean `(1-B_c) ybar_c + B_c mu` with `B_c = v_c / (v_c + tau^2)`; posterior variance
+  `(1-B_c) v_c + B_c^2 Var(mu_hat)`; 90% interval is the mean plus or minus 1.645 sd.
+* Sampling variances are taken as the model says (independent legs). A pre-registered
+  sensitivity row inflates `v_c` by the design effect of D-083,
+  `1 + (n_c/k_c - 1) * 0.0953`, with `k_c` the corridor's schedule-cell count and 0.0953 the
+  intraclass correlation in `b3_dependence_diagnostics.json`. The headline stays the model as
+  written; the sensitivity row is reported in full.
+
+**Material threshold (fixed now).** `t = m + ln 1.5`, where `m = 0.7783` is the mean of `r`
+over all 26,369 legs (the network's typical overrun, `w2_audit_report.json`). A corridor is
+material when `theta_c > t`, that is when its geometric-mean overrun is at least 1.5 times the
+network's (`exp(t)` = 3.27 times the plan against 2.18). 1.5 is a round factor that asks for
+half again the usual overrun, large enough to matter to a planner and small enough to leave
+corridors above it. Sensitivity rows use factors 1.25 and 2.0.
+
+**Rankings.** `eb_prob`, ordered by `P(theta_c > t)` (headline; ties by posterior mean);
+`eb_postmean`, by posterior mean; `raw_published`, the audit's own rule re-run on the floor's
+corridors (Benjamini-Hochberg Welch significant slower corridors, ordered by `excess_ratio`);
+`raw_mean`, all corridors by `ybar_c`. Top-20 lists are taken within each floor's set.
+
+**Stability metrics.** For each ranking and each of the six floor pairs: Jaccard overlap of
+the two top-20 lists (the operational question: does the list depend on the floor I pick); the
+Spearman correlation of rank positions over the corridors in both floors' sets; and the
+Jaccard of the top-20 lists after restricting the lower floor to the higher floor's corridors
+(so only the scoring differs, not the membership). A paired bootstrap, 200 resamples of legs
+within each corridor, seed 20260802, gives 95% intervals for the mean pairwise Jaccard and for
+the difference between rankings.
+
+**Decision rule.** EB (`eb_prob`) is **called more stable** only if its mean pairwise Jaccard is
+higher than that of both `raw_published` and `raw_mean`, with the bootstrap 95% interval of
+each difference above 0. If an interval contains 0 the paper says "no detectable difference";
+if EB is lower, "EB is not more stable". Section 4.3 of the paper follows this sentence
+whatever the numbers are.
+
+**Outcome (D-081).** `python -m src.ml.eb_ranking`, `b4_eb_ranking.json`, 200 bootstrap
+resamples. REML `tau^2` at floors 5 / 10 / 20 / 30: 0.138 / 0.133 / 0.083 / 0.058 (corridors
+1,632 / 1,130 / 268 / 99); moments 0.114 / 0.106 / 0.071 / 0.028, which differs from REML by more
+than 25% only at floor 30, where the two top-20 lists are still identical. Threshold
+`t = 1.1838` (3.27 times the plan). **The hypothesis that the floor effect is mostly shrinkable
+noise is not supported:** the corridors' own sampling variances (about 0.002) are tiny against
+`tau^2`, so the median shrink factor is only 0.009 to 0.021 at every size band, and the
+posterior mean is within a few percent of the raw mean. Mean pairwise top-20 Jaccard over the
+six floor pairs: `raw_published` 0.101, `raw_mean` 0.101, `eb_prob` 0.150, `eb_postmean` 0.155.
+`eb_prob` minus `raw_published` is +0.049 (bootstrap 95% interval 0.006 to 0.062) and minus
+`raw_mean` +0.049 (0.007 to 0.067). **By the pre-registered rule EB is called more stable** (the committed file first held a 3-resample bootstrap, a leftover of a smoke run that had overwritten it; the intervals above are from the full 200-resample run, rerun after `audit.welch_against_network` stopped rejecting a variance that rounded to -1e-17 on a constant resample, P-83), and
+the margin is small: both lists still change almost completely between floors (floors 5 and 30,
+and 10 and 30, share no top-20 corridor in either ranking). The reason is membership, not
+noise: the Spearman correlation of rank positions over corridors present in both floors is
+0.9997 to 1.0 for every ranking, and the top-20 restricted to the higher floor's corridors
+overlaps at 1.0 for raw and 0.95 for `eb_prob`. A lower floor admits small corridors with
+extreme means (mean top-20 corridor size 10.8 legs at floor 5, 47.7 at floor 30), which is
+what moves the list. At floor 10, 102 corridors have `P(theta > t) >= 0.5`, 65 have 0.9 or more
+and 60 have a 90% interval wholly above `t`, against 111 whose raw mean exceeds `t` and 273
+published slower corridors; there are more material corridors than the 20 slots, which also
+makes any top-20 sensitive to the floor. Sensitivity: inflating variances by the D-083 design
+effect (median 1.38) gives Jaccard 0.140; threshold factors 1.25 and 2.0 give 0.161 and 0.142.
+Paper: shrinkage and a probability ranking are better calibrated and slightly more stable, but
+they do not remove the floor's effect on which corridors enter a top-20; report the whole
+ranking and its intervals, not a top-20, and state the floor.
+
+## D-082 · Temporal stability of the audit: split by creation date, three audit rules — `DECIDED`
+**Post-v1.0 · Mounika · B5 · written before `src/ml/stability.py` is run**
+
+**Question.** With 23 creation dates (2018-09-11 to 2018-10-03; the plan calls it 22 days, the
+first date holds only 378 legs), do the corridors the audit flags in one part of the window
+stay bad in another?
+
+**Parts.** Legs are assigned to parts by the calendar date of `trip_creation_time`, in date
+order, as contiguous groups of dates: halves of 12 and 11 dates (14,385 and 11,984 legs), thirds
+of 8, 8 and 7 dates (9,219; 10,085; 7,065 legs). Pairs compared: the two halves; and, for
+thirds, T1-T2, T1-T3, T2-T3 (earlier part first).
+
+**Each part is audited independently**: its own network baseline, its own corridor family, its
+own multiple-testing correction. Support rule, two readings: **headline = proportional floor**,
+the 10-leg floor scaled to the share of the window, 5 legs per half and 4 per third, because a
+10-leg floor in a half-window tests far fewer corridors than the published audit does; and the
+**strict reading**, 10 legs in every part, reported beside it. Universe for a pair: corridors
+testable (at or above the floor) in both parts.
+
+**Audit rules applied to each part.** `bh_welch` (the published rule); `by_welch`; and `by_perm`
+(the B3 headline of D-080, cell-permutation p-values with 100,000 permutations, seed 20260801,
+Benjamini-Yekutieli). The empirical-Bayes ranking is the B4 headline, `eb_prob` with REML, and
+the material threshold stays at the full-data value `t = 1.1838` for every part (D-081), so no
+part sets its own bar.
+
+**Statistics per pair, each with its n and an interval.**
+1. Overlap of the significantly-slower sets: sizes, intersection, Jaccard, the overlap expected
+   by chance given the sizes and the universe (hypergeometric mean) and its one-sided
+   p-value, and a corridor bootstrap 95% interval for the Jaccard (2,000 resamples of the
+   universe, seed 20260803).
+2. Spearman correlation of corridor effects over the universe: the raw mean of `r` and the EB
+   posterior mean, with a corridor bootstrap interval.
+3. Persistence: of the corridors the earlier part flags, the share that are slower than the
+   network in the later part, that is later-part mean of `r` above the later part's mean over
+   all other legs, among those testable in the later part, and the share that are significantly
+   slower there (`bh_welch`). Flagged sets: the earlier part's `bh_welch` slower set (raw), its
+   top-20 by `excess_ratio` (raw top-20), and its top-20 by `eb_prob` (EB). Wilson 95%
+   intervals; the base rate (the share of the whole universe slower in the later part) is
+   reported as the reference, since half or more of any random set would also be slower.
+
+**Reading rule, fixed now.** A Spearman correlation below 0.3 is called low stability, 0.3 to 0.6
+moderate and above 0.6 substantial; a set overlap counts as above chance only if the
+hypergeometric p is below 0.05. If the raw top-20 and the EB top-20 persistence shares have
+Wilson intervals that overlap, the paper says "no detectable difference" and does not claim EB
+predicts the later window better. If stability is low it is reported as a finding about how
+often the audit has to be refreshed.
+
+**Outcome (D-082).** `python -m src.ml.stability`, 100,000 permutations, 2,000 corridor
+bootstrap resamples, `b5_stability.json`. Proportional floor, halves (14,385 and 11,984 legs):
+1,249 and 1,004 corridors tested; significantly slower under `bh_welch` 239 and 191, under
+`by_welch` 138 and 132, under `by_perm` 0 and 0 (the B3 headline finds nothing in any part,
+half or third, as it found nothing in the whole window). Universe testable in both halves: 807
+corridors. **Overlap of the `bh_welch` slower sets** (inside the universe, 173 and 151 corridors):
+126 in common, Jaccard 0.636 (bootstrap 95% 0.57 to 0.70) against about 32 expected by chance,
+hypergeometric p 9e-81; `by_welch` Jaccard 0.58 (0.50 to 0.66). **Spearman correlation of corridor
+effects:** raw mean 0.908 (0.889 to 0.924), EB posterior mean 0.911, n = 807, both "substantial"
+by the fixed reading. **Persistence:** of the 173 first-half `bh_welch` slower corridors, 97.7%
+(Wilson 94.2% to 99.1%) are slower than the network in the second half and 72.8% significantly
+so, against a base rate of 39.8% for the whole universe; of the 15 raw top-20 corridors
+testable later, 100% (79.6 to 100) are slower and 93.3% significantly; of the 14 EB top-20, 100%
+(78.5 to 100) and 100%. The two top-20 intervals overlap completely: **no detectable
+difference** between raw and EB, as the rule requires, and with n = 14 to 15 nothing finer
+could be seen. Fewer than 20 flagged corridors enter each statistic because the rest were not
+testable in the later half. Thirds: Jaccard 0.548 / 0.504 / 0.566 (T1-T2, T1-T3, T2-T3),
+Spearman 0.887 / 0.870 / 0.893, `bh_welch` set persistence 95.8% to 100%. The strict 10-leg
+floor gives the same picture on a smaller universe (197 corridors: Jaccard 0.685, Spearman 0.899,
+persistence 97.9%). **Stability is high, not low:** corridor effects reproduce on independent
+trips from a different part of the window. Two cautions that stay with the result: the same
+recurring services run in both parts (D-083), so this shows the corridors' pattern persists,
+not that each is a distinct finding; and it is a statement about 23 dates in one season, not
+about other months. It does not contradict D-080: persistence is a different question from
+whether a single window's test survives a cluster-aware correction.
+
+
+## D-095 · Venue shortlist: ECML PKDD 2027 Applied Data Science track and the Journal of Big Data are recommended; the owner decides — `DECIDED`
+**Post-v1.0 · Mounika · upgrade work order item C2; revisits D-052**
+
+`docs/venues.md` (researched 21 October 2026) compares 11 conferences and 13 journals on
+scope fit, deadline, page limit, template, review type, indexing and cost, with every cell
+marked as read on the venue's own page or as third-party. Two facts shape the outcome.
+First, D-052's "ICCCI 2027, 20 February 2027" is the Tokyo conference on *Computer
+Communication and the Internet* (networking and IoT topics), not *Computational Collective
+Intelligence*; the latter has no 2027 call yet (see D-097). Second, no 2027 call exists yet
+for most candidates, so no deadline below is a date, only a previous cycle.
+
+**Recommended (a recommendation, not a choice): conference ECML PKDD 2027, Applied Data
+Science track** - 16 pages LNCS, double-blind, "methodological novelty is not required",
+reproducibility encouraged, about 24% acceptance in 2026 (90 of 381). Deadline unannounced;
+the 2026 cycle was 12 March, so a March 2027 deadline is an inference. Fallback: ICCCI
+(Computational Collective Intelligence) 2027, fit 3 of 5. **Journal: Journal of Big Data**
+for the extended version - scope covers analytics platforms, applications and case studies;
+median 47 days to first decision on its own aims page; open access, APC to be paid or waived
+(about USD 1,990 per an aggregator, not confirmed). Stretch: Transportation Research Part E.
+
+**Decision rule.** The owner picks the pair and records the choice in `HUMAN_ACTIONS.md`. The
+LaTeX is kept template-neutral (shared `paper/refs.bib`, which compiles under IEEEtran,
+splncs04 and elsarticle-num), so switching venue is a template swap. Each deadline is
+re-checked on the venue's page in the first week of January 2027 and again before
+submission. The journal's own rule on extended conference papers is read and recorded the day
+of submission; the project keeps its own floor of 30% new material because no venue on the
+list stated a percentage on a page that could be read.
+
+**What this does not settle:** the author order, and whether the work is one paper or two.
+
+## D-096 · A reference enters `refs.bib` only if title, authors, venue/year and an identifier were all confirmed — `DECIDED`
+**Post-v1.0 · Mounika · upgrade work order item C4**
+
+Rule applied to the 90 entries of `paper/refs.bib`, each confirmed on 21 October 2026 against
+Crossref, the arXiv API, a proceedings or journal page, or a library catalogue, with the
+source URL or DOI and the date in the entry's `note`. An item that failed any of the four
+checks was left out (the Flink bulletin article for lack of volume and issue; a control-tower
+review whose year the sources contradict; the Delhivery Kaggle page not opened; the Uber
+engineering blog). Metadata that a record did not show (a subtitle, a page range) is added
+only where it is the standard citation and the entry's note says so. Entries are tagged
+`core` (33, for the page-limited paper) or `journal`. Status in `docs/references.md` is
+`[metadata checked]` for all 90; **none is `[read]`**, so the paper may cite them but must not
+describe their findings until a full-text pass marks them. The Model Context Protocol is cited
+by its specification page, with no vendor named as author. Checked by
+`tests/test_refs_bib.py` and by a test compile under three bibliography styles.
+
+## D-097 · D-052's target venue is a networking conference; the schedule keyed to its 20 February 2027 date is withdrawn from the plan — `DECIDED`
+**Post-v1.0 · Mounika · corrects D-052**
+
+D-052 (18 September 2026) reads "ICCCI 2027 (9th Int. Conf. on Computer Communication and the
+Internet)" and `iccci.org/sub.html`. Its topic list is networks, IoT, multimedia
+communications, network management and security (re-read 21 October 2026). The work order and
+the 14 October update treated "ICCCI" as *Computational Collective Intelligence*, whose
+2027 call is not published. The two share an acronym and nothing else.
+
+**Decided:** the 20 February 2027 date is no longer a plan date for this paper, because the
+venue it belongs to is a poor scope fit (1 of 5). D-052 is left as written, as history; its
+second decision (arXiv preprint posted when the draft is done, not when a venue answers)
+stands unchanged. If the owner nonetheless wants the Tokyo conference, it is a 4-10 page,
+double-blind submission and the paper would be cut to that scope. This is the owner's call.
+
+## D-090 · One project name on the site, and the export reads the newest freeze — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+1. The browser title, the header and the footer all use the full name, "Agentic AI Logistics
+   Control Tower", from one constant (`web/lib/site.ts`). The old header said "Control Tower" and
+   the title template said "· Control Tower"; a visitor saw three spellings.
+2. `src.report.export_web` picks the highest `benchmarks/results_freeze_v<N>.json` by number.
+   No version is typed anywhere, so a v5 is picked up by re-running the export.
+3. A missing freeze key or benchmark field raises. Every `g('key', default)` and `.get(key, default)`
+   that supplied a number is gone (removed: `assistant_route_accuracy` 0.9, `order_eval_run` 50,
+   `order_eval_invented` 0, `lifecycle_cases/booked/ticketed` 10/5/2, and the overview defaults for
+   legs, corridors, tested, bottlenecks, faster, median ratio).
+
+## D-091 · Agent cards show metric, n, Wilson interval and trivial policy — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+Every card leads with the strongest evidence, not the friendliest number: Order Entry the
+held-out first run (170/200), Invoice Auditor the stratified 200 (180/200) with the 60-invoice seeded
+run (precision 100%, recall 82.2%) and the 20-invoice development run kept as labelled history,
+never "20 of 20" alone, and the Assistant route accuracy both ways on the same 30 questions
+(93.3% model-phrased, `w7_assistant_run_llm.json`; 90.0% rules only). Intervals are recomputed
+from counts with `src.ml.stats.wilson`, and the export raises if counts disagree with the freeze by
+more than 0.0006. The orchestrator card is the 100-lifecycle run. The B7 ablation panel and the B3 `robust`
+and B4 `EB rank` corridor columns render only when their result files exist.
+
+## D-092 · The alert page is a replay, and says what the table is — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+The page is titled "Alert replay". The table is the 60 worst corridors as examples, not the
+1,347 alerts the run raised, and the page says so. It also states D-071: three alerts per channel
+reached a real Telegram chat and mailbox, receipts kept with identifiers masked. No AWS (D-074).
+
+## D-093 · Cold start is a state, not an error — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+All four live surfaces wait up to 90 s (the keep-alive workflow's own limit), treat 502/503/504 as
+"still waking" and retry, show "Waking the free server (up to ~1 min)" after 3 s, and end in a
+notice with a Try again button, never a blank panel.
+
+## D-094 · Quality bar: what was fixed and what is recorded, not fixed — `DECIDED`
+**Post-v1.0 (website phase) · Mounika**
+
+Charts and the hero map load when scrolled near (first-load JS 302 kB to 110 kB). Accessibility
+reached 96-100 on every page (contrast tokens raised, form labels). Mobile-throttled performance
+on the map pages stays below 90 and is recorded in `docs/deploy_web.md`; shipping less map was
+judged worse than the number.
+
+## D-085 · Exception precision gets intervals, a valid test and a trend test; the rule is fixed before the run — `DECIDED`
+**Post-v1.0 · Mounika · B8, D-047, D-054**
+
+The agent's 58.6% as-of notification precision (1,007 of 1,720 alerts) is compared in the
+paper with a 54.1% trivial policy (alert every leg: 1,082 of 2,000 legs delayed). Neither
+number has an interval, and the severity claim ("precision rises with grade") has no test.
+`src/ml/exception_stats.py` adds them. It reads only counts already in
+`w8_replay_leakage.json` (as-of and superseded end-of-data-history replay), so it needs no
+Spark and no model run.
+
+**Which test is valid, decided before running.** The two policies are scored on the *same*
+2,000 legs, and the agent's alerted set is a subset of the trivial policy's set. A
+two-proportion test treating 1,720 and 2,000 as independent samples is therefore not valid
+(the samples overlap by 1,720 legs). The gap is an identity: with w = alerted share,
+trivial = w·p_alerted + (1−w)·p_not_alerted, so
+gain = (1−w)·(p_alerted − p_not_alerted). Testing "gain = 0" is exactly testing that the
+alerted legs are delayed at the same rate as the 280 not-alerted legs, two *disjoint*
+groups.
+
+* **Primary test:** pooled two-proportion z-test, alerted vs not alerted (two-sided), with
+  Fisher's exact test beside it as a check.
+* **Second test:** a nonparametric bootstrap over the 2,000 legs (10,000 resamples, seed
+  20260, percentile 95% interval for the gain, and the share of resamples with gain ≤ 0 as a
+  one-sided p). Both groups are resampled together, so the pairing is respected.
+* **Reported for reference only, flagged invalid:** the naive independent two-proportion
+  z-test, so a reader who would run it sees why it is not the headline.
+* Wilson 95% intervals for 58.6%, 54.1% and every per-severity precision (n = 453 / 667 /
+  308 / 292), for the as-of run and the superseded replay run.
+* **Trend:** Cochran–Armitage test of precision against severity grade (scores 1..4,
+  two-sided), implemented in the module and unit-tested against a hand computation.
+
+**Decision rule.** The gain is significant if the primary test gives p < 0.05 *and* the
+bootstrap interval excludes 0. If either fails, the write-up must say "directionally better;
+not significant at n = 2,000 legs (1,720 alerts)" and may not call the gain an improvement.
+If the trend test gives p ≥ 0.05, the monotonic-severity claim is withdrawn to "the point
+estimates rise". Applied as written, whatever the outcome.
+
+**Limits stated in advance.** Legs share corridors, so legs are not independent and the
+intervals are somewhat optimistic; the counts file has no leg-level corridor ids, so a
+cluster bootstrap is not possible without re-running the replay. The 2,000 legs are the
+earliest legs by creation time, 1,290 of them corridor-cold, so this is the hardest case for
+the model and not a typical day. I had read the counts (1,007 / 1,720 and 1,082 / 2,000)
+before writing this entry; the test choice follows from the sampling structure, not from the
+outcome.
+
+## D-086 · The deterministic-core vs LLM-decides ablation, pre-registered — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-041, D-028, D-043**
+
+D-041 says the agents decide with arithmetic and the model only writes the sentence. Nothing
+in the project has tested that position against the obvious alternative: let a language model
+make the decision. This entry fixes the experiment before any model call is made for it.
+
+**Agents and sets (existing sets, not new ones).**
+
+| agent | set | full size | LLM subset | stratified by |
+|---|---|---|---|---|
+| order entry | `w9_order_eval_set.json` | 200 emails, 20 templates | 40 | 2 per template |
+| invoice audit | `w9_invoice_eval_set.json` | 200 invoices, 10 kinds | 40 | 4 per kind |
+| exception severity | `w6_exception_eval_cases.csv` (superseded end-of-data replay alerts; only the decision rule is compared, so the history leak is common to both arms) | 1,347 alerts | 40 | 10 per deterministic grade |
+
+The deterministic arm is run on the full set and on the same subset, and the comparison uses
+the subset. Subsets are drawn with seed 8602, then ordered round-robin across strata, so any
+prefix is balanced. If provider quota binds, cases are completed in that order and the
+completed prefix is reported with its n; no case is half-run.
+
+**The LLM-decides variant.** The model receives exactly the inputs the code receives, plus
+the policy written out in prose (the rate card, the other-charge share, the tolerance, the
+severity cut-offs, the ask/file rules). The prose is written independently of the code and is
+versioned in `src/agents/prompts/<agent>/llm_verdict_v1.md`. Giving the policy to the model
+means the ablation isolates *who executes the policy*, not who knows it. It must answer in a
+strict JSON schema: order entry `file | ask | reject` plus fields; exception severity
+`low | medium | high | critical`; invoice `approve | dispute` plus a reason code. Parsing is
+strict (one JSON object, a closed vocabulary); anything else is an error and is counted, not
+repaired. An `ask` maps to the code's `clarify`; a `reject` is scored as wrong because the
+sets contain no non-orders. Invoice duplicate checking uses a ledger of 20 prior invoice
+numbers (the duplicate's source when one exists plus fixed decoys), identical for both arms,
+because the full history would not fit the provider's token limit.
+
+**Model.** The deployed prose model is a Gemini model with a free-tier cap of about 20 calls a
+day (D-032); this design needs about 900. The LLM arm therefore uses an open model through
+Groq's free tier: `openai/gpt-oss-120b`, the largest open model the key lists (the other
+models listed were gpt-oss-20b, qwen3.8-27b and allam-2-7b; no Llama model is available).
+Reasoning effort `low`, completion cap 600 tokens. **It is not the model that writes the
+project's prose**, and the paper must say so. A Gemini subset (order entry only, temperature 0,
+the first 20 subset cases) is attempted only if its daily cap allows, and reported separately,
+never merged.
+
+**Runs.** Per case: 5 calls at temperature 0.7 (a stochastic setting; the code's own default
+is 0.0, which would make "5 runs" one run repeated), plus 2 calls at temperature 0 (the
+determinism check). Every response is cached on disk by (agent, case, run, temperature,
+prompt hash, model), so a rerun costs nothing. A token, latency and call ledger is written.
+Rate limits are obeyed with backoff, never worked around.
+
+**Metrics, each with a Wilson 95% interval where it is a proportion.** Order entry: accuracy
+as `order_eval_scale` scores it (action, fields, and the field asked about), the invented-value
+rate (an order filed with a field the case never stated, or a centre code that does not appear
+verbatim in the email), clarification recall. Invoice: verdict accuracy, dispute recall,
+false-dispute count, right reason code. Exception: exact agreement with the code's grade,
+agreement within one grade, and the area under the ROC curve of grade against the leg really
+being late (reported for both arms, wide interval at this n). All agents: unanimity across the
+5 sampled runs, Fleiss' kappa across them, share of cases whose two temperature-0 verdicts
+match, parse-error count, latency, tokens. Cost is $0 on the free tier; a paid-equivalent
+cost per 1,000 verdicts is computed from the provider's published price and labelled an
+estimate.
+
+**Decision rule.** Report whatever happens. Accuracy is compared on the same cases: the
+difference LLM minus deterministic, per-run pooled, with a case-level bootstrap interval. If
+the LLM-decides arm's accuracy is greater than or equal to the deterministic arm's, the paper
+says so. If the interval contains 0 the paper says the arms are not distinguishable at this n.
+The case for deterministic verdicts is then made, or not made, on reproducibility and cost
+alone, and only if the numbers show a difference there.
+
+**Harder sets, held out.** The existing order set has contradiction, two-consignment,
+pounds-vs-kg, Hinglish and city-only cases but no missing-unit, wrong-centre-code or
+second Hinglish-style stress, and the invoice set has no case at the 15% tolerance edge on
+either side. New small sets (`b7_order_hard_set.json`, `b7_invoice_boundary_set.json`) fill
+only those gaps. They are written by code that shares nothing with the agents' rules (D-028),
+are still synthetic, and are scored once on first run: deterministic arm on all cases, LLM arm
+once at temperature 0 on the same cases. Nothing is tuned against them; if a rule is fixed
+afterwards both numbers are reported.
+
+## D-087 · The hard sets are held out; the first-run result stands and nothing is tuned — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-086, D-028, P-76**
+
+`src/ml/b7_hard_sets.py` builds two sets the existing 200-case sets did not cover:
+**100 order emails** (10 templates: weight with no unit, three kinds of malformed centre
+code, conflicting piece counts, conflicting service level, two Hindi-English bookings in one
+mail, and three Hindi-English phrasings) and **100 invoices at the tolerance edges** (freight
+2% inside and outside both ends of the tolerated rate band, other-charge share just inside and
+outside both ends, a total off by half a paisa versus two paise). Seeds are 9031 and 9033
+(9032 hits P-77). The builder imports none of the agents' rules and restates the rate model and
+tolerances itself. Both sets are synthetic, and the invoice labels use the same 15% tolerance
+the auditor uses, so what is measured is behaviour at the edge, not whether 15% is right.
+
+**First run of the unmodified deterministic agents, before any model call touched these
+sets** (`b7_hard_sets_deterministic.json`):
+
+| agent | correct | 95% interval |
+|---|---|---|
+| order entry | 70 / 100 | 60.4% to 78.1% |
+| invoice audit | 100 / 100 | 96.3% to 100.0% |
+
+Order entry scored 0 of 10 on `conflict_pieces`, `hinglish_file` and `hinglish_tonnes` and
+10 of 10 on the other seven templates. The invoice auditor was right on every edge case,
+which is what an arithmetic check with a stated tolerance should do.
+
+**Decided.** The agents are not modified in response. The order result is the held-out number
+and it is lower than the 100.0% the paper quotes for the 200-email set, which was measured
+after fixing what that set found (85.0% on first run, `w9_order_eval.json`). The paper reports 85.0% on the
+first run of the 200, 100.0% after the fix, and 70 of 100 on this set. If the reader is fixed
+later, both numbers on this set are reported, and the set is then spent. The LLM-decides arm
+is run once at temperature 0 on a balanced prefix of the same cases (`b7_hard_sets_llm.json`).
+
+## D-088 · The free tier caps the ablation at pilot scale; the design is kept and the n is stated — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-086, docs/cost.md**
+
+D-086 assumed the provider's limit was requests and tokens per minute. The limit that binds
+is **tokens per day: 200,000 for `openai/gpt-oss-120b` on this key** (the provider's own 429:
+"Limit 200000, Used 199374, Requested 1072"), refilling continuously, about 8 calls an hour once
+spent. One verdict costs about 1,100 tokens (order entry), 900 (invoice) or 500 (exception),
+and a case is 7 verdicts, so the day's allowance is about 30 cases across all three agents,
+not the 120 the design needs. The full D-086 sample would take about four days of quota.
+
+**Decided, before any further call is made:**
+
+1. The primary arm keeps its design and model (`openai/gpt-oss-120b`, 5 runs at 0.7 plus 2 at
+   temperature 0) and is reported at the **completed balanced prefix**, with its n and Wilson
+   intervals, which D-086's subset policy already allows. The first launch ran agents one
+   after another before this was visible, so the prefixes are unequal (order entry 18 cases,
+   invoice 8, exception 8); later launches interleave agents case by case. The word
+   "pilot" is used for these results, and no claim of a difference is made where the interval
+   on the difference contains 0.
+2. A second model, `openai/gpt-oss-20b` (its own daily allowance), runs the same design
+   interleaved at 8 cases per agent, and the held-out hard sets run once at temperature 0 on
+   it (20 cases per agent, balanced prefix). Its numbers are written to separate files with the
+   model id in the name and are **never merged** with the 120b arm. It answers a different
+   question (does a smaller open model do worse) and is not a substitute for the 120b sample.
+3. Responses are cached on disk, so resuming on a later day continues from where this stopped
+   (`python -m src.ml.agent_ablation --llm-verdict`), and the n in every file grows with no
+   re-spend. The decision rule of D-086 is unchanged and is applied to whatever n exists when
+   the files are frozen.
+4. Document extraction rows 21 to 40 were attempted on the same Gemini model and the free tier
+   allowed five more clean extractions (P-75); rows 21 to 40 stay unreported and no model is
+   mixed.
+
+## D-089 · What the pilot ablation supports, and what it does not — `DECIDED`
+**Post-v1.0 · Mounika · B7, D-086, D-088**
+
+The decision rule of D-086 applied to the files as they stand (`b7_agent_ablation.json`,
+`openai/gpt-oss-120b`, n = 18 / 8 / 8 cases; `b7_agent_ablation_gpt-oss-20b.json`, n = 8 / 8 / 8):
+
+* **Order entry.** The model scored 87.8% pooled over 5 runs at temperature 0.7 (79 of 90,
+  Wilson 79.4% to 93.0%) against the rule route's 100% on the same 18 emails; the case-level
+  bootstrap interval for the difference is -25.6 to -2.2 points, so the arms are
+  distinguishable and the code is ahead. 83.3% of cases drew the same verdict on all 5 runs
+  (Fleiss kappa 0.82), 17 of 18 matched across two temperature-0 runs, and 6 of 50 orders the
+  model filed (12.0%, 5.6% to 23.8%) carried a value the email did not support, against 0 for
+  the rules. **Caveat that goes with it:** the rules' 100% is on a set they were fixed against
+  (85.0% on first run); on the held-out hard set they score 70% (D-087). The model arm was not
+  fixed against any set. The 20b model scored 72.5% (8 cases).
+* **Invoice audit.** Both arms scored 87.5% on the same 8 invoices (the one error is the
+  designed tolerance miss `overcharge_hidden`), the model gave identical verdicts on all runs
+  and no false disputes. n = 8 supports no comparison.
+* **Exception severity.** Given the cut-offs in prose, the model reproduced the code's grade on
+  40 of 40 verdicts (8 cases). Arithmetic on two numbers is within its reach; this too is
+  n = 8 and says nothing about harder inputs.
+
+**What the paper may say.** That a deterministic core is at least as accurate where the policy
+is arithmetic (invoice, severity), and ahead and reproducible on order entry at pilot scale,
+where the model's extra failures were invented values and 1 in 6 cases drawing different
+verdicts on re-run. That this is one open model on 8 to 18 cases per agent, not the Gemini
+model used for prose. It may not say the LLM arm is generally worse, nor claim a cost advantage
+beyond latency and the tokens measured. The full 40-case design is resumable from cache.

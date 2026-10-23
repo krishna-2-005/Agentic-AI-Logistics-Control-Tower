@@ -6,7 +6,7 @@
 
 A pipeline and an agent layer over Delhivery's public trip records that:
 
-1. **Localises where a production routing engine is systematically wrong** — 273 corridors
+1. **Localises where the OSRM estimate recorded in the data is systematically wrong** — 273 corridors
    significantly slower and 512 faster than the network, of 1,130 tested at FDR 5%, covering
    78.6% of legs — and shows that the support floor changes the answer (D-018).
 2. **Predicts how late each leg will run** with a gradient-boosted model on the residual over a

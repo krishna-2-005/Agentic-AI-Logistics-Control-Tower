@@ -15,6 +15,8 @@ import math
 import numpy as np
 import pytest
 
+pytest.importorskip("pyspark")  # the fast job runs without PySpark: skip, do not error
+
 from src.pipeline import features_v2
 from src.streaming import job
 from src.streaming.state import (

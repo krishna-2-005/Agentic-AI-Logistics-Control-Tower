@@ -1,0 +1,151 @@
+{
+  "generated_at": "2026-10-21T06:07:34.809226+00:00",
+  "decision": "D-080 (cluster unit D-083)",
+  "corridors_tested": 1130,
+  "alpha": 0.05,
+  "permutations": 100000,
+  "seed": 20260801,
+  "permutation_p_floor": 9.99990000099999e-06,
+  "reproduction_max_abs_p_error_vs_published": 3.141931159689193e-14,
+  "published_slower": 273,
+  "published_faster": 512,
+  "cells_total": 3877,
+  "cells_in_tested_corridors": 1991,
+  "variants": {
+    "bh_welch": {
+      "slower_of_273": 273,
+      "faster_of_512": 512,
+      "significant_slower": 273,
+      "significant_faster": 512
+    },
+    "by_welch": {
+      "slower_of_273": 218,
+      "faster_of_512": 452,
+      "significant_slower": 218,
+      "significant_faster": 452
+    },
+    "bh_perm": {
+      "slower_of_273": 1,
+      "faster_of_512": 0,
+      "significant_slower": 1,
+      "significant_faster": 0
+    },
+    "by_perm": {
+      "slower_of_273": 0,
+      "faster_of_512": 0,
+      "significant_slower": 0,
+      "significant_faster": 0
+    }
+  },
+  "headline_variant": "by_perm",
+  "headline_slower": 0,
+  "headline_faster": 0,
+  "headline_dropped_vs_published": true,
+  "robust_slower": 0,
+  "robust_faster": 0,
+  "fragile_slower": 273,
+  "fragile_faster": 512,
+  "headline_only_corridors": 0,
+  "status_counts": {
+    "fragile_better": 512,
+    "fragile_worse": 273
+  },
+  "top20_slower": {
+    "bh_welch": [
+      "IND208012AAA>IND209304AAA",
+      "IND212402AAA>IND211002AAB",
+      "IND416606AAA>IND416510AAA",
+      "IND425405AAA>IND424006AAA",
+      "IND792121AAB>IND786181AAC",
+      "IND844505AAB>IND842001AAA",
+      "IND134109AAA>IND160002AAC",
+      "IND847223AAA>IND842001AAA",
+      "IND395001AAA>IND395023AAD",
+      "IND847226AAA>IND842001AAA",
+      "IND395009AAA>IND395023AAD",
+      "IND249201AAA>IND249407AAA",
+      "IND847404AAB>IND842001AAA",
+      "IND401602AAA>IND401501AAA",
+      "IND000000ABG>IND501359AAF",
+      "IND721102AAA>IND712311AAA",
+      "IND175015AAA>IND174001AAA",
+      "IND829121AAA>IND834002AAB",
+      "IND713205AAB>IND712311AAA",
+      "IND501401AAC>IND500010AAA"
+    ],
+    "by_welch": [
+      "IND208012AAA>IND209304AAA",
+      "IND212402AAA>IND211002AAB",
+      "IND416606AAA>IND416510AAA",
+      "IND425405AAA>IND424006AAA",
+      "IND792121AAB>IND786181AAC",
+      "IND844505AAB>IND842001AAA",
+      "IND134109AAA>IND160002AAC",
+      "IND847223AAA>IND842001AAA",
+      "IND395001AAA>IND395023AAD",
+      "IND847226AAA>IND842001AAA",
+      "IND395009AAA>IND395023AAD",
+      "IND249201AAA>IND249407AAA",
+      "IND847404AAB>IND842001AAA",
+      "IND401602AAA>IND401501AAA",
+      "IND000000ABG>IND501359AAF",
+      "IND721102AAA>IND712311AAA",
+      "IND175015AAA>IND174001AAA",
+      "IND829121AAA>IND834002AAB",
+      "IND713205AAB>IND712311AAA",
+      "IND501401AAC>IND500010AAA"
+    ],
+    "bh_perm": [
+      "IND208012AAA>IND209304AAA"
+    ],
+    "by_perm": []
+  },
+  "top20_slower_by_permutation_p": [
+    "IND208012AAA>IND209304AAA",
+    "IND249201AAA>IND249407AAA",
+    "IND134109AAA>IND160002AAC",
+    "IND212402AAA>IND211002AAB",
+    "IND416606AAA>IND416510AAA",
+    "IND395001AAA>IND395023AAD",
+    "IND847226AAA>IND842001AAA",
+    "IND425405AAA>IND424006AAA",
+    "IND395009AAA>IND395023AAD",
+    "IND792121AAB>IND786181AAC",
+    "IND844505AAB>IND842001AAA",
+    "IND501401AAC>IND500010AAA",
+    "IND847404AAB>IND842001AAA",
+    "IND401209AAA>IND401104AAA",
+    "IND847223AAA>IND842001AAA",
+    "IND462001AAA>IND462022AAA",
+    "IND401602AAA>IND401501AAA",
+    "IND400102AAC>IND421302AAG",
+    "IND000000ABG>IND501359AAF",
+    "IND829121AAA>IND834002AAB"
+  ],
+  "top20_jaccard_welch_list_vs_permutation_p_list": 0.7391304347826086,
+  "perm_p_below_0.05": 81,
+  "perm_p_below_0.01": 18,
+  "welch_p_below_0.05": 816,
+  "perm_p_min": 3.999960000399996e-05,
+  "median_cells_per_corridor": 1.0,
+  "corridors_with_one_cell": 680,
+  "top20_jaccard": {
+    "bh_welch|by_welch": 1.0,
+    "bh_welch|bh_perm": 0.05,
+    "bh_welch|by_perm": 0.0,
+    "by_welch|bh_perm": 0.05,
+    "by_welch|by_perm": 0.0,
+    "bh_perm|by_perm": 0.0
+  },
+  "top20_jaccard_min": 0.0,
+  "spearman_log10_p_welch_vs_perm": 0.7553443836499435,
+  "placebo": {
+    "placebo_datasets": 200,
+    "welch_uncorrected_rejection_rate_at_0.05": 0.6387079646017699,
+    "welch_uncorrected_rejection_rate_max": 0.6690265486725664,
+    "bh_welch_mean_discoveries": 680.205,
+    "bh_welch_max_discoveries": 723,
+    "bh_welch_datasets_with_any_discovery": 200
+  },
+  "seconds": 61.8
+}

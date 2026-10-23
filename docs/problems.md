@@ -1459,6 +1459,130 @@ aw\delhivery_data.csv -> download it — see
 - **What it cost.** Nothing was published, but only by luck, and that is the lesson. The
   licence check belongs in the script that publishes, not in someone remembering to look.
 
+### P-72 · The plan's clustering assumption was wrong: trips never repeat a corridor
+**Post-v1.0 · Mounika · resolved**
+
+- **Symptom.** The dependence-aware audit was planned around trip clusters, or day-by-corridor
+  blocks if trips rarely repeat. The diagnostics showed `n_trips = n_legs` in all 1,130 tested
+  corridors and a day intraclass correlation of 0.0036, so neither clustering existed.
+- **Cause.** The dependence sits in the recurring service (`route_schedule_uuid`): intraclass
+  correlation 0.095 within a corridor-service cell, 680 of 1,130 corridors with one service.
+- **Fix.** D-083 moved the cluster unit to the (corridor, schedule) cell before D-080 was written.
+- **Carry.** Measure the dependence structure before pre-registering a clustered test.
+
+### P-73 · A smoke test exposed a gap in a pre-registered rule
+**Post-v1.0 · Mounika · resolved**
+
+- **Symptom.** A 2,000-permutation test run of the audit showed zero discoveries in two variants,
+  which D-080's headline rule could not break a tie on.
+- **Fix.** A tie-break was added to D-080 in its own commit before the full run, and the
+  amendment says a smoke test prompted it. The full run did not tie.
+- **Carry.** Dry-run the decision rule on made-up counts before committing it.
+
+### P-74 · A bootstrap resample of one repeated value made a variance negative
+**Post-v1.0 · Mounika · resolved**
+
+- **Symptom.** `welch_against_network` raised on a bootstrap resample: a 5-leg corridor drawn as
+  one value five times gives a sum-of-squares identity a hair below zero.
+- **Fix.** The resampled sum of squares is floored at `sum^2 / n` in `src/ml/eb_ranking.py`.
+  The published audit code is unchanged.
+
+### P-81 · Citation details recalled from memory were wrong, five times
+**Post-v1.0 · Mounika · resolved**
+
+- **Symptom.** While building `paper/refs.bib`, a batch lookup of DOIs through Crossref returned
+  papers that were not the ones intended: the Efron and Morris 1975 DOI was a Box and Tiao
+  paper, the Cochran 1954 DOI was a different Cochran paper, and the DOIs for ConSTGAT and
+  DRL4Route resolved to a social-media hazard system and a graph-learning paper.
+- **Cause.** The identifiers were typed from memory and the title was never compared with the
+  record behind them.
+- **Fix.** Every DOI is resolved through the registry before use and the returned title and
+  authors are compared with the intended ones; wrong ones were replaced after a second lookup
+  or dropped (DRL4Route keeps its arXiv id and the venue from the arXiv comment).
+  `tests/test_refs_bib.py` now requires a verification date and a URL or DOI in every note.
+- **Carry.** An identifier is a claim about a document. Check it by opening the document.
+
+### P-82 · The plan's venue was a different conference from the one the work order assumed
+**Post-v1.0 · Mounika · open, owner decision**
+
+- **Symptom.** D-052 targets "ICCCI 2027, 20 February 2027". That date belongs to the
+  International Conference on Computer Communication and the Internet (Tokyo); the
+  Computational Collective Intelligence conference with the same acronym has no 2027 call.
+- **Cause.** Two conferences share the acronym; the check on 18 September 2026 found the one
+  with a published 2027 date, and later documents read the name as the other.
+- **Fix.** `docs/venues.md` states both, scores the Tokyo conference's scope fit at 1 of 5,
+  and D-095 and D-097 record the recommendation. The choice stays with the owner.
+- **Carry.** Venues are identified by full name and URL, never by acronym alone.
+
+### P-78 · The site said "20 of 20" and 0.9 while the README said 82.2% and 93.3%
+**Post-v1.0 (website phase) · Mounika · resolved**
+
+- **Symptom.** Invoice card "20 / 20"; assistant route 0.9; `nan` in two alert routes;
+  "5,63,53,613" rows; the Week 4 random forest labelled Champion.
+- **Cause.** `export_web.py` filled missing keys with typed defaults, read the first freeze it was
+  written against (v3), and built alert routes from raw CSV columns that are blank for 60 corridors.
+- **Fix.** D-090 to D-092, plus tests that scan every exported string and check the freeze version.
+
+### P-79 · The pages overflowed a 375 px phone
+**Post-v1.0 (website phase) · Mounika · resolved**
+
+- **Symptom.** 47 px sideways scroll on Home, 21 px on Predict.
+- **Cause.** Grid items defaulted to `min-width: auto`, so a long unbreakable label widened the track.
+- **Fix.** `.grid > * { min-width: 0 }`; `tests/e2e_site_check.py` now fails on any such scroll.
+
+### P-80 · The map and charts blocked a phone for seconds
+**Post-v1.0 (website phase) · Mounika · partly resolved**
+
+- **Symptom.** Mobile Lighthouse performance 27-40 on the map pages, 8 s total blocking time.
+- **Cause.** echarts, MapLibre and deck.gl loaded on every page start.
+- **Fix.** `Lazy` mounts them near the viewport. Home, Network and Assistant mobile scores are
+  still below 90 (see `docs/deploy_web.md`).
+
+### P-75 · Resuming the extraction evaluation would have published 77.0% for a 99% agent
+**Post-v1.0 (B7) · Mounika · caught before anything was written to the reported files**
+
+- **Symptom.** Running rows 21 to 40 with the same model, `gemini-3.6-flash`, the free tier
+  allowed five more clean-PDF extractions and then answered 429. The evaluator then printed
+  "32 documents, accuracy 77.0%, noisy 54.9%" where the reported 20-document result is 97.9%
+  (noisy 96.9%).
+- **Cause.** A document whose clean extraction exists and whose noisy extraction has not been
+  run yet is counted as evaluated, and the noisy half is scored as 97 missed fields. The
+  module's own docstring says a quota stop leaves a document out; that holds when the stop
+  falls between documents, not between a document's two splits.
+- **Fix.** None to the module yet. The tracked result files were restored to the reported
+  20-row run, the five new extractions were kept outside the repository
+  (`data/b7_cache/w7_doc_extraction_cache_plus5.jsonl`), and rows 21 to 40 stay unreported.
+  The module should skip any document whose requested splits are not all cached.
+- **Carry.** The same lesson as P-58 in a new place: an unfinished row must be absent from a
+  score, never present as zero.
+
+### P-76 · The rule-based order reader fails three classes of held-out email, 0 of 10 each
+**Post-v1.0 (B7) · Mounika · reported, deliberately not fixed**
+
+- **Symptom.** On the 100-email hard set (`b7_order_hard_set.json`, written by code that shares
+  nothing with the reader) the rule route scored 70 of 100 on its first run, where it scores
+  200 of 200 on the set it was fixed against. Three templates scored 0 of 10: two different
+  piece counts in one email (it filed on the later figure), Hinglish "packets" (not read as a
+  piece count, so it asked), and a signature with the company on its own line (it took the
+  person's name as the customer).
+- **Cause.** The 100% on the 200-email set was measured after fixing what that set found, so it
+  was never independent. The hard set is the first measurement the reader has not seen.
+- **Decision.** The reader is left as it is. Fixing it now would change the deterministic arm
+  mid-way through the ablation and turn the hard set into a development set. Both numbers
+  would be reported if it is fixed later (D-087).
+- **Carry.** The signature failure is partly a test-design confound: the older sets sign as
+  "Logistics desk, Company" and the reader learned that layout. The write-up says so.
+
+### P-77 · The corpus generator crashes on some seeds
+**Post-v1.0 (B7) · Mounika · worked around**
+
+- **Symptom.** `generate_records(100, seed=9032)` raised `AttributeError: 'float' object has no
+  attribute 'split'`.
+- **Cause.** One audited corridor has a null destination facility name, and `_city_of` is
+  called on it when the city column is also null. The earlier seeds never drew that corridor.
+- **Fix.** The invoice boundary set uses seed 9033 and says why next to the constant. The
+  generator itself is not changed, because changing it would change every set built from it.
+
 ## Process and tooling
 
 ### P-15 · The hub leaderboard started at rank 27
@@ -1554,3 +1678,24 @@ Week 2's two blocking problems (P-12 and the support floor) are both closed abov
 | — | 13.5% of in-trip handoffs are chain breaks (D-015) | Mounika | Week 5 stream replay |
 | — | JDK 17 + winutils on Lahari's machine | Lahari | her local Spark runs |
 | — | No dashboard screenshots captured for W1 or W2 (GIT_RULES §3) | Krishna | Week 8 demo assets |
+
+## P-83 · The empirical-Bayes bootstrap interval came from 3 resamples, not 200
+**Found while citing it in the paper, 2026-10-21 · Mounika**
+
+`b4_eb_ranking.json` recorded `bootstrap.reps = 3`: a smoke run had overwritten the real one, and the
+interval quoted in D-081 (0.037 to 0.067) was from those 3 resamples. The 200-resample rerun crashed on
+a corridor whose resampled leg values were all equal (variance rounding to -1e-17, caught by the
+negative-variance assertion). `audit.welch_against_network` now tolerates rounding below 1e-9 and clips
+at zero; real disagreements still raise. Rerun: the interval for the stability difference is 0.006 to
+0.062 (the lower end moved from 0.037), still above zero, so the pre-registered verdict "more stable"
+stands but is marginal. Lesson: results files record their own settings, and a quoted interval must
+be checked against `reps` in the file it came from.
+
+## P-84 · A long Spark run was killed by a test run that cleaned the shared scratch directory
+**Found 2026-10-21 · Mounika**
+
+The rolling-origin study (about 2.5 hours of Spark fits) died with `IndexShuffleBlockResolver: Error deleting index ...
+data\spark-tmplockmgr-...` when the fast test suite ran in the same window: some tests clean `data/spark-tmp`, which the
+job also used as its scratch directory. The relaunch set `SPARK_LOCAL_DIR` to a directory outside the repository and finished.
+Lesson, now in `REPRODUCIBILITY.md`: long Spark runs set `SPARK_LOCAL_DIR` elsewhere, and tests should not share it.
+

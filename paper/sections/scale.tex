@@ -1,0 +1,10 @@
+\section{Scale}\label{sec:scale}
+
+The audit's two aggregation functions, imported unchanged, were run on New York City taxi trip records mapped into the leg shape; the planned time there is a stated stand-in, and no gap statistic is reported from those data. \textbf{\fzScaleRows{} rows aggregate in \fzScaleWallSDpTwo{}\,s on 20 logical cores}, \fzScaleRowsPerS{} rows per second (Fig.~\ref{fig:scale}). Two readings are unflattering and belong here: at this project's own size the runtime is the engine's fixed cost (\fzLegsTotal{} legs and 2.9 million trips both take 2.4\,s), and cutting the cores from 20 to 4 costs only \fzScaleWallSFourCoresDpTwo{}\,s against \fzScaleWallSDpTwo{}\,s, because reading 914\,MB from one disk is IO-bound. The scale run demonstrates that the aggregation scales; it does not show that the dependence-aware audit does, which has a permutation loop and runs in about a minute at $10^{5}$ permutations on this network.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.88\columnwidth]{fig8_scale_runtime.pdf}
+\caption{Aggregation runtime against input size and core count (source: \texttt{w7\_scale\_benchmark.json}).}
+\label{fig:scale}
+\end{figure}

@@ -17,9 +17,10 @@
   --surface-sunken: #070d18;
   --ink: #e8edf7;
   --ink-muted: #9aa8c2;
-  --ink-faint: #64728c;
+  --ink-faint: #7f8ca6;
   --line: #1e2a42;
   --accent: #4d9fff;
+  --accent-bg: #1d6fd8;
   --accent-soft: rgba(77, 159, 255, 0.12);
   --grid: #162135;
 }
@@ -30,9 +31,10 @@
   --surface-sunken: #eef2f8;
   --ink: #101828;
   --ink-muted: #51607a;
-  --ink-faint: #7b8aa3;
+  --ink-faint: #5f6e88;
   --line: #dfe5ee;
   --accent: #1367d8;
+  --accent-bg: #1367d8;
   --accent-soft: rgba(19, 103, 216, 0.10);
   --grid: #e7ecf4;
 }
@@ -71,6 +73,12 @@ body {
 ::selection {
   background: var(--accent);
   color: #fff;
+}
+
+/* Grid items may shrink below their content, so a long label truncates instead of
+   pushing a 375px phone sideways. */
+.grid > * {
+  min-width: 0;
 }
 
 /* Scrollbars that do not fight the dark theme. */

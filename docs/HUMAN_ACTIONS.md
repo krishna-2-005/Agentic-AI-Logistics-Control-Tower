@@ -268,3 +268,26 @@ I will generate the labelling sheet for 3.2 and the exact narration with click-b
 | Gmail app password | WP-06 | **DONE** — live alerts sent (D-071) |
 | Sentry DSN | WP-06 | optional |
 | Groq key (LLM backup) | WP-02/07 | **DONE** |
+
+---
+
+## 6 · Publication upgrade: decisions and human tasks (UPGRADE_PLAN pass)
+
+Everything below needs a person. The manuscripts are in `paper/conference/` and `paper/journal/`;
+`scripts/build_paper.sh` rebuilds both from the newest results freeze.
+
+| # | What | Who | Time | Notes |
+|---|---|---|---|---|
+| 6.1 | **Choose the conference and the journal** from `docs/venues.md` and record it in `docs/decisions.md` | all three | 1 h | Recommendation there: ECML PKDD 2027 Applied Data Science track (fallback Computational Collective Intelligence) and the Journal of Big Data (stretch: Transportation Research Part E). **Do not rely on D-052's "ICCCI 2027 / 20 Feb 2027"**: that date belongs to a Tokyo networking conference (D-097, P-82). Re-check the chosen call on its own page in the first week of January 2027 and again before submitting. |
+| 6.2 | Read the chosen journal's "extended conference paper" rule and record the percentage | one author | 30 min | The journal draft adds more than 30% new material (streaming, scale, agent study, appendix); confirm the venue's own threshold. If it is the Journal of Big Data, decide who pays or waives the article charge. |
+| 6.3 | **Author order and affiliations** | all three | 15 min | The manuscripts use the order Krishna, Lahari, Mounika and one shared affiliation as placeholders. The CRediT paragraph follows the README role split; edit it to match what each person did. |
+| 6.4 | Lahari's `[read]` pass on the eight core references the argument leans on | Lahari | 2 h | FHWA 2005 reliability report, SHRP 2 L03, DeeprETA, Benjamini-Yekutieli, Laird-Louis, Gelman-Carlin, Kapoor-Narayanan, Diebold-Mariano. Until then `docs/references.md` marks nothing as read and the paper describes the cited works only in general terms. |
+| 6.5 | **Second labeller** for the groundedness sheet, and two labellers for the 150-email sheet | Lahari + one more | 2 h each | `docs/human_tasks/second_labeller_protocol.md`; then `python -m src.ml.human_sheets --agreement a.csv b.csv` and `python -m src.ml.groundedness --agreement <sheet>`. This fills the empty "human" column of the agent study. |
+| 6.6 | Photograph 10 real documents on a phone | you | 30 min | `docs/human_tasks/phone_photo_protocol.md` (redact, index, `truth.csv`). |
+| 6.7 | Three-person user test with SUS | team | half a day | `docs/human_tasks/user_test_script.md` (consent text and SUS formula included). |
+| 6.8 | **Archive a release on Zenodo and put the DOI in the paper and `CITATION.cff`** | you | 20 min | The repository must be public with a licence. Log in to Zenodo with GitHub, switch the repository on, publish a GitHub release; Zenodo archives it and issues a DOI. `CITATION.cff` carries a placeholder. |
+| 6.9 | Post a preprint (arXiv) when the draft is final | one author | 1 h | arXiv needs endorsement for a first submission in a category: register with an institutional email, start a submission so the request is generated, then ask one or two established authors in the field. Check the chosen venue's anonymity and preprint rule first (ECML PKDD is double-blind). |
+| 6.10 | Download the venue's template and swap it in | one author | 1 h | The LNCS source (`llncs.cls`, `splncs04.bst`) is used for the conference draft; the Springer Nature journal template is not verified: confirm it on the journal's submission page. Section files are shared, so switching is a template swap. |
+| 6.11 | Optional: resume the agent ablation across 3-4 days of free-tier quota | you | 4 days | `python -m src.ml.agent_ablation --llm-verdict` resumes from cache; `--cache-only` rebuilds the files with zero calls. Then re-cut the freeze. The paper's ablation is a pilot until this is done. |
+| 6.12 | Adjust the AI-use disclosure in the manuscripts to the chosen venue's policy | one author | 15 min | The text is at the end of `paper/sections/conclusion.tex`. |
+

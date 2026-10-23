@@ -1,0 +1,68 @@
+\section{The Corridor Audit}\label{sec:audit}
+
+\subsection{Method}
+For corridor $c$ with $n_c\ge 10$ legs let $\bar r_c$ be the mean log ratio and $\bar r_{-c}$ the mean over all other legs. The statistic is Welch's unequal-variance $t$~\cite{welch1947generalization},
+\begin{equation}
+t_c=\frac{\bar r_c-\bar r_{-c}}{\sqrt{s_c^2/n_c+s_{-c}^2/n_{-c}}},
+\end{equation}
+where the comparison group's sums come from subtracting the corridor's own from the network totals, so all \fzCorridorsTested{} tests need one pass over the data. The $p$-values are corrected for $m=\fzCorridorsTested{}$ tests by the Benjamini--Hochberg step-up procedure at level 0.05~\cite{benjamini1995controlling}, which controls the false discovery rate under independence or positive dependence, or by the Benjamini--Yekutieli procedure~\cite{benjamini2001control}, which is valid under arbitrary dependence at the price of the factor $\sum_{k\le m}1/k\approx 7.6$.
+
+\paragraph{The independence assumption fails, and by how much.} Welch's test treats legs as independent. Before choosing a remedy we measured the dependence (the intraclass correlations are \ifjournal in Table~\ref{tab:dependence}\else 0.07 for a trip, under 0.01 for a day and \fzDepIccServiceCellDpTwo{} for a (corridor, service) cell\fi). Trips do not cluster a corridor's legs, because no trip visits a corridor twice, and the creation day is almost irrelevant. What clusters is the recurring \emph{service}: the same \texttt{route\_schedule\_uuid} repeats, \fzDepSingleServiceCorridors{} of the \fzCorridorsTested{} tested corridors run under exactly one service, and legs of one (corridor, service) cell are correlated (intraclass correlation \fzDepIccServiceCellDpTwo{}), giving a design effect of \fzDepDesignEffectMedianDpTwo{} at the median corridor: its 15 legs carry the information of about 7 independent ones. For those corridors a corridor effect and a service effect cannot be told apart.
+
+\ifjournal
+\begin{table}[t]
+\caption{Dependence among the legs of tested corridors (source: \texttt{b3\_dependence\_diagnostics.json}).}
+\label{tab:dependence}
+\centering
+\begin{tabular}{@{}lr@{}}
+\toprule
+Candidate cluster & Intraclass correlation \\
+\midrule
+Trip (legs of one trip, corridor-demeaned) & 0.072 \\
+Creation day & \fzDepIccDayDpTwo{} \\
+(Corridor, service) cell & \fzDepIccServiceCellDpTwo{} \\
+\bottomrule
+\end{tabular}
+\end{table}
+\fi
+
+\paragraph{Cell permutation test.} The exchangeable unit is therefore the (corridor, service) cell. Let $\bar y_b$ and $m_b$ be a cell's mean log ratio and leg count. Cells are stratified by size (1 to 8 exactly, then 9--11, 12--15, 16--22, 23 and over) and one permutation shuffles the cell means among cells of the same stratum, each position keeping its own size and corridor. The permuted corridor statistic is the corridor's weighted mean of permuted cell means minus the mean of the rest, and the $p$-value is two-sided,
+$p_c=(1+\#\{|D^{*}_c|\ge|D_c|\})/(B+1)$, with $B=100{,}000$ permutations~\cite{phipson2010permutation}. We report four variants on the same corridors: Welch or permutation $p$-values, each under BH or BY. A rule fixed in advance (decision D-080) names the \emph{headline} as the valid variant with the fewest significant slower corridors. We also measure the size of the standard test with a placebo: 200 datasets in which cell means are permuted among cells, destroying any corridor effect while keeping the cluster structure.
+
+\subsection{Result}
+\begin{table}[t]
+\caption{Corridors significant at 5\% under four variants of the audit, of \fzCorridorsTested{} tested.}
+\label{tab:variants}
+\centering
+\begin{tabular}{@{}lrr@{}}
+\toprule
+Variant & Slower & Faster \\
+\midrule
+Welch, BH (the original audit) & \fzBottlenecks{} & \fzFasterCorridors{} \\
+Welch, BY & \fzAuditByWelchSlower{} & \fzAuditByWelchFaster{} \\
+Cell permutation, BH & \fzAuditBhPermSlower{} & \fzAuditBhPermFaster{} \\
+\textbf{Cell permutation, BY (headline)} & \textbf{\fzAuditRobustHeadlineSlower{}} & \textbf{\fzAuditRobustHeadlineFaster{}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The original procedure finds \fzBottlenecks{} corridors significantly slower and \fzFasterCorridors{} significantly faster than the network, covering 78.6\% of legs (\fzLegsCovered{} of \fzLegsTotal{}). Under Welch with BY these fall to \fzAuditByWelchSlower{} and \fzAuditByWelchFaster{}, which is the price of arbitrary dependence alone. Under the cell permutation the counts collapse (Table~\ref{tab:variants}). By the rule fixed in advance the headline is the cell permutation under BY, \textbf{\fzAuditRobustHeadlineSlower{} slower and \fzAuditRobustHeadlineFaster{} faster}, and so no corridor is \emph{robust} in our sense (significant under both the headline and the original); all \fzBottlenecks{} and \fzFasterCorridors{} original discoveries are \emph{fragile}.
+
+\paragraph{The placebo explains why.} In the 200 placebo datasets, where corridor membership carries no information but services still differ, Welch rejects \fzAuditPlaceboRejectionPct{}\% of corridors uncorrected at the nominal 5\%, and Welch with BH finds on average \fzAuditPlaceboDiscoveriesDpOne{} ``significant'' corridors against 785 (\fzBottlenecks{} slower plus \fzFasterCorridors{} faster) on the real data. The standard test's false-positive load on this network is therefore large enough to account for most of what it reported.
+
+\paragraph{What the strictest result does not say.} The headline is partly a property of the test's resolution. With $B=100{,}000$ the smallest attainable permutation $p$ is $1/(B+1)\approx 10^{-5}$, which is larger than the smallest BY threshold ($0.05/(1130\cdot 7.6)=5.8\times10^{-6}$), so that variant \emph{cannot} reject any corridor however large its effect, and BH needs $p\le 4.4\times 10^{-5}$ for its first rejection. The permutation $p$-values are not empty: \fzAuditPermPBelowFivePct{} corridors fall below 0.05 and \fzAuditPermPBelowOnePct{} below 0.01, and the top-20 slow corridors ranked by permutation $p$ overlap the Welch top-20 at Jaccard \fzAuditTopTwentyJaccardListDpTwo{}. Section~\ref{sec:stability} supplies the evidence that matters here: whether the corridor effects replicate. Our reading is that the \fzBottlenecks{} are a \emph{screening list}, not confirmed bottlenecks, and that the data cannot separate a corridor effect from a service effect for the corridors that run under one service.
+
+\subsection{Ranking corridors: shrinkage and the support floor}\label{sec:support}
+A first version of this analysis found that raising the support floor from 10 to 30 legs changes the top-20 list completely, and proposed empirical-Bayes shrinkage as the remedy. We model the corridor means as $\hat\theta_c\sim N(\theta_c,v_c)$ with $\theta_c\sim N(\mu,\tau^2)$, estimate $\tau^2$ by REML (0.138, 0.133, 0.083, 0.058 at floors of 5, 10, 20 and 30 legs), and rank corridors by the posterior probability $P(\theta_c>t)$ that the corridor's true log ratio exceeds a material threshold $t=\fzEbThresholdLogDpTwo{}$ (a ratio of 3.27 to the recorded estimate)~\cite{efron1975data,morris1983parametric,laird1989empirical,gelman2007data}.
+
+Pre-registered hypothesis: shrinkage removes the floor dependence. \textbf{It does not.} The corridors' own sampling variances (about 0.002) are small against $\tau^2$, so the median shrink factor is only 1\% to 2\% and the posterior mean is within a few percent of the raw mean. The ranking by probability is slightly more stable by our rule (mean pairwise top-20 Jaccard across the six floor pairs \fzEbTopTwentyJaccardEbDpTwo{} against \fzEbTopTwentyJaccardRawDpTwo{}, bootstrap interval for the difference [\fzEbDiffCiLowDpTwo{}, \fzEbDiffCiHighDpTwo{}]), but both lists change almost completely: floors 5 and 30 share no top-20 corridor in either ranking. The cause is eligibility, not noise: rank positions of corridors present at both floors correlate at 0.9997 or more, and a lower floor admits small corridors with extreme means (mean top-20 corridor size 10.8 legs at floor 5, 47.7 at floor 30). At floor 10, \fzEbPExceedHalf{} corridors have $P(\theta_c>t)\ge 0.5$, \fzEbPExceedNine{} have 0.9 or more and \fzEbIntervalAbove{} have a 90\% interval wholly above $t$, so there are more material corridors than twenty slots. We therefore recommend reporting the whole ranking with intervals and stating the floor, rather than a top-20; shrinkage is better calibrated, not a cure (Fig.~\ref{fig:eb}).
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.85\columnwidth]{b4_eb_stability_heatmap.pdf}
+\caption{Top-20 overlap between support floors for the raw and the empirical-Bayes rankings (source: \texttt{b4\_eb\_ranking.json}). Neither ranking is stable across floors; the empirical-Bayes one is marginally less unstable.}
+\label{fig:eb}
+\end{figure}
+
+\subsection{Do the corridor effects persist?}\label{sec:stability}
+We split the creation dates into two halves (12 and 11 dates), run the audit separately in each, and compare. The comparison universe is the \fzStabilityUniverse{} corridors testable in both halves at a floor of five legs per half. The raw corridor means correlate across halves at $\rho=\fzStabilitySpearmanDpTwo{}$. The slower sets of the two halves (Welch, BH) share Jaccard \fzStabilityJaccardDpTwo{} of their members against about 32 corridors expected by chance (hypergeometric $p<10^{-80}$), and \fzStabilityStillSlowerPct{}\% of the first half's slower corridors are also slower than the network in the second half, against a base rate of \fzStabilityBaseRatePct{}\% of corridors that are slower in the second half. By contrast the cell-permutation test with BY control finds nothing in either half or in any third. The two facts fit together: the pattern is persistent, but a corridor effect is not distinguishable from a service effect, and the same recurring services run in both halves, so persistence is not independent replication. The period is 22 calendar days of one season; Section~\ref{sec:threats} lists this among the limits.

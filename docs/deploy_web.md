@@ -106,3 +106,45 @@ uvicorn process and wraps four functions that already exist:
 `web/lib/api.ts` is already written against these shapes, so the frontend needs no change
 when they land: set `NEXT_PUBLIC_API_URL` in Vercel and the four pages switch from recorded
 evidence to live.
+
+## Quality bar (Lighthouse, recorded)
+
+Run against a local static server of `web/out` with the installed Chrome:
+`npx lighthouse http://127.0.0.1:8765/<page> --only-categories=performance,accessibility,best-practices,seo`
+(add `--preset=desktop` for desktop). Scores are performance / accessibility / best practices / SEO.
+The machine was also running other work, so performance numbers are noisy by several points. A re-run on an idle machine after the upgrade pass gave mobile performance of 42 (Home), 62 (Hubs) and 78 (Prompts): the table above is not an artefact of load, and reaching 90 needs real work on the map and chart bundles.
+
+| page | mobile | desktop |
+|---|---|---|
+| Home | 32 / 100 / 96 / 100 | 91 / 100 / 96 / 100 |
+| Network | 28 / 100 / 96 / 100 | 58 / 100 / 96 / 100 |
+| Corridors | 60 / 96 / 96 / 100 | 92 / 96 / 96 / 100 |
+| Hubs | 81 / 100 / 96 / 100 | 99 / 100 / 96 / 100 |
+| Predict | 78 / 96 / 96 / 100 | 99 / 96 / 96 / 100 |
+| Alerts | 86 / 96 / 96 / 100 | 99 / 96 / 96 / 100 |
+| Agents | 78 / 100 / 93 / 100 | 99 / 100 / 96 / 100 |
+| Assistant | 43 / 100 / 96 / 100 | 87 / 100 / 96 / 100 |
+| Prompts | 85 / 100 / 96 / 100 | 99 / 100 / 96 / 100 |
+| Results | 77 / 100 / 96 / 100 | 84 / 100 / 96 / 100 |
+| Paper | 79 / 100 / 96 / 100 | 97 / 100 / 96 / 100 |
+| About | 84 / 100 / 96 / 100 | 99 / 100 / 96 / 100 |
+| 404 | 88 / 100 / 96 / 60 | 100 / 100 / 96 / 60 |
+
+Below 90, and why:
+
+- **Mobile performance** on Home, Network, Assistant, Corridors and most others: the map and chart
+  libraries are large and run under 4x CPU throttling. Charts and the hero map now load on scroll
+  (first-load JS 302 kB to 110 kB); the Network page is the map itself and cannot defer it.
+- **Desktop performance** on Network (58) for the same reason.
+- **Accessibility 96** on Corridors, Predict and Alerts: remaining contrast findings on small
+  decorative text, not fixed.
+- **Best practices 93-96**: a console error caused by the API's CORS rule rejecting the
+  `127.0.0.1` origin (absent on the deployed origin), and missing source maps.
+- **SEO 60 on the 404 page**: Next marks it noindex on purpose.
+
+Cold start: every live page waits 90 s, retries 502/503/504, shows "Waking the free server (up to
+~1 min)" and ends in a Try again notice. This matches `.github/workflows/api-keepalive.yml`
+(`--max-time 90`, a ping every 10 minutes from 08:00 to 22:00 IST). Checked by
+`tests/e2e_site_check.py` with the host replaced by a slow, then dead, double.
+
+Browser check: `cd web && npx --no-install next build`, then `python tests/e2e_site_check.py`.

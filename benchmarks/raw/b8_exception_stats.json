@@ -1,0 +1,189 @@
+{
+  "generated_at": "2026-10-21T11:29:30+05:30",
+  "source": "w8_replay_leakage.json",
+  "pre_registered_in": "D-085",
+  "as_of": {
+    "overall": {
+      "label": "as_of",
+      "legs": 2000,
+      "agent_precision": {
+        "successes": 1007,
+        "total": 1720,
+        "rate": 0.5855,
+        "ci_low": 0.562,
+        "ci_high": 0.6085
+      },
+      "trivial_policy_precision": {
+        "successes": 1082,
+        "total": 2000,
+        "rate": 0.541,
+        "ci_low": 0.5191,
+        "ci_high": 0.5627
+      },
+      "not_alerted_delayed_rate": {
+        "successes": 75,
+        "total": 280,
+        "rate": 0.2679,
+        "ci_low": 0.2194,
+        "ci_high": 0.3226
+      },
+      "gain_points": 4.45,
+      "primary_test": {
+        "name": "pooled two-proportion z, alerted vs not alerted (disjoint groups)",
+        "z": 9.8904,
+        "p_two_sided": 4.581093726497717e-23,
+        "fisher_exact_p": 3.2169856567236016e-23
+      },
+      "bootstrap_gain": {
+        "resamples": 10000,
+        "seed": 20260,
+        "ci_low": 0.0353,
+        "ci_high": 0.0538,
+        "p_one_sided_gain_le_0": 0.0
+      },
+      "naive_independent_test_INVALID_overlapping_samples": {
+        "z": 2.725,
+        "p_two_sided": 0.0064292424706928674
+      },
+      "significant_at_5pct": true,
+      "write_up": "better than alerting every leg by 4.4 points; significant at 5% (n = 2,000 legs, 1,720 alerts)"
+    },
+    "by_severity": {
+      "rows": [
+        {
+          "severity": "low",
+          "successes": 180,
+          "total": 453,
+          "rate": 0.3974,
+          "ci_low": 0.3533,
+          "ci_high": 0.4431,
+          "ci_excludes_trivial_policy": true
+        },
+        {
+          "severity": "medium",
+          "successes": 342,
+          "total": 667,
+          "rate": 0.5127,
+          "ci_low": 0.4748,
+          "ci_high": 0.5505,
+          "ci_excludes_trivial_policy": false
+        },
+        {
+          "severity": "high",
+          "successes": 236,
+          "total": 308,
+          "rate": 0.7662,
+          "ci_low": 0.7159,
+          "ci_high": 0.81,
+          "ci_excludes_trivial_policy": true
+        },
+        {
+          "severity": "critical",
+          "successes": 249,
+          "total": 292,
+          "rate": 0.8527,
+          "ci_low": 0.8075,
+          "ci_high": 0.8888,
+          "ci_excludes_trivial_policy": true
+        }
+      ],
+      "cochran_armitage": {
+        "z": 14.1425,
+        "p_two_sided": 2.0783569461896894e-45,
+        "direction": "increasing"
+      }
+    }
+  },
+  "superseded_replay_snapshot": {
+    "overall": {
+      "label": "superseded_replay_snapshot",
+      "legs": 2000,
+      "agent_precision": {
+        "successes": 971,
+        "total": 1347,
+        "rate": 0.7209,
+        "ci_low": 0.6963,
+        "ci_high": 0.7442
+      },
+      "trivial_policy_precision": {
+        "successes": 1082,
+        "total": 2000,
+        "rate": 0.541,
+        "ci_low": 0.5191,
+        "ci_high": 0.5627
+      },
+      "not_alerted_delayed_rate": {
+        "successes": 111,
+        "total": 653,
+        "rate": 0.17,
+        "ci_low": 0.1431,
+        "ci_high": 0.2007
+      },
+      "gain_points": 17.99,
+      "primary_test": {
+        "name": "pooled two-proportion z, alerted vs not alerted (disjoint groups)",
+        "z": 23.1833,
+        "p_two_sided": 6.716720581650414e-119,
+        "fisher_exact_p": 2.8727938585095526e-125
+      },
+      "bootstrap_gain": {
+        "resamples": 10000,
+        "seed": 20260,
+        "ci_low": 0.1636,
+        "ci_high": 0.1966,
+        "p_one_sided_gain_le_0": 0.0
+      },
+      "naive_independent_test_INVALID_overlapping_samples": {
+        "z": 10.4786,
+        "p_two_sided": 1.0835771039440764e-25
+      },
+      "significant_at_5pct": true,
+      "write_up": "better than alerting every leg by 18.0 points; significant at 5% (n = 2,000 legs, 1,347 alerts)"
+    },
+    "by_severity": {
+      "rows": [
+        {
+          "severity": "low",
+          "successes": 231,
+          "total": 434,
+          "rate": 0.5323,
+          "ci_low": 0.4852,
+          "ci_high": 0.5787,
+          "ci_excludes_trivial_policy": false
+        },
+        {
+          "severity": "medium",
+          "successes": 236,
+          "total": 344,
+          "rate": 0.686,
+          "ci_low": 0.6352,
+          "ci_high": 0.7328,
+          "ci_excludes_trivial_policy": true
+        },
+        {
+          "severity": "high",
+          "successes": 234,
+          "total": 275,
+          "rate": 0.8509,
+          "ci_low": 0.804,
+          "ci_high": 0.8882,
+          "ci_excludes_trivial_policy": true
+        },
+        {
+          "severity": "critical",
+          "successes": 270,
+          "total": 294,
+          "rate": 0.9184,
+          "ci_low": 0.8814,
+          "ci_high": 0.9445,
+          "ci_excludes_trivial_policy": true
+        }
+      ],
+      "cochran_armitage": {
+        "z": 12.4624,
+        "p_two_sided": 1.1978227830585089e-35,
+        "direction": "increasing"
+      }
+    }
+  }
+}

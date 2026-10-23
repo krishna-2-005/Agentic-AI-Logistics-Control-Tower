@@ -18,6 +18,9 @@ import json
 from datetime import datetime
 
 import pandas as pd
+import pytest
+
+pytest.importorskip("pyspark")  # the fast job runs without PySpark: skip, do not error
 
 from src.ml import stream_validation as sv
 from src.ml.baselines import FEATURES

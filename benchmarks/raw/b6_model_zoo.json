@@ -1,0 +1,202 @@
+{
+  "generated_at": "2026-10-21T11:12:06.818827+00:00",
+  "decision": "D-077",
+  "budget": {
+    "trees": 200,
+    "depth": 6,
+    "learning_rates": [
+      0.03,
+      0.1,
+      0.3
+    ],
+    "seed": 42
+  },
+  "primary_setting": "40 inputs (v3) over the back-off baseline",
+  "secondary_setting": "38 inputs (v2) over the old median, 0.0 on a cold corridor",
+  "primary": {
+    "lightgbm_l1": {
+      "validation_mae_by_learning_rate": {
+        "0.03": 27.8895,
+        "0.1": 28.1316,
+        "0.3": 29.5603
+      },
+      "learning_rate_chosen": 0.03,
+      "validation_mae": 27.8895,
+      "test_mae": 30.1897,
+      "seconds": 4.6
+    },
+    "lightgbm_huber": {
+      "validation_mae_by_learning_rate": {
+        "0.03": 28.6975,
+        "0.1": 28.5558,
+        "0.3": 28.8436
+      },
+      "learning_rate_chosen": 0.1,
+      "validation_mae": 28.5558,
+      "test_mae": 31.0562,
+      "seconds": 3.7
+    },
+    "xgboost_l1": {
+      "validation_mae_by_learning_rate": {
+        "0.03": 28.8621,
+        "0.1": 29.2046,
+        "0.3": 30.6555
+      },
+      "learning_rate_chosen": 0.03,
+      "validation_mae": 28.8621,
+      "test_mae": 30.4868,
+      "seconds": 10.6
+    },
+    "histgbr_l1": {
+      "validation_mae_by_learning_rate": {
+        "0.03": 27.9979,
+        "0.1": 28.2509,
+        "0.3": 28.7743
+      },
+      "learning_rate_chosen": 0.03,
+      "validation_mae": 27.9979,
+      "test_mae": 30.3283,
+      "seconds": 11.7
+    },
+    "quantile_linear": {
+      "validation_mae_by_learning_rate": {},
+      "learning_rate_chosen": null,
+      "validation_mae": 33.7165,
+      "test_mae": 33.6314,
+      "seconds": 259.0
+    }
+  },
+  "secondary": {
+    "lightgbm_l1": {
+      "validation_mae_by_learning_rate": {
+        "0.03": 27.2368,
+        "0.1": 27.4918,
+        "0.3": 29.2152
+      },
+      "learning_rate_chosen": 0.03,
+      "validation_mae": 27.2368,
+      "test_mae": 29.6578,
+      "seconds": 3.9
+    },
+    "lightgbm_huber": {
+      "validation_mae_by_learning_rate": {
+        "0.03": 28.285,
+        "0.1": 27.8833,
+        "0.3": 28.2344
+      },
+      "learning_rate_chosen": 0.1,
+      "validation_mae": 27.8833,
+      "test_mae": 30.5347,
+      "seconds": 3.6
+    },
+    "xgboost_l1": {
+      "validation_mae_by_learning_rate": {
+        "0.03": 27.9983,
+        "0.1": 28.7513,
+        "0.3": 29.8157
+      },
+      "learning_rate_chosen": 0.03,
+      "validation_mae": 27.9983,
+      "test_mae": 29.7104,
+      "seconds": 9.2
+    },
+    "histgbr_l1": {
+      "validation_mae_by_learning_rate": {
+        "0.03": 27.5399,
+        "0.1": 27.7219,
+        "0.3": 28.1962
+      },
+      "learning_rate_chosen": 0.03,
+      "validation_mae": 27.5399,
+      "test_mae": 29.7456,
+      "seconds": 10.6
+    },
+    "quantile_linear": {
+      "validation_mae_by_learning_rate": {},
+      "learning_rate_chosen": null,
+      "validation_mae": 34.3196,
+      "test_mae": 33.9563,
+      "seconds": 912.4
+    }
+  },
+  "reporting": {
+    "candidates": {
+      "spark_v2_gbt (old median, step 1.0)": {
+        "validation_mae": 30.17,
+        "test_mae": 30.9,
+        "library": "spark-mllib",
+        "setting": "v2"
+      },
+      "spark_v3_gbt (back-off baseline)": {
+        "validation_mae": 31.1425,
+        "test_mae": 31.4032,
+        "library": "spark-mllib",
+        "setting": "primary"
+      },
+      "lightgbm_l1 (primary)": {
+        "validation_mae": 27.8895,
+        "test_mae": 30.1897,
+        "library": "single-node",
+        "setting": "primary"
+      },
+      "lightgbm_huber (primary)": {
+        "validation_mae": 28.5558,
+        "test_mae": 31.0562,
+        "library": "single-node",
+        "setting": "primary"
+      },
+      "xgboost_l1 (primary)": {
+        "validation_mae": 28.8621,
+        "test_mae": 30.4868,
+        "library": "single-node",
+        "setting": "primary"
+      },
+      "histgbr_l1 (primary)": {
+        "validation_mae": 27.9979,
+        "test_mae": 30.3283,
+        "library": "single-node",
+        "setting": "primary"
+      },
+      "quantile_linear (primary)": {
+        "validation_mae": 33.7165,
+        "test_mae": 33.6314,
+        "library": "single-node",
+        "setting": "primary"
+      },
+      "lightgbm_l1 (secondary_old_median)": {
+        "validation_mae": 27.2368,
+        "test_mae": 29.6578,
+        "library": "single-node",
+        "setting": "secondary_old_median"
+      },
+      "lightgbm_huber (secondary_old_median)": {
+        "validation_mae": 27.8833,
+        "test_mae": 30.5347,
+        "library": "single-node",
+        "setting": "secondary_old_median"
+      },
+      "xgboost_l1 (secondary_old_median)": {
+        "validation_mae": 27.9983,
+        "test_mae": 29.7104,
+        "library": "single-node",
+        "setting": "secondary_old_median"
+      },
+      "histgbr_l1 (secondary_old_median)": {
+        "validation_mae": 27.5399,
+        "test_mae": 29.7456,
+        "library": "single-node",
+        "setting": "secondary_old_median"
+      },
+      "quantile_linear (secondary_old_median)": {
+        "validation_mae": 34.3196,
+        "test_mae": 33.9563,
+        "library": "single-node",
+        "setting": "secondary_old_median"
+      }
+    },
+    "reported_model": "lightgbm_l1 (secondary_old_median)",
+    "reported_library": "single-node",
+    "best_spark_model_served_candidate": "spark_v2_gbt (old median, step 1.0)",
+    "rule": "lowest validation MAE regardless of library (D-077); test MAE is reported whatever it is"
+  }
+}

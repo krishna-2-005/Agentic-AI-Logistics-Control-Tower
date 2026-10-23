@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-08-14T17:33:13.142492+00:00",
+  "stage": "3-hubs",
+  "legs_in": 26369,
+  "hubs_out": 1657,
+  "min_support": 30,
+  "supported_hubs": 121,
+  "leg_counts_reconcile": true,
+  "schema": {
+    "dataset": "hubs_v1",
+    "version": 1,
+    "columns": 28
+  },
+  "handoffs": {
+    "total": 11552,
+    "chain_breaks": 1565,
+    "chain_break_rate": 0.1355,
+    "continuous_with_zero_gap": 9849,
+    "continuous": 9987
+  },
+  "leg_dwell": {
+    "median_dwell_min": 49.0,
+    "mean_dwell_min": 97.5867,
+    "median_dwell_share": 0.3459,
+    "mean_dwell_share": 0.3707,
+    "corr_dwell_min_vs_wall_clock": 0.5378
+  },
+  "metric_choice": {
+    "supported_hubs": 121,
+    "rank_correlation_share_vs_minutes": 0.4912,
+    "top_20_overlap": 8,
+    "top_n": 20
+  },
+  "attribution": {
+    "supported_hubs_compared": 114,
+    "corr_median_dwell_share_out_vs_in": 0.413,
+    "corr_median_dwell_min_out_vs_in": 0.216
+  },
+  "copied_from": "data/processed/hubs_v1/_hub_report.json (local, gitignored); absolute paths removed"
+}

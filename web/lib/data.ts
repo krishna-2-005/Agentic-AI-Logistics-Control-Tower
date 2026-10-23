@@ -21,6 +21,7 @@ import type {
   McpTranscript,
   ModelData,
   Overview,
+  PaperData,
   PromptAgent,
 } from "./types";
 
@@ -73,7 +74,11 @@ export const getAlertsSample = () =>
       scoring_rate_eps: null,
     },
     alerts: [],
+    sample_note: "",
+    delivery: [],
+    delivered_channels: [],
   });
+export const getPaper = () => read<PaperData>("paper.json");
 export const getAssistantEval = () =>
   readOptional<AssistantEval>("assistant_eval.json", {});
 export const getMcpTranscript = () =>
