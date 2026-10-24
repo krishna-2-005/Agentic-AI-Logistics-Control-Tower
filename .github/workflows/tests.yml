@@ -53,9 +53,20 @@ jobs:
       # The linter catches what is wrong. The formatter changes what is merely
       # different, and adopting it is its own decision with its own commit.
       - name: Types
-        # src/common and src/agents only, per pyproject. Widening this to the
-        # whole tree on day one produces hundreds of findings nobody reads.
+        # src/common, src/agents, src/ml and src/api, per pyproject, with the few
+        # exclusions it documents (E3).
         run: mypy
+
+      # The numbers in the paper and the README are generated from one frozen results
+      # file. These fail the push if a result file moved without a new freeze, if
+      # paper/numbers.tex is stale, or if the printed bibliography is out of date --
+      # the same checks the nightly run repeats (pure Python; no data, no JVM).
+      - name: Frozen results still verify
+        run: python -m src.ml.results_freeze --verify
+      - name: Paper numbers are current
+        run: |
+          python -m src.report.paper_numbers --check
+          python -m src.report.bib_print --check
 
   fast:
     name: pytest (no spark) · py${{ matrix.python }}
