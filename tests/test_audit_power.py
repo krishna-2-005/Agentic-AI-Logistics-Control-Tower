@@ -82,3 +82,24 @@ def test_jaccard_and_top_helpers():
     assert ai.top(frame, "x", 2) == {"a", "b"}
     assert ai.jaccard({"a", "b"}, {"b", "c"}) == pytest.approx(1 / 3)
     assert ai.jaccard(set(), set()) == 0.0
+
+
+def test_the_t_prior_marginal_beats_the_normal_when_one_corridor_is_extreme():
+    from src.ml import eb_t
+
+    rng = np.random.default_rng(4)
+    y = np.concatenate([rng.normal(0.8, 0.1, 80), [4.0, -2.5]])
+    v = np.full(len(y), 0.01)
+    fit = eb_t.Fit(y, v)
+    _, _, heavy = fit.maximise(3.0)
+    _, _, normal = fit.maximise(1000.0)
+    assert heavy > normal
+
+
+def test_the_t_posterior_probabilities_are_ordered_by_distance_above_the_threshold():
+    from src.ml import eb_t
+
+    y = np.array([0.5, 1.0, 1.6, 2.2])
+    fit = eb_t.Fit(y, np.full(4, 0.02))
+    post = fit.posterior(1.0, 0.5, 5.0, threshold=1.2)
+    assert (np.diff(post["z"]) > 0).all() and ((post["z"] >= 0) & (post["z"] <= 1)).all()
