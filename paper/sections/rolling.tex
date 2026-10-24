@@ -1,10 +1,12 @@
-A single chronological split can be lucky. We therefore refit on four expanding windows of the 22 India-time calendar days (train through day 10, 13, 16 and 19; test on the next three days), with every hyperparameter frozen at its headline-split value and the baselines recomputed from each fold's training legs (pre-registered as D-076 and D-098). The reported model beats the back-off bar in \fzRoZooBeatsBarFolds{} of \fzRoFolds{} folds, by \fzRoZooDeltaMeanDpTwo{} minutes on average (standard deviation \fzRoZooDeltaSdDpTwo{} over folds), so the headline split's difference is not an outlier (Fig.~\ref{fig:rolling}). Each fold has only three days of test legs and none has an interval of its own.
+A single chronological split can be lucky. We therefore refit on four expanding windows of the 22 India-time calendar days (train through day 10, 13, 16 and 19; test on the next three days), with every hyperparameter frozen at its headline-split value and the baselines recomputed from each fold's training legs (pre-registered as D-076 and D-098). The reported model beats the back-off bar in \fzRoZooBeatsBarFolds{} of \fzRoFolds{} folds, by \fzRoZooDeltaMeanDpTwo{} minutes on average (standard deviation \fzRoZooDeltaSdDpTwo{} over folds), so the headline split's difference is not an outlier\ifjournal{} (Fig.~\ref{fig:rolling})\fi. Each fold has only three days of test legs and none has an interval of its own.
 
 \input{../sections/rolling_spark.tex}
 
+\ifjournal
 \begin{figure}[t]
 \centering
 \includegraphics[width=0.6\columnwidth]{fig_rolling_origin.pdf}
 \caption{MAE by rolling-origin fold: the back-off bar, the reported single-node model and the served Spark model (sources: \texttt{b2\_rolling\_origin\_zoo.json}, \texttt{b2\_rolling\_origin.json}).}
 \label{fig:rolling}
 \end{figure}
+\fi

@@ -38,14 +38,16 @@ Table~\ref{tab:mae} is the headline. The reported model scores \fzReportedMaeDpT
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=0.78\columnwidth]{fig_forest_delta_mae.pdf}
+\includegraphics[width=0.62\columnwidth]{fig_forest_delta_mae.pdf}
 \caption{MAE minus the back-off bar by slice, for the reported (LightGBM) and served (Spark) models, with day-block 95\% intervals (source: \texttt{b2\_significance.json}). The corridors unseen in training (a gain of about $-32$ minutes) are omitted to keep the scale readable.}
 \label{fig:forest}
 \end{figure}
 
 \paragraph{Where the gain is.} Against the bar, the reported model's whole margin is concentrated on legs the bar has no history for. On the \fzColdLegsTest{} cold legs it scores \fzReportedColdMaeDpOne{} against the bar's \fzColdMaeBackoffDpOne{} (a difference of \fzReportedColdDeltaDpOne{} minutes, day-block interval [\fzReportedColdCiLowDpOne{}, \fzReportedColdCiHighDpOne{}]); on the warm legs the difference is \fzReportedWarmDeltaDpTwo{} minutes [\fzReportedWarmCiLowDpTwo{}, \fzReportedWarmCiHighDpTwo{}]. A back-off hierarchy is a strong lookup, and the model's value is mostly where a lookup has little to say. A note on validation: the validation cut did not favour the model over the bar (the bar scores \fzBarBackoffValidationMaeDpTwo{} there against the served model's \fzVTwoValidationMaeDpTwo{}), although the reported model does (\fzReportedValidationMaeDpTwo{}). We report both because the selection rule uses validation and the claim uses test.
 
+\ifjournal
 \paragraph{Feature groups.} Removing one group at a time from the LightGBM model and measuring the change in test MAE with day-block intervals shows that only three groups carry detectable weight: the time of day and week (+\fzAblationTimeDeltaDpTwo{} minutes), the hub histories (+\fzAblationHubDeltaDpTwo{}) and the dispersion and dwell block (+\fzAblationDispersionDeltaDpTwo{}). Corridor history alone is redundant given the others ($\Delta=\fzAblationCorridorDeltaDpTwo{}$, interval including zero), which agrees with the gain sitting on cold legs.
+\fi
 
 \subsection{Rolling-origin check}\label{sec:rolling}
 \input{../sections/rolling.tex}

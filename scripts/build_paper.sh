@@ -18,11 +18,11 @@ fi
 "$PY" -m src.report.bib_print
 
 compile() {
-  local dir="$1"
+  local dir="$1" file="${2:-main}"
   if command -v latexmk >/dev/null 2>&1; then
-    (cd "$dir" && latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex)
+    (cd "$dir" && latexmk -pdf -interaction=nonstopmode -halt-on-error "$file.tex")
   elif command -v tectonic >/dev/null 2>&1; then
-    (cd "$dir" && tectonic -X compile main.tex)
+    (cd "$dir" && tectonic -X compile "$file.tex")
   else
     echo "need latexmk or tectonic on PATH" >&2
     exit 1
@@ -30,5 +30,6 @@ compile() {
 }
 
 compile paper/conference
+compile paper/conference anon   # double-blind variant: no names, affiliations or repository links
 compile paper/journal
-echo "built paper/conference/main.pdf and paper/journal/main.pdf"
+echo "built paper/conference/{main,anon}.pdf and paper/journal/main.pdf"

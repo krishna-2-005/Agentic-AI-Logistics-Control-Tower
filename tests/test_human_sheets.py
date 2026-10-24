@@ -63,3 +63,20 @@ def test_order_agreement_rejects_blank_and_bad_labels(tmp_path):
         hs.order_agreement(good, wrong)
     out = hs.order_agreement(good, good)
     assert out["labeller_a_vs_b"]["kappa"] == 1.0 and out["labeller_a_vs_intended"]["observed_agreement"] == 1.0
+
+
+def test_the_order_agreement_pipeline_works_end_to_end_on_synthetic_sheets(tmp_path):
+    """SYNTHETIC labels, a test of the pipeline only: two identical sheets must give kappa 1.0."""
+    import csv
+
+    from src.ml import human_sheets
+
+    pool = human_sheets.order_email_pool()
+    for name in ("a.csv", "b.csv"):
+        with open(tmp_path / name, "w", newline="", encoding="utf-8") as fh:
+            writer = csv.DictWriter(fh, fieldnames=["email_id", "label"])
+            writer.writeheader()
+            for row in pool:
+                writer.writerow({"email_id": row["email_id"], "label": row["intended"]})
+    result = human_sheets.order_agreement(str(tmp_path / "a.csv"), str(tmp_path / "b.csv"))
+    assert result["labeller_a_vs_b"]["kappa"] == 1.0 and result["labeller_a_vs_intended"]["kappa"] == 1.0
