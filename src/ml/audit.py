@@ -395,7 +395,7 @@ def hub_ranking(
     hubs = (
         spark.read.parquet(str(hubs_path))
         .filter("has_support")
-        .toPandas()
+        .toPandas()  # type: ignore[attr-defined]  # the Spark stubs type this as a pandas-like protocol
         .sort_values("friction_rank")
         .reset_index(drop=True)
     )
@@ -930,7 +930,7 @@ def render_hub_ranking(hubs: pd.DataFrame, diag: dict) -> str:
 
 def build(
     spark: SparkSession, input_path: Path, min_support: int, alpha: float = ALPHA
-) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
     """Run the aggregation and the tests.
 
     Returns `(audited, coverage, robust, sensitivity, baseline)` — `audited` at the

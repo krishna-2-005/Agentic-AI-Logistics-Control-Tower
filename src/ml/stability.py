@@ -18,6 +18,7 @@ import itertools
 import json
 import time
 from datetime import UTC, datetime
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -144,7 +145,7 @@ def compare_pair(early: pd.DataFrame, late: pd.DataFrame, rng: np.random.Generat
     e, l_ = early.loc[uni], late.loc[uni]
     later_slower = (l_["excess_ratio"] >= 1.0).to_numpy()
     later_sig = l_["sig_bh_welch_slower"].to_numpy()
-    out = {
+    out: dict[str, Any] = {
         "universe": int(len(uni)),
         "base_rate_slower_in_later": float(later_slower.mean()) if len(uni) else None,
         "overlap": {

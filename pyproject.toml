@@ -71,16 +71,17 @@ ignore_errors = true
 
 # src/ml and src/api joined the checked set in the upgrade pass (UPGRADE_PLAN E3). The modules below are
 # excluded for stated reasons, not silently: every finding in them is one of
-#   - a Spark DataFrame that the pandas-less stubs type as `PandasDataFrameLike` (audit, models,
-#     threshold_sensitivity, stream_validation, replay_leakage), or an untyped MLlib `Model`;
-#   - a results dictionary built up in stages whose value types mypy cannot follow (eb_ranking,
-#     stability, agent_ablation, b7_hard_sets, lifecycle_eval_scale, eval_extraction).
+#   - an untyped MLlib `Model` (models);
+#   - a results dictionary built up in stages whose value types mypy cannot follow (agent_ablation,
+#     b7_hard_sets, lifecycle_eval_scale, eval_extraction).
+# audit, eb_ranking, stability, threshold_sensitivity, stream_validation and replay_leakage were removed from this list
+# in the second upgrade pass: annotated where a type was missing, and a specific `type: ignore[attr-defined]` where the only
+# complaint is the Spark stubs typing `toPandas()` as a protocol.
 # None of these is a wrong answer; each would need a TypedDict or a cast per call site. Revisit when the
 # evaluation scripts are next touched; new modules in src/ml are checked from the first commit.
 [[tool.mypy.overrides]]
 module = [
-    "src.ml.audit", "src.ml.models", "src.ml.threshold_sensitivity", "src.ml.stream_validation",
-    "src.ml.replay_leakage", "src.ml.eb_ranking", "src.ml.stability", "src.ml.agent_ablation",
+    "src.ml.models", "src.ml.agent_ablation",
     "src.ml.b7_hard_sets", "src.ml.lifecycle_eval_scale", "src.ml.eval_extraction",
 ]
 ignore_errors = true

@@ -99,7 +99,7 @@ def champion_gap_predictions(spark: SparkSession, frame: pd.DataFrame) -> np.nda
         raise FileNotFoundError(f"No champion at {champion_path} -- run `python -m src.automation.retrain`.")
     model = PipelineModel.load(str(champion_path))
     sdf = spark.createDataFrame(frame[FEATURES].assign(_row=np.arange(len(frame))))
-    scored = model.transform(sdf).select("_row", "prediction").toPandas().sort_values("_row")
+    scored = model.transform(sdf).select("_row", "prediction").toPandas().sort_values("_row")  # type: ignore[attr-defined]  # Spark stubs
     return scored["prediction"].to_numpy()
 
 

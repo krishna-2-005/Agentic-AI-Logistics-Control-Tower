@@ -319,7 +319,7 @@ def _predict(spark, model: PipelineModel, features: pd.DataFrame) -> list[float]
     frame["_row"] = range(len(frame))
     sdf = spark.createDataFrame(frame)
     out = model.transform(sdf).select("_row", "prediction").toPandas()
-    return out.sort_values("_row")["prediction"].tolist()
+    return out.sort_values("_row")["prediction"].tolist()  # type: ignore[attr-defined]  # Spark stubs
 
 
 def render_doc(summary: dict, comparison: pd.DataFrame) -> str:

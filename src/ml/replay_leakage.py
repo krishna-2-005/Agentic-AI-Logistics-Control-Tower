@@ -50,7 +50,7 @@ def _predict(spark, model: PipelineModel, frame: pd.DataFrame) -> np.ndarray:
     data = frame[FEATURES].copy()
     data["_row"] = np.arange(len(data))
     out = model.transform(spark.createDataFrame(data)).select("_row", "prediction").toPandas()
-    return out.sort_values("_row")["prediction"].to_numpy()
+    return out.sort_values("_row")["prediction"].to_numpy()  # type: ignore[attr-defined]  # Spark stubs
 
 
 def _alert_metrics(pred_gap: np.ndarray, frame: pd.DataFrame) -> dict:
@@ -100,7 +100,7 @@ def run(legs: int = 2000) -> dict:
         for prefix in HISTORY_PREFIXES:
             key = KEY_COLUMN[prefix]
             history = latest_history(spark, prefix).toPandas()
-            cols = [c for c in history.columns if c != key]
+            cols = [c for c in history.columns if c != key]  # type: ignore[attr-defined]  # Spark stubs
             snap = snap.drop(columns=[c for c in cols if c in snap.columns]).merge(history, on=key, how="left")
             snap[f"{prefix}_n_prior"] = snap[f"{prefix}_n_prior"].fillna(0)
         snapshot = prepare_model_features(snap)

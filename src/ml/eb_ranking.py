@@ -20,6 +20,7 @@ import itertools
 import json
 import time
 from datetime import UTC, datetime
+from typing import Any
 
 import numpy as np
 import pandas as pd
@@ -209,7 +210,7 @@ def bootstrap(legs: pd.DataFrame, threshold: float, reps: int, seed: int) -> dic
     n = np.bincount(codes)
     start = np.concatenate([[0], np.cumsum(n)[:-1]])
     rng = np.random.default_rng(seed)
-    out = {k: [] for k in RANKINGS}
+    out: dict[str, list[float]] = {k: [] for k in RANKINGS}
     for _ in range(reps):
         idx = start[codes] + np.floor(rng.random(len(r)) * n[codes]).astype(int)
         rb = r[idx]
@@ -256,7 +257,7 @@ def run(reps: int = BOOTSTRAP_REPS, seed: int = SEED) -> dict:
     }
 
     stability = {k: pair_stability(res, k) for k in RANKINGS}
-    summary = {}
+    summary: dict[str, Any] = {}
     for k in RANKINGS:
         rows = stability[k]
         summary[k] = {

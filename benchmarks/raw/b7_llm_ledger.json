@@ -1,20 +1,20 @@
 {
-  "live_calls": 248,
-  "input_tokens": 193573,
-  "output_tokens": 54583,
-  "latency_s": 2148.062,
+  "live_calls": 409,
+  "input_tokens": 287181,
+  "output_tokens": 79875,
+  "latency_s": 3157.007,
   "by_agent": {
     "exception": {
-      "live_calls": 57,
-      "input_tokens": 22794,
-      "output_tokens": 5378,
-      "latency_s": 275.946
+      "live_calls": 155,
+      "input_tokens": 61966,
+      "output_tokens": 14274,
+      "latency_s": 723.089
     },
     "invoice": {
-      "live_calls": 60,
-      "input_tokens": 48743,
-      "output_tokens": 17024,
-      "latency_s": 490.684
+      "live_calls": 123,
+      "input_tokens": 103179,
+      "output_tokens": 33420,
+      "latency_s": 1052.486
     },
     "order": {
       "live_calls": 131,
@@ -27,7 +27,7 @@
   "provider": "groq",
   "note": "rebuilt from the on-disk cache: one file is one provider call; includes the hard-set runs and 3 smoke calls",
   "free_tier_cost_usd": 0.0,
-  "paid_equivalent_usd_per_1000_verdicts_ESTIMATE": 0.2491,
+  "paid_equivalent_usd_per_1000_verdicts_ESTIMATE": 0.2225,
   "assumed_price_usd_per_million_tokens_input_output": [
     0.15,
     0.6
