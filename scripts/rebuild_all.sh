@@ -70,8 +70,10 @@ if [ "$QUICK" != "--quick" ]; then
   step "audit robust"       -m src.ml.audit_robust
   step "audit robust 1e6"   -m src.ml.audit_robust --permutations 1000000 --placebo 0 --suffix _1e6
   step "audit power"        -m src.ml.audit_power
+  step "lgbm export"        -m src.ml.lgbm_export
   step "eb ranking"         -m src.ml.eb_ranking
   step "reliability indices" -m src.ml.audit_indices
+  step "eb heavy tails"     -m src.ml.eb_t
   step "stability"          -m src.ml.stability
   step "exception stats"    -m src.ml.exception_stats
   step "b7 hard sets"       -m src.ml.b7_hard_sets --build --score

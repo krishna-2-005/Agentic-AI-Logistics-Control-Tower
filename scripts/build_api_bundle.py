@@ -67,6 +67,9 @@ def main() -> int:
 
     BUNDLE.mkdir(parents=True, exist_ok=True)
     gbt_local.to_json(gbt_local.load(serving.MODEL_PATH), BUNDLE / "v2_forest.json.gz")
+    # The reported LightGBM model (D-101): shipped so the host can serve it with SERVING_MODEL=lightgbm_l1, off by default.
+    if serving.LGBM_FOREST.exists():
+        shutil.copy2(serving.LGBM_FOREST, BUNDLE / "lgbm_forest.json.gz")
     snap = export_snapshot(SERVING / "history_snapshot.json.gz")
     shutil.copy2(SERVING / "history_snapshot.json.gz", BUNDLE / "history_snapshot.json.gz")
     feed = build_alert_feed(STREAM_ALERTS, BUNDLE / "alert_feed.jsonl.gz", BUNDLE / "alert_feed_meta.json",

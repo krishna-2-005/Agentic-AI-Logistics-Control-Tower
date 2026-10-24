@@ -42,6 +42,7 @@ class Forest:
     right: np.ndarray
     value: np.ndarray              # node prediction (used at leaves)
     roots: np.ndarray              # global index of each tree's root
+    summation: str = "lanes4"      # key into SUMS: how tree outputs are combined (Spark: lanes4; LightGBM: sequential)
 
 
 def _stage(model_dir: Path, prefix: str) -> Path:
@@ -105,7 +106,7 @@ def to_json(forest: Forest, path: Path) -> None:
     Floats go through `json` as their shortest round-tripping repr, so nothing moves."""
     import gzip
 
-    payload = {"feature_names": forest.feature_names, **{
+    payload = {"feature_names": forest.feature_names, "summation": forest.summation, **{
         name: getattr(forest, name).tolist()
         for name in ("weights", "feature", "threshold", "left", "right", "value", "roots")}}
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -118,8 +119,8 @@ def from_json(path: Path) -> Forest:
 
     with gzip.open(path, "rt", encoding="utf-8") as handle:
         raw = json.load(handle)
-    return Forest(raw["feature_names"], *(np.array(raw[name]) for name in
-                  ("weights", "feature", "threshold", "left", "right", "value", "roots")))
+    arrays = {name: np.array(raw[name]) for name in ("weights", "feature", "threshold", "left", "right", "value", "roots")}
+    return Forest(raw["feature_names"], summation=raw.get("summation", "lanes4"), **arrays)
 
 
 def tree_outputs(forest: Forest, x: np.ndarray) -> np.ndarray:
@@ -197,7 +198,7 @@ WEIGHTED_SUM = "lanes4"
 def predict(forest: Forest, frame) -> np.ndarray:
     """Predictions for a pandas frame holding every column the assembler named."""
     x = frame[forest.feature_names].to_numpy(dtype=float)
-    return SUMS[WEIGHTED_SUM](tree_outputs(forest, x), forest.weights)
+    return SUMS[forest.summation](tree_outputs(forest, x), forest.weights)
 
 
 def verify(out: Path) -> dict:

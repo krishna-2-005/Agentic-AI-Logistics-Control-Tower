@@ -39,7 +39,8 @@ log = get_logger("ml.predict")
 
 #: The model every answer names. Restated from `src.ml.serving` so this module's
 #: Spark-free half imports without loading a model; a test pins the two together.
-MODEL_ID = "v2_gbt_residual_absolute_step1"
+SERVING_MODEL = os.environ.get("SERVING_MODEL", "v2_gbt")
+MODEL_ID = {"v2_gbt": "v2_gbt_residual_absolute_step1", "lightgbm_l1": "lightgbm_l1_residual_old_median"}[SERVING_MODEL]
 
 
 #: Every leg's fact event, in D-020 order -- read once per process. The legs are the
@@ -152,7 +153,9 @@ def _load_model():
     if _MODEL is None:
         from src.ml import serving
 
-        if ENGINE == "numpy":
+        if SERVING_MODEL == "lightgbm_l1":
+            _MODEL = serving.load_model()
+        elif ENGINE == "numpy":
             from src.ml import gbt_local
 
             forest_file = config.DATA_DIR / "serving" / "v2_forest.json.gz"
@@ -165,7 +168,7 @@ def _load_model():
 def _score(frame: pd.DataFrame) -> pd.DataFrame:
     from src.ml import serving
 
-    if ENGINE == "numpy":
+    if ENGINE == "numpy" or SERVING_MODEL == "lightgbm_l1":
         return serving.score_local(_load_model(), frame)
     return serving.score(predictor_spark(), _load_model(), frame)
 

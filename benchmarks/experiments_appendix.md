@@ -176,26 +176,38 @@ Every value below is read from a file in `benchmarks/raw/`, and every file has a
 | W10 | Rolling origin: bar minus old median, mean over folds | **-0.606** | min | `benchmarks/raw/b2_rolling_origin.json` | `python -m src.ml.rolling_origin` | Mounika |
 | W10 | Rolling origin: cold-leg MAE of the bar, mean over folds | **115.172** | min | `benchmarks/raw/b2_rolling_origin.json` | `python -m src.ml.rolling_origin` | Mounika |
 | W10 | Rolling origin: cold-leg MAE of the served model, mean over folds | **80.6016** | min | `benchmarks/raw/b2_rolling_origin.json` | `python -m src.ml.rolling_origin` | Mounika |
-| W11 | Power of BY over cell-permutation p-values at a planted shift of 1.0 | **0.0844** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
-| W11 | Power of BH over cell-permutation p-values at a planted shift of 1.0 | **0.1189** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
-| W11 | Power of BY over cell-permutation p-values at a planted shift of 0.5 | **0.0178** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
-| W11 | Power of BY over cell-permutation p-values, corridors with 25+ legs, shift 1.0 | **0.2133** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
-| W11 | Power of BY over cell-permutation p-values, corridors with 10-14 legs, shift 1.0 | **0.0067** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
-| W11 | False discovery proportion of Welch with BH at a planted shift of 0.5 | **0.9624** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
-| W11 | Planted corridors Welch with BH rejects when no effect is planted | **0.2456** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
-| W11 | Datasets with any BY permutation rejection when no effect is planted | **0.0** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
-| W11 | Null-bank vs 10^6 run: corridors classified differently under BY | **0** | corridors | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
-| W11 | Planning time index vs mean log ratio, Spearman | **0.8633428730590065** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Buffer index vs mean log ratio, Spearman | **0.31473816748813616** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Top-20 overlap, planning time index vs audit | **0.2903225806451613** | jaccard | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Top-20 overlap, buffer index vs audit | **0.0** | jaccard | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Half-to-half Spearman, mean log ratio | **0.9084462321904426** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Half-to-half Spearman, planning time index | **0.8142843457787591** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Half-to-half Spearman, buffer index | **0.5898088538179415** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Planning time index stability, interval low | **0.7809971921485479** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Planning time index stability, interval high | **0.8439189966321915** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Buffer index stability, interval low | **0.5385844028070912** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
-| W11 | Buffer index stability, interval high | **0.6376317982144666** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Power of BY over cell-permutation p-values at a planted shift of 1.0 | **0.0844** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
+| W10 | Power of BH over cell-permutation p-values at a planted shift of 1.0 | **0.1189** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
+| W10 | Power of BY over cell-permutation p-values at a planted shift of 0.5 | **0.0178** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
+| W10 | Power of BY over cell-permutation p-values, corridors with 25+ legs, shift 1.0 | **0.2133** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
+| W10 | Power of BY over cell-permutation p-values, corridors with 10-14 legs, shift 1.0 | **0.0067** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
+| W10 | False discovery proportion of Welch with BH at a planted shift of 0.5 | **0.9624** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
+| W10 | Planted corridors Welch with BH rejects when no effect is planted | **0.2456** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
+| W10 | Datasets with any BY permutation rejection when no effect is planted | **0.0** | share | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
+| W10 | Null-bank vs 10^6 run: corridors classified differently under BY | **0** | corridors | `benchmarks/raw/b9_power.json` | `python -m src.ml.audit_power` | Mounika |
+| W10 | Planning time index vs mean log ratio, Spearman | **0.8633428730590065** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Buffer index vs mean log ratio, Spearman | **0.31473816748813616** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Top-20 overlap, planning time index vs audit | **0.2903225806451613** | jaccard | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Top-20 overlap, buffer index vs audit | **0.0** | jaccard | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Half-to-half Spearman, mean log ratio | **0.9084462321904426** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Half-to-half Spearman, planning time index | **0.8142843457787591** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Half-to-half Spearman, buffer index | **0.5898088538179415** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Planning time index stability, interval low | **0.7809971921485479** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Planning time index stability, interval high | **0.8439189966321915** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Buffer index stability, interval low | **0.5385844028070912** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Buffer index stability, interval high | **0.6376317982144666** | rho | `benchmarks/raw/b11_reliability_indices.json` | `python -m src.ml.audit_indices` | Mounika |
+| W10 | Best Student-t degrees of freedom for the corridor prior, floor 10 | **3.0** | df | `benchmarks/raw/b10_eb_t.json` | `python -m src.ml.eb_t` | Mounika |
+| W10 | Log-likelihood gain of the t prior over the normal, floor 5 | **160.73115946236362** | log-lik | `benchmarks/raw/b10_eb_t.json` | `python -m src.ml.eb_t` | Mounika |
+| W10 | Log-likelihood gain of the t prior over the normal, floor 10 | **126.45544100087966** | log-lik | `benchmarks/raw/b10_eb_t.json` | `python -m src.ml.eb_t` | Mounika |
+| W10 | Top-20 overlap across floors, t-prior ranking | **0.1502136752136752** | jaccard | `benchmarks/raw/b10_eb_t.json` | `python -m src.ml.eb_t` | Mounika |
+| W10 | t-prior ranking minus raw ranking, top-20 overlap across floors | **0.049036511156186596** | jaccard | `benchmarks/raw/b10_eb_t.json` | `python -m src.ml.eb_t` | Mounika |
+| W10 | Share of distance from the mean kept for the top decile, t prior, floor 10 | **0.9569150879452756** | share | `benchmarks/raw/b10_eb_t.json` | `python -m src.ml.eb_t` | Mounika |
+| W10 | Share of distance from the mean kept for the top decile, normal prior, floor 10 | **0.9459556479537673** | share | `benchmarks/raw/b10_eb_t.json` | `python -m src.ml.eb_t` | Mounika |
+| W10 | Legs on which the numpy forest equals LightGBM exactly | **26,369** | legs | `benchmarks/raw/b13_lgbm_serving_equivalence.json` | `python -m src.ml.lgbm_export` | Mounika |
+| W10 | Legs scored in the equality check | **26,369** | legs | `benchmarks/raw/b13_lgbm_serving_equivalence.json` | `python -m src.ml.lgbm_export` | Mounika |
+| W10 | Legs the running stream scores identically to batch with LightGBM served | **26,369** | legs | `benchmarks/raw/b13_stream_validation_lgbm.json` | `SERVING_MODEL=lightgbm_l1 python -m src.streaming.validate_v2` | Mounika |
+| W10 | Legs scored by the running stream with LightGBM served | **26,369** | legs | `benchmarks/raw/b13_stream_validation_lgbm.json` | `SERVING_MODEL=lightgbm_l1 python -m src.streaming.validate_v2` | Mounika |
+| W10 | Stream test MAE with LightGBM served | **29.6578** | min | `benchmarks/raw/b13_stream_validation_lgbm.json` | `SERVING_MODEL=lightgbm_l1 python -m src.streaming.validate_v2` | Mounika |
 
 ## Reported elsewhere, not in the freeze
 

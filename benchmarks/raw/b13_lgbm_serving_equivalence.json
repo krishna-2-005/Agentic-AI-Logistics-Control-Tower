@@ -1,0 +1,17 @@
+{
+  "generated_at": "2026-10-24T04:14:39.587847+00:00",
+  "decision": "D-101",
+  "model": "lightgbm_l1_residual_old_median",
+  "settings": {
+    "objective": "l1",
+    "trees": 200,
+    "learning_rate": 0.03
+  },
+  "nodes": 16880,
+  "legs": 26369,
+  "refit_test_mae": 29.6578,
+  "summation": "sequential",
+  "identical_predictions": 26369,
+  "max_abs_difference_min": 0.0,
+  "verified_through": "data/serving/lgbm_forest.json.gz (the file the API and the stream read)"
+}

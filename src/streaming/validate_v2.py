@@ -48,12 +48,18 @@ from src.streaming.state import FEATURE_COLUMNS
 log = get_logger("streaming.validate_v2")
 
 WORK_DIR = config.STREAM_DIR / "validation_v2"
-REPORT_JSON = config.BENCHMARKS_RAW_DIR / "w10_stream_validation_v2.json"
-SAMPLE_CSV = config.BENCHMARKS_RAW_DIR / "w10_stream_equals_batch_v2.csv"
+#: Which model is validated follows `SERVING_MODEL` (D-101): the Spark v2 model writes the w10 files, the reported
+#: LightGBM model writes the b13 files, each against its own reported test MAE.
+if serving.SERVING_MODEL == "lightgbm_l1":
+    REPORT_JSON = config.BENCHMARKS_RAW_DIR / "b13_stream_validation_lgbm.json"
+    SAMPLE_CSV = config.BENCHMARKS_RAW_DIR / "b13_stream_equals_batch_lgbm.csv"
+else:
+    REPORT_JSON = config.BENCHMARKS_RAW_DIR / "w10_stream_validation_v2.json"
+    SAMPLE_CSV = config.BENCHMARKS_RAW_DIR / "w10_stream_equals_batch_v2.csv"
 
 #: The headline v2 figure, from `w7_model_metrics_v2_stepsize.csv` via the freeze. The
 #: stream's own predictions on the same test legs have to land on it.
-REPORTED_TEST_MAE = 30.90
+REPORTED_TEST_MAE = 29.66 if serving.SERVING_MODEL == "lightgbm_l1" else 30.90
 
 
 def write_ticks(events: list[dict], directory: Path, per_file: int) -> list[Path]:
@@ -174,7 +180,7 @@ def run(limit: int = 500, per_file: int = 4000, files_per_trigger: int = 2) -> d
     sample[["leg_id", "trip_creation_time", "baseline_median", "batch_prediction", "stream_prediction",
             "abs_difference"]].to_csv(SAMPLE_CSV, index=False)
     report = {
-        "model": f"{serving.MODEL_ID} (the reported model, D-050)",
+        "model": f"{serving.MODEL_ID} (served: SERVING_MODEL={serving.SERVING_MODEL})",
         "served_by_the_streaming_job": True,
         "history": "event-time state: applyInPandasWithState over five key types, watermark "
                    f"{job.WATERMARK_DELAY}, state persisted in the checkpoint's state store",

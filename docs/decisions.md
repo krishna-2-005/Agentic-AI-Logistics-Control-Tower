@@ -3484,3 +3484,23 @@ raises the mean pairwise top-20 Jaccard above the raw ranking's by more than 0.1
 the paper says shrinkage helps more once the prior is heavy-tailed; otherwise it says the D-081 reading is not an artefact of the
 normal prior. Either way the result is reported beside D-081.
 
+**Outcome (D-102, 2026-10-24).** `python -m src.ml.eb_t` (46 s). **The heavy-tailed prior fits far better:** the best degrees of freedom are
+3 at floor 5, 3 at floor 10 and 5 at floor 20 (normal at floor 30, where only 99 corridors remain), with log-likelihood gains over the normal
+prior of 161, 126, 6.6 and 0.0 (likelihood-ratio statistics 321 and 253 at the two lowest floors): the corridor effects are heavy-tailed, as suspected.
+**It does not change the ranking result.** Mean pairwise top-20 Jaccard across floors is 0.15 for the t-prior ranking, identical to
+the normal prior's 0.15 and +0.049 above the raw ranking's 0.10, well under the 0.10 the decision rule asked for. A heavy tail makes
+shrinkage *weaker* for the extreme corridors, not stronger: the share of the distance from the mean that the posterior keeps for the top decile is 0.96
+(t) against 0.95 (normal) at floor 10. The t-ranking keeps 10, 15, 18 and 19 of the raw top 20 at floors 5, 10, 20 and 30.
+By the rule fixed beforehand, **D-081's reading is not an artefact of the normal prior.** Limit: one scalar prior scale per floor, and
+the sampling variances are those of D-081 (no design-effect inflation).
+
+**Outcome (D-101, 2026-10-24).** Both pre-registered checks are **exact.** (3) The numpy reader reproduces `booster.predict` on 26,369 of 26,369 legs
+(largest difference 0.0), summing left to right in float64; the refit reproduces the zoo's test MAE (29.6578). (5) The running stream
+job, with `SERVING_MODEL=lightgbm_l1`, over the full 52,738-event replay in two halves across a restart, scores 26,369 of 26,369 legs identically to batch
+(largest difference 0.0, 0 history features differ on any leg), and its own test-split MAE is 29.6578. The first run took 176 s and the resumed
+run 154 s for 28,000 and 24,738 events. **The default is nevertheless left at Spark v2, on purpose:** the exception agent's measured precision (D-054, D-085), the 1,347 recorded alerts and the
+site's alert replay were all produced by v2's predictions, so switching the default would change what those numbers describe unless
+the replay and its evaluations were re-run and re-reported. The reported model is therefore *servable and proven exact*, one environment variable away
+(`SERVING_MODEL=lightgbm_l1`, forest shipped in `deploy/api/serving/`), and the paper states that the deployed and alert-evaluated path is v2.
+Re-running the alert chain under LightGBM is listed as open work, not done.
+

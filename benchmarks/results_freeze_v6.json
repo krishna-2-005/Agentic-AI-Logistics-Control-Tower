@@ -1,7 +1,7 @@
 {
-  "frozen_at": "2026-10-24T04:11:04.672050+00:00",
+  "frozen_at": "2026-10-24T04:24:30.269346+00:00",
   "layer": 1,
-  "n_values": 188,
+  "n_values": 200,
   "values": [
     {
       "id": "legs_total",
@@ -1506,10 +1506,109 @@
       "value": 0.6376317982144666,
       "unit": "rho",
       "source": "b11_reliability_indices.json"
+    },
+    {
+      "id": "ebt_best_nu_floor_ten",
+      "week": 10,
+      "label": "Best Student-t degrees of freedom for the corridor prior, floor 10",
+      "value": 3.0,
+      "unit": "df",
+      "source": "b10_eb_t.json"
+    },
+    {
+      "id": "ebt_loglik_gain_floor_five",
+      "week": 10,
+      "label": "Log-likelihood gain of the t prior over the normal, floor 5",
+      "value": 160.73115946236362,
+      "unit": "log-lik",
+      "source": "b10_eb_t.json"
+    },
+    {
+      "id": "ebt_loglik_gain_floor_ten",
+      "week": 10,
+      "label": "Log-likelihood gain of the t prior over the normal, floor 10",
+      "value": 126.45544100087966,
+      "unit": "log-lik",
+      "source": "b10_eb_t.json"
+    },
+    {
+      "id": "ebt_top_twenty_jaccard",
+      "week": 10,
+      "label": "Top-20 overlap across floors, t-prior ranking",
+      "value": 0.1502136752136752,
+      "unit": "jaccard",
+      "source": "b10_eb_t.json"
+    },
+    {
+      "id": "ebt_minus_raw",
+      "week": 10,
+      "label": "t-prior ranking minus raw ranking, top-20 overlap across floors",
+      "value": 0.049036511156186596,
+      "unit": "jaccard",
+      "source": "b10_eb_t.json"
+    },
+    {
+      "id": "ebt_retained_t",
+      "week": 10,
+      "label": "Share of distance from the mean kept for the top decile, t prior, floor 10",
+      "value": 0.9569150879452756,
+      "unit": "share",
+      "source": "b10_eb_t.json"
+    },
+    {
+      "id": "ebt_retained_normal",
+      "week": 10,
+      "label": "Share of distance from the mean kept for the top decile, normal prior, floor 10",
+      "value": 0.9459556479537673,
+      "unit": "share",
+      "source": "b10_eb_t.json"
+    },
+    {
+      "id": "lgbm_serve_identical",
+      "week": 10,
+      "label": "Legs on which the numpy forest equals LightGBM exactly",
+      "value": 26369,
+      "unit": "legs",
+      "source": "b13_lgbm_serving_equivalence.json"
+    },
+    {
+      "id": "lgbm_serve_legs",
+      "week": 10,
+      "label": "Legs scored in the equality check",
+      "value": 26369,
+      "unit": "legs",
+      "source": "b13_lgbm_serving_equivalence.json"
+    },
+    {
+      "id": "lgbm_stream_identical",
+      "week": 10,
+      "label": "Legs the running stream scores identically to batch with LightGBM served",
+      "value": 26369,
+      "unit": "legs",
+      "source": "b13_stream_validation_lgbm.json"
+    },
+    {
+      "id": "lgbm_stream_legs",
+      "week": 10,
+      "label": "Legs scored by the running stream with LightGBM served",
+      "value": 26369,
+      "unit": "legs",
+      "source": "b13_stream_validation_lgbm.json"
+    },
+    {
+      "id": "lgbm_stream_mae",
+      "week": 10,
+      "label": "Stream test MAE with LightGBM served",
+      "value": 29.6578,
+      "unit": "min",
+      "source": "b13_stream_validation_lgbm.json"
     }
   ],
   "source_hashes": {
+    "b10_eb_t.json": "3e7d1a8929b2945b",
     "b11_reliability_indices.json": "d7a36f08eb8de4dc",
+    "b13_lgbm_serving_equivalence.json": "ef9775ca3f051216",
+    "b13_stream_validation_lgbm.json": "415da3f818461e0c",
     "b1_backoff_baseline.json": "7e7f00d13c9dc8e0",
     "b1_model_v3.json": "58aa11a99347aa13",
     "b2_rolling_origin.json": "36ba8e88204404df",
