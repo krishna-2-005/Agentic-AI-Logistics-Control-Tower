@@ -3385,3 +3385,29 @@ by leg-count bin, and the realised false discovery proportion among non-planted 
 the smallest `delta` at which the headline variant (BY over permutation p-values) reaches 80% power in each bin, or says it
 never does within the grid. No result changes the headline of D-080; this only says what a zero means.
 
+## D-100 · Pre-registration: standard travel-time reliability indices against the audit — `DECIDED`
+**Post-v1.1 (upgrade B11) · Mounika · written before `src/ml/audit_indices.py` is run**
+
+**Why.** The freight-reliability literature (FHWA, SHRP 2) describes corridors with the **planning time index** (95th percentile
+of travel time over free-flow time) and the **buffer index** ((95th percentile minus mean) over mean). The paper cites them as
+the descriptive alternative to the audit but never computes them. A transport reviewer will ask whether the audit adds anything.
+
+**Definitions (on the ratio scale, because the leg table carries the log ratio `r` of realised over recorded OSRM time, with the
+recorded OSRM time standing in for free-flow time).** For each of the 1,130 corridors with at least 10 legs, with `q = exp(r)`:
+`PTI = P95(q)` and `BI = (P95(q) - mean(q)) / mean(q)`, percentile by linear interpolation. Both are computed on the same legs
+as the audit.
+
+**Questions and the quantities that answer them (fixed now).**
+1. *Do the indices rank corridors like the audit?* Spearman correlation across the 1,130 corridors of PTI and of BI with the
+   audit's mean log ratio; Jaccard overlap of the top 20 by PTI and of the top 20 by BI with the top 20 slower corridors of the
+   published audit (ranked by excess ratio among its significant slower corridors).
+2. *Are the indices stable?* On the two halves of the creation dates used in D-082 (12 and 11 dates), corridors with at least 5
+   legs in each half: Spearman correlation of PTI, of BI and of the raw mean log ratio between halves; top-20 Jaccard between
+   halves for each. A **bootstrap over corridors (2,000 resamples, seed 20261001)** gives 95% intervals for the three Spearman values.
+3. *Which is more stable, the index or the mean?* Report the three half-to-half Spearman values and their intervals; the paper
+   says "the buffer index is less stable than the mean" or the reverse only if the intervals separate; otherwise "no detectable
+   difference".
+
+**No decision rule changes** a headline; this places the audit in the literature the paper cites. Limits to state: legs of one
+service are correlated, so a percentile of 10 to 15 legs is a noisy statistic, and the percentile is not corrected for it.
+
