@@ -3504,3 +3504,12 @@ the replay and its evaluations were re-run and re-reported. The reported model i
 (`SERVING_MODEL=lightgbm_l1`, forest shipped in `deploy/api/serving/`), and the paper states that the deployed and alert-evaluated path is v2.
 Re-running the alert chain under LightGBM is listed as open work, not done.
 
+**Update to D-088 and D-089 (2026-10-24).** The ablation was resumed with one day of refilled free-tier quota (`--llm-verdict`, per-agent sizes
+`order:40,invoice:20,exception:16`, a new `--n` form because the subset a case belongs to depends on its size). Invoice audit went from 8 to
+14 completed cases and exception triage from 8 to 16; the order agent stays at 18. The run ended on HTTP 429 again (the 200,000-token daily
+cap), so the pre-registered 40 cases per agent are **still not reached** and the ablation remains a pilot. Results with the larger samples:
+invoice, rules 92.9% (13 of 14) and the model deciding 92.9% pooled (65 of 70 calls), no difference; exception triage, the model's grade equals the
+code's in 80 of 80 runs; order entry unchanged (rules 100%, not held out; model 87.8% [79.4, 93.0], difference -0.122 [-0.256, -0.022]).
+A defect found on the way: `agent_ablation` overwrote its result files with only the agents of the current run, which deleted the order results
+from `b7_agent_ablation.json` until they were rebuilt from the cache; the driver now merges instead (and its CSV keeps the rows of agents not re-run).
+

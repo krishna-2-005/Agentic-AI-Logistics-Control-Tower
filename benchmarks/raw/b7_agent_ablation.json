@@ -1,14 +1,135 @@
 {
-  "generated_at": "2026-10-24T09:58:49+05:30",
+  "generated_at": "2026-10-24T10:34:29+05:30",
   "pre_registered_in": "D-086",
   "provider": "groq",
   "model": "openai/gpt-oss-120b",
   "model_note": "open model on a free tier; NOT the Gemini model that writes the prose",
   "sampled_temperature": 0.7,
   "agents": {
+    "order": {
+      "agent": "order",
+      "subset_n": 40,
+      "full_set_n": 200,
+      "full_set_deterministic": {
+        "successes": 200,
+        "total": 200,
+        "rate": 1.0,
+        "ci_low": 0.9812,
+        "ci_high": 1.0
+      },
+      "deterministic_on_full_subset": {
+        "successes": 40,
+        "total": 40,
+        "rate": 1.0,
+        "ci_low": 0.9124,
+        "ci_high": 1.0
+      },
+      "n_cases": 18,
+      "strata": {
+        "attachment": 1,
+        "city_only": 1,
+        "contradiction": 1,
+        "correction": 1,
+        "hinglish": 1,
+        "injection": 1,
+        "missing_pieces": 1,
+        "missing_weight": 1,
+        "no_service": 1,
+        "pieces_in_words": 1,
+        "pounds": 1,
+        "prose": 1,
+        "quoted_thread": 1,
+        "subject_only": 1,
+        "table": 1,
+        "tonnes": 1,
+        "two_consignments": 1,
+        "vague_origin": 1
+      },
+      "deterministic": {
+        "accuracy": {
+          "successes": 18,
+          "total": 18,
+          "rate": 1.0,
+          "ci_low": 0.8241,
+          "ci_high": 1.0
+        },
+        "unanimity_across_5_runs": {
+          "rate": 1.0,
+          "note": "pure function; verified by double run in tests"
+        }
+      },
+      "llm_sampled_T0.7": {
+        "pooled_accuracy_5_runs": {
+          "successes": 79,
+          "total": 90,
+          "rate": 0.8778,
+          "ci_low": 0.7943,
+          "ci_high": 0.9304
+        },
+        "mean_per_run_accuracy": 0.8778,
+        "unanimity": {
+          "successes": 15,
+          "total": 18,
+          "rate": 0.8333,
+          "ci_low": 0.6078,
+          "ci_high": 0.9416
+        },
+        "fleiss_kappa": 0.8199999999999997
+      },
+      "llm_T0": {
+        "accuracy_run_a": {
+          "successes": 15,
+          "total": 18,
+          "rate": 0.8333,
+          "ci_low": 0.6078,
+          "ci_high": 0.9416
+        },
+        "determinism_same_verdict_across_two_runs": {
+          "successes": 17,
+          "total": 18,
+          "rate": 0.9444,
+          "ci_low": 0.7424,
+          "ci_high": 0.9901
+        }
+      },
+      "parse_or_schema_errors": {
+        "count": 0,
+        "of_calls": 126
+      },
+      "latency_s": {
+        "mean": 10.86,
+        "p95": 49.9
+      },
+      "tokens_per_call_mean": 1178.2,
+      "difference_llm_minus_deterministic": {
+        "difference": -0.1222,
+        "ci_low": -0.2556,
+        "ci_high": -0.0219,
+        "cases": 18,
+        "resamples": 5000,
+        "seed": 8603
+      },
+      "llm_invented_value_rate": {
+        "successes": 6,
+        "total": 50,
+        "rate": 0.12,
+        "ci_low": 0.0562,
+        "ci_high": 0.238
+      },
+      "deterministic_orders_with_invented_values": 0,
+      "llm_clarification_recall": {
+        "successes": 39,
+        "total": 45,
+        "rate": 0.8667,
+        "ci_low": 0.7382,
+        "ci_high": 0.9374
+      },
+      "cases_completed": 18,
+      "halted_by_provider_limit": "cache-only run: response not in the cache"
+    },
     "invoice": {
       "agent": "invoice",
-      "subset_n": 10,
+      "subset_n": 20,
       "full_set_n": 200,
       "full_set_deterministic": {
         "successes": 180,
@@ -18,18 +139,18 @@
         "ci_high": 0.9343
       },
       "deterministic_on_full_subset": {
-        "successes": 9,
-        "total": 10,
+        "successes": 18,
+        "total": 20,
         "rate": 0.9,
-        "ci_low": 0.5958,
-        "ci_high": 0.9821
+        "ci_low": 0.699,
+        "ci_high": 0.9721
       },
-      "n_cases": 10,
+      "n_cases": 14,
       "strata": {
-        "clean": 1,
-        "duplicate_number": 1,
-        "excessive_other": 1,
-        "foreign_currency": 1,
+        "clean": 2,
+        "duplicate_number": 2,
+        "excessive_other": 2,
+        "foreign_currency": 2,
         "other_at_edge": 1,
         "overcharge_gross": 1,
         "overcharge_hidden": 1,
@@ -39,11 +160,11 @@
       },
       "deterministic": {
         "accuracy": {
-          "successes": 9,
-          "total": 10,
-          "rate": 0.9,
-          "ci_low": 0.5958,
-          "ci_high": 0.9821
+          "successes": 13,
+          "total": 14,
+          "rate": 0.9286,
+          "ci_low": 0.6853,
+          "ci_high": 0.9873
         },
         "unanimity_across_5_runs": {
           "rate": 1.0,
@@ -52,72 +173,72 @@
       },
       "llm_sampled_T0.7": {
         "pooled_accuracy_5_runs": {
-          "successes": 45,
-          "total": 50,
-          "rate": 0.9,
-          "ci_low": 0.7864,
-          "ci_high": 0.9565
+          "successes": 65,
+          "total": 70,
+          "rate": 0.9286,
+          "ci_low": 0.8434,
+          "ci_high": 0.9691
         },
-        "mean_per_run_accuracy": 0.9,
+        "mean_per_run_accuracy": 0.9286,
         "unanimity": {
-          "successes": 10,
-          "total": 10,
+          "successes": 14,
+          "total": 14,
           "rate": 1.0,
-          "ci_low": 0.7225,
+          "ci_low": 0.7847,
           "ci_high": 1.0
         },
         "fleiss_kappa": 1.0
       },
       "llm_T0": {
         "accuracy_run_a": {
-          "successes": 9,
-          "total": 10,
-          "rate": 0.9,
-          "ci_low": 0.5958,
-          "ci_high": 0.9821
+          "successes": 13,
+          "total": 14,
+          "rate": 0.9286,
+          "ci_low": 0.6853,
+          "ci_high": 0.9873
         },
         "determinism_same_verdict_across_two_runs": {
-          "successes": 10,
-          "total": 10,
+          "successes": 14,
+          "total": 14,
           "rate": 1.0,
-          "ci_low": 0.7225,
+          "ci_low": 0.7847,
           "ci_high": 1.0
         }
       },
       "parse_or_schema_errors": {
         "count": 0,
-        "of_calls": 70
+        "of_calls": 98
       },
       "latency_s": {
-        "mean": 8.22,
-        "p95": 42.52
+        "mean": 9.51,
+        "p95": 52.67
       },
-      "tokens_per_call_mean": 1124.9,
+      "tokens_per_call_mean": 1103.8,
       "difference_llm_minus_deterministic": {
         "difference": 0.0,
         "ci_low": 0.0,
         "ci_high": 0.0,
-        "cases": 10,
+        "cases": 14,
         "resamples": 5000,
         "seed": 8603
       },
       "llm_dispute_recall": {
-        "successes": 30,
-        "total": 35,
-        "rate": 0.8571,
-        "ci_low": 0.7062,
-        "ci_high": 0.9374
+        "successes": 45,
+        "total": 50,
+        "rate": 0.9,
+        "ci_low": 0.7864,
+        "ci_high": 0.9565
       },
       "llm_false_disputes": 0,
       "llm_right_reason": {
-        "successes": 30,
-        "total": 35,
-        "rate": 0.8571,
-        "ci_low": 0.7062,
-        "ci_high": 0.9374
+        "successes": 45,
+        "total": 50,
+        "rate": 0.9,
+        "ci_low": 0.7864,
+        "ci_high": 0.9565
       },
-      "cases_completed": 10,
-      "halted_by_provider_limit": null
+      "cases_completed": 14,
+      "halted_by_provider_limit": "cache-only run: response not in the cache"
     },
     "exception": {
       "agent": "exception",
@@ -219,7 +340,7 @@
   },
   "cost": {
     "free_tier_cost_usd": 0.0,
-    "paid_equivalent_usd_per_1000_verdicts_ESTIMATE": 0.1814,
+    "paid_equivalent_usd_per_1000_verdicts_ESTIMATE": 0.2312,
     "assumed_price_usd_per_million_tokens_input_output": [
       0.15,
       0.6

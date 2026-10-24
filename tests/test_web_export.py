@@ -162,14 +162,23 @@ def _headline(out: Path) -> dict:
     return json.loads((out / "model.json").read_text(encoding="utf-8"))["data"]["headline"]
 
 
-def test_backoff_bar_is_exported_only_when_the_freeze_has_the_key(tmp_path: Path) -> None:
+def test_the_backoff_bar_and_the_reported_model_come_from_the_freeze(tmp_path: Path) -> None:
     freeze = ew._load_freeze()
     ew.export_model(tmp_path / "a", freeze)
-    assert ("backoff_mae_min" in _headline(tmp_path / "a")) == ("backoff_mae_min" in freeze)
+    head = _headline(tmp_path / "a")
+    assert head["backoff_mae_min"] == round(freeze["bar_backoff_mae"]["value"], 2)
+    assert head["reported_mae_min"] == round(freeze["reported_mae"]["value"], 2)
+    assert head["rolling_folds_reported"] == freeze["ro_zoo_beats_bar_folds"]["value"]
 
-    with_key = dict(freeze, backoff_mae_min={"id": "backoff_mae_min", "value": 31.5})
-    ew.export_model(tmp_path / "b", with_key)
+    moved = dict(freeze, bar_backoff_mae=dict(freeze["bar_backoff_mae"], value=31.5))
+    ew.export_model(tmp_path / "b", moved)
     assert _headline(tmp_path / "b")["backoff_mae_min"] == 31.5
+
+
+def test_the_export_refuses_a_freeze_without_the_bar(tmp_path: Path) -> None:
+    freeze = {k: v for k, v in ew._load_freeze().items() if k != "bar_backoff_mae"}
+    with pytest.raises(KeyError, match="bar_backoff_mae"):
+        ew.export_model(tmp_path / "c", freeze)
 
 
 def test_q_values_keep_significant_figures() -> None:

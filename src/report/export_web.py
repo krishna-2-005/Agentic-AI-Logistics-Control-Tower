@@ -349,6 +349,12 @@ def export_overview(out: Path, freeze: dict) -> tuple[str, int]:
         "share_above_clip": _num(float((ratio > 8.0).mean()), 4),
         "histogram": histogram,
         "clip_at": 8.0,
+        # The audit as the dependence-aware study found it (D-080, D-099, D-082): the list is a screening list.
+        "audit_robust_slower": int(_need(freeze, "audit_robust_headline_slower")),
+        "audit_placebo_discoveries": _num(_need(freeze, "audit_placebo_discoveries"), 0),
+        "audit_welch_fdp": _num(_need(freeze, "power_welch_bh_fdp_shift_half"), 3),
+        "audit_cluster_power_shift_one": _num(_need(freeze, "power_by_perm_shift_one"), 3),
+        "stability_spearman": _num(_need(freeze, "stability_spearman"), 2),
     }
     return _write(
         out, "overview.json",
@@ -608,8 +614,15 @@ def export_model(out: Path, freeze: dict) -> tuple[str, int]:
     # The hierarchical back-off baseline lands in a later freeze. The key is optional
     # on purpose and only this one: when it exists the Evidence page shows the bar,
     # when it does not the page says nothing about it.
-    if "backoff_mae_min" in freeze:
-        headline["backoff_mae_min"] = _num(freeze["backoff_mae_min"]["value"], 2)
+    headline["backoff_mae_min"] = _num(_need(freeze, "bar_backoff_mae"), 2)
+    headline["reported_mae_min"] = _num(_need(freeze, "reported_mae"), 2)
+    headline["reported_vs_bar_min"] = _num(_need(freeze, "reported_vs_bar_delta"), 2)
+    headline["reported_vs_bar_ci"] = [_num(_need(freeze, "reported_vs_bar_ci_low"), 2),
+                                      _num(_need(freeze, "reported_vs_bar_ci_high"), 2)]
+    headline["served_vs_bar_min"] = _num(_need(freeze, "served_vs_bar_delta"), 2)
+    headline["rolling_folds_reported"] = int(_need(freeze, "ro_zoo_beats_bar_folds"))
+    headline["rolling_folds_served"] = int(_need(freeze, "ro_served_beats_bar_folds"))
+    headline["rolling_folds_total"] = int(_need(freeze, "ro_folds"))
     if proven:
         headline.update({
             "served_model": "v2_gbt_residual_absolute_step1",

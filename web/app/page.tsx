@@ -42,7 +42,7 @@ export default function HomePage() {
       <section className="mb-14 animate-fade-up">
         <Pill tone="accent" className="mb-5">
           <span className="inline-block h-1.5 w-1.5 animate-pulse-dot rounded-full bg-[var(--accent)]" />
-          {num(o.corridors_tested)} corridors tested · FDR 5%
+          {num(o.corridors_tested)} corridors screened · a screening list, not a verdict
         </Pill>
 
         <h1 className="max-w-4xl text-balance text-4xl font-semibold leading-[1.1] tracking-tight sm:text-5xl lg:text-[3.4rem]">
@@ -53,8 +53,9 @@ export default function HomePage() {
         <p className="mt-5 max-w-2xl text-pretty text-lg leading-relaxed text-[var(--ink-muted)]">
           The dataset records an OSRM routing estimate of how long every
           freight leg should take. Across {num(o.legs)} real legs it is wrong in
-          one direction almost every time — so we found{" "}
-          <strong className="font-semibold text-[var(--ink)]">exactly where</strong>.
+          one direction almost every time — so we asked{" "}
+          <strong className="font-semibold text-[var(--ink)]">where it concentrates</strong>, and how sure
+          we can honestly be.
         </p>
 
         <div className="mt-7 flex flex-wrap gap-3">
@@ -81,7 +82,7 @@ export default function HomePage() {
       {/* ── four headline numbers ──────────────────────────────────────── */}
       <Section
         title="The finding"
-        description="If the error were random it would cancel out across a corridor. It does not, so it is systematic, and the audit asks where it sits."
+        description="If the error were random it would cancel out across a corridor. It does not, so it is systematic. The standard audit flags many corridors, but a stricter test and a placebo say how much of that list to trust."
       >
         <KpiRow>
           <Kpi
@@ -93,21 +94,21 @@ export default function HomePage() {
           />
           <Kpi
             value={num(o.bottlenecks)}
-            label="corridors significantly slower"
-            sub={`of ${num(o.corridors_tested)} tested, at a 5% false discovery rate`}
-            file="benchmarks/raw/w2_corridor_audit.csv"
+            label="flagged slower by the standard test"
+            sub={`a screening list: the same test on placebo data finds about ${num(o.audit_placebo_discoveries)}, and the dependence-aware test confirms ${num(o.audit_robust_slower)}`}
+            file="benchmarks/raw/b3_audit_robust.json"
           />
           <Kpi
-            value={num(o.faster_corridors)}
-            label="corridors significantly faster"
-            sub="The OSRM estimate is not uniformly optimistic — it is wrong in both directions."
-            file="benchmarks/raw/w2_corridor_audit.csv"
+            value={num(o.stability_spearman, 2)}
+            label="rank correlation between halves"
+            sub="Corridor effects persist across the two halves of the period, even though no single corridor is confirmed."
+            file="benchmarks/raw/b5_stability.json"
           />
           <Kpi
-            value={`${num(model.data.headline.mae_min, 2)} min`}
-            label="best model error"
-            sub={`against a ${num(model.data.headline.baseline_mae_min, 2)}-minute per-corridor median baseline`}
-            file="benchmarks/raw/w7_model_metrics_v2_stepsize.csv"
+            value={`${num(model.data.headline.reported_mae_min, 2)} min`}
+            label="reported model error"
+            sub={`against a ${num(model.data.headline.backoff_mae_min, 2)}-minute back-off baseline (${num(model.data.headline.reported_vs_bar_min, 2)} min, interval ${num(model.data.headline.reported_vs_bar_ci?.[0], 2)} to ${num(model.data.headline.reported_vs_bar_ci?.[1], 2)})`}
+            file="benchmarks/raw/b2_significance.json"
           />
         </KpiRow>
       </Section>
@@ -149,11 +150,12 @@ export default function HomePage() {
               <>
                 Every corridor with at least ten legs is tested against the rest
                 of the network — Welch&apos;s t-test on log time ratios, with
-                Benjamini–Hochberg control at 5%. That turns &ldquo;this corridor
-                looks unreliable&rdquo; into a false-discovery-controlled claim.
+                Benjamini–Hochberg control at 5%. That is a screening step: legs of one
+                recurring service are correlated, so a dependence-aware test and a
+                power study say how far to trust it.
               </>
             }
-            stat={`${num(o.bottlenecks)} slower · ${num(o.faster_corridors)} faster`}
+            stat={`${num(o.bottlenecks)} flagged · ${num(o.audit_robust_slower)} confirmed`}
             href="/corridors/"
             cta="See the audit"
           />

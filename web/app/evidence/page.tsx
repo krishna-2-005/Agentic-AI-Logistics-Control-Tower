@@ -100,7 +100,7 @@ export default function EvidencePage() {
       </Section>
 
       <Section
-        title="Two baselines, and why the median is the bar"
+        title="Three baselines, and why the back-off median is the bar"
         description="A model is only as impressive as the simple rule it beats."
       >
         <Card>
@@ -117,16 +117,23 @@ export default function EvidencePage() {
                 Median, {num(h.baseline_mae_min, 2)} min:
               </strong>{" "}
               predict each corridor&apos;s median past delay. Mean absolute error
-              is smallest at the median, so this is the fair bar the model has to
-              clear.
+              is smallest at the median, but this version predicts 0.0 minutes
+              for a corridor with no history, which handicaps it.
             </li>
             {h.backoff_mae_min != null && (
               <li>
                 <strong className="text-[var(--ink)]">
-                  Hierarchical back-off, {num(h.backoff_mae_min, 2)} min:
+                  Hierarchical back-off, {num(h.backoff_mae_min, 2)} min — the bar:
                 </strong>{" "}
-                the median, falling back to coarser groups rather than to the
-                OSRM estimate when a corridor has no history.
+                the median, falling back to the origin hub, the destination hub,
+                the route type and distance band, then the network, rather than
+                to the OSRM estimate, when a corridor has no history. The reported
+                model scores {num(h.reported_mae_min, 2)} min
+                ({num(h.reported_vs_bar_min, 2)}, interval{" "}
+                {num(h.reported_vs_bar_ci?.[0], 2)} to {num(h.reported_vs_bar_ci?.[1], 2)}) and beats it in{" "}
+                {h.rolling_folds_reported} of {h.rolling_folds_total} rolling folds; the Spark model the
+                stream runs scores {num(h.mae_min, 2)} ({num(h.served_vs_bar_min, 2)}) and beats it in{" "}
+                {h.rolling_folds_served} of {h.rolling_folds_total}.
               </li>
             )}
           </ul>

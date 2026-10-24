@@ -224,3 +224,26 @@ def test_ledger_from_cache_counts_one_call_per_file(tmp_path):
     ab.cached_call("exception", "c0", "s0", 0.7, "p", fake, ab.Ledger(), cache_dir=tmp_path)  # cache hit
     out = ab.ledger_from_cache(tmp_path)
     assert out["live_calls"] == 3 and out["input_tokens"] == 30 and out["by_agent"]["exception"]["live_calls"] == 3
+
+
+def test_parse_n_accepts_one_size_or_one_per_agent():
+    from src.ml.agent_ablation import parse_n
+
+    assert parse_n("40", ["order", "invoice"]) == {"order": 40, "invoice": 40}
+    assert parse_n("order:40,invoice:20", ["order", "invoice"]) == {"order": 40, "invoice": 20}
+    with pytest.raises(ValueError, match="exception"):
+        parse_n("order:40", ["order", "exception"])
+
+
+def test_the_cases_csv_keeps_the_rows_of_agents_that_were_not_rerun(tmp_path):
+    import csv
+
+    from src.ml.agent_ablation import write_cases_csv
+
+    path = tmp_path / "cases.csv"
+    header = "agent,case_id,stratum,det_verdict,det_correct,x\n"
+    path.write_text(header + "order,o1,s,v,1,x\ninvoice,i1,s,v,1,x\n", encoding="utf-8")
+    write_cases_csv(path, {"invoice": ([], {})})  # re-running invoice with no completed cases
+    with path.open(newline="", encoding="utf-8") as fh:
+        agents = [row[0] for row in list(csv.reader(fh))[1:]]
+    assert agents == ["order"]

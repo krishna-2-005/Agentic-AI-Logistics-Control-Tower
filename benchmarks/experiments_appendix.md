@@ -208,6 +208,11 @@ Every value below is read from a file in `benchmarks/raw/`, and every file has a
 | W10 | Legs the running stream scores identically to batch with LightGBM served | **26,369** | legs | `benchmarks/raw/b13_stream_validation_lgbm.json` | `SERVING_MODEL=lightgbm_l1 python -m src.streaming.validate_v2` | Mounika |
 | W10 | Legs scored by the running stream with LightGBM served | **26,369** | legs | `benchmarks/raw/b13_stream_validation_lgbm.json` | `SERVING_MODEL=lightgbm_l1 python -m src.streaming.validate_v2` | Mounika |
 | W10 | Stream test MAE with LightGBM served | **29.6578** | min | `benchmarks/raw/b13_stream_validation_lgbm.json` | `SERVING_MODEL=lightgbm_l1 python -m src.streaming.validate_v2` | Mounika |
+| W10 | Invoice cases in the ablation pilot | **14** | cases | `benchmarks/raw/b7_agent_ablation.json` | `python -m src.ml.agent_ablation --llm-verdict (resumable; --cache-only rebuilds)` | Krishna |
+| W10 | Invoice, rules, accuracy on the pilot cases | **0.9286** | share | `benchmarks/raw/b7_agent_ablation.json` | `python -m src.ml.agent_ablation --llm-verdict (resumable; --cache-only rebuilds)` | Krishna |
+| W10 | Invoice, model decides, pooled over 5 runs | **0.9286** | share | `benchmarks/raw/b7_agent_ablation.json` | `python -m src.ml.agent_ablation --llm-verdict (resumable; --cache-only rebuilds)` | Krishna |
+| W10 | Exception cases in the ablation pilot | **16** | cases | `benchmarks/raw/b7_agent_ablation.json` | `python -m src.ml.agent_ablation --llm-verdict (resumable; --cache-only rebuilds)` | Krishna |
+| W10 | Exception, model's grade equals the code's grade, pooled over 5 runs | **1.0** | share | `benchmarks/raw/b7_agent_ablation.json` | `python -m src.ml.agent_ablation --llm-verdict (resumable; --cache-only rebuilds)` | Krishna |
 
 ## Reported elsewhere, not in the freeze
 

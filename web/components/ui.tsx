@@ -200,9 +200,10 @@ export function SeverityBadge({
         "border",
         className
       )}
+      // The colour marks the dot and the border only. Text in the severity colour was unreadable on the dark theme
+      // (the darkest bins measured a contrast ratio of 1.3 to 1.4 against 4.5 required), and the word carries the meaning anyway.
       style={{
-        color,
-        borderColor: `${color}55`,
+        borderColor: `${color}88`,
         background: `${color}14`,
       }}
     >

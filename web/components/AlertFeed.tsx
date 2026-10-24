@@ -125,8 +125,7 @@ export function AlertFeed({ sample }: { sample: AlertsSample }) {
               key={s}
               className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium"
               style={{
-                color: SEVERITY_STYLE[s].color,
-                borderColor: `${SEVERITY_STYLE[s].color}66`,
+                borderColor: `${SEVERITY_STYLE[s].color}99`,
                 background: `${SEVERITY_STYLE[s].color}14`,
               }}
             >
@@ -162,10 +161,7 @@ export function AlertFeed({ sample }: { sample: AlertsSample }) {
                   <Td>
                     <span
                       className="inline-flex items-center gap-1.5 rounded-md px-1.5 py-0.5 text-[11px] font-medium"
-                      style={{
-                        color: style.color,
-                        background: `${style.color}18`,
-                      }}
+                      style={{ background: `${style.color}33` }}
                     >
                       <span
                         aria-hidden

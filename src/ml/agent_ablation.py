@@ -524,10 +524,28 @@ def ledger_from_cache(cache_dir: Path | None = None, model: str | None = None) -
     return totals
 
 
+def parse_n(spec: str, agents: list[str]) -> dict[str, int]:
+    """`40` for every agent, or `order:40,invoice:20,exception:16` per agent. The subset a case belongs to depends on its size,
+    so an agent's cached cases are only reused by asking for the same size again."""
+    if ":" not in spec:
+        return dict.fromkeys(agents, int(spec))
+    by_agent = {k.strip(): int(v) for k, v in (part.split(":") for part in spec.split(",") if part)}
+    missing = [a for a in agents if a not in by_agent]
+    if missing:
+        raise ValueError(f"--n names no size for {missing}")
+    return by_agent
+
+
 def write_cases_csv(path: Path, all_cases: dict[str, tuple[list[AblationCase], dict]]) -> None:
+    """The per-case table. Rows of agents that were not part of this run are kept, not dropped."""
+    kept: list[list[str]] = []
+    if path.exists():
+        with path.open(newline="", encoding="utf-8") as old:
+            kept = [row for row in list(csv.reader(old))[1:] if row and row[0] not in all_cases]
     with path.open("w", newline="", encoding="utf-8") as fh:
         writer = csv.writer(fh)
         writer.writerow(["agent", "case_id", "stratum", "det_verdict", "det_correct", *ALL_RUNS, "llm_correct_of_5", "unanimous_5"])
+        writer.writerows(kept)
         for agent, (cases, runs) in all_cases.items():
             for c in cases:
                 got = runs.get(c.case_id)
@@ -634,7 +652,7 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--llm-verdict", action="store_true", help="also run the LLM-decides arm (cached)")
     ap.add_argument("--agents", default="order,invoice,exception")
-    ap.add_argument("--n", type=int, default=40, help="cases per agent in the LLM subset")
+    ap.add_argument("--n", default="40", help="cases per agent in the LLM subset: 40, or order:40,invoice:20,exception:16")
     ap.add_argument("--hard-sets", action="store_true", help="run the held-out hard sets once at T=0 (needs --llm-verdict)")
     ap.add_argument("--limit", type=int, default=None, help="cap on hard-set cases per agent (balanced prefix)")
     ap.add_argument("--stop-after-min", type=float, default=None,
@@ -670,7 +688,8 @@ def main() -> int:
                      "sampled_temperature": SAMPLED_TEMPERATURE, "agents": {}}
     csv_data = {}
     agents = [a for a in args.agents.split(",") if a]
-    built = {agent: BUILDERS[agent](args.n) for agent in agents}
+    sizes = parse_n(args.n, agents)
+    built = {agent: BUILDERS[agent](sizes[agent]) for agent in agents}
     all_runs: dict[str, dict[str, dict]] = {agent: {} for agent in agents}
     halted_by: dict[str, str | None] = dict.fromkeys(agents)
     stop_at = time.monotonic() + args.stop_after_min * 60 if args.stop_after_min else None
@@ -712,6 +731,10 @@ def main() -> int:
             **cost_estimate(Ledger(calls=live["live_calls"], input_tokens=live["input_tokens"],
                                    output_tokens=live["output_tokens"]))}, indent=2), encoding="utf-8")
         write_cases_csv(OUT_CSV, csv_data)
+    if OUT_JSON.exists():  # an earlier run of other agents must not be erased by this one
+        earlier = json.loads(OUT_JSON.read_text(encoding="utf-8")).get("agents", {})
+        for agent, entry in earlier.items():
+            summary["agents"].setdefault(agent, entry)
     OUT_JSON.write_text(json.dumps(summary, indent=2, default=str), encoding="utf-8")
     print(f"wrote {OUT_JSON.name}; live key present: {bool(os.environ.get('GROQ_API_KEY'))}")
     return 0

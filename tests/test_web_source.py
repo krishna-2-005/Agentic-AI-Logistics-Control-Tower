@@ -149,3 +149,14 @@ def test_order_entry_success_carries_its_n(evidence) -> None:
 def test_the_56_million_rows_are_labelled_as_proxy_aggregation_only(evidence) -> None:
     label = evidence["scale_rows"]["label"].lower()
     assert "proxy" in label and "aggregation" in label
+
+
+def test_the_audit_is_presented_as_a_screening_list_not_as_confirmed_bottlenecks():
+    """The dependence-aware study (D-080, D-099) made the 273 a screening list; the site must not say otherwise."""
+    root = WEB / "app"
+    home = (root / "page.tsx").read_text(encoding="utf-8")
+    corridors = (root / "corridors" / "page.tsx").read_text(encoding="utf-8")
+    assert "exactly where" not in home
+    assert "significantly slower" not in home.replace("flagged slower", "")
+    assert "screening" in home and "screening" in corridors
+    assert "audit_robust_slower" in home and "audit_placebo_discoveries" in corridors

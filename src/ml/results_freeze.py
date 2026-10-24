@@ -543,6 +543,16 @@ ENTRIES: list[tuple[str, int, str, str, str, Callable[[], Any]]] = [
      "b13_stream_validation_lgbm.json", lambda: _json("b13_stream_validation_lgbm.json")["all_legs"]["legs"]),
     ("lgbm_stream_mae", 10, "Stream test MAE with LightGBM served", "min",
      "b13_stream_validation_lgbm.json", lambda: _json("b13_stream_validation_lgbm.json")["test_split"]["stream_mae_min"]),
+    ("ablation_invoice_cases", 10, "Invoice cases in the ablation pilot", "cases",
+     "b7_agent_ablation.json", lambda: _json("b7_agent_ablation.json")["agents"]["invoice"]["n_cases"]),
+    ("ablation_invoice_rules_accuracy", 10, "Invoice, rules, accuracy on the pilot cases", "share",
+     "b7_agent_ablation.json", lambda: _json("b7_agent_ablation.json")["agents"]["invoice"]["deterministic"]["accuracy"]["rate"]),
+    ("ablation_invoice_llm_accuracy", 10, "Invoice, model decides, pooled over 5 runs", "share",
+     "b7_agent_ablation.json", lambda: _json("b7_agent_ablation.json")["agents"]["invoice"]["llm_sampled_T0.7"]["pooled_accuracy_5_runs"]["rate"]),
+    ("ablation_exception_cases", 10, "Exception cases in the ablation pilot", "cases",
+     "b7_agent_ablation.json", lambda: _json("b7_agent_ablation.json")["agents"]["exception"]["n_cases"]),
+    ("ablation_exception_agreement", 10, "Exception, model's grade equals the code's grade, pooled over 5 runs", "share",
+     "b7_agent_ablation.json", lambda: _json("b7_agent_ablation.json")["agents"]["exception"]["llm_exact_agreement_with_code_grade"]["rate"]),
 ]
 
 

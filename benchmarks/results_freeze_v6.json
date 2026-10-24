@@ -1,7 +1,7 @@
 {
-  "frozen_at": "2026-10-24T04:24:30.269346+00:00",
+  "frozen_at": "2026-10-24T05:05:13.563020+00:00",
   "layer": 1,
-  "n_values": 200,
+  "n_values": 205,
   "values": [
     {
       "id": "legs_total",
@@ -1602,6 +1602,46 @@
       "value": 29.6578,
       "unit": "min",
       "source": "b13_stream_validation_lgbm.json"
+    },
+    {
+      "id": "ablation_invoice_cases",
+      "week": 10,
+      "label": "Invoice cases in the ablation pilot",
+      "value": 14,
+      "unit": "cases",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "ablation_invoice_rules_accuracy",
+      "week": 10,
+      "label": "Invoice, rules, accuracy on the pilot cases",
+      "value": 0.9286,
+      "unit": "share",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "ablation_invoice_llm_accuracy",
+      "week": 10,
+      "label": "Invoice, model decides, pooled over 5 runs",
+      "value": 0.9286,
+      "unit": "share",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "ablation_exception_cases",
+      "week": 10,
+      "label": "Exception cases in the ablation pilot",
+      "value": 16,
+      "unit": "cases",
+      "source": "b7_agent_ablation.json"
+    },
+    {
+      "id": "ablation_exception_agreement",
+      "week": 10,
+      "label": "Exception, model's grade equals the code's grade, pooled over 5 runs",
+      "value": 1.0,
+      "unit": "share",
+      "source": "b7_agent_ablation.json"
     }
   ],
   "source_hashes": {
@@ -1621,7 +1661,7 @@
     "b5_stability.json": "2fcfce876063f2a4",
     "b6_feature_ablation.json": "42f97265d229853c",
     "b6_model_zoo.json": "344478c7c68eec98",
-    "b7_agent_ablation.json": "39eb25469be9e855",
+    "b7_agent_ablation.json": "b11db77a18882b0b",
     "b7_hard_sets_deterministic.json": "b6bc242b3aae712c",
     "b8_exception_stats.json": "e80626bd149006a4",
     "b9_power.json": "4cb25fdb7bd79ac8",

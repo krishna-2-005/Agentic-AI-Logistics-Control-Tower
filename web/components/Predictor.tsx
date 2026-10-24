@@ -151,7 +151,7 @@ export function Predictor({ corridors }: { corridors: Option[] }) {
               <span className="min-w-0 truncate">
                 {c.label}
                 {c.hint && (
-                  <span className="ml-1.5 font-mono text-[10px] text-[var(--ink-faint)]">
+                  <span className="ml-1.5 font-mono text-[10px] text-[var(--ink-muted)]">
                     {c.hint}
                   </span>
                 )}

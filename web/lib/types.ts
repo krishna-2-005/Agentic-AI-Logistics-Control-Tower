@@ -71,6 +71,16 @@ export interface Overview {
   share_above_clip: number;
   clip_at: number;
   histogram: { x: number; n: number }[];
+  /** Corridors confirmed by the dependence-aware test at its pre-registered strictness (D-080). */
+  audit_robust_slower: number;
+  /** Mean discoveries of the standard test on placebo data with meaningless corridor labels (D-099). */
+  audit_placebo_discoveries: number;
+  /** Share of the standard test's discoveries that are not planted corridors in the power study (D-099). */
+  audit_welch_fdp: number;
+  /** Power of the dependence-aware test when a 2.7-fold overrun is planted (D-099). */
+  audit_cluster_power_shift_one: number;
+  /** Rank correlation of corridor means between the two halves of the period (D-082). */
+  stability_spearman: number;
 }
 
 export interface Hub {
@@ -108,6 +118,14 @@ export interface ModelData {
     mean_baseline_mae_min: number | null;
     /** The hierarchical back-off baseline; present only once a freeze holds it. */
     backoff_mae_min?: number | null;
+    /** The reported model (LightGBM, chosen on validation) and its margin over the back-off bar. */
+    reported_mae_min?: number | null;
+    reported_vs_bar_min?: number | null;
+    reported_vs_bar_ci?: [number, number];
+    served_vs_bar_min?: number | null;
+    rolling_folds_reported?: number;
+    rolling_folds_served?: number;
+    rolling_folds_total?: number;
     served_model: string;
     served_note: string;
     /** Present once the running stream has reproduced the batch predictions (WP-11). */

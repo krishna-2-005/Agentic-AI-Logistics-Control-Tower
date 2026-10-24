@@ -39,7 +39,15 @@ export default function CorridorsPage() {
             using Welch&apos;s t-test on log time ratios. With{" "}
             {num(o.corridors_tested)} tests in one family, the
             Benjamini–Hochberg procedure holds the false discovery rate at 5% —
-            so &ldquo;significant&rdquo; here means something specific.
+            on the assumption that legs are independent. They are not: legs of one recurring
+            service resemble each other, so this list is a <strong>screening list</strong>.
+            A placebo with meaningless corridor labels returns about{" "}
+            {num(o.audit_placebo_discoveries)} &ldquo;discoveries&rdquo;, the dependence-aware
+            test confirms {num(o.audit_robust_slower)}, and that test is correctly sized but
+            finds only {pct(o.audit_cluster_power_shift_one, 0)} of corridors even when a
+            2.7-fold overrun is planted (so its zero says little). What does hold is
+            persistence: corridor means correlate at {num(o.stability_spearman, 2)} between the
+            two halves of the period.
           </>
         }
       />
@@ -48,14 +56,14 @@ export default function CorridorsPage() {
         <KpiRow>
           <Kpi
             value={num(o.bottlenecks)}
-            label="significantly slower"
-            sub="corridors running over the network's own typical overrun"
+            label="flagged slower (screening)"
+            sub="the standard test's list; the Robust column shows which survive the dependence-aware test"
             accent
           />
           <Kpi
             value={num(o.faster_corridors)}
-            label="significantly faster"
-            sub="the OSRM estimate is pessimistic here, not optimistic"
+            label="flagged faster (screening)"
+            sub="the OSRM estimate looks pessimistic here, subject to the same caveat"
           />
           <Kpi
             value={num(o.corridors_tested)}

@@ -1,8 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
+import { CorridorSketch } from "@/components/CorridorSketch";
 import { Card, Evidence, Notice, Pill, SeverityBadge } from "@/components/ui";
 import { cx, minutes, num, pct, ratio, sci } from "@/lib/format";
 import type { Corridor } from "@/lib/types";
@@ -38,6 +39,16 @@ export function NetworkExplorer({
   const [minLegs, setMinLegs] = useState(10);
   const [state, setState] = useState<string>("all");
   const [selected, setSelected] = useState<Corridor | null>(null);
+  // The interactive map is heavy (deck.gl, MapLibre). Until the visitor touches the page, a static drawing stands in,
+  // so the page paints and responds at once; the first pointer, key or scroll event, or the button, loads the map.
+  const [live, setLive] = useState(false);
+  useEffect(() => {
+    if (live) return;
+    const start = () => setLive(true);
+    const events = ["pointerdown", "keydown", "wheel", "touchstart"] as const;
+    events.forEach((e) => window.addEventListener(e, start, { once: true, passive: true }));
+    return () => events.forEach((e) => window.removeEventListener(e, start));
+  }, [live]);
 
   const states = useMemo(() => {
     const set = new Set<string>();
@@ -130,12 +141,27 @@ export function NetworkExplorer({
 
       {/* ── map + side panel ─────────────────────────────────────────── */}
       <div className="grid gap-4 lg:grid-cols-[1fr_20rem]">
-        <CorridorMap
-          corridors={shown}
-          height={560}
-          onSelect={setSelected}
-          selectedId={selected?.id ?? null}
-        />
+        {live ? (
+          <CorridorMap
+            corridors={shown}
+            height={560}
+            onSelect={setSelected}
+            selectedId={selected?.id ?? null}
+          />
+        ) : (
+          <div className="relative overflow-hidden rounded-xl border border-[var(--line)] bg-[var(--surface-raised)]">
+            <CorridorSketch
+              corridors={shown}
+              label={`${shown.length} corridors drawn between their end points; thickness and colour show how far over plan. Interact with the page to load the interactive map.`}
+            />
+            <button
+              onClick={() => setLive(true)}
+              className="absolute bottom-3 left-3 rounded-lg bg-[var(--accent-bg)] px-3 py-1.5 text-xs font-semibold text-white hover:opacity-90"
+            >
+              Load the interactive map
+            </button>
+          </div>
+        )}
 
         <div className="space-y-4">
           {selected ? (

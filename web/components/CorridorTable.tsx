@@ -275,10 +275,8 @@ export function CorridorTable({
                     </div>
                   </Td>
                   <Td align="right" mono>
-                    <span
-                      style={{ color: c.severity.color }}
-                      className="font-semibold"
-                    >
+                    <span className="inline-flex items-center gap-1.5 font-semibold">
+                      <span aria-hidden className="inline-block h-2 w-2 rounded-full" style={{ background: c.severity.color }} />
                       {ratio(c.excess_ratio)}
                     </span>
                   </Td>
