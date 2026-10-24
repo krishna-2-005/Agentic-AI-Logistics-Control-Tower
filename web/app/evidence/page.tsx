@@ -171,7 +171,7 @@ export default function EvidencePage() {
         }
       >
         <Card>
-          <ModelSlices slices={model.data.slices} />
+          <ModelSlices slices={model.data.slices} model={model.data.headline.model} />
         </Card>
       </Section>
 

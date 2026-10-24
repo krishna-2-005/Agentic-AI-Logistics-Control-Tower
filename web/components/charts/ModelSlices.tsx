@@ -13,14 +13,15 @@ import type { ModelSlice } from "@/lib/types";
  * worth seeing: on corridors with history the two bars are nearly the same
  * height. The win is real and it is concentrated in one slice.
  */
-export function ModelSlices({ slices }: { slices: ModelSlice[] }) {
+export function ModelSlices({ slices, model }: { slices: ModelSlice[]; model: string }) {
   const dimensions = Array.from(new Set(slices.map((s) => s.dimension)));
   const [dimension, setDimension] = useState(
     dimensions.includes("support_in_train") ? "support_in_train" : dimensions[0]
   );
 
   const rows = slices.filter(
-    (s) => s.dimension === dimension && s.model !== "corridor_median"
+    // One model against its baseline: the export also carries the step-0.05 variant, which drew a second, misleading bar.
+    (s) => s.dimension === dimension && s.model === model
   );
 
   const labels = rows.map((s) => s.slice);
