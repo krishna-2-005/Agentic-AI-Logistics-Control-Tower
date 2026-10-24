@@ -3462,3 +3462,25 @@ default unchanged; (5) re-run the stream-equals-batch validation for the new mod
 **The default served model changes only if (3) and (5) are both exact.** Nothing about the headline numbers can change: the reported
 model's MAE is already in the freeze.
 
+## D-102 · Pre-registration: a heavy-tailed prior for the empirical-Bayes ranking — `DECIDED`
+**Post-v1.1 (upgrade B10) · Mounika · written before `src/ml/eb_t.py` is run**
+
+**Why.** D-081 models corridor effects as normal, `theta_c ~ N(mu, tau^2)`, although the log ratios are heavy-tailed and a few corridors
+sit far out. With a normal prior those corridors are shrunk toward the middle by a factor that assumes their distance is
+improbable. A reviewer will ask whether the "shrinkage barely helps" result (D-081) is an artefact of the normal prior.
+
+**Model.** `theta_c ~ mu + tau * t_nu` (Student t with `nu` degrees of freedom), `y_c | theta_c ~ N(theta_c, v_c)` with `y_c`, `v_c` exactly
+as D-081 (corridor mean log ratio and its sampling variance). The marginal likelihood is computed by numerical integration over a
+grid of `theta` (3,000 points from min(y) - 1 to max(y) + 1; trapezoid rule). For each support floor in {5, 10, 20, 30}, `mu` and
+`tau` are fitted by maximum likelihood for each `nu` in {2, 3, 5, 10, 30, 1000} (1000 stands for the normal limit) and the `nu`
+with the highest likelihood is used; the likelihood-ratio statistic against `nu = 1000` is reported. Posterior probabilities
+`P(theta_c > t)` use the same threshold `t` as D-081 (read from `b4_eb_ranking.json`).
+
+**Report.** Per floor: the fitted `nu`, `tau`, the log-likelihood gain over the normal model, the median shrink factor
+(posterior mean's distance from `y` over its distance from `mu`) for corridors in the top decile of `y`, and the ranking by
+`P(theta_c > t)`. Across the floors: mean pairwise top-20 Jaccard for the t-prior ranking against the normal-prior ranking and the raw ranking
+of D-081, and the number of the 20 corridors of the raw top list that the t-prior ranking keeps. **Decision rule:** if the t prior
+raises the mean pairwise top-20 Jaccard above the raw ranking's by more than 0.10 (twice the margin the normal prior bought),
+the paper says shrinkage helps more once the prior is heavy-tailed; otherwise it says the D-081 reading is not an artefact of the
+normal prior. Either way the result is reported beside D-081.
+
