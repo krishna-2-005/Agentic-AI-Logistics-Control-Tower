@@ -57,7 +57,7 @@ FREEZE_JSON_V1 = config.BENCHMARKS_DIR / "results_freeze_v1.json"
 FREEZE_JSON_V2 = config.BENCHMARKS_DIR / "results_freeze_v2.json"
 #: v3 is the freeze v1.0 ships with (D-056): v2's numbers plus Week 8's, with extraction at
 #: the row count the release actually carries. v1 and v2 stay as they were.
-FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v5.json"
+FREEZE_JSON = config.BENCHMARKS_DIR / "results_freeze_v6.json"
 SUMMARY_MD = config.DOCS_DIR / "RESULTS_SUMMARY.md"
 
 
@@ -479,6 +479,46 @@ ENTRIES: list[tuple[str, int, str, str, str, Callable[[], Any]]] = [
      "b2_rolling_origin.json", lambda: _json("b2_rolling_origin.json")["summary"]["mae_cold_backoff"]["mean"]),
     ("ro_cold_served_mae", 10, "Rolling origin: cold-leg MAE of the served model, mean over folds", "min",
      "b2_rolling_origin.json", lambda: _json("b2_rolling_origin.json")["summary"]["mae_cold_v2_gbt"]["mean"]),
+    ("power_by_perm_shift_one", 10, "Power of BY over cell-permutation p-values at a planted shift of 1.0", "share",
+     "b9_power.json", lambda: [r for r in _json("b9_power.json")["results"] if r["delta"] == 1.0][0]["power"]["by_perm"]),
+    ("power_bh_perm_shift_one", 10, "Power of BH over cell-permutation p-values at a planted shift of 1.0", "share",
+     "b9_power.json", lambda: [r for r in _json("b9_power.json")["results"] if r["delta"] == 1.0][0]["power"]["bh_perm"]),
+    ("power_by_perm_shift_half", 10, "Power of BY over cell-permutation p-values at a planted shift of 0.5", "share",
+     "b9_power.json", lambda: [r for r in _json("b9_power.json")["results"] if r["delta"] == 0.5][0]["power"]["by_perm"]),
+    ("power_by_perm_large_shift_one", 10, "Power of BY over cell-permutation p-values, corridors with 25+ legs, shift 1.0", "share",
+     "b9_power.json", lambda: [r for r in _json("b9_power.json")["results"] if r["delta"] == 1.0][0]["power_by_leg_count"]["by_perm"]["25+"]),
+    ("power_by_perm_small_shift_one", 10, "Power of BY over cell-permutation p-values, corridors with 10-14 legs, shift 1.0", "share",
+     "b9_power.json", lambda: [r for r in _json("b9_power.json")["results"] if r["delta"] == 1.0][0]["power_by_leg_count"]["by_perm"]["10-14"]),
+    ("power_welch_bh_fdp_shift_half", 10, "False discovery proportion of Welch with BH at a planted shift of 0.5", "share",
+     "b9_power.json", lambda: [r for r in _json("b9_power.json")["results"] if r["delta"] == 0.5][0]["false_discovery_proportion"]["bh_welch"]),
+    ("power_welch_bh_rate_shift_zero", 10, "Planted corridors Welch with BH rejects when no effect is planted", "share",
+     "b9_power.json", lambda: [r for r in _json("b9_power.json")["results"] if r["delta"] == 0.0][0]["power"]["bh_welch"]),
+    ("power_perm_size_by", 10, "Datasets with any BY permutation rejection when no effect is planted", "share",
+     "b9_power.json", lambda: [r for r in _json("b9_power.json")["results"] if r["delta"] == 0.0][0]["false_discovery_proportion"]["by_perm"]),
+    ("power_bank_disagreements_by", 10, "Null-bank vs 10^6 run: corridors classified differently under BY", "corridors",
+     "b9_power.json", lambda: _json("b9_power.json")["calibration"]["disagreements_fdr_by"]),
+    ("idx_spearman_pti_vs_mean", 10, "Planning time index vs mean log ratio, Spearman", "rho",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["against_audit"]["spearman_pti_vs_mean_log"]),
+    ("idx_spearman_bi_vs_mean", 10, "Buffer index vs mean log ratio, Spearman", "rho",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["against_audit"]["spearman_bi_vs_mean_log"]),
+    ("idx_top20_pti_vs_audit", 10, "Top-20 overlap, planning time index vs audit", "jaccard",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["against_audit"]["top20_jaccard_pti_vs_audit"]),
+    ("idx_top20_bi_vs_audit", 10, "Top-20 overlap, buffer index vs audit", "jaccard",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["against_audit"]["top20_jaccard_bi_vs_audit"]),
+    ("idx_stab_mean", 10, "Half-to-half Spearman, mean log ratio", "rho",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["stability_halves"]["mean_log"]["spearman"]),
+    ("idx_stab_pti", 10, "Half-to-half Spearman, planning time index", "rho",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["stability_halves"]["pti"]["spearman"]),
+    ("idx_stab_bi", 10, "Half-to-half Spearman, buffer index", "rho",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["stability_halves"]["bi"]["spearman"]),
+    ("idx_stab_pti_ci_low", 10, "Planning time index stability, interval low", "rho",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["stability_halves"]["pti"]["ci95"][0]),
+    ("idx_stab_pti_ci_high", 10, "Planning time index stability, interval high", "rho",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["stability_halves"]["pti"]["ci95"][1]),
+    ("idx_stab_bi_ci_low", 10, "Buffer index stability, interval low", "rho",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["stability_halves"]["bi"]["ci95"][0]),
+    ("idx_stab_bi_ci_high", 10, "Buffer index stability, interval high", "rho",
+     "b11_reliability_indices.json", lambda: _json("b11_reliability_indices.json")["stability_halves"]["bi"]["ci95"][1]),
 ]
 
 

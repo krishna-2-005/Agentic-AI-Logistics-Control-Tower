@@ -128,11 +128,35 @@ def agent_ablation() -> plt.Figure:
     return fig
 
 
+def power_curves() -> plt.Figure:
+    """Power and false discovery proportion of the four audit variants against the planted shift (D-099)."""
+    data = json.loads((RAW / "b9_power.json").read_text(encoding="utf-8"))["results"]
+    deltas = [r["delta"] for r in data if r["delta"] > 0]
+    styles = {"bh_welch": ("Welch, BH", style.ORANGE, "o"), "by_welch": ("Welch, BY", style.YELLOW, "s"),
+              "bh_perm": ("cell permutation, BH", style.BLUE, "^"), "by_perm": ("cell permutation, BY", style.AQUA, "v")}
+    fig, axes = plt.subplots(1, 2, figsize=(style.COL_WIDTH_IN * 1.9, 2.4), sharex=True)
+    for key, (label, colour, marker) in styles.items():
+        axes[0].plot(deltas, [r["power"][key] for r in data if r["delta"] > 0], marker=marker, color=colour, label=label, lw=1.3, ms=4)
+        axes[1].plot(deltas, [r["false_discovery_proportion"][key] for r in data if r["delta"] > 0], marker=marker, color=colour, lw=1.3, ms=4)
+    axes[0].axhline(0.8, color=style.GREY, lw=0.8, ls="--")
+    axes[1].axhline(0.05, color=style.GREY, lw=0.8, ls="--")
+    axes[0].set_ylabel("share of planted corridors found")
+    axes[1].set_ylabel("false discovery proportion")
+    for ax in axes:
+        ax.set_xlabel("planted shift in log ratio")
+        ax.set_ylim(-0.02, 1.02)
+    axes[0].legend(frameon=False, fontsize=6.5, loc="center right")
+    fig.tight_layout()
+    return fig
+
+
 def main() -> int:
     style.apply_style()
     style.save(forest(), "fig_forest_delta_mae")
     style.save(architecture(), "fig_architecture")
     style.save(agent_ablation(), "fig_agent_ablation")
+    if (RAW / "b9_power.json").exists():
+        style.save(power_curves(), "fig_power_curves")
     if (RAW / "b2_rolling_origin_zoo.csv").exists():
         style.save(folds(), "fig_rolling_origin")
     return 0

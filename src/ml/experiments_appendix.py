@@ -69,6 +69,8 @@ PRODUCERS: dict[str, tuple[str, str]] = {
     "b1_model_v3.json": ("python -m src.ml.models_v3", "Mounika"),
     "b2_significance.json": ("python -m src.ml.significance", "Mounika"),
     "b2_rolling_origin.json": ("python -m src.ml.rolling_origin", "Mounika"),
+    "b9_power.json": ("python -m src.ml.audit_power", "Mounika"),
+    "b11_reliability_indices.json": ("python -m src.ml.audit_indices", "Mounika"),
     "b2_rolling_origin_zoo.json": ("python -m src.ml.rolling_origin_zoo", "Mounika"),
     "b6_model_zoo.json": ("python -m src.ml.model_zoo", "Mounika"),
     "b6_feature_ablation.json": ("python -m src.ml.model_zoo", "Mounika"),

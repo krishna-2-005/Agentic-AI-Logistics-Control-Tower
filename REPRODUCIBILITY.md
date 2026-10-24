@@ -30,7 +30,7 @@ reference machine; where a figure is an estimate it says so.
 
 ## What the freeze is
 
-`benchmarks/results_freeze_v5.json` records every number the paper and README print, the file it came from and the first 16
+`benchmarks/results_freeze_v6.json` records every number the paper and README print, the file it came from and the first 16
 hex digits of that file's SHA-256. `results_freeze --verify` recomputes each value from the files on disk and fails on any
 difference; `src/report/paper_numbers.py` turns the same file into `paper/numbers.tex`, and a test fails if a manuscript uses a
 macro the freeze does not define or if `numbers.tex` is stale. The expected freeze digest is the one printed in the first
