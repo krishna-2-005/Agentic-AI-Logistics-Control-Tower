@@ -3356,3 +3356,32 @@ where the model's extra failures were invented values and 1 in 6 cases drawing d
 verdicts on re-run. That this is one open model on 8 to 18 cases per agent, not the Gemini
 model used for prose. It may not say the LLM arm is generally worse, nor claim a cost advantage
 beyond latency and the tokens measured. The full 40-case design is resumable from cache.
+
+## D-099 · Pre-registration: the power of the cell-permutation audit, by simulation — `DECIDED`
+**Post-v1.1 (upgrade B9) · Mounika · written before `src/ml/audit_power.py` is run**
+
+**Why.** The dependence-aware audit confirms 0 of 273 slower corridors (D-080, D-084). A zero is ambiguous: no effect, or a test
+too weak to see one. This entry measures what the test can see, so the paper can say "it detects a corridor whose true log ratio
+is at least X with Y% probability" instead of leaving the zero unread.
+
+**World.** The real cell structure and cell means, shuffled once within size strata (the placebo world of D-080: no corridor
+effect anywhere, cells still internally correlated). In each simulated dataset, **K = 30 corridors** are chosen at random,
+stratified by leg count (10 per bin: 10-14, 15-24, 25 and over legs), and every cell of a chosen corridor has its mean raised by
+`delta`. `delta` takes the values **0.10, 0.20, 0.30, 0.50, 0.75, 1.00** (log-ratio units; 0.50 is a 1.65 times larger overrun).
+**30 simulated datasets per delta** (seeds fixed from 20260901), plus 30 with `delta = 0` as a size check.
+
+**Tests.** The four variants of D-080 (Welch or cell permutation, each with BH or BY at 5%) are run on every simulated dataset.
+Welch p-values come from the audit's own `welch_against_network` on the dataset's sums. **Permutation p-values** cannot be
+recomputed at 10^6 permutations for 210 datasets, so they use a hybrid: the null of each corridor's statistic is taken from
+20,000 permutations of the real cell means (the same multiset as the shuffled world before planting); where fewer than 20 null
+values reach the observed statistic the p-value is the empirical one, otherwise a normal tail with the null's own standard
+deviation. **Calibration check, run first and reported:** the hybrid p-values for the real observed statistics are compared with
+the 10^6-permutation p-values of `b3_audit_robust_1e6_corridors.csv` (rank correlation of log10 p, and the number of corridors
+where they disagree on significance under BY). If the hybrid misclassifies any corridor under BH or BY at the real data, the
+power numbers for the permutation variants are labelled approximate and bounded by that check.
+
+**Report.** For each delta and variant: power (share of planted corridors declared significant in the right direction), power
+by leg-count bin, and the realised false discovery proportion among non-planted corridors. **Decision rule:** the paper states
+the smallest `delta` at which the headline variant (BY over permutation p-values) reaches 80% power in each bin, or says it
+never does within the grid. No result changes the headline of D-080; this only says what a zero means.
+
