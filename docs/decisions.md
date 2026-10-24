@@ -3443,3 +3443,22 @@ reading **the mean is the most stable corridor descriptor, the planning time ind
 indices therefore add nothing the audit's statistic does not carry, and the buffer index in particular is a poor ranking on 10 to 15
 legs per corridor (a 95th percentile of so few legs is noisy). Limits as stated before the run.
 
+## D-101 · Pre-registration: serve the reported model (LightGBM, L1) through the same numpy reader — `DECIDED`
+**Post-v1.1 (upgrade B12) · Mounika · written before `src/ml/lgbm_export.py` is run**
+
+**Why.** D-077 named a single-node LightGBM model as the reported one while the stream and the API serve Spark v2, which the paper has
+to footnote everywhere. D-075 rule 4 allows the swap only if the whole serving chain is re-validated and bit-identical. The reported
+model uses the same 38 inputs over the old median as v2, so the serving features and the history state do not change; only the trees do.
+
+**Method.** (1) Refit LightGBM with the settings D-077 chose (L1 loss, 200 trees, depth 6, 63 leaves, learning rate 0.03, seed 42) on the
+full training split with the inputs and residual target of `model_zoo.frames("secondary")`; it must reproduce the zoo's test MAE
+(29.6578) to the fourth decimal, or the module refuses to export. (2) Flatten the booster's trees into the `gbt_local.Forest` arrays
+(weights all 1, leaf values as LightGBM stores them, the boost-from-average constant being inside the first tree) and sum them
+left to right in float64, which is how LightGBM sums. (3) **Equality check on every leg:** score all 26,369 legs of `features_v2`
+through `serving.prepare` and the numpy reader, and compare with `booster.predict`; the required result is **identical predictions on
+all legs** (difference exactly 0.0); if the best summation order is not exact, the maximum absolute difference is reported and the
+swap is **not** made. (4) Make the served model selectable (`SERVING_MODEL=lightgbm_l1`) in `serving`, `predict` and the stream job,
+default unchanged; (5) re-run the stream-equals-batch validation for the new model on all legs, same procedure as D-070.
+**The default served model changes only if (3) and (5) are both exact.** Nothing about the headline numbers can change: the reported
+model's MAE is already in the freeze.
+
