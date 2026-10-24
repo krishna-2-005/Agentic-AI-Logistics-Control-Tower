@@ -1,0 +1,42 @@
+{
+  "generated_at": "2026-10-24T04:05:14.794914+00:00",
+  "decision": "D-100",
+  "seed": 20261001,
+  "corridors": 1130,
+  "definitions": "ratio scale q = exp(r); PTI = P95(q); BI = (P95(q) - mean(q)) / mean(q)",
+  "against_audit": {
+    "spearman_pti_vs_mean_log": 0.8633428730590065,
+    "spearman_bi_vs_mean_log": 0.31473816748813616,
+    "top20_jaccard_pti_vs_audit": 0.2903225806451613,
+    "top20_jaccard_bi_vs_audit": 0.0,
+    "top20_jaccard_mean_log_vs_audit": 1.0
+  },
+  "stability_halves": {
+    "universe": 807,
+    "mean_log": {
+      "spearman": 0.9084462321904426,
+      "ci95": [
+        0.8901650233029215,
+        0.9241937758205865
+      ],
+      "top20_jaccard": 0.5384615384615384
+    },
+    "pti": {
+      "spearman": 0.8142843457787591,
+      "ci95": [
+        0.7809971921485479,
+        0.8439189966321915
+      ],
+      "top20_jaccard": 0.48148148148148145
+    },
+    "bi": {
+      "spearman": 0.5898088538179415,
+      "ci95": [
+        0.5385844028070912,
+        0.6376317982144666
+      ],
+      "top20_jaccard": 0.17647058823529413
+    }
+  },
+  "note": "legs of one recurring service are correlated, so a 95th percentile of 10 to 15 legs is a noisy statistic and is not corrected for it (D-083)"
+}

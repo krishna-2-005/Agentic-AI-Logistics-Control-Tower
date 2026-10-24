@@ -1,0 +1,292 @@
+{
+  "generated_at": "2026-10-24T04:06:36.447083+00:00",
+  "decision": "D-099",
+  "seed": 20260901,
+  "null_permutations": 20000,
+  "tail_permutations": 1000000,
+  "tail_kept_per_corridor": 1000,
+  "planted_per_bin": 10,
+  "bins": [
+    "10-14",
+    "15-24",
+    "25+"
+  ],
+  "calibration": {
+    "corridors": 1130,
+    "reference_permutations": 1000000,
+    "disagreements_fdr_bh": 0,
+    "disagreements_fdr_by": 0,
+    "corridors_with_reference_p_below_1e-3": 3,
+    "spearman_log10p_below_1e-3": 1.0,
+    "median_abs_log10_ratio_below_1e-3": 0.06978347170714994
+  },
+  "results": [
+    {
+      "delta": 0.0,
+      "datasets": 30,
+      "power": {
+        "bh_welch": 0.2456,
+        "by_welch": 0.1989,
+        "bh_perm": 0.0,
+        "by_perm": 0.0
+      },
+      "power_by_leg_count": {
+        "bh_welch": {
+          "10-14": 0.2567,
+          "15-24": 0.2267,
+          "25+": 0.2533
+        },
+        "by_welch": {
+          "10-14": 0.2133,
+          "15-24": 0.1867,
+          "25+": 0.1967
+        },
+        "bh_perm": {
+          "10-14": 0.0,
+          "15-24": 0.0,
+          "25+": 0.0
+        },
+        "by_perm": {
+          "10-14": 0.0,
+          "15-24": 0.0,
+          "25+": 0.0
+        }
+      },
+      "false_discovery_proportion": {
+        "bh_welch": 1.0,
+        "by_welch": 1.0,
+        "bh_perm": 0.0333,
+        "by_perm": 0.0
+      }
+    },
+    {
+      "delta": 0.1,
+      "datasets": 30,
+      "power": {
+        "bh_welch": 0.3533,
+        "by_welch": 0.2811,
+        "bh_perm": 0.0044,
+        "by_perm": 0.0044
+      },
+      "power_by_leg_count": {
+        "bh_welch": {
+          "10-14": 0.3133,
+          "15-24": 0.38,
+          "25+": 0.3667
+        },
+        "by_welch": {
+          "10-14": 0.26,
+          "15-24": 0.3,
+          "25+": 0.2833
+        },
+        "bh_perm": {
+          "10-14": 0.0067,
+          "15-24": 0.0,
+          "25+": 0.0067
+        },
+        "by_perm": {
+          "10-14": 0.0067,
+          "15-24": 0.0,
+          "25+": 0.0067
+        }
+      },
+      "false_discovery_proportion": {
+        "bh_welch": 0.9844,
+        "by_welch": 0.9842,
+        "bh_perm": 0.0333,
+        "by_perm": 0.0
+      }
+    },
+    {
+      "delta": 0.2,
+      "datasets": 30,
+      "power": {
+        "bh_welch": 0.5422,
+        "by_welch": 0.4244,
+        "bh_perm": 0.0011,
+        "by_perm": 0.0011
+      },
+      "power_by_leg_count": {
+        "bh_welch": {
+          "10-14": 0.5033,
+          "15-24": 0.5367,
+          "25+": 0.5867
+        },
+        "by_welch": {
+          "10-14": 0.3667,
+          "15-24": 0.4433,
+          "25+": 0.4633
+        },
+        "bh_perm": {
+          "10-14": 0.0,
+          "15-24": 0.0033,
+          "25+": 0.0
+        },
+        "by_perm": {
+          "10-14": 0.0,
+          "15-24": 0.0033,
+          "25+": 0.0
+        }
+      },
+      "false_discovery_proportion": {
+        "bh_welch": 0.9764,
+        "by_welch": 0.9764,
+        "bh_perm": 0.0,
+        "by_perm": 0.0
+      }
+    },
+    {
+      "delta": 0.3,
+      "datasets": 30,
+      "power": {
+        "bh_welch": 0.6744,
+        "by_welch": 0.5733,
+        "bh_perm": 0.0033,
+        "by_perm": 0.0033
+      },
+      "power_by_leg_count": {
+        "bh_welch": {
+          "10-14": 0.6233,
+          "15-24": 0.6333,
+          "25+": 0.7667
+        },
+        "by_welch": {
+          "10-14": 0.5133,
+          "15-24": 0.5533,
+          "25+": 0.6533
+        },
+        "bh_perm": {
+          "10-14": 0.0,
+          "15-24": 0.0033,
+          "25+": 0.0067
+        },
+        "by_perm": {
+          "10-14": 0.0,
+          "15-24": 0.0033,
+          "25+": 0.0067
+        }
+      },
+      "false_discovery_proportion": {
+        "bh_welch": 0.971,
+        "by_welch": 0.9687,
+        "bh_perm": 0.0,
+        "by_perm": 0.0
+      }
+    },
+    {
+      "delta": 0.5,
+      "datasets": 30,
+      "power": {
+        "bh_welch": 0.8744,
+        "by_welch": 0.7889,
+        "bh_perm": 0.0211,
+        "by_perm": 0.0178
+      },
+      "power_by_leg_count": {
+        "bh_welch": {
+          "10-14": 0.8233,
+          "15-24": 0.87,
+          "25+": 0.93
+        },
+        "by_welch": {
+          "10-14": 0.7133,
+          "15-24": 0.7767,
+          "25+": 0.8767
+        },
+        "bh_perm": {
+          "10-14": 0.0033,
+          "15-24": 0.01,
+          "25+": 0.05
+        },
+        "by_perm": {
+          "10-14": 0.0033,
+          "15-24": 0.01,
+          "25+": 0.04
+        }
+      },
+      "false_discovery_proportion": {
+        "bh_welch": 0.9624,
+        "by_welch": 0.9574,
+        "bh_perm": 0.0444,
+        "by_perm": 0.0167
+      }
+    },
+    {
+      "delta": 0.75,
+      "datasets": 30,
+      "power": {
+        "bh_welch": 0.9722,
+        "by_welch": 0.9467,
+        "bh_perm": 0.0478,
+        "by_perm": 0.0311
+      },
+      "power_by_leg_count": {
+        "bh_welch": {
+          "10-14": 0.95,
+          "15-24": 0.97,
+          "25+": 0.9967
+        },
+        "by_welch": {
+          "10-14": 0.9267,
+          "15-24": 0.93,
+          "25+": 0.9833
+        },
+        "bh_perm": {
+          "10-14": 0.0033,
+          "15-24": 0.02,
+          "25+": 0.12
+        },
+        "by_perm": {
+          "10-14": 0.0033,
+          "15-24": 0.0167,
+          "25+": 0.0733
+        }
+      },
+      "false_discovery_proportion": {
+        "bh_welch": 0.9588,
+        "by_welch": 0.9497,
+        "bh_perm": 0.0,
+        "by_perm": 0.0
+      }
+    },
+    {
+      "delta": 1.0,
+      "datasets": 30,
+      "power": {
+        "bh_welch": 0.9956,
+        "by_welch": 0.9878,
+        "bh_perm": 0.1189,
+        "by_perm": 0.0844
+      },
+      "power_by_leg_count": {
+        "bh_welch": {
+          "10-14": 0.9933,
+          "15-24": 0.9967,
+          "25+": 0.9967
+        },
+        "by_welch": {
+          "10-14": 0.9733,
+          "15-24": 0.9967,
+          "25+": 0.9933
+        },
+        "bh_perm": {
+          "10-14": 0.0067,
+          "15-24": 0.0433,
+          "25+": 0.3067
+        },
+        "by_perm": {
+          "10-14": 0.0067,
+          "15-24": 0.0333,
+          "25+": 0.2133
+        }
+      },
+      "false_discovery_proportion": {
+        "bh_welch": 0.9583,
+        "by_welch": 0.9483,
+        "bh_perm": 0.04,
+        "by_perm": 0.0167
+      }
+    }
+  ],
+  "seconds": 745.8
+}

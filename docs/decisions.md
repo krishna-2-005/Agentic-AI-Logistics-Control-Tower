@@ -3385,6 +3385,28 @@ by leg-count bin, and the realised false discovery proportion among non-planted 
 the smallest `delta` at which the headline variant (BY over permutation p-values) reaches 80% power in each bin, or says it
 never does within the grid. No result changes the headline of D-080; this only says what a zero means.
 
+**Outcome (D-099, 2026-10-22).** `python -m src.ml.audit_power`, 30 datasets per delta, K = 30 planted corridors, null bank of
+20,000 full draws plus the 1,000 largest values per corridor out of 10^6 further draws. **Amendment, made after seeing a first run:**
+the pre-registered hybrid p-value (empirical, then a normal tail) failed its own calibration rule. Against the real 10^6-permutation
+run it misclassified 2 corridors under BH and 3 under BY, and on the no-effect datasets it rejected something in 57% of them, so its
+power numbers were not valid. The null's tail is heavier than normal (single-service corridors inherit the heavy tail of cell
+means). It was replaced by exact empirical tail p-values down to 10^-6, which reproduce the real run (0 disagreements under BH
+and BY; rank correlation of log10 p on the smallest p-values 1.0), and every number below is from that version. **Size is right:**
+with no planted effect the permutation variants reject something in 3.3% (BH) and 0% (BY) of datasets. **Power is low:** the share
+of planted corridors found by BY over cell-permutation p-values is 0.4% at a shift of 0.10 in log ratio,
+0.3% at 0.30, 1.8% at 0.50, 3.1% at 0.75 and 8.4% at 1.00 (a 2.7 times larger
+overrun); under BH 11.9% at 1.00. For corridors with 25 or more legs and a shift of 1.00 it is
+21.3% (BY) and 30.7% (BH); for corridors with 10 to 14 legs it is about 1%. **It never reaches 80% anywhere on the grid,** so the
+decision rule's answer is "never within the grid". The cause: the permutation null mixes all cells of a size stratum, and real
+between-service heterogeneity (corridor-level sd of the mean log ratio about 0.37) already makes cell means vary a lot, so a single
+corridor must stand far out. **Welch with BH or BY is the opposite failure:** among its rejections, 96% to
+98% are not planted corridors (false discovery proportion about 96% to 100% at every shift), against a nominal 5%, and it rejects 25% of
+the planted corridors at a shift of zero. Reading, with limits: "0 confirmed" is nearly uninformative about whether corridor effects
+exist, because the test cannot see anything smaller than roughly a doubling to a tripling of the overrun; it does show the standard test's
+discoveries are mostly false on this network. Corridor effects are therefore supported by the stability result (D-082) and not by any
+single-corridor test. Limits: shifts are applied to whole corridors at once and equally to every service; K = 30; the null bank
+reuses the real cell means, so a world with more or less heterogeneity would move the numbers.
+
 ## D-100 · Pre-registration: standard travel-time reliability indices against the audit — `DECIDED`
 **Post-v1.1 (upgrade B11) · Mounika · written before `src/ml/audit_indices.py` is run**
 
@@ -3410,4 +3432,14 @@ as the audit.
 
 **No decision rule changes** a headline; this places the audit in the literature the paper cites. Limits to state: legs of one
 service are correlated, so a percentile of 10 to 15 legs is a noisy statistic, and the percentile is not corrected for it.
+
+**Outcome (D-100, 2026-10-22).** `python -m src.ml.audit_indices`. Across the 1,130 corridors the planning time index tracks the
+audit's mean log ratio closely (Spearman 0.86) and the buffer index does not (0.31). Top-20 overlap with the audit's
+top 20 slower corridors: 0.29 for the planning time index and 0.00 for the buffer index (the audit's own ranking is by excess ratio, so the raw mean
+reproduces it, 1.00). Between the two halves of the creation dates (807 corridors with at least 5 legs in each): Spearman
+0.91 [0.89, 0.92] for the mean log ratio, 0.81 [0.78, 0.84] for the planning time index and
+0.59 [0.54, 0.64] for the buffer index; top-20 overlap between halves 0.54, 0.48 and 0.18. The intervals separate, so by the pre-registered
+reading **the mean is the most stable corridor descriptor, the planning time index less so and the buffer index least**. The standard
+indices therefore add nothing the audit's statistic does not carry, and the buffer index in particular is a poor ranking on 10 to 15
+legs per corridor (a 95th percentile of so few legs is noisy). Limits as stated before the run.
 
