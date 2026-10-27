@@ -79,11 +79,11 @@ def b4_eb_stability_heatmap() -> list:
             fa, fb = (int(x) for x in row["floors"].split("|"))
             i, j = FLOORS.index(fa), FLOORS.index(fb)
             m[i, j] = m[j, i] = row["jaccard_top20"]
-        im = ax.imshow(m, vmin=0, vmax=1, cmap="Blues")
+        im = ax.imshow(m, vmin=0, vmax=1.7, cmap="Blues")
         for i in range(len(FLOORS)):
             for j in range(len(FLOORS)):
                 ax.text(j, i, f"{m[i, j]:.2f}", ha="center", va="center", fontsize=9,
-                        color="white" if m[i, j] > 0.55 else INK)
+                        color=INK)
         ax.set_xticks(range(len(FLOORS)), [str(f) for f in FLOORS])
         ax.set_yticks(range(len(FLOORS)), [str(f) for f in FLOORS])
         ax.set_xlabel("minimum legs per corridor")
