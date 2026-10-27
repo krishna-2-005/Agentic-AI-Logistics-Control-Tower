@@ -1,0 +1,67 @@
+%% Springer Nature single-column manuscript (sn-jnl, "sn-basic" reference style).
+%% Same sections and numbers as the other versions: text in ../sections, numbers in ../numbers.tex.
+\documentclass[pdflatex,sn-basic]{sn-jnl}
+
+\usepackage{graphicx}
+\usepackage{multirow}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm}
+\usepackage{mathrsfs}
+\usepackage{xcolor}
+\usepackage{textcomp}
+\usepackage{manyfoot}
+\usepackage{booktabs}
+\usepackage{algorithm}
+\usepackage[hyphens]{xurl}
+
+\graphicspath{{../../docs/figures/}}
+\input{../numbers.tex}
+\newif\ifjournal \journaltrue
+\newcommand{\streamsec}{(Section~\ref{sec:stream})}
+
+% Mentor details (the affiliation below is shared with the student authors).
+\newcommand{\mentorgiven}{Anshi}
+\newcommand{\mentorsurname}{Bajaj}
+\newcommand{\mentoremail}{anshi.bajaj@nmims.edu}
+
+\begin{document}
+
+\title[Localising Route-Estimate Error in Road Freight]{Localising Systematic Route-Estimate Error in Road Freight: Dependence-Aware Corridor Auditing, Residual Prediction and a Measured Agent Layer}
+
+\author*[1]{\fnm{Kuchuru Sai Krishna} \sur{Reddy}}\email{kuchurusaikrishnareddy@gmail.com}
+\equalcont{These authors contributed equally to this work.}
+
+\author[1]{\fnm{Makkena} \sur{Lahari}}\email{laharisuresh6666@gmail.com}
+\equalcont{These authors contributed equally to this work.}
+
+\author[1]{\fnm{Shery Mounika} \sur{Reddy}}\email{sherymounikareddy.2006@gmail.com}
+\equalcont{These authors contributed equally to this work.}
+
+\author[1]{\fnm{\mentorgiven} \sur{\mentorsurname}}\email{\mentoremail}
+
+\affil*[1]{\orgdiv{Department of Computer Science and Data Science}, \orgname{SVKM's Narsee Monjee Institute of Management Studies}, \city{Hyderabad}, \country{India}}
+
+\abstract{\input{../sections/abstract.tex}}
+
+\keywords{route planning, travel-time reliability, multiple testing, gradient boosting, stream processing, language-model agents}
+
+\maketitle
+
+\input{../sections/intro.tex}
+\input{../sections/related.tex}
+\input{../sections/related_extended.tex}
+\input{../sections/data.tex}
+\input{../sections/audit.tex}
+\input{../sections/prediction.tex}
+\input{../sections/stream.tex}
+\input{../sections/scale.tex}
+\input{../sections/agents.tex}
+\input{../sections/pitfalls.tex}
+\input{../sections/threats.tex}
+\input{../sections/repro.tex}
+\input{../sections/conclusion.tex}
+\input{../sections/appendix.tex}
+
+\bibliography{../refs_print}
+
+\end{document}
