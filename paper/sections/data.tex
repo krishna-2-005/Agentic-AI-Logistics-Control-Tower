@@ -35,13 +35,9 @@ Every feature describing a corridor's or hub's history is computed only from leg
 \begin{algorithm}[t]
 \caption{As-of history for a query leg $q$ created at time $t_q$ (hierarchical back-off)}
 \label{alg:asof}
-\begin{algorithmic}[1]
-\STATE $F \leftarrow \{\text{legs } j : \text{end}_j < t_q\}$ \hfill \COMMENT{facts first on ties}
-\FOR{level $\ell$ in (corridor, origin hub, destination hub, route type $\times$ distance band, network)}
-  \STATE $F_\ell \leftarrow \{j \in F : \text{key}_\ell(j)=\text{key}_\ell(q)\}$
-  \IF{$F_\ell \neq \emptyset$}
-    \STATE \textbf{return} level $\ell$, $n=|F_\ell|$, $\operatorname{median}\{g_j : j\in F_\ell\}$
-  \ENDIF
-\ENDFOR
-\end{algorithmic}
+\begin{enumerate}
+\item[1.] $F \leftarrow \{\text{legs } j : \text{end}_j < t_q\}$ (facts before queries on a tie).
+\item[2.] For each level $\ell$ in (corridor, origin hub, destination hub, route type $\times$ distance band, network), in this order: $F_\ell \leftarrow \{j \in F : \text{key}_\ell(j)=\text{key}_\ell(q)\}$.
+\item[3.] If $F_\ell \neq \emptyset$, return level $\ell$, $n=|F_\ell|$ and $\operatorname{median}\{g_j : j\in F_\ell\}$, and stop.
+\end{enumerate}
 \end{algorithm}

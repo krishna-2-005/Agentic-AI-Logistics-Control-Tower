@@ -32,4 +32,5 @@ compile() {
 compile paper/conference
 compile paper/conference anon   # double-blind variant: no names, affiliations or repository links
 compile paper/journal
+compile paper/springer   # Springer Nature single-column version (sn-jnl.cls is vendored beside it)
 echo "built paper/conference/{main,anon}.pdf and paper/journal/main.pdf"
